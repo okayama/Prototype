@@ -1,0 +1,156 @@
+<div class="row form-group">
+  <div class="col-lg-2">
+  <mt:trans phrase="Options">
+  </div>
+  <div class="col-lg-10 form-inline">
+    <input type="hidden" name="<mt:var name="name" escape>" value="0">
+    <mt:ignore>Before checkbox, input hidden value="0"</mt:ignore>
+    <label class="custom-control custom-checkbox custom-label-checkbox">
+    <input id="<mt:var name="name" escape>" class="form-control custom-control-input"
+    <mt:if name="readonly">onclick="return false;"</mt:if>
+     type="checkbox" name="<mt:var name="name" escape>" value="1" <mt:if name="value">checked</mt:if>>
+        <span class="custom-control-indicator"></span>
+        <span class="custom-control-description"> 
+        <mt:trans phrase="Display in System"></span>
+    </label>
+    
+    <label>
+    <span><mt:trans phrase="Menu Type"> &nbsp;: </span>
+    <select name="menu_type" id="menu_type" class="form-control">
+      <option value="1" <mt:if name="object_menu_type" eq="1">selected</mt:if>><mt:trans phrase="Panel"></option>
+      <option value="2" <mt:if name="object_menu_type" eq="2">selected</mt:if>><mt:trans phrase="Settings"></option>
+      <option value="3" <mt:if name="object_menu_type" eq="3">selected</mt:if>><mt:trans phrase="System Object"></option>
+    </select>
+    </label>
+
+  </div>
+</div>
+<mt:if name="_model" eq="table">
+<mt:if name="_primary" eq ="table">
+<script>
+$("#<mt:var name="name" escape>").click(function(){
+    alert('<mt:trans phrase="The Model can not be hidden.">');
+    return false;
+});
+</script>
+</mt:if>
+</mt:if>
+
+<div class="row form-group">
+  <div class="col-lg-2">
+  </div>
+  <div class="col-lg-10">
+
+    <input type="hidden" name="auditing" value="0">
+    <label class="custom-control custom-checkbox">
+    <input id="auditing" class="custom-control-input"
+    <mt:if name="readonly">onclick="return false;"</mt:if>
+     type="checkbox" name="auditing" value="1" <mt:if name="object_auditing">checked</mt:if>>
+        <span class="custom-control-indicator"></span>
+        <span class="custom-control-description"> 
+        <mt:trans phrase="Auditing"></span>
+    </label>
+
+    <input type="hidden" name="taggable" value="0">
+    <label class="custom-control custom-checkbox">
+    <input id="taggable" class="form-control custom-control-input"
+    <mt:if name="readonly">onclick="return false;"</mt:if>
+     type="checkbox" name="taggable" value="1" <mt:if name="object_taggable">checked</mt:if>>
+        <span class="custom-control-indicator"></span>
+        <span class="custom-control-description"> 
+        <mt:trans phrase="Taggable"></span>
+    </label>
+
+    <input type="hidden" name="api" value="0">
+    <label class="custom-control custom-checkbox">
+    <input id="api" class="custom-control-input"
+    <mt:if name="readonly">onclick="return false;"</mt:if>
+     type="checkbox" name="api" value="1" <mt:if name="object_api">checked</mt:if>>
+        <span class="custom-control-indicator"></span>
+        <span class="custom-control-description"> 
+        <mt:trans phrase="API"></span>
+    </label>
+
+    <input type="hidden" name="template_tags" value="0">
+    <label class="custom-control custom-checkbox">
+    <input id="template_tags" class="custom-control-input"
+    <mt:if name="readonly">onclick="return false;"</mt:if>
+     type="checkbox" name="template_tags" value="1" <mt:if name="object_template_tags">checked</mt:if>>
+        <span class="custom-control-indicator"></span>
+        <span class="custom-control-description"> 
+        <mt:trans phrase="Template Tags"></span>
+    </label>
+
+<mt:var name="default_models" split="," setvar="default_models">
+<!--mt:ifinarray value="$object_name" array="$default_models"-->
+<!--mt:else-->
+
+    <input type="hidden" name="start_end" value="0">
+    <label class="custom-control custom-checkbox">
+    <input id="start_end" class="custom-control-input"
+    <mt:if name="readonly">onclick="return false;"</mt:if>
+     type="checkbox" name="start_end" value="1" <mt:if name="object_start_end">checked</mt:if>>
+        <span class="custom-control-indicator"></span>
+        <span class="custom-control-description"> 
+        <mt:trans phrase="Expiration Date"></span>
+    </label>
+
+    <input type="hidden" name="has_status" value="0">
+    <label class="custom-control custom-checkbox">
+    <input id="has_status" class="custom-control-input"
+    <mt:if name="readonly">onclick="return false;"</mt:if>
+     type="checkbox" name="has_status" value="1" <mt:if name="object_has_status">checked</mt:if>>
+        <span class="custom-control-indicator"></span>
+        <span class="custom-control-description"> 
+        <mt:trans phrase="Has Status"></span>
+    </label>
+
+    <input type="hidden" name="has_basename" value="0">
+    <label class="custom-control custom-checkbox">
+    <input id="has_status" class="custom-control-input"
+    <mt:if name="readonly">onclick="return false;"</mt:if>
+     type="checkbox" name="has_basename" value="1" <mt:if name="object_has_basename">checked</mt:if>>
+        <span class="custom-control-indicator"></span>
+        <span class="custom-control-description"> 
+        <mt:trans phrase="Has Basename"></span>
+    </label>
+
+    <input type="hidden" name="assign_user" value="0">
+    <label class="custom-control custom-checkbox">
+    <input id="has_status" class="custom-control-input"
+    <mt:if name="readonly">onclick="return false;"</mt:if>
+     type="checkbox" name="assign_user" value="1" <mt:if name="object_assign_user">checked</mt:if>>
+        <span class="custom-control-indicator"></span>
+        <span class="custom-control-description"> 
+        <mt:trans phrase="Assign User"></span>
+    </label>
+
+    <input type="hidden" name="revisable" value="0">
+    <label class="custom-control custom-checkbox">
+    <input id="revisable" class="custom-control-input"
+    <mt:if name="readonly">onclick="return false;"</mt:if>
+     type="checkbox" name="revisable" value="1" <mt:if name="object_revisable">checked</mt:if>>
+        <span class="custom-control-indicator"></span>
+        <span class="custom-control-description"> 
+        <mt:trans phrase="Revisable"></span>
+    </label>
+
+    <input type="hidden" name="logical_delete" value="0">
+    <label class="custom-control custom-checkbox">
+    <input id="logical_delete" class="custom-control-input"
+    <mt:if name="readonly">onclick="return false;"</mt:if>
+     type="checkbox" name="logical_delete" value="1" <mt:if name="object_logical_delete">checked</mt:if>>
+        <span class="custom-control-indicator"></span>
+        <span class="custom-control-description"> 
+        <mt:trans phrase="Logical Deletion"></span>
+    </label>
+
+<!--/mt:ifinarray-->
+
+  </div>
+</div>
+<script>
+$('#start_end').click(function(){
+    $('#has_status').prop('checked',true);
+});
+</script>

@@ -1,0 +1,106 @@
+{
+    "label"    : "URL Map",
+    "plural"   : "URL Maps",
+    "auditing" : 1,
+    "display"  : 1,
+    "sortable" : 1,
+    "order"    : 120,
+    "primary"  : "name",
+    "menu_type": 3,
+    "column_defs": {
+        "id": {
+            "type": "int",
+            "size": "11",
+            "not_null": 1
+        },
+        "name": {
+            "type": "string",
+            "size": "255",
+            "not_null": 1
+        },
+        "table_id": {
+            "type": "int",
+            "size": "11",
+            "not_null": 1
+        },
+        "mapping": {
+            "type": "string",
+            "size": "255",
+            "not_null": 1
+        },
+        "template_id": {
+            "type": "int",
+            "size": "11"
+        },
+        "publish_file": {
+            "type": "tinyint",
+            "size": "4"
+        },
+        "created_on": {
+            "type": "datetime"
+        },
+        "modified_on": {
+            "type": "datetime"
+        },
+        "created_by": {
+            "type": "int",
+            "size": "11"
+        },
+        "modified_by": {
+            "type": "int",
+            "size": "11"
+        },
+        "workspace_id": {
+            "type": "int",
+            "size": "11",
+            "not_null": 1
+        },
+        "order": {
+            "type": "int",
+            "size": "11"
+        }
+    },
+    "indexes": {
+        "PRIMARY": "id",
+        "name": "name",
+        "table_id": "table_id",
+        "template_id": "template_id",
+        "publish_file": "publish_file",
+        "created_on": "created_on",
+        "modified_on": "modified_on",
+        "created_by": "created_by",
+        "modified_by": "modified_by",
+        "workspace_id": "workspace_id",
+        "order": "order"
+    },
+    "sort_by": {
+        "id": "ascend"
+    },
+    "autoset": [
+        "created_on",
+        "modified_on",
+        "created_by",
+        "modified_by"
+    ],
+    "edit_properties": {
+        "id": "hidden",
+        "name": "primary",
+        "table_id": "relation:table:label:select",
+        "mapping": "text",
+        "template_id": "relation:template:name:dialog",
+        "publish_file": "checkbox",
+        "order": "number"
+    },
+    "list_properties": {
+        "id": "number",
+        "name": "primary",
+        "table_id": "reference:table:label",
+        "mapping": "text",
+        "template_id": "reference:template:name",
+        "publish_file": "checkbox",
+        "modified_on": "datetime",
+        "modified_by": "reference:user:name",
+        "workspace_id": "reference:workspace:name",
+        "order": "number"
+    }
+}

@@ -1,0 +1,121 @@
+{
+    "label"    : "File",
+    "plural"   : "Files",
+    "display"  : 1,
+    "order"    : 110,
+    "primary"  : "relative_path",
+    "menu_type": 3,
+    "column_defs": {
+        "id": {
+            "type": "int",
+            "size": "11",
+            "not_null": 1
+        },
+        "relative_path": {
+            "type": "string",
+            "size": "255",
+            "not_null": 1
+        },
+        "type": {
+            "type": "string",
+            "size": "255"
+        },
+        "relative_url": {
+            "type": "string",
+            "size": "255",
+            "not_null": 1
+        },
+        "table_id": {
+            "type": "int",
+            "size": "11"
+        },
+        "key": {
+            "type": "string",
+            "size": "255"
+        },
+        "object_id": {
+            "type": "int",
+            "size": "11"
+        },
+        "urlmapping_id": {
+            "type": "int",
+            "size": "11",
+            "not_null": 1
+        },
+        "file_path": {
+            "type": "string",
+            "size": "255",
+            "not_null": 1
+        },
+        "is_published": {
+            "type": "tinyint",
+            "size": "4"
+        },
+        "url": {
+            "type": "string",
+            "size": "255",
+            "not_null": 1
+        },
+        "mime_type": {
+            "type": "string",
+            "size": "255"
+        },
+        "workspace_id": {
+            "type": "int",
+            "size": "11",
+            "not_null": 1
+        }
+    },
+    "indexes": {
+        "PRIMARY": "id",
+        "relative_path": "relative_path",
+        "type": "type",
+        "relative_url": "relative_url",
+        "table_id": "table_id",
+        "key": "key",
+        "object_id": "object_id",
+        "urlmapping_id": "urlmapping_id",
+        "file_path": "file_path",
+        "is_published": "is_published",
+        "url": "url",
+        "mime_type": "mime_type",
+        "workspace_id": "workspace_id"
+    },
+    "sort_by": {
+        "id": "ascend"
+    },
+    "unique": [
+        "file_path",
+        "url"
+    ],
+    "edit_properties": {
+        "id": "hidden",
+        "relative_path": "primary",
+        "type": "text_short",
+        "relative_url": "text",
+        "table_id": "relation:table:label:select",
+        "key": "text_short",
+        "object_id": "number",
+        "urlmapping_id": "reference:urlmapping:name",
+        "file_path": "text",
+        "is_published": "checkbox",
+        "url": "text",
+        "mime_type": "text_short",
+        "workspace_id": "reference:workspace:name"
+    },
+    "list_properties": {
+        "id": "number",
+        "relative_path": "primary",
+        "type": "text_short",
+        "relative_url": "text",
+        "table_id": "reference:table:label",
+        "key": "text_short",
+        "object_id": "number",
+        "urlmapping_id": "reference:urlmapping:name",
+        "file_path": "text",
+        "is_published": "checkbox",
+        "url": "text",
+        "mime_type": "text_short",
+        "workspace_id": "reference:workspace:name"
+    }
+}

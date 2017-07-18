@@ -1,0 +1,126 @@
+<mt:include file="include/header.tmpl">
+
+<mt:if name="request.saved">
+  <div class="alert alert-success">
+    <mt:trans phrase="Your changes have been saved.">
+  </div>
+</mt:if>
+
+<form action="<mt:var name="script_uri">" method="POST">
+<input type="hidden" name="__mode" value="config">
+<input type="hidden" name="_type" value="save">
+<input type="hidden" name="magic_token" value="<mt:var name="magic_token">">
+
+<div class="row form-group">
+  <div class="col-lg-2">
+    <label for="appname">
+        <mt:trans phrase="App Name">
+    </label>
+  </div>
+  <div class="col-lg-10 input-group">
+    <input type="text" id="appname" name="appname" class="form-control" value="<mt:var name="appname" escape>">
+  </div>
+</div>
+
+<div class="row form-group">
+  <div class="col-lg-2">
+    <label for="copyright">
+        <mt:trans phrase="Copyright">
+    </label>
+  </div>
+  <div class="col-lg-10 input-group">
+    <input type="text" id="copyright" name="copyright" class="form-control" value="<mt:var name="copyright" escape>">
+  </div>
+</div>
+
+<div class="row form-group">
+  <div class="col-lg-2">
+    <label for="system_email">
+        <mt:trans phrase="System Email">
+    </label>
+  </div>
+  <div class="col-lg-10 input-group">
+    <input type="text" id="system_email" name="system_email" class="form-control" value="<mt:var name="system_email" escape>">
+  </div>
+</div>
+
+<div class="row form-group">
+  <div class="col-lg-2">
+    <label for="default_dashboard">
+        <mt:trans phrase="Default Widget">
+    </label>
+  </div>
+  <div class="col-lg-10 input-group">
+    <textarea rows="10" id="default_widget" name="default_widget" class="form-control"><mt:var name="default_widget" escape></textarea>
+  </div>
+</div>
+
+<div class="row form-group">
+  <div class="col-lg-2">
+    <label for="site_url">
+        <mt:trans phrase="Site URL">
+    </label>
+  </div>
+  <div class="col-lg-10 input-group">
+    <input type="text" id="site_url" name="site_url" class="form-control" value="<mt:var name="site_url" escape>">
+  </div>
+</div>
+
+<div class="row form-group">
+  <div class="col-lg-2">
+    <label for="site_url">
+        <mt:trans phrase="Site Path">
+    </label>
+  </div>
+  <div class="col-lg-10 input-group">
+    <input type="text" id="site_path" name="site_path" class="form-control" value="<mt:var name="site_path" escape>">
+  </div>
+</div>
+
+<div class="row form-group">
+  <div class="col-lg-2">
+    <label for="extra_path">
+        <mt:trans phrase="Upload Path">
+    </label>
+  </div>
+  <div class="col-lg-3 input-group">
+    <input type="text" id="extra_path" name="extra_path" class="form-control" value="<mt:var name="extra_path" escape>">
+  </div>
+
+  <div class="col-lg-3 input-group">
+    <label class="custom-control custom-checkbox">
+    <input id="asset_publish" class="custom-control-input"
+     type="checkbox" name="asset_publish" value="1" <mt:if name="asset_publish">checked</mt:if>>
+        <span class="custom-control-indicator"></span>
+        <span class="custom-control-description"> 
+        <mt:var name="label" escape><mt:trans phrase="Output the File"></span>
+    </label>
+  </div>
+</div>
+
+<div class="row form-group">
+  <div class="col-lg-2">
+    <label for="barcolor">
+        <mt:trans phrase="Bar Color">
+    </label>
+  </div>
+  <div class="col-lg-2 input-group">
+    <input type="color" id="barcolor" name="barcolor" class="" value="<mt:if name="barcolor"><mt:var name="barcolor" escape><mt:else>#000000</mt:if>">
+  </div>
+</div>
+
+<div class="row form-group">
+  <div class="col-lg-2">
+    <label for="bartextcolor">
+        <mt:trans phrase="Bar TextColor">
+    </label>
+  </div>
+  <div class="col-lg-2 input-group">
+    <input type="color" id="bartextcolor" name="bartextcolor" class="" value="<mt:if name="bartextcolor"><mt:var name="bartextcolor" escape><mt:else>#ffffff</mt:if>">
+  </div>
+</div>
+
+  <button type="submit" class="btn btn-primary"><mt:trans phrase="Save"></button>
+</form>
+
+<mt:include file="include/footer.tmpl">

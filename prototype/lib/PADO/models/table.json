@@ -1,0 +1,179 @@
+{
+    "label"    : "View",
+    "plural"   : "Views",
+    "primary"  : "name",
+    "display"  : true,
+    "sortable" : true,
+    "order"    : 2,
+    "auditing" : 1,
+    "menu_type": 2,
+    "column_defs": {
+        "id": {
+            "type": "int",
+            "not_null": 1,
+            "size": 11
+        },
+        "name": {
+            "type": "string",
+            "not_null": 1,
+            "size": 255
+        },
+        "label": {
+            "type": "string",
+            "size": 255
+        },
+        "plural": {
+            "type": "string",
+            "size": 255
+        },
+        "description": {
+            "type": "string",
+            "size": 255
+        },
+        "primary": {
+            "type": "string",
+            "size": 255
+        },
+        "child_tables": {
+            "type": "string",
+            "size": 255
+        },
+        "display_system": {
+            "type": "tinyint",
+            "size": 4,
+            "default": 0
+        },
+        "space_child": {
+            "type": "tinyint",
+            "size": 4,
+            "default": 0
+        },
+        "display_space": {
+            "type": "tinyint",
+            "size": 4,
+            "default": 0
+        },
+        "menu_type": {
+            "type": "int",
+            "size": 11
+        },
+        "display_dashboard": {
+            "type": "tinyint",
+            "size": 4,
+            "default": 0
+        },
+        "taggable": {
+            "type": "tinyint",
+            "size": 4,
+            "default": 0
+        },
+        "sortable": {
+            "type": "tinyint",
+            "size": 4,
+            "default": 0
+        },
+        "auditing": {
+            "type": "tinyint",
+            "size": 4,
+            "default": 0
+        },
+        "not_delete": {
+            "type": "tinyint",
+            "size": 4,
+            "default": 0
+        },
+        "api": {
+            "type": "tinyint",
+            "size": 4,
+            "default": 0
+        },
+        "template_tags": {
+            "type": "tinyint",
+            "size": 4,
+            "default": 0
+        },
+        "start_end": {
+            "type": "tinyint",
+            "size": 4,
+            "default": 0
+        },
+        "has_status": {
+            "type": "tinyint",
+            "size": 4,
+            "default": 0
+        },
+        "order": {
+            "type": "int",
+            "not_null": 1,
+            "size": 11
+        },
+        "sort_by": {
+            "type": "string",
+            "size": 255
+        },
+        "sort_order": {
+            "type": "string",
+            "size": 255
+        },
+        "created_on": {
+            "type": "datetime"
+        },
+        "modified_on": {
+            "type": "datetime"
+        },
+        "created_by": {
+            "type": "int",
+            "size": 11
+        },
+        "modified_by": {
+            "type": "int",
+            "size": 11
+        }
+    },
+    "indexes": {
+        "PRIMARY": "id",
+        "display_system": "display_system",
+        "sortable": "sortable",
+        "display_space": "display_space",
+        "menu_type": "menu_type",
+        "display_dashboard": "display_dashboard",
+        "space_child": "space_child",
+        "order": "order",
+        "api": "api",
+        "template_tags": "template_tags"
+    },
+    "unique": [
+        "name"
+    ],
+    "unchangeable": [
+        "name"
+    ],
+    "child_tables": [
+        "column"
+    ],
+    "list_properties": {
+        "id": "number",
+        "name": "primary",
+        "label": "text",
+        "plural": "text",
+        "order": "number",
+        "space_child": "checkbox",
+        "not_delete": "checkbox",
+        "created_on": "date",
+        "modified_on": "date"
+    },
+    "edit_properties": {
+        "id": "hidden",
+        "not_delete": "hidden",
+        "name": "primary",
+        "label": "text",
+        "plural": "text",
+        "description": "textarea",
+        "primary": "text_short",
+        "display_system": "checkbox",
+        "display_space": "checkbox",
+        "space_child": "checkbox",
+        "order" : "number",
+        "sort_by": "text_short"
+    }
+}

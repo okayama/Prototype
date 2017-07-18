@@ -1,0 +1,3 @@
+RewriteEngine On
+RewriteCond %{REQUEST_URI} !/pt-view.php
+RewriteRule ^(.*)$ /prototype/site/pt-view.php

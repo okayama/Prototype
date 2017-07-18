@@ -1,0 +1,126 @@
+{
+    "label"    : "Asset",
+    "plural"   : "Assets",
+    "primary"  : "label",
+    "display"  : true,
+    "order"    : 80,
+    "auditing" : 1,
+    "menu_type": 1,
+    "taggable" : 1,
+    "column_defs": {
+        "id": {
+            "type": "int",
+            "not_null": 1,
+            "size": 11
+        },
+        "label": {
+            "type": "string",
+            "size": 255,
+            "not_null": 1
+        },
+        "description": {
+            "type": "string",
+            "size": 255
+        },
+        "file": {
+            "type": "blob"
+        },
+        "extra_path": {
+            "type": "string",
+            "size": 255
+        },
+        "file_name": {
+            "type": "string",
+            "size": 255,
+            "not_null": 1
+        },
+        "file_ext": {
+            "type": "string",
+            "size": 60
+        },
+        "mime_type": {
+            "type": "string",
+            "size": 255,
+            "not_null": 1
+        },
+        "size": {
+            "type": "int",
+            "size": 11
+        },
+        "image_width": {
+            "type": "int",
+            "size": 11
+        },
+        "image_height": {
+            "type": "int",
+            "size": 11
+        },
+        "class": {
+            "type": "string",
+            "size": 60,
+            "not_null": 1
+        },
+        "created_on": {
+            "type": "datetime"
+        },
+        "modified_on": {
+            "type": "datetime"
+        },
+        "created_by": {
+            "type": "int",
+            "size": 11
+        },
+        "modified_by": {
+            "type": "int",
+            "size": 11
+        },
+        "workspace_id": {
+            "type": "int",
+            "size": 11
+        }
+    },
+    "indexes": {
+        "PRIMARY": "id",
+        "label": "label",
+        "file_name": "file_name",
+        "extra_path": "extra_path",
+        "file_ext": "file_ext",
+        "mime_type": "mime_type",
+        "class": "class",
+        "size": "size",
+        "created_on": "created_on",
+        "modified_on": "modified_on",
+        "created_by": "created_by",
+        "modified_by": "modified_by",
+        "workspace_id": "workspace_id"
+    },
+    "list_properties": {
+        "id": "number",
+        "label": "primary",
+        "file_name": "text",
+        "class": "text",
+        "created_on": "date",
+        "modified_by": "reference:user:nickname",
+        "workspace_id": "reference:workspace:name"
+    },
+    "autoset": [
+        "workspace_id", "class", "mime_type", "size", "file_ext", "image_width", "image_height"
+    ],
+    "sort_by": {
+        "created_on": "descend"
+    },
+    "edit_properties": {
+        "id": "hidden",
+        "label": "primary",
+        "description": "textarea",
+        "file": "file",
+        "extra_path": "text_short",
+        "file_name": "text_short",
+        "mime_type": "text_short",
+        "size": "number",
+        "image_width": "number",
+        "image_height": "number",
+        "file_ext": "text_short",
+        "class": "text_short"
+    }
+}

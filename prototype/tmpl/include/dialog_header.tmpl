@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="jp">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=yes">
+    <meta name="description" content="">
+    <meta name="author" content="">
+    <link rel="icon" href="favicon.ico">
+
+    <title><mt:if name="html_title"><mt:var name="html_title"><mt:else><mt:var name="page_title"></mt:if> | <mt:getoption key="appname" escape><mt:if name="workspace_id"> | <mt:var name="workspace_name" escape></mt:if></title>
+
+    <!-- Bootstrap core CSS -->
+    <link href="assets/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Custom styles for this template -->
+    <script src="assets/js/jquery-3.2.1.min.js"></script>
+    <script src="assets/js/tether.min.js"></script>
+    <script src="assets/js/bootstrap.min.js"></script>
+    <script src="assets/js/jquery-ui.js"></script>
+    <script src="assets/js/ie10-viewport-bug-workaround.js"></script>
+    <link href="assets/css/theme.css?<mt:date format="YmdHis">" rel="stylesheet">
+    <link href="assets/css/font-awesome.min.css" rel="stylesheet">
+    <!-- CSS to style the file input field as button and adjust the Bootstrap progress bars -->
+    <link rel="stylesheet" href="assets/css/jquery.fileupload.css">
+    <style type="text/css">
+        .nav-top,.brand-prototype{ background-color: <mt:getoption key="barcolor"> !important; color: <mt:getoption key="bartextcolor"> !important; }
+    </style>
+  </head>
+
+  <body class="dialog">
+    <div class="container-fluid">
+    <mt:setvar name="has_option" value="0">
+    <mt:if name="request._type" eq="list">
+      <mt:if name="_per_page">
+        <mt:include file="include/list_options.tmpl">
+        <mt:setvar name="has_option" value="1">
+      </mt:if>
+    <mt:elseif name="request._type" eq="edit">
+      <mt:include file="include/edit_options.tmpl">
+      <mt:setvar name="has_option" value="1">
+    </mt:if>
+
+    <mt:setvar name="can_create" value="1">
+    <mt:setvar name="can_action" value="1">
+
+    <mt:if name="child_model">
+    <mt:unless name="workspace_id">
+      <mt:setvar name="can_create" value="0">
+    </mt:unless>
+    </mt:if>
+    
+    
+    <mt:if name="request.dialog_view">
+      <mt:setvar name="can_create" value="0">
+      <mt:setvar name="can_action" value="0">
+    </mt:if>
+
+      <div class="row">
+        <main class="col-md-12 pt-3">
+          <h1<mt:if name="has_option"> class="title-with-opt"</mt:if>><span class="title"><mt:var name="page_title"></span>
+      <mt:if name="this_mode" ne="login">
+      <mt:if name="can_create">
+        <mt:if name="request._type" eq="list">
+          <a class="btn btn-primary btn-sm" href="<mt:var name="script_uri">?__mode=view&amp;type=edit&amp;_model=<mt:var name="model" escape><mt:var name="workspace_param">">
+            <mt:trans phrase="New %s" params="$label">
+          </a>
+        </mt:if>
+        <mt:if name="request._type" eq="edit">
+          <mt:if name="request.saved">
+          <a class="btn btn-primary btn-sm" href="<mt:var name="script_uri">?__mode=view&amp;type=edit&amp;_model=<mt:var name="model" escape><mt:var name="workspace_param">">
+            <mt:trans phrase="New %s" params="$label">
+          </a>
+          </mt:if>
+        </mt:if>
+      </mt:if>
+      </mt:if>
+          </h1>
+
+    <mt:setvarblock name="alert_close">
+      <button type="button" class="close" data-dismiss="alert" aria-label="<mt:trans phrase="Close">">
+        <span aria-hidden="true">&times;</span>
+      </button>
+    </mt:setvarblock>
+
+    <div class="alert alert-success hidden" id="header-alert" role="alert" tabindex="0">
+      <button onclick="$('#header-alert').hide();" type="button" id="header-alert-close" class="close" aria-label="<mt:trans phrase="Close">">
+        <span aria-hidden="true">&times;</span>
+      </button>
+      <span id="header-alert-message"></span>
+    </div>
+
+    <mt:if name="error">
+      <div class="alert alert-warning" role="alert">
+        <mt:var name="error" escape="1" nl2br="1">
+      </div>
+    </mt:if>

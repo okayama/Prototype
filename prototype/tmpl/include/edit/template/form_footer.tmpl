@@ -1,0 +1,44 @@
+<mt:var name="request.id" escape setvar="template_id">
+<mt:objectloop model="urlmapping" template_id="$template_id" sort_by="order" sort_order="ascend">
+<mt:if name="__first__">
+<div class="row form-group">
+<div class="col-lg-2 input-group-lg">
+<mt:trans phrase="Used in">
+</div>
+<div class="col-lg-10 input-group-lg">
+<table class="table table-sm table-bordered">
+<thead class="thead-default">
+<tr>
+<th><mt:trans phrase="URL Map"></th>
+<th><mt:trans phrase="Model"></th>
+<th><mt:trans phrase="Container"></th>
+<th><mt:trans phrase="WorkSpace"></th>
+</tr>
+</thead>
+</mt:if>
+<tr>
+<td>
+
+<a href="<mt:var name="script_uri">?__mode=view&_type=edit&_model=urlmapping&id=<mt:var name="id">&workspace_id=<mt:if name="workspace_id"><mt:var name="workspace_id"></mt:if>">
+<mt:var name="name" escape>
+</a>
+</td>
+<td>
+<mt:getobjectname id="$table_id" type="reference:table:label" setvar="model_label">
+<mt:trans phrase="$model_label" escape>
+</td>
+<td>
+<mt:getobjectname id="$container" type="reference:table:label" setvar="container_name">
+<mt:trans phrase="$container_name" escape>
+</td>
+
+<td>
+<mt:getobjectname id="$workspace_id" type="reference:workspace:name" escape>
+</td>
+</tr>
+<mt:if name="__last__">
+</table>
+</div>
+</div>
+</mt:if>
+</mt:objectloop>

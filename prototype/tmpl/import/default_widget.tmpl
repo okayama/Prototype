@@ -1,0 +1,17 @@
+<mt:setvarblock name="card_text">
+    <a href="<mt:var name="script_uri">?__mode=config"><mt:trans phrase="If you want to customize or delete this widget please click this link text."></a>
+  </div>
+</mt:setvarblock>
+<div class="card">
+<mt:unless name="workspace_id">
+  <img class="card-img-top img-fluid" src="assets/brand/photo.png" alt="">
+  <div class="card-block">
+    <p class="card-text"><mt:trans phrase="Welcome to %s!" params="Prototype"><mt:var name="card_text"></p>
+  </div>
+<mt:else>
+  <h4 class="card-header"><mt:var name="workspace_name" escape></h3>
+  <div class="card-block">
+    <p class="card-text"><mt:trans phrase="This Page is WorkSpace %s's Dashboard!" params="$workspace_name"> <mt:var name="card_text"></p>
+  </div>
+</mt:unless>
+</div>

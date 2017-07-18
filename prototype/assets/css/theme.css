@@ -1,0 +1,578 @@
+/*
+ * Base structure
+ */
+
+html {
+  position: relative;
+  min-height: 100%;
+}
+
+/* Move down content because we have a fixed navbar that is 50px tall */
+body {
+  padding-top: 50px;
+  margin-bottom: 90px;
+}
+
+body.dialog {
+  padding-top: 0px !important;
+  margin-top: 0px !important;
+}
+
+h1 {
+  margin-bottom: 20px;
+  padding-bottom: 9px;
+  font-size: 160%;
+  width:70% !important;
+}
+
+h2 {
+  font-size: 140%;
+  font-weight: bold !important;
+}
+
+.title {
+  font-weight: bold !important;
+  padding-right: 9px;
+}
+
+h5 {
+  font-weight: bold !important;
+}
+
+#__loader-bg {
+  position:fixed;
+  width:100%;
+  height:100%;
+  background-color:white;
+  z-index:3;
+  text-align:center;
+  padding-top: 25%;
+}
+
+.navbar-brand {
+  font-weight: bold;
+}
+
+.workspace-bar .navbar-brand {
+  font-size:103% !important;
+  padding-top: 2px;
+}
+
+.workspace-bar .dropdown-item {
+  font-size: 85% !important;
+}
+
+.dropdown-toggle:focus {
+  outline: solid 2px #15c;
+}
+
+input[type="checkbox"]:focus {
+  outline: solid 2px #5af;
+}
+
+input[type="checkbox"] {
+  width: 15px;
+}
+
+input[type="radio"]:focus {
+  outline: solid 2px #5af;
+}
+
+input[type="radio"] {
+  width: 15px;
+}
+
+.form-inline .form-control {
+  margin-left: 1em;
+}
+
+.form-inline select {
+  margin-right: 1em;
+}
+
+#user_id-edit {
+  margin-left: 0.5em;
+}
+
+.status-has_deadline-cb {
+  margin-left: 1em;
+}
+
+.sort-sortable-cb {
+  margin-left: 1em;
+}
+
+#basename-wrapper input {
+  width: 200px !important;
+}
+
+.period-separator {
+  margin-left: 1em;
+}
+
+.custom-label-checkbox {
+  margin-left: 1em;
+}
+
+.form-inline {
+  padding-left:0px !important;
+}
+
+.workspace-bar .header-util{
+  margin-right: 16px;
+}
+
+.workspace-bar .header-util a {
+  color: black;
+}
+
+.workspace-bar .header-util .btn {
+  font-size: 90% !important;
+}
+
+.nav-top {
+  padding: 2px 16px 2px 17px;
+}
+
+ /* Placeholders */
+.placeholders {
+  padding-bottom: 3rem;
+}
+
+.placeholder img {
+  padding-top: 1.5rem;
+  padding-bottom: 1.5rem;
+}
+
+th.id {
+  width: 20px !important;
+}
+
+td.id {
+  width: 20px !important;
+}
+
+td.num {
+  text-align: right;
+  padding-right: 2em !important;
+}
+
+.sub-col {
+  margin-top: 4px;
+}
+
+.sub-col div {
+  margin: 3px;
+}
+
+.btn {
+  margin-left: 5px;
+}
+
+.header-util {
+  margin-left:-15px;
+  margin-bottom: 3px;
+}
+
+.header-util a {
+  margin-right: -9px;
+  margin-left: 9px;
+}
+
+input.num {
+  width: 80px;
+  text-align:center;
+}
+
+input.e-num {
+  width: 180px;
+  text-align: center;
+}
+
+input.single{
+  width: 60px !important;
+}
+
+input.time{
+  width: 180px !important;
+  margin-left: 8px;
+}
+
+input.short {
+  width: 380px !important;
+}
+
+.dialog-chooser {
+  margin-top: -4px;
+  font-size: 102%;
+  font-weight: normal;
+  padding: 2px 6px;
+}
+
+.active .nav-link {
+  color:#fff !important;
+  font-weight: bold !important;
+}
+
+.col-lg-2 {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.nav-link {
+  color:#ddd !important;
+  font-size:90%;
+  padding-top: 8px !important;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 30px;
+  max-width: 103px;
+  margin-left: 0px;
+  margin-right: -2px;
+}
+
+.header-util {
+  white-space: nowrap;
+}
+
+.header-util a {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 70px;
+}
+
+.workspace-dd {
+  padding-left: 14px;
+  font-size:110% !important;
+}
+
+.nav-item-ws {
+  font-weight: normal;
+  font-size:94%;
+}
+
+.nav-item-a {
+  font-size:90% !important;
+}
+
+.workspace-dd-wrapper {
+  margin-left: -10px;
+}
+
+.brand-workspace {
+  background-color: #333 !important;
+  margin: 3px 18px 0px 0px;
+}
+
+.nav-top .navbar-toggler {
+  margin-top: 4px;
+}
+
+.workspace-bar .navbar-toggler {
+  margin-top: 2px;
+}
+
+.workspace-bar {
+  padding: 0px 0px 1px 17px;
+  background-color: #333 !important;
+  color: white !important;
+  margin-top: -9px;
+}
+
+.workspace-bar ul {
+  height: 99%;
+  padding-bottom: 0px;
+  margin-bottom: -7px;
+}
+
+.workspace-bar a {
+  font-size: 95% !important;
+}
+
+.btn-workspace {
+  height: 24px;
+  width: 57px;
+}
+
+.actions {
+  margin-bottom: 10px;
+}
+
+.full {
+  width: 100%;
+}
+
+.pull-right {
+  float: right;
+}
+
+.text-right {
+  text-align: right;
+}
+
+.text-sm {
+  font-size: 80%;
+}
+
+.current-cnd {
+  color: red;
+  text-decoration: underline;
+}
+
+.toggle {
+  color: gray;
+}
+
+th.id {
+  white-space: nowrap;
+}
+
+.search-button {
+  margin-left:-6px;
+}
+
+.title-with-opt {
+  margin-top: -38px;
+  width: 85%;
+}
+
+#__save {
+  padding-left: 40px !important;
+  padding-right: 40px !important;
+}
+
+.preview-rev_diff th {
+  white-space: nowrap;
+}
+
+.preview-rev_diff {
+  font-size: 70%;
+  margin: 0 !important;
+}
+
+.btn-compact {
+  margin: 0 !important;
+  padding: 1px 3px 1px 3px !important;
+}
+
+.hidden {
+  display: none;
+}
+
+.page-current {
+  padding-right: 9px;
+  padding-top: 3px;
+  font-size: 95%;
+}
+
+.btn {
+  padding-left : 10px;
+  padding-right : 10px;
+}
+
+.order_col {
+  margin:0 -7px 0 -7px;
+  width: 70px !important;
+  text-align: center;
+}
+
+.listing-table td, .listing-table th {
+  padding: 8px;
+}
+
+.list-small-icon {
+  margin-left: 0px;
+}
+
+.search-col {
+  width:42px;
+}
+
+.list-icon {
+  float:left;
+  width:42px;
+  height:22px;
+  margin:-5px 4px 5px -8px;
+  text-align:center;
+}
+
+.readonly {
+  background-color: #E7EAEB;
+}
+
+.bar .btn {
+  margin-top: 5px !important;
+  height: 28px !important;
+}
+
+div.mce-fullscreen {
+    z-index: 1050;
+}
+
+.disp-option {
+  margin-top:10px;
+}
+
+.query-box {
+  width: 165px !important;
+  margin-left: 7px;
+}
+
+.pagination-col {
+  padding-top: 14px !important;
+}
+
+.footer {
+  position: absolute;
+  bottom: 0;
+  width: 100%;
+  /* Set the fixed height of the footer here */
+  height: 44px;
+  line-height: 44px; /* Vertically center the text there */
+  background-color: #000;
+  color: #fff;
+  padding-left: 18px;
+}
+
+.meta{
+  font-size: 85%;
+  margin-bottom: 5px !important;
+}
+
+.dashboard-card {
+  margin: 10px 0 10px 0;
+}
+
+.abs-last {
+  margin-bottom: 60px;
+
+}
+
+.abs-bottom {
+  position: absolute;
+  bottom: 20px;
+  margin-top: 40px;
+}
+
+.sub-col label {
+  margin-bottom: 0px;
+}
+
+#modal .modal-dialog {
+  width: 80%;
+  height: 80%;
+  max-width: 800px;
+  max-height: 800px;
+}
+
+#modal .modal-content {
+  height: 100%;
+  overflow: hidden;
+}
+
+#modal .modal-content iframe {
+  border: none;
+  height: 100%;
+}
+
+.relation-list {
+  list-style-type: none;
+  display: inline;
+  padding-left: 0;
+  line-height: 1.9em !important;
+  max-width: 90%;
+  overflow: auto;
+}
+
+.relation-list li {
+  display: inline;
+}
+
+.relation-list .hidden {
+  display: none !important;
+}
+
+.status-select {
+  width: 150px !important;
+}
+
+.badge {
+  font-size: 102%;
+  font-weight: normal;
+  padding: 3px 9px;
+  white-space: nowrap !important;
+}
+
+.default_widget {
+  margin-top: -10px !important;
+}
+
+.dashboard-widget .btn-sm {
+  margin-top: 4px !important;
+}
+
+.default_widget .card-block {
+  padding: 16px 22px 12px 22px !important;
+  margin-bottom: -10px !important;
+}
+
+.card {
+  margin-bottom: 20px;
+}
+
+.card-footer {
+  padding: 10px 0px 10px 7px;
+}
+
+.copy-url{
+  margin-top: 8px;
+  height: 32px !important;
+}
+
+.copy-url-permalink {
+  margin-top: 16px;
+}
+
+.clipboard-url {
+  color: #555;
+  font-size: 85%;
+  padding: 8px;
+}
+
+.add-tags {
+  margin-top:-13px !important;
+}
+
+input.date {
+  padding: 5px 10px 5px 10px;
+  text-align: center;
+  width: 180px !important;
+}
+
+input.time {
+  padding: 5px 10px 5px 10px;
+  text-align: center;
+  width: 128px !important;
+}
+
+.badge-relation {
+  margin-right: 12px;
+  display: inline;
+  padding: 4px 2px 4px 8px;
+  white-space: nowrap !important;
+}
+
+.close-sm {
+  padding: 0px 4px 3px 4px !important;
+  margin-top: -5px;
+  font-size: 75%;
+  height: 18px;
+}
+
+i.required {
+  font-size: 50% !important;
+  color: #666;
+  margin-left: 7px;
+}

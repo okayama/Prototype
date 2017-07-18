@@ -1,0 +1,102 @@
+{
+    "label"    : "User",
+    "plural"   : "Users",
+    "primary"  : "name",
+    "version"  : "0.1",
+    "display"  : true,
+    "order"    : 1,
+    "auditing" : 1,
+    "menu_type": 1,
+    "column_defs": {
+        "id": {
+            "type": "int",
+            "not_null": 1,
+            "size": 11
+        },
+        "name": {
+            "type": "string",
+            "size": 255
+        },
+        "password": {
+            "type": "string",
+            "not_null": 1,
+            "size": 255
+        },
+        "email": {
+            "type": "string",
+            "not_null": 1,
+            "size": 255
+        },
+        "nickname": {
+            "type": "string",
+            "not_null": 1,
+            "size": 255
+        },
+        "language": {
+            "type": "string",
+            "size": 30
+        },
+        "is_superuser": {
+            "type": "tinyint",
+            "size": 4,
+            "default": 0
+        },
+        "created_by": {
+            "type": "int",
+            "size": 11
+        },
+        "modified_by": {
+            "type": "int",
+            "size": 11
+        },
+        "created_on": {
+            "type": "datetime"
+        },
+        "modified_on": {
+            "type": "datetime"
+        },
+        "last_login_on": {
+            "type": "datetime"
+        }
+    },
+    "indexes": {
+        "PRIMARY": "id",
+        "name": "name",
+        "nickname": "nickname",
+        "email": "email",
+        "is_superuser": "is_superuser",
+        "created_on": "created_on",
+        "modified_on": "modified_on",
+        "created_by": "created_by",
+        "modified_by": "modified_by",
+        "last_login_on": "last_login_on"
+    },
+    "unique":  [
+        "name", "email"
+    ],
+    "unchangeable": [
+        "name"
+    ],
+    "autoset": [
+        "last_login_on"
+    ],
+    "list_properties": {
+        "id": "number",
+        "name": "primary",
+        "nickname": "text",
+        "email": "text",
+        "is_superuser": "checkbox",
+        "created_on": "date",
+        "last_login_on": "datetime"
+    },
+    "edit_properties": {
+        "id": "hidden",
+        "name": "primary",
+        "nickname": "text",
+        "email": "text",
+        "language" : "languages",
+        "password": "password(hash)",
+        "is_superuser": "checkbox",
+        "created_on": "datetime"
+    }
+}

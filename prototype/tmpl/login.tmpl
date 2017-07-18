@@ -1,0 +1,41 @@
+<mt:include file="include/header.tmpl">
+
+<mt:if name="error">
+  <div class="alert alert-warning" role="alert">
+  <mt:var name="error">
+  </div>
+</mt:if>
+
+<div class="col-md-12 form-group">
+<form action="<mt:var name="script_uri">" method="POST" >
+  <input type="hidden" name="__mode" value="login">
+<div class="form-group">
+  <label for="name"><mt:trans phrase="Username"> :</label>
+  <input id="name" type="text" class="form-control" name="name" value="<mt:var name="name">">
+</div>
+
+<div class="form-group">
+  <label for="password"><mt:trans phrase="Password"> :</label>
+  <input id="password" type="password" class="form-control" name="password" value="<mt:var name="password" escape>">
+</div>
+
+<div class="form-group">
+  <label class="form-check-label">
+  <input type="checkbox" class="form-check-input" name="remember" value="1">
+  <mt:trans phrase="Remember me?">
+  </label>
+</div>
+
+<div class="form-group">
+<a href="<mt:var name="script_uri">?__mode=start_recover">
+<mt:trans phrase="Forgot your password?">
+</a>
+</div>
+
+<div class="row form-group">
+  <button type="submit" class="btn btn-primary"><mt:trans phrase="Login"></button>
+</div>
+</form>
+</div>
+
+<mt:include file="include/footer.tmpl">

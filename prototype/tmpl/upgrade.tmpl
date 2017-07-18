@@ -1,0 +1,156 @@
+<mt:include file="include/header.tmpl">
+
+<form action="<mt:var name="script_uri">" method="POST">
+<input type="hidden" name="__mode" value="upgrade">
+<input type="hidden" name="type" value="install">
+
+<div class="row form-group">
+  <div class="col-lg-2">
+    <label for="appname">
+        <mt:trans phrase="App Name">
+    </label>
+  </div>
+  <div class="col-lg-10 input-group">
+    <input type="text" id="appname" name="appname" class="form-control" value="<mt:var name="appname" escape>">
+  </div>
+</div>
+
+<div class="row form-group">
+  <div class="col-lg-2">
+    <label for="copyright">
+        <mt:trans phrase="Copyright">
+    </label>
+  </div>
+  <div class="col-lg-10 input-group">
+    <input type="text" id="copyright" name="copyright" class="form-control" value="<mt:var name="copyright" escape>">
+  </div>
+</div>
+
+<div class="row form-group">
+  <div class="col-lg-2">
+    <label for="system_email">
+        <mt:trans phrase="System Email">
+    </label>
+  </div>
+  <div class="col-lg-10 input-group">
+    <input type="text" id="system_email" name="system_email" class="form-control" value="<mt:var name="system_email" escape>">
+  </div>
+</div>
+
+<div class="row form-group">
+  <div class="col-lg-2">
+    <label for="site_url">
+        <mt:trans phrase="Site URL">
+    </label>
+  </div>
+  <div class="col-lg-10 input-group">
+    <input type="text" id="site_url" name="site_url" class="form-control" value="<mt:var name="site_url" escape>">
+  </div>
+</div>
+
+<div class="row form-group">
+  <div class="col-lg-2">
+    <label for="site_path">
+        <mt:trans phrase="Site Path">
+    </label>
+  </div>
+  <div class="col-lg-10 input-group">
+    <input type="text" id="site_path" name="site_path" class="form-control" value="<mt:var name="site_path" escape>">
+  </div>
+</div>
+
+<div class="row form-group">
+  <div class="col-lg-2">
+    <label for="extra_path">
+        <mt:trans phrase="Upload Path">
+    </label>
+  </div>
+  <div class="col-lg-3 input-group">
+    <input type="text" id="extra_path" name="extra_path" class="form-control" value="<mt:var name="extra_path" escape>">
+  </div>
+  <div class="col-lg-3 input-group">
+    <label class="custom-control custom-checkbox">
+    <input id="asset_publish" class="custom-control-input"
+     type="checkbox" name="asset_publish" value="1" <mt:if name="asset_publish">checked</mt:if>>
+        <span class="custom-control-indicator"></span>
+        <span class="custom-control-description"> 
+        <mt:var name="label" escape><mt:trans phrase="Output the File"></span>
+    </label>
+  </div>
+
+</div>
+
+<hr />
+
+<div class="row form-group">
+  <div class="col-lg-2">
+    <label for="name">
+        <mt:trans phrase="Username">
+    </label>
+  </div>
+  <div class="col-lg-10 input-group">
+    <input type="text" id="name" name="name" class="form-control" value="<mt:var name="name" escape>">
+  </div>
+</div>
+
+<div class="row form-group">
+  <div class="col-lg-2">
+    <label for="password">
+        <mt:trans phrase="Password">
+    </label>
+  </div>
+  <div class="col-lg-10 input-group">
+    <input type="password" id="password" name="password" class="form-control" value="<mt:var name="password" escape>">
+  </div>
+</div>
+
+<div class="row form-group">
+  <div class="col-lg-2">
+    <label for="password-verify">
+        <mt:trans phrase="Password (Confirm)">
+    </label>
+  </div>
+  <div class="col-lg-10 input-group">
+    <input type="password" id="password-verify" name="password-verify" class="form-control" value="<mt:var name="password-verify" escape>">
+  </div>
+</div>
+
+<div class="row form-group">
+  <div class="col-lg-2">
+    <label for="email">
+        <mt:trans phrase="Email">
+    </label>
+  </div>
+  <div class="col-lg-10 input-group">
+    <input type="text" id="email" name="email" class="form-control" value="<mt:var name="email" escape>">
+  </div>
+</div>
+
+<div class="row form-group">
+  <div class="col-lg-2">
+    <label for="nickname">
+        <mt:trans phrase="Display Name">
+    </label>
+  </div>
+  <div class="col-lg-10 input-group">
+    <input type="text" id="nickname" name="nickname" class="form-control" value="<mt:var name="nickname" escape>">
+  </div>
+</div>
+
+<div class="row form-group">
+  <div class="col-lg-2">
+    <label for="language">
+        <mt:trans phrase="Language">
+    </label>
+  </div>
+  <div class="col-lg-10 input-group col-2">
+    <input type="text" id="language" name="language" class="form-control short" value="<mt:var name="language" escape>">
+  </div>
+</div>
+
+<div class="row form-group">
+  <button type="submit" class="btn btn-primary"><mt:trans phrase="Install"></button>
+</div>
+</form>
+
+<mt:include file="include/footer.tmpl">

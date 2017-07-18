@@ -1,0 +1,94 @@
+{
+    "label"    : "Tag",
+    "plural"   : "Tags",
+    "auditing" : 1,
+    "display"  : 1,
+    "sortable" : 1,
+    "order"    : 131,
+    "primary"  : "name",
+    "menu_type": 1,
+    "template_tags": 1,
+    "column_defs": {
+        "id": {
+            "type": "int",
+            "size": "11",
+            "not_null": 1
+        },
+        "name": {
+            "type": "string",
+            "size": "255",
+            "not_null": 1
+        },
+        "normalize": {
+            "type": "string",
+            "size": "255",
+            "not_null": 1
+        },
+        "order": {
+            "type": "int",
+            "size": "11"
+        },
+        "workspace_id": {
+            "type": "int",
+            "size": "11"
+        },
+        "created_on": {
+            "type": "datetime",
+            "default": null
+        },
+        "modified_on": {
+            "type": "datetime",
+            "default": null
+        },
+        "created_by": {
+            "type": "int",
+            "size": "4",
+            "default": null
+        },
+        "modified_by": {
+            "type": "int",
+            "size": "4",
+            "default": null
+        }
+    },
+    "indexes": {
+        "PRIMARY": "id",
+        "name": "name",
+        "normalize": "normalize",
+        "order": "order",
+        "workspace_id": "workspace_id",
+        "created_on": "created_on",
+        "modified_on": "modified_on",
+        "created_by": "created_by",
+        "modified_by": "modified_by"
+    },
+    "sort_by": {
+        "id": "ascend"
+    },
+    "autoset": [
+        "normalize",
+        "workspace_id",
+        "created_on",
+        "modified_on",
+        "created_by",
+        "modified_by"
+    ],
+    "unchangeable": [
+        "workspace_id"
+    ],
+    "edit_properties": {
+        "id": "hidden",
+        "name": "primary",
+        "normalize": "text",
+        "order": "number"
+    },
+    "list_properties": {
+        "id": "number",
+        "name": "primary",
+        "normalize": "text",
+        "order": "number",
+        "workspace_id": "reference:workspace:name",
+        "modified_on": "datetime",
+        "modified_by": "reference:user:name"
+    }
+}
