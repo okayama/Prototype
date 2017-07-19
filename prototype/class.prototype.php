@@ -3749,9 +3749,9 @@ class Prototype {
             $key = key( $type );
             $type = $type[ $key ];
         }
-        $props = $explode( ':', $type );
-        $model = isset( $props[1] ) ? $props[1] : '';
-        $col = isset( $props[2] ) ? $props[2] : '';
+        $properties = explode( ':', $type );
+        $model = isset( $properties[1] ) ? $properties[1] : '';
+        $col = isset( $properties[2] ) ? $properties[2] : '';
         $model = (! $model && isset( $args['model'] ) ) ? $args['model'] : $model;
         $name = isset( $args['name'] ) ? $args['name'] : '';
         $id = $args['id'];
