@@ -1502,7 +1502,7 @@ class Prototype {
         if ( $has_file && ! $as_revision ) $obj->save();
         $id = $obj->id;
         $mappings = $db->model( 'urlmapping' )->load( ['table_id' => $table->id ] );
-        if (! $table->revisable && ! $obj->rev_type && ! $as_revision ) {
+        if (! $table->revisable || (! $obj->rev_type && ! $as_revision ) ) {
             foreach ( $mappings as $mapping ) {
                 if ( $obj->_model === 'template' ) {
                     if ( $obj->id != $mapping->template_id ) {
@@ -2807,6 +2807,7 @@ class Prototype {
                           'workspace_id' => $obj->workspace_id ] );
         if ( $obj->has_column( 'status' ) ) {
             if ( $obj->has_column( 'has_deadline' ) ) {
+                // TODO status_sype
                 if ( $obj->status != 4 ) {
                     $unlink = true;
                 }
