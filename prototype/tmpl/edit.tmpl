@@ -579,106 +579,107 @@ $(function () {
     <mt:getobjectname id="$value" type="$edit" escape>
     <input type="hidden" id="<mt:var name="__col_name__">" name="<mt:var name="__col_name__">" value="<mt:var name="value">">
     </mt:if>
+
     <mt:if name="edit" like="relation">
-    <mt:var name="edit" split=":" setvar="edit_props">
-    <mt:var name="edit_props[1]" setvar="rel_model">
-    <mt:var name="edit_props[2]" setvar="rel_col">
-    <mt:var name="edit_props[3]" setvar="rel_type">
-      <mt:if name="edit" like="radio">
-        <mt:if name="rel_type" eq="radio">
-          <mt:objectloop model="$rel_model" sort_by="order">
-          <mt:if name="__first__">
-          <label class="custom-control custom-radio">
-            <input class="custom-control-input" type="radio" <mt:unless name="__col_value__">checked</mt:unless> name="<mt:var name="__col_name__">" value="0">
-            <span class="custom-control-indicator"></span>
-            <span class="custom-control-description"><mt:trans phrase="Unspecified"></span>
-          </label>
+      <mt:if name="edit" like="__any__">
+        <mt:include file="include/edit/relation_any.tmpl">
+      <mt:else>
+        <mt:var name="edit" split=":" setvar="edit_props">
+        <mt:var name="edit_props[1]" setvar="rel_model">
+        <mt:var name="edit_props[2]" setvar="rel_col">
+        <mt:var name="edit_props[3]" setvar="rel_type">
+          <mt:if name="edit" like="radio">
+            <mt:if name="rel_type" eq="radio">
+              <mt:objectloop model="$rel_model" sort_by="order">
+              <mt:if name="__first__">
+              <label class="custom-control custom-radio">
+                <input class="custom-control-input" type="radio" <mt:unless name="__col_value__">checked</mt:unless> name="<mt:var name="__col_name__">" value="0">
+                <span class="custom-control-indicator"></span>
+                <span class="custom-control-description"><mt:trans phrase="Unspecified"></span>
+              </label>
+              </mt:if>
+              <label class="custom-control custom-radio">
+                <input class="custom-control-input watch-changed" type="radio" <mt:if name="__col_value__" eq="$id">checked</mt:if> name="<mt:var name="__col_name__">" value="<mt:var name="id">">
+                <span class="custom-control-indicator"></span>
+                <span class="custom-control-description"><mt:var name="$rel_col" escape></span>
+              </label>
+              </mt:objectloop>
+            </mt:if>
+          <mt:elseif name="edit" like="select">
+            <select class="form-control short watch-changed" name="<mt:var name="__col_name__">">
+            <mt:objectloop model="$rel_model" sort_by="order">
+            <mt:if name="__first__">
+              <option value="">
+                <mt:trans phrase="Unspecified">
+              </option>
+            </mt:if>
+              <option <mt:if name="__col_value__" eq="$id">selected</mt:if> value="<mt:var name="id">"><mt:var name="$rel_col" escape></option>
+            </mt:objectloop>
+            </select>
+          <mt:elseif name="edit" like="dialog">
+            <mt:if name="type" eq="relation">
+              <mt:setvarblock name="__rel_name__">object_<mt:var name="__col_name__"></mt:setvarblock>
+              <ul id="<mt:var name="__col_name__">" class="relation-list">
+                <li <mt:if name="$__rel_name__">style="display:none" </mt:if>class="badge badge-default badge-relation" id="<mt:var name="__col_name__">-none">
+                <mt:trans phrase="(None selected)">
+                </li>
+                <li class="hidden badge badge-default badge-relation badge-draggable" id="<mt:var name="__col_name__">-tmpl">
+                <span><mt:trans phrase="Default"></span>
+                <button type="button" class="btn btn-secondary btn-sm close-sm" aria-label="<mt:trans phrase="Detach">" data-name="<mt:var name="__col_name__">">
+                  <span aria-hidden="true">&times;</span>
+                </button>
+                <input type="hidden" name="<mt:var name="__col_name__">[]" value="">
+                </li>
+              <mt:setvarblock name="selected_ids"><mt:loop name="$__rel_name__" glue=","><mt:var name="__value__"></mt:loop></mt:setvarblock>
+              <mt:loop name="$__rel_name__">
+                <li class="<mt:var name="__col_name__">-child badge badge-default badge-relation badge-draggable">
+                <span><mt:getobjectname id="$__value__" type="$edit" escape></span>
+                <button type="button" class="btn btn-secondary btn-sm close-sm" aria-label="<mt:trans phrase="Detach">" data-name="<mt:var name="__col_name__">">
+                  <span aria-hidden="true">&times;</span>
+                </button>
+                <input type="hidden" name="<mt:var name="__col_name__">[]" value="<mt:var name="__value__" escape>"></li>
+              </mt:loop>
+              </ul>
+              <button type="button" class="btn btn-primary btn-sm dialog-chooser" data-toggle="modal" data-target="#modal"
+                data-href="<mt:var name="script_uri">?__mode=view&amp;_type=list&amp;_model=<mt:var name="rel_model" escape><mt:if name="workspace_id">&amp;workspace_id=<mt:var name="workspace_id"></mt:if>&amp;dialog_view=1&amp;target=<mt:var name="__col_name__">&amp;get_col=<mt:var name="rel_col" escape>&amp;selected_ids=<mt:var name="selected_ids" escape>"><mt:trans phrase="Select..."></button>
+              <script>
+                  $('#<mt:var name="__col_name__">').sortable ( {
+                  // TODO keyboard oparation
+                  });
+              </script>
+            <mt:else>
+              <mt:setvar name="thumbnail" value="">
+              <mt:getobjectname id="$__col_value__" type="$edit" wants="id" escape setvar="__col_value__">
+              <mt:assetthumbnail id="$__col_value__" type="default" square="1" model="$rel_model" data_uri="1" setvar="thumbnail">
+              <img src="<mt:var name="thumbnail">" id="<mt:var name="__col_name__">-img" class="<mt:unless name="thumbnail">hidden</mt:unless>" alt="<mt:trans phrase="Preview">" width="80">
+              <span class="badge badge-default badge-relation">
+              <span id="<mt:var name="__col_name__">-label">
+              <mt:if name="__col_value__">
+                <mt:getobjectname id="$__col_value__" type="$edit" escape>
+              <mt:else>
+                <mt:trans phrase="(None selected)">
+              </mt:if>
+              </span>
+                <button id="<mt:var name="__col_name__">-close" type="button" class="btn btn-secondary btn-sm close-sm<mt:unless name="__col_value__"> hidden</mt:unless>" aria-label="<mt:trans phrase="Detach">" data-name="<mt:var name="__col_name__">">
+                  <span aria-hidden="true">&times;</span>
+                </button>
+              </span>
+              <input id="<mt:var name="__col_name__">" type="hidden" name="<mt:var name="__col_name__">" value="<mt:var name="__col_value__" escape>">
+              <button type="button" class="btn btn-primary btn-sm dialog-chooser" data-toggle="modal" data-target="#modal"
+                data-href="<mt:var name="script_uri">?__mode=view&amp;_type=list&amp;_model=<mt:var name="rel_model" escape><mt:if name="workspace_id">&amp;workspace_id=<mt:var name="workspace_id"></mt:if>&amp;dialog_view=1&amp;single_select=1&amp;target=<mt:var name="__col_name__">&amp;get_col=<mt:var name="rel_col" escape>&amp;selected_ids=<mt:ignore>todo<mt:var name="__col_value__" escape></mt:ignore>"><mt:trans phrase="Select..."></button>
+            </mt:if>
+
+          <mt:elseif name="edit" like="checkbox">
+            <mt:setvarblock name="__rel_name__">object_<mt:var name="__col_name__"></mt:setvarblock>
+            <mt:objectloop model="$rel_model" sort_by="order">
+                <label class="custom-control custom-checkbox">
+                  <input type="checkbox" class="custom-control-input watch-changed" name="<mt:var name="__col_name__">[]" value="<mt:var name="id">" <mt:ifinarray array="$__rel_name__" value="$id">checked</mt:ifinarray>>
+                  <span class="custom-control-indicator"></span>
+                  <span class="custom-control-description"><mt:var name="$rel_col" escape></span>
+                </label>
+            </mt:objectloop>
           </mt:if>
-          <label class="custom-control custom-radio">
-            <input class="custom-control-input watch-changed" type="radio" <mt:if name="__col_value__" eq="$id">checked</mt:if> name="<mt:var name="__col_name__">" value="<mt:var name="id">">
-            <span class="custom-control-indicator"></span>
-            <span class="custom-control-description"><mt:var name="$rel_col" escape></span>
-          </label>
-          </mt:objectloop>
-        </mt:if>
-      <mt:elseif name="edit" like="select">
-        <select class="form-control short watch-changed" name="<mt:var name="__col_name__">">
-        <mt:objectloop model="$rel_model" sort_by="order">
-        <mt:if name="__first__">
-          <option value="">
-            <mt:trans phrase="Unspecified">
-          </option>
-        </mt:if>
-          <option <mt:if name="__col_value__" eq="$id">selected</mt:if> value="<mt:var name="id">"><mt:var name="$rel_col" escape></option>
-        </mt:objectloop>
-        </select>
-      <mt:elseif name="edit" like="dialog">
-      
-        <mt:if name="type" eq="relation">
-          <mt:setvarblock name="__rel_name__">object_<mt:var name="__col_name__"></mt:setvarblock>
-          <ul id="<mt:var name="__col_name__">" class="relation-list">
-            <li <mt:if name="$__rel_name__">style="display:none" </mt:if>class="badge badge-default badge-relation" id="<mt:var name="__col_name__">-none">
-            <mt:trans phrase="(None selected)">
-            </li>
-            <li class="hidden badge badge-default badge-relation badge-draggable" id="<mt:var name="__col_name__">-tmpl">
-            <span><mt:trans phrase="Default"></span>
-            <button type="button" class="btn btn-secondary btn-sm close-sm" aria-label="<mt:trans phrase="Detach">" data-name="<mt:var name="__col_name__">">
-              <span aria-hidden="true">&times;</span>
-            </button>
-            <input type="hidden" name="<mt:var name="__col_name__">[]" value="">
-            </li>
-          <mt:setvarblock name="selected_ids"><mt:loop name="$__rel_name__" glue=","><mt:var name="__value__"></mt:loop></mt:setvarblock>
-
-          <mt:loop name="$__rel_name__">
-            <li class="<mt:var name="__col_name__">-child badge badge-default badge-relation badge-draggable">
-            <span><mt:getobjectname id="$__value__" type="$edit" escape></span>
-            <button type="button" class="btn btn-secondary btn-sm close-sm" aria-label="<mt:trans phrase="Detach">" data-name="<mt:var name="__col_name__">">
-              <span aria-hidden="true">&times;</span>
-            </button>
-            <input type="hidden" name="<mt:var name="__col_name__">[]" value="<mt:var name="__value__" escape>"></li>
-          </mt:loop>
-          </ul>
-          <button type="button" class="btn btn-primary btn-sm dialog-chooser" data-toggle="modal" data-target="#modal"
-            data-href="<mt:var name="script_uri">?__mode=view&amp;_type=list&amp;_model=<mt:var name="rel_model" escape><mt:if name="workspace_id">&amp;workspace_id=<mt:var name="workspace_id"></mt:if>&amp;dialog_view=1&amp;target=<mt:var name="__col_name__">&amp;get_col=<mt:var name="rel_col" escape>&amp;selected_ids=<mt:var name="selected_ids" escape>"><mt:trans phrase="Select..."></button>
-
-<script>
-$('#<mt:var name="__col_name__">').sortable ( {
-// TODO keyboard oparation
-});
-</script>
-
-        <mt:else>
-
-          <mt:setvar name="thumbnail" value="">
-          <mt:getobjectname id="$__col_value__" type="$edit" wants="id" escape setvar="__col_value__">
-          <mt:assetthumbnail id="$__col_value__" type="default" square="1" model="$rel_model" data_uri="1" setvar="thumbnail">
-          <img src="<mt:var name="thumbnail">" id="<mt:var name="__col_name__">-img" class="<mt:unless name="thumbnail">hidden</mt:unless>" alt="<mt:trans phrase="Preview">" width="80">
-          <span class="badge badge-default badge-relation">
-          <span id="<mt:var name="__col_name__">-label">
-          <mt:if name="__col_value__">
-            <mt:getobjectname id="$__col_value__" type="$edit" escape>
-          <mt:else>
-            <mt:trans phrase="(None selected)">
-          </mt:if>
-          </span>
-            <button id="<mt:var name="__col_name__">-close" type="button" class="btn btn-secondary btn-sm close-sm<mt:unless name="__col_value__"> hidden</mt:unless>" aria-label="<mt:trans phrase="Detach">" data-name="<mt:var name="__col_name__">">
-              <span aria-hidden="true">&times;</span>
-            </button>
-          </span>
-          <input id="<mt:var name="__col_name__">" type="hidden" name="<mt:var name="__col_name__">" value="<mt:var name="__col_value__" escape>">
-          <button type="button" class="btn btn-primary btn-sm dialog-chooser" data-toggle="modal" data-target="#modal"
-            data-href="<mt:var name="script_uri">?__mode=view&amp;_type=list&amp;_model=<mt:var name="rel_model" escape><mt:if name="workspace_id">&amp;workspace_id=<mt:var name="workspace_id"></mt:if>&amp;dialog_view=1&amp;single_select=1&amp;target=<mt:var name="__col_name__">&amp;get_col=<mt:var name="rel_col" escape>&amp;selected_ids=<mt:ignore>todo<mt:var name="__col_value__" escape></mt:ignore>"><mt:trans phrase="Select..."></button>
-        </mt:if>
-
-      <mt:elseif name="edit" like="checkbox">
-        <mt:setvarblock name="__rel_name__">object_<mt:var name="__col_name__"></mt:setvarblock>
-        <mt:objectloop model="$rel_model" sort_by="order">
-            <label class="custom-control custom-checkbox">
-              <input type="checkbox" class="custom-control-input watch-changed" name="<mt:var name="__col_name__">[]" value="<mt:var name="id">" <mt:ifinarray array="$__rel_name__" value="$id">checked</mt:ifinarray>>
-              <span class="custom-control-indicator"></span>
-              <span class="custom-control-description"><mt:var name="$rel_col" escape></span>
-            </label>
-        </mt:objectloop>
+          
       </mt:if>
     </mt:if>
   </div>
@@ -779,7 +780,9 @@ $('#<mt:var name="__col_name__">').sortable ( {
   </div>
   <div class="col-lg-2">
     <mt:unless name="object_created_by">
-      <mt:trans phrase="System">
+      <mt:if name="request.id">
+        <mt:trans phrase="System">
+      </mt:if>
     <mt:else>
       <mt:getobjectname id="$object_created_by" type="reference:user:nickname" escape>
     </mt:unless>
@@ -900,9 +903,8 @@ $('#__apply_to_master').click(function(){
 </mt:if>
 </mt:if>
 </script>
-
-<mt:if name="request.id">
-  <mt:if name="model" eq="table">
+<mt:if name="model" eq="table">
+  <mt:if name="request.id">
 <script>
 var error_message;
 $('#__save').click(function(){
@@ -931,7 +933,14 @@ function ajax_failed () {
     alert('<mt:trans phrase="An error occurred.">'+error_message);
 }
 </script>
-
+<mt:else>
+<script>
+$('#__save').click(function(){
+    $(this).attr('disabled', true);
+    $(window).off('beforeunload');
+    $('#edit-form-main').submit();
+});
+</script>
   </mt:if>
 </mt:if>
 

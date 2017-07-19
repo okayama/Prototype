@@ -32,7 +32,7 @@
     "template_tags" : "Template Tags",
     "normalize"     : "Normalized",
     "revisable"     : "Revisable",
-    "rev_type"      : "Revision Type",
+    "rev_type"      : "Type",
     "rev_changed"   : "Changed",
     "rev_note"      : "Change Note",
     "rev_diff"      : "Diff",
@@ -102,5 +102,7 @@
     "assign_user"   : "Assign User",
     "has_deadline"  : "Specify the Deadline",
     "published_on"  : "Publish Date",
-    "unpublished_on": "Unpublish Date"
+    "unpublished_on": "Unpublish Date",
+    "display_dashboard"
+                    : "Display in Dashboard"
 }

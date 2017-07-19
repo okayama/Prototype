@@ -202,6 +202,48 @@ input.short {
   width: 380px !important;
 }
 
+select.short {
+  width: 140px !important;
+}
+
+.rel-any-right-col {
+  padding-left: 10px;
+}
+
+.group-relation-list {
+  list-style-type: none;
+  padding-left: 0;
+}
+
+.group-relation-list li {
+  padding: 10px;
+  margin-bottom: 4px;
+}
+
+.group-item {
+  color: white;
+  background-color: #333;
+  border-color: #333;
+}
+
+.group-chooser {
+  margin-left: 0px;
+}
+
+.group-relation-list button {
+  margin: 3px 6px 0px 0px;
+  display: inline !important;
+  width: 20px;
+  position: absolute;
+  right: 5px;
+  top: 10px;
+}
+
+.group-relation-list span {
+  display: inline !important;
+  width: 90%;
+}
+
 .dialog-chooser {
   margin-top: -4px;
   font-size: 102%;
@@ -348,7 +390,7 @@ th.id {
 }
 
 .preview-rev_diff {
-  font-size: 70%;
+  font-size: 85%;
   margin: 0 !important;
 }
 

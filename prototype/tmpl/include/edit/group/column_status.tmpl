@@ -1,9 +1,20 @@
 <mt:var name="options" split="," setvar="_options_loop">
 
+<mt:if name="has_mapping">
 <div class="row form-group">
+  <mt:count name="_options_loop" setvar="status_type">
+  <mt:if name="status_type" eq="2">
+    <mt:if name="object_status" ne="2">
+      <mt:setvar name="has_mapping" value="">
+    </mt:if>
+  <mt:elseif name="status_type" eq="5">
+    <mt:if name="object_status" ne="4">
+      <mt:setvar name="has_mapping" value="">
+    </mt:if>
+  </mt:if>
   <div class="col-lg-2">
     <label for="<mt:var name="__col_name__">">
-      <mt:var name="label" escape="1">
+      <mt:trans phrase="Archive">
       <mt:if name="not_null"><mt:var name="field_required"></mt:if>
     </label>
   </div>
@@ -11,7 +22,7 @@
     <select class="form-control short" name="<mt:var name="__col_name__">">
     <mt:loop name="_options_loop">
         <mt:var name="__value__" split=":" setvar="params">
-        <option <mt:unless name="object_status"><mt:if name="$params[1]">selected</mt:if></mt:unless><mt:if name="object_status" eq="$__counter__">selected</mt:if> value="<mt:var name="__counter__">"><mt:trans phrase="$params[0]" escape></option>
+        <option <mt:if name="object_status" eq="$__counter__">selected</mt:if> value="<mt:var name="__counter__">"><mt:trans phrase="$params[0]" escape></option>
     </mt:loop>
     </select>
 <mt:tablehascolumn column="published_on">
@@ -26,7 +37,7 @@
 </mt:tablehascolumn>
   </div>
 </div>
-
+</mt:if>
 <mt:tablehascolumn column="published_on">
 <div class="row form-group">
   <div class="col-lg-2">

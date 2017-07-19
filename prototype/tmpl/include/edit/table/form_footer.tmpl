@@ -366,6 +366,9 @@
             <div class="col-md-9">
             <select id="_detail_edit_table" class="form-control">
               <mt:objectloop model="table" sort_by="order">
+              <mt:if name="__first__">
+              <option value="__any__"><mt:trans phrase="Any"></option>
+              </mt:if>
               <mt:var name="label" setvar="table_label">
               <option value="<mt:var name="name" escape>"><mt:trans phrase="$table_label" escape></option>
               </mt:objectloop>
@@ -642,12 +645,15 @@ $('#_save_detail_button').click( function(){
         var model = $('#_detail_edit_table').val();
         var column = $('#_detail_edit_column').val();
         var type = $('#_detail_edit_type').val();
+        if ( model == '__any__' ) {
+            column = '__primary__';
+        }
         var edit_value = edit + ':' + model + ':' + column;
         if ( edit == 'reference' && (! model || !column ) ) {
             alert('<mt:trans phrase="Model and Column are required for the reference.">');
             return false;
         }
-        if ( edit == 'relation' && (! model || !column || !type ) ) {
+        if ( edit == 'relation' && (! model || !type ) ) {
             alert('<mt:trans phrase="Model, Column and Type are required for the relation.">');
             return false;
         }

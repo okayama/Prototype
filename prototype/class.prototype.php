@@ -1213,7 +1213,7 @@ class Prototype {
                              'rev_changed', 'rev_diff', 'rev_note'];
         $db->schema[ $model ] = $scheme;
         $properties = $scheme['edit_properties'];
-        $autoset = $scheme['autoset'] ? $scheme['autoset'] : [];
+        $autoset = isset( $scheme['autoset'] ) ? $scheme['autoset'] : [];
         $columns = $scheme['column_defs'];
         $labels = $scheme['labels'];
         $relations = isset( $scheme['relations'] ) ? $scheme['relations'] : [];;
@@ -1433,6 +1433,9 @@ class Prototype {
             foreach ( $placements as $name => $props ) {
                 $to_obj = key( $props );
                 $to_ids = $props[ $to_obj ];
+                if ( $to_obj === '__any__' ) {
+                    $to_obj = $app->param( "_{$name}_model" );
+                }
                 $args = ['from_id' => $obj->id, 
                          'name' => $name,
                          'from_obj' => $model,
@@ -1613,9 +1616,23 @@ class Prototype {
             if ( $table->revisable ) {
                 $terms['rev_type'] = 0;
             }
+            if ( $table->has_status ) {
+                $status_col = $app->db->model( 'column' )->get_by_key(
+                    ['table_id' => $table->id, 'name' => 'status'] );
+                $options = $status_col->options;
+                if ( $options ) {
+                    $options = explode( ',', $options );
+                    $count = count( $options );
+                    if ( $count === 5 ) {
+                        $terms['status'] = 4;
+                    } else if ( $count === 2 ) {
+                        $terms['status'] = 2;
+                    }
+                }
+            }
             $preview_obj = $db->model( $table->name )->load( $terms,
                 ['limit' => 1, 'sort' => 'id', 'direction' => 'descend'] );
-            if (! empty($preview_obj) ) {
+            if (! empty( $preview_obj ) ) {
                 $obj = $preview_obj[0];
                 $ctx->stash( 'preview_template', $template );
             }
@@ -1693,7 +1710,7 @@ class Prototype {
                                 $table->name . $label,
                                     'function', 'hdlr_get_objectcol', $app );
                             $alias[ $table->name . $label ] 
-                                = $table->name . $tag_name;
+                                = $table->name . $key;
                         }
                     }
                     if ( $key === 'published_on' ) {
@@ -2162,6 +2179,7 @@ class Prototype {
 
     function save_filter_table ( &$cb, $app, &$obj ) {
         if ( $app->param( '_preview' ) ) return true;
+        $validation = $app->param( '__validation' );
         if (! $obj->id ) {
             $name = strtolower( $app->param( 'name' ) );
             if (! $app->is_valid_property( $name, $msg, true ) ) {
@@ -2208,7 +2226,6 @@ class Prototype {
         $db->can_drop = true;
         $columns = $db->model( 'column' )->load( [ 'table_id' => $obj->id ] );
         $col_names = [];
-        $validation = $app->param( '__validation' );
         foreach ( $columns as $column ) {
             $col_name = $column->name;
             $col_names[] = $column->name;
@@ -2227,12 +2244,12 @@ class Prototype {
                     // TODO Cleanup relation( from and to )
                     if (! $validation ) {
                         $column->remove();
-                        unset( $obj->$col_name );
-                        $_col_name = $obj->_prefix . $col_name;
-                        unset( $obj->$_col_name );
+                        //unset( $obj->$col_name );
+                        //$_col_name = $obj->_prefix . $col_name;
+                        //unset( $obj->$_col_name );
                         unset( $db->scheme['table']['column_defs'][ $col_name ] );
                     }
-                    if (! $validation ) $column->remove();
+                    //if (! $validation ) $column->remove();
                     continue;
                 }
             }
@@ -2431,7 +2448,7 @@ class Prototype {
         if ( $workspace_col->id ) $is_child = true;
         if( $is_child || $obj->sortable || $obj->auditing || $obj->taggable
             || $obj->has_status || $obj->start_end || $obj->has_basename
-            || $obj->assign_user || $obj->revisable ) {
+            || $obj->assign_user || $obj->revisable || $obj->display_space ) {
             $last = $db->model( 'column' )->load
                     ( [ 'table_id' => $obj->id ],
                       ['sort' => 'order', 'direction' => 'descend', 'limit' => 1 ] );
@@ -2477,7 +2494,7 @@ class Prototype {
                                    'has_deadline' => 'Specify the Deadline'];
                 foreach ( $start_end_cols as $name => $label ) {
                     $col = $db->model( 'column' )->get_by_key
-                      ( [ 'table_id' => $obj->id, 'name' => $name ] );
+                      ( ['table_id' => $obj->id, 'name' => $name ] );
                     if (! $col->id ) {
                         $col->label( $label );
                         if ( $name !== 'has_deadline' ) {
@@ -2499,7 +2516,7 @@ class Prototype {
                 if ( $obj->start_end ) {
                     $status_opt = 'Draft,Review,Reserved,Publish,Unpublished (End)';
                 } else {
-                    $status_opt = 'Enable,Disable';
+                    $status_opt = 'Disable,Enable:default';
                 }
                 $values = ['type' => 'int', 'size' => 11, 'default' => 1,
                            'label'=> 'Status', 'list' => 'number',
@@ -2520,7 +2537,7 @@ class Prototype {
                     $upgrade = true;
                 }
             }
-            if ( $obj->space_child ) {
+            if ( $obj->space_child || $obj->display_space ) {
                 $values = ['type' => 'int', 'size' => 4,
                            'label'=> 'WorkSpace',
                            'list' => 'reference:workspace:name', 'unchangeable' => 1,
@@ -2532,7 +2549,7 @@ class Prototype {
             }
             if ( $obj->revisable ) {
                 $values = ['type' => 'int', 'size' => 11, 'autoset' => 1,
-                           'label'=> 'Revision Type', 'not_null' => 1,
+                           'label'=> 'Type', 'not_null' => 1,
                            'default' => '0', 'index' => 1, 'order' => $last ];
                 if ( $app->make_column( $obj, 'rev_type', $values ) ) {
                     $last++;
@@ -2584,18 +2601,16 @@ class Prototype {
                      ];
                 foreach ( $auditing_cols as $name => $props ) {
                     $col = $db->model( 'column' )->get_by_key
-                      ( [ 'table_id' => $obj->id, 'name' => $name ] );
+                      ( ['table_id' => $obj->id, 'name' => $name ] );
                     if (! $col->id ) {
                         list( $label, $type ) = [ $props['label'], $props['type'] ];
                         $col->label( $label );
                         if ( $type === 'datetime' ) {
                             $col->type( $type );
-                            $col->edit( $type );
                             if ( $name === 'modified_on' ) $col->list( $type );
                         } else {
                             $col->type( 'int' );
                             $col->size( 4 );
-                            $col->edit( $type );
                             if ( $name == 'modified_by' ) $col->list( $type );
                         }
                         $col->set_values(
@@ -2707,6 +2722,7 @@ class Prototype {
         $urlmapping_id = 0;
         $old_path = '';
         $publish = false;
+        $unlink = false;
         $template;
         $mapping = '';
         $workspace = $obj->workspace;
@@ -2716,6 +2732,9 @@ class Prototype {
             $type = $key->template_id ? 'archive' : 'model';
             $publish = $key->publish_file;
             $template = $key->template;
+            if ( $template && $template->status != 2 ) {
+                $unlink = true;
+            }
             $workspace = $key->workspace;
             if ( $key->container ) {
                 $container = $db->model( 'table' )->load( $key->container );
@@ -2786,7 +2805,6 @@ class Prototype {
                           'type' => $type,
                           'relative_path' => '%r' . DS . $relative_path,
                           'workspace_id' => $obj->workspace_id ] );
-        $unlink = false;
         if ( $obj->has_column( 'status' ) ) {
             if ( $obj->has_column( 'has_deadline' ) ) {
                 if ( $obj->status != 4 ) {
@@ -2924,7 +2942,7 @@ class Prototype {
             if ( $column->type == 'relation' ) {
                 $relations[ $col_name ] = $column->options;
             }
-            if ( $column->size ) $props['size'] = $column->size;
+            if ( $column->size ) $props['size'] = (int) $column->size;
             $not_null = $column->not_null;
             if ( $not_null ) $props['not_null'] = 1;
             if ( $column->default !== "" ) $props['default'] = $column->default;
@@ -2947,7 +2965,7 @@ class Prototype {
                     'menu_type', 'template_tags', 'taggable', 'display_space',
                     'has_basename', 'has_status', 'assign_user'];
         foreach ( $options as $option ) {
-            if ( $table->$option ) $scheme[ $option ] = (int) $option;
+            if ( $table->$option ) $scheme[ $option ] = (int) $table->$option;
         }
         // TODO
         if ( $table->display_system ) $scheme['display'] = (int) $table->display_system;
@@ -3321,17 +3339,16 @@ class Prototype {
                 foreach ( $relations as $name => $to_obj ) {
                     $terms = ['from_id'  => $obj->id, 
                               'name'     => $name,
-                              'from_obj' => $obj->_model,
-                              'to_obj'   => $to_obj ];
+                              'from_obj' => $obj->_model ];
+                    
+                    if ( $to_obj !== '__any__' ) $terms['to_obj'] = $to_obj;
                     $relations = $app->db->model( 'relation' )->load(
                                                 $terms, ['sort' => 'order'] );
                     $ids = [];
-                    $prop = $scheme['edit_properties'][ $name ];
-                    $props = explode( ':', $prop );
-                    $model = $props[1];
-                    $col = $props[2];
                     // todo load join
                     foreach( $relations as $relation ) {
+                        $model = $relation->to_obj;
+                        $ctx->local_vars['object_' . $name . '_model'] = $model;
                         $rel_obj = $app->db->model( $model )->load( $relation->to_id );
                         if ( $rel_obj ) $ids[] = $relation->to_id;
                     }
@@ -3369,7 +3386,11 @@ class Prototype {
         if (! $s || ! $o ) return;
         $app = Prototype::get_instance();
         $options = explode( ',', $o );
-        $status = $app->translate( $options[ $s - 1 ] );
+        $status = $options[ $s - 1 ];
+        if ( strpos( $status, ':' ) !== false ) {
+            list( $status, $option ) = explode( ':', $status );
+        }
+        $status = $app->translate( $status );
         if ( $i ) {
             $tmpl = '<i class="fa fa-__" aria-hidden="true"></i>&nbsp;';
             $tmpl .= $t ? $status : "<span class=\"sr-only\">$status</span>";
@@ -3433,16 +3454,16 @@ class Prototype {
         $tmpl_path = 'include' . DS . $screen . DS;
         if ( $type === 'column' ) {
             $name = $args['name'];
-            if ( file_exists( TMPL_DIR . $tmpl_path . 'column_' . $name . '.tmpl' ) ) {
-                return $ctx->build( file_get_contents
-                    ( TMPL_DIR. $tmpl_path . 'column_' . $name . '.tmpl' ) );
-            }
+            $common_tmpl = TMPL_DIR . $tmpl_path . 'column_' . $name . '.tmpl';
             $tmpl_path .= $model . DS . 'column_' . $name;
         }
         $tmpl_path .= '.tmpl';
         $file_path = TMPL_DIR . $tmpl_path;
         if ( file_exists( $file_path ) ) {
             return $ctx->build( file_get_contents( $file_path ) );
+        }
+        if ( file_exists( $common_tmpl ) ) {
+            return $ctx->build( file_get_contents( $common_tmpl ) );
         }
     }
 
@@ -3462,8 +3483,7 @@ class Prototype {
             return $ctx->local_vars['object_' . $col ];
         $obj = $ctx->stash( 'object' )
              ? $ctx->stash( 'object' ) : $ctx->local_vars['__value__'];
-        $value = $obj->$col;
-        return $value;
+        return $obj ? $obj->$col : '';
     }
 
     function hdlr_getoption ( $args, $ctx ) {
@@ -3724,15 +3744,19 @@ class Prototype {
 
     function hdlr_getobjectname ( $args, $ctx ) {
         $app = Prototype::get_instance();
-        $type = $args['type'];
+        $type = isset( $args['type'] ) ? $args['type'] : '';
         if ( is_array( $type ) ) {
             $key = key( $type );
             $type = $type[ $key ];
         }
-        list( $pfx, $model, $col ) = explode( ':', $type );
+        $props = $explode( ':', $type );
+        $model = isset( $props[1] ) ? $props[1] : '';
+        $col = isset( $props[2] ) ? $props[2] : '';
+        $model = (! $model && isset( $args['model'] ) ) ? $args['model'] : $model;
         $name = isset( $args['name'] ) ? $args['name'] : '';
         $id = $args['id'];
         $id = (int) $id;
+        $col = isset( $args['wants'] ) ? $args['wants'] : $col;
         if (! $id && $name )
       {
         $this_model = isset( $args['model'] ) ? $args['model'] : '';
@@ -3756,7 +3780,6 @@ class Prototype {
         }
       }
         if (! $id ) return '';
-        $col = isset( $args['wants'] ) ? $args['wants'] : $col;
         if ( $obj = $ctx->stash( "{$model}_{$id}" ) ) {
             return $obj->$col;
         }
@@ -4001,25 +4024,74 @@ class Prototype {
             // TODO search and relations
             $container = $ctx->stash( 'current_container' );
             $context = $ctx->stash( 'current_context' );
+            $has_relation = false;
+            if (! $container && $app->db->model( $context )->has_column( 'table_id' ) ) {
+                $ctx_obj = $ctx->stash( $context );
+                $ctx_model = $app->db->model( 'table' )->load( $ctx_obj->table_id );
+                $preview_template = $ctx->stash( 'preview_template' );
+                if ( $app->param( '_preview' ) && ! $preview_template ) {
+                    $scheme = $app->get_scheme_from_db( $context );
+                    if ( isset( $scheme['relations'] ) ) {
+                        $relations = $scheme['relations'];
+                        foreach ( $relations as $key => $value ) {
+                            $rel_model = $app->param( "_{$key}_model" );
+                            if ( $rel_model && $rel_model == $ctx_model->name ) {
+                                $preview_ids = $app->param( $key );
+                                $rel_ids = [];
+                                foreach ( $preview_ids as $id ) {
+                                    if ( $id ) $rel_ids[] = (int) $id;
+                                }
+                                $terms['id'] = ['IN' => $rel_ids ];
+                            }
+                        }
+                    }
+                } else {
+                    $relations = $app->db->model( 'relation' )->load( 
+                            ['from_id' => (int) $ctx_obj->id, 'from_obj' => $context,
+                             'to_obj' => $ctx_model->name ] );
+                    $has_relation = true;
+                    $relation_col = 'to_id';
+                }
+            }
             if ( $container && $context ) {
                 if ( $to_obj = $ctx->stash( $context ) ) {
                     $relations = $app->db->model( 'relation' )->load( 
-                        [ 'to_id' => (int) $to_obj->id, 'to_obj' => $context ] );
-                    if ( count( $relations ) ) {
-                        $rel_ids = [];
-                        foreach ( $relations as $rel ) {
-                            $rel_ids[] = (int) $rel->id;
-                        }
-                        $terms['id'] = ['IN', $rel_ids ];
-                    } else {
-                        $repeat = false;
-                        $ctx->restore( [ $model, 'current_context' ] );
-                        return;
+                        ['to_id' => (int) $to_obj->id, 'to_obj' => $context ] );
+                    $has_relation = true;
+                    $relation_col = 'from_id';
+                }
+            }
+            if ( $has_relation ) {
+                if ( count( $relations ) ) {
+                    $rel_ids = [];
+                    foreach ( $relations as $rel ) {
+                        $rel_ids[] = (int) $rel->$relation_col;
                     }
+                    $terms['id'] = ['IN' => $rel_ids ];
+                } else {
+                    $repeat = false;
+                    $ctx->restore( [ $model, 'current_context' ] );
+                    return;
                 }
             }
             $table = $app->get_table( $model );
-            if ( $obj->has_column( 'rev_type' ) ) {
+            if (! isset( $args['status'] ) && ! isset( $args['include_draft'] ) ) {
+                if ( $table->has_status ) {
+                    $status_col = $app->db->model( 'column' )->get_by_key(
+                        ['table_id' => $table->id, 'name' => 'status'] );
+                    $options = $status_col->options;
+                    if ( $options ) {
+                        $options = explode( ',', $options );
+                        $count = count( $options );
+                        if ( $count === 5 ) {
+                            $terms['status'] = 4;
+                        } else if ( $count === 2 ) {
+                            $terms['status'] = 2;
+                        }
+                    }
+                }
+            }
+            if ( $table->revisable ) {
                 $terms['rev_type'] = 0;
             }
             $ctx->local_params = $obj->load( $terms, $args );
@@ -4069,7 +4141,7 @@ class Prototype {
             $file_col = $app->stash( $model . '_file_column' );
             if (! $columns ) {
                 $terms = [];
-                $terms[ 'table_id' ] = $table->id;
+                $terms['table_id'] = $table->id;
                 if ( $type ) {
                     if ( $type === 'list' ) $terms[ 'list' ] = [ '!=' => '' ];
                     elseif ( $type === 'edit' ) $terms[ 'edit' ] = [ '!=' => '' ];

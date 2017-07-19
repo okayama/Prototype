@@ -2,10 +2,10 @@
 <mt:var name="raw_value" from_json="rev_diff">
 <mt:loop name="rev_diff">
 <mt:if name="__first__">
-  <button class="btn btn-secondary btn-sm btn-compact" onclick="$('#rev-diff-<mt:var name="_object_id">').toggle();" type="button">
+  <a class="btn btn-secondary btn-sm btn-compact" onclick="$('#rev-diff-<mt:var name="_object_id">').toggle();" type="button">
   <i class="fa fa-eye" aria-hidden="true"></i>
   <span class="sr-only"><mt:trans phrase="Toggle"></span>
-  </button>
+  </a>
 <table class="preview-rev_diff full table table-bordered table-sm hidden" id="rev-diff-<mt:var name="_object_id">">
 </mt:if>
 <tr>

@@ -6,6 +6,9 @@
     "order"    : 130,
     "primary"  : "name",
     "menu_type": 1,
+    "template_tags": 1,
+    "display_space": 1,
+    "has_status": 1,
     "column_defs": {
         "id": {
             "type": "int",
@@ -18,6 +21,18 @@
             "not_null": 1
         },
         "text": {
+            "type": "text"
+        },
+        "status": {
+            "type": "int",
+            "size": 11,
+            "default": "1"
+        },
+        "rev_note": {
+            "type": "string",
+            "size": 255
+        },
+        "rev_diff": {
             "type": "text"
         },
         "created_on": {
@@ -37,6 +52,20 @@
         "workspace_id": {
             "type": "int",
             "size": "11"
+        },
+        "rev_type": {
+            "type": "int",
+            "size": 11,
+            "not_null": 1,
+            "default": "0"
+        },
+        "rev_object_id": {
+            "type": "int",
+            "size": 11
+        },
+        "rev_changed": {
+            "type": "string",
+            "size": 255
         }
     },
     "indexes": {
@@ -46,7 +75,11 @@
         "modified_on": "modified_on",
         "created_by": "created_by",
         "modified_by": "modified_by",
-        "workspace_id": "workspace_id"
+        "workspace_id": "workspace_id",
+        "status": "status",
+        "rev_note": "rev_note",
+        "rev_type": "rev_type",
+        "rev_object_id": "rev_object_id"
     },
     "sort_by": {
         "id": "ascend"
@@ -55,16 +88,21 @@
         "created_on",
         "modified_on",
         "created_by",
-        "modified_by"
+        "modified_by",
+        "rev_type",
+        "rev_object_id",
+        "rev_changed"
     ],
     "edit_properties": {
         "id": "hidden",
         "name": "primary",
-        "text": "textarea"
+        "text": "textarea",
+        "status": "selection"
     },
     "list_properties": {
         "id": "number",
         "name": "primary",
+        "status": "number",
         "modified_on": "datetime",
         "modified_by": "reference:user:name",
         "workspace_id": "reference:workspace:name"

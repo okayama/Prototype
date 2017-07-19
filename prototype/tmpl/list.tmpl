@@ -251,7 +251,7 @@ $('#dialog-cancel-btn').click(function(){
   </mt:if>
   <mt:unless name="__single_select">
     <label class="custom-control custom-checkbox">
-      <input id="box_<mt:objectvar name="id">" type="checkbox" name="id[]" value="<mt:objectvar name="id">" class="custom-control-input disp_option">
+      <input id="box_<mt:objectvar name="id">" type="checkbox" name="id[]" value="<mt:objectvar name="id">" class="custom-control-input">
       <span class="custom-control-indicator"></span>
       <span class="custom-control-description"></span>
     </label>
@@ -272,11 +272,9 @@ $('#dialog-cancel-btn').click(function(){
   </mt:if>
 </td>
 </mt:if>
-
 <mt:if name="model" ne="workspace">
 <mt:objectvar name="workspace_id" setvar="_workspace_id">
 </mt:if>
-
 <mt:var name="name" setvar="__name__">
 <mt:if name="workspace_id">
   <mt:if name="name" eq="workspace_id">
@@ -399,10 +397,18 @@ $('#popover-<mt:var name="column_name">-<mt:objectvar name="id">').popover({
   <button id="dialog-cancel-btn" class="btn btn-secondary" type="submit"><mt:trans phrase="Cancel"></button>
   <button id="dialog-selector-btn" class="btn btn-primary" type="submit"><mt:trans phrase="Select"></button>
 </mt:if>
-
 </form>
 
 <script>
+<mt:if name="request.dialog_view">
+$(document).keydown(evnt_keydown);
+function evnt_keydown(e) {
+    if ( e.keyCode == 27 ) {
+        window.parent.$('#modal').modal('hide');
+        window.location.href = '<mt:var name="script_uri">?__mode=loading';
+    }
+}
+</mt:if>
 var in_link = false;
 $('a').mouseover(function() {
     in_link = true;
@@ -413,10 +419,12 @@ $('a').click(function() {
 $('a').mouseout(function() {
     in_link = false;
 });
-$('input').mouseover(function() {
+<mt:if name="__single_select">
+$('input').click(function() {
     in_link = true;
 });
-$('input').click(function() {
+</mt:if>
+$('input').mouseover(function() {
     in_link = true;
 });
 $('input').mouseout(function() {
@@ -424,7 +432,7 @@ $('input').mouseout(function() {
 });
 $('#list_body tr').click(function() {
     if ( in_link ) {
-        return;
+        return true;
     }
     line_id = $(this).prop('id');
     line = line_id.replace( /line_/, '' );
@@ -434,7 +442,6 @@ $('#list_body tr').click(function() {
     } else {
         $('#box_'+line).prop('checked', true);
     }
-    return false;
 });
 <mt:if name="_sortable">
 $('#list_body tr').mouseover(function() {
@@ -559,7 +566,7 @@ function reorder(){
 }
 </mt:unless>
 </mt:if>
-$("input[name='id[]']").click(function(){
+$("input[name='id[]']").change(function(){
     is_all = true;
     $("input[name='id[]']").each(function(){
         if ( $(this).prop('checked') == false ) {
