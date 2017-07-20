@@ -222,13 +222,13 @@ class Prototype {
             $this->is_login();
             $dictionary =& $this->dictionary;
             $dict = $dictionary[ $lang ];
-            $phrases = $db->model( 'phrase' )->load( [ 'lang' => $lang ] );
+            $phrases = $db->model( 'phrase' )->load( ['lang' => $lang ] );
             foreach ( $phrases as $phrase ) {
                 $dict[ $phrase->phrase ] = $phrase->trans;
             }
             $this->dictionary[ $lang ] = $dict;
         }
-        $cfgs = $db->model( 'option' )->load( [ 'kind' => 'config' ] );
+        $cfgs = $db->model( 'option' )->load( ['kind' => 'config'] );
         list( $site_url, $site_path ) = ['', ''];
         foreach ( $cfgs as $cfg ) {
             $colprefix = $cfg->_colprefix;
@@ -516,7 +516,7 @@ class Prototype {
         if ( $app->request_method === 'POST' ) {
             $name = $app->param( 'name' );
             $password = $app->param( 'password' );
-            $user = $app->db->model( 'user' )->load( [ 'name' => $name ] );
+            $user = $app->db->model( 'user' )->load( ['name' => $name ] );
             if (! empty( $user ) )
           {
             $user = $user[0];
@@ -528,7 +528,7 @@ class Prototype {
                 }
                 $token = $app->magic();
                 $sess = $app->db->model( 'session' )
-                    ->get_by_key( [ 'user_id' => $user->id, 'kind' => 'US' ] );
+                    ->get_by_key( ['user_id' => $user->id, 'kind' => 'US'] );
                 $sess->name = $token;
                 $sess->expires = time() + $expires;
                 $sess->start = time();
@@ -556,7 +556,7 @@ class Prototype {
         $user = $app->user();
         if ( $user ) {
             $sess = $app->db->model( 'session' )
-                    ->get_by_key( [ 'user_id' => $user->id, 'kind' => 'US' ] );
+                    ->get_by_key( ['user_id' => $user->id, 'kind' => 'US'] );
             if ( $sess->id ) $sess->remove();
             $name = $app->cookie_name;
             $path = $app->cookie_path ? $app->cookie_path : $app->path;
@@ -908,15 +908,15 @@ class Prototype {
         $table = $app->get_table( $model );
         if (! $app->workspace() ) {
             if ( $table->space_child && $action === 'edit' ) {
-                $app->return_to_dashboard( [ 'permission' => 1 ] );
+                $app->return_to_dashboard( ['permission' => 1] );
                 return false;
             } else if ( $action === 'list' && !$table->display_system ) {
-                $app->return_to_dashboard( [ 'permission' => 1 ] );
+                $app->return_to_dashboard( ['permission' => 1] );
                 return false;
             }
         }
         if ( $app->user()->is_superuser ) return true;
-        $terms =[ 'table_id' => $table->id, 'user_id' => $app->user()->id ];
+        $terms =['table_id' => $table->id, 'user_id' => $app->user()->id ];
         if ( $obj ) {
             if ( $obj->has_column( 'workspace_id' ) ) {
                 $terms['workspace_id'] = $obj->id;
@@ -993,7 +993,7 @@ class Prototype {
             $search_cols = [];
             $sort_by = [];
             if ( $type === 'list' ) {
-                $column_defs = array_keys( $scheme[ 'column_defs'] );
+                $column_defs = array_keys( $scheme['column_defs'] );
                 foreach ( $column_defs as $col ) {
                     if ( $app->param( '_s_' . $col ) ) {
                         $search_cols[] = $col;
@@ -1043,7 +1043,7 @@ class Prototype {
         $table = $app->get_table( $model );
         if (! $table ) return $app->error( 'Invalid request.' );
         $column = $app->db->model( 'column' )->load(
-            ['table_id' => $table->id, 'name' => $name, 'edit' => 'file' ] );
+            ['table_id' => $table->id, 'name' => $name, 'edit' => 'file'] );
         if ( is_array( $column ) && !empty( $column ) ) {
             $type = $column[0]->options;
             $filename = $_FILES['files']['name'];
@@ -1070,8 +1070,8 @@ class Prototype {
         $options = ['upload_dir' => $upload_dir . DS,
                     'magic' => $magic, 'user_id' => $user->id ,'prototype' => $app ];
         $sess = $app->db->model( 'session' )
-            ->get_by_key( [ 'name' => $magic,
-                            'user_id' => $user->id, 'kind' => 'UP' ] );
+            ->get_by_key( ['name' => $magic,
+                           'user_id' => $user->id, 'kind' => 'UP'] );
         $sess->start( time() );
         $sess->expires( time() + $app->sess_timeout );
         $sess->save();
@@ -1256,7 +1256,7 @@ class Prototype {
                         }
                     }
                 }
-                list( $prop, $opt ) = [ $properties[ $col ], '' ];
+                list( $prop, $opt ) = [ $properties[ $col ], ''];
                 if ( strpos( $prop, '(' ) ) {
                     list( $prop, $opt ) = explode( '(', $prop );
                     $opt = rtrim( $opt, ')' );
@@ -1300,7 +1300,7 @@ class Prototype {
                 if ( in_array( $col, $unique ) ) {
                     $terms = [ $col => $value ];
                     if ( $obj->id ) {
-                        $terms[ $primary ] = [ '!=' => $obj->id ];
+                        $terms[ $primary ] = ['!=' => $obj->id ];
                     }
                     if ( $table->revisable ) {
                         $terms['rev_type'] = 0;
@@ -1453,13 +1453,13 @@ class Prototype {
       {
         if ( $val === 'file' ) {
             $metadata = $db->model( 'meta' )->get_by_key(
-                     [ 'model' => $model, 'object_id' => $obj->id,
-                       'key' => 'metadata', 'kind' => $key ] );
+                     ['model' => $model, 'object_id' => $obj->id,
+                      'key' => 'metadata', 'kind' => $key ] );
             $magic = $app->param( "{$key}-magic" );
             if ( $magic ) {
                 $sess = $db->model( 'session' )
-                    ->get_by_key( [ 'name' => $magic,
-                                    'user_id' => $app->user()->id, 'kind' => 'UP' ] );
+                    ->get_by_key( ['name' => $magic,
+                                   'user_id' => $app->user()->id, 'kind' => 'UP'] );
                 if ( $sess->id ) {
                     $obj->$key( $sess->data );
                     $has_file = true;
@@ -1585,7 +1585,7 @@ class Prototype {
     function get_order ( $obj ) {
         $app = Prototype::get_instance();
         $last = $app->db->model( $obj->_model )->load( null, [
-                'sort' => 'order', 'limit' => 1, 'direction' => 'descend' ] );
+                'sort' => 'order', 'limit' => 1, 'direction' => 'descend'] );
         if ( is_array( $last ) && count( $last ) ) {
             $last = $last[0];
             $value = $last->order + 1;
@@ -1654,8 +1654,8 @@ class Prototype {
             $magic = $app->param( "{$key}-magic" );
             if ( $magic ) {
                 $sess = $db->model( 'session' )
-                    ->get_by_key( [ 'name' => $magic,
-                                    'user_id' => $app->user()->id, 'kind' => 'UP' ] );
+                    ->get_by_key( ['name' => $magic,
+                                   'user_id' => $app->user()->id, 'kind' => 'UP'] );
                 if ( $sess->id ) {
                     $obj->$key( $sess->data );
                     $ctx->stash( 'current_session_' . $key, $sess );
@@ -1716,7 +1716,7 @@ class Prototype {
                     if ( $key === 'published_on' ) {
                         $ctx->register_tag(
                             $table->name . 'date', 'function', 'hdlr_get_objectcol', $app );
-                            $alias[ $table->name . 'date' ] 
+                            $alias[ $table->name . 'date'] 
                                 = $table->name . $key;
                     }
                 }
@@ -1735,7 +1735,7 @@ class Prototype {
                             if ( $key === 'user_id' ) {
                                     $ctx->register_tag( $table->name . 'author',
                                         'function', 'hdlr_get_objectcol', $app );
-                                $alias[ $table->name . 'author' ] = $table->name . $mts[1];
+                                $alias[ $table->name . 'author'] = $table->name . $mts[1];
                             }
                           }
                         }
@@ -1952,7 +1952,7 @@ class Prototype {
         }
         /*
         $metadata = $db->model( 'meta' )->load(
-                             [ 'model' => $model, 'object_id' => $obj->id ] );
+                             ['model' => $model, 'object_id' => $obj->id ] );
         if ( is_array( $metadata ) ) {
             foreach ( $metadata as $data ) {
                 $data->remove();
@@ -2069,7 +2069,7 @@ class Prototype {
         $app = Prototype::get_instance();
         if ( $app->stash( 'table_' . $model ) )
                     return $app->stash( 'table_' . $model );
-        $table = $app->db->model( 'table' )->load( [ 'name' => $model ], ['limit' => 1 ] );
+        $table = $app->db->model( 'table' )->load( ['name' => $model ], ['limit' => 1] );
         if ( is_array( $table ) && !empty( $table ) ) {
             $table = $table[0];
             $app->stash( 'table_' . $model, $table );
@@ -2137,7 +2137,7 @@ class Prototype {
     function delete_filter_table ( &$cb, $app, &$obj ) {
         $ids = $app->param( 'id' );
         if (!is_array( $ids ) ) $ids = [ $ids ];
-        $tables = $app->db->model( 'table' )->load( [ 'id' => ['IN' => $ids ] ] );
+        $tables = $app->db->model( 'table' )->load( ['id' => ['IN' => $ids ] ] );
         $not_delete = [];
         foreach ( $tables as $table ) {
             if ( $table->not_delete ) {
@@ -2155,7 +2155,7 @@ class Prototype {
     function delete_filter_template ( &$cb, $app, &$obj ) {
         $ids = $app->param( 'id' );
         if (!is_array( $ids ) ) $ids = [ $ids ];
-        $tmpls = $app->db->model( 'template' )->load( [ 'id' => ['IN' => $ids ] ] );
+        $tmpls = $app->db->model( 'template' )->load( ['id' => ['IN' => $ids ] ] );
         
         foreach ( $tmpls as $tpl ) {
             $cnt = $app->db->model( 'urlmapping' )->count( ['template_id' => $tpl->id ] );
@@ -2210,21 +2210,21 @@ class Prototype {
             if ( $col ) $add_ids[] = (int) $col;
         $ids = $app->param( '_column_id' );
         $not_specify = ['save', 'delete', 'remove']; // from TODO reserved
-        $types      = ['boolean'  => [ 'tinyint', 4 ],
-                       'integer'  => [ 'int', 11 ],
-                       'text'     => [ 'text', '' ],
-                       'blob'     => [ 'blob', '' ],
-                       'relation' => [ 'relation', '' ],
-                       'datetime' => [ 'datetime', '' ],
-                       'string'   => [ 'string', 255 ] ];
-        $list_types = ['checkbox', 'number', 'primary', 'text', 'popover',
-                       'text_short', 'password', 'datetime', 'date'];
-        $edit_types = ['hidden', 'checkbox', 'number', 'primary', 'text', 'file',
-                       'text_short', 'textarea', 'password', 'password(hash)',
-                       'datetime', 'languages', 'richtext', 'selection', 'color'];
+        $types       = ['boolean'  => ['tinyint', 4],
+                        'integer'  => ['int', 11],
+                        'text'     => ['text', ''],
+                        'blob'     => ['blob', ''],
+                        'relation' => ['relation', ''],
+                        'datetime' => ['datetime', ''],
+                        'string'   => ['string', 255] ];
+        $list_types  = ['checkbox', 'number', 'primary', 'text', 'popover',
+                        'text_short', 'password', 'datetime', 'date'];
+        $edit_types  = ['hidden', 'checkbox', 'number', 'primary', 'text', 'file',
+                        'text_short', 'textarea', 'password', 'password(hash)',
+                        'datetime', 'languages', 'richtext', 'selection', 'color'];
         $db = $app->db;
         $db->can_drop = true;
-        $columns = $db->model( 'column' )->load( [ 'table_id' => $obj->id ] );
+        $columns = $db->model( 'column' )->load( ['table_id' => $obj->id ] );
         $col_names = [];
         foreach ( $columns as $column ) {
             $col_name = $column->name;
@@ -2444,14 +2444,14 @@ class Prototype {
         $ctx = $app->ctx;
         $ctx->logging = false;
         $workspace_col = $db->model( 'column' )->get_by_key
-            ( [ 'table_id' => $obj->id, 'name' => 'workspace_id' ] );
+            ( ['table_id' => $obj->id, 'name' => 'workspace_id'] );
         if ( $workspace_col->id ) $is_child = true;
         if( $is_child || $obj->sortable || $obj->auditing || $obj->taggable
             || $obj->has_status || $obj->start_end || $obj->has_basename
             || $obj->assign_user || $obj->revisable || $obj->display_space ) {
             $last = $db->model( 'column' )->load
-                    ( [ 'table_id' => $obj->id ],
-                      ['sort' => 'order', 'direction' => 'descend', 'limit' => 1 ] );
+                    ( ['table_id' => $obj->id ],
+                      ['sort' => 'order', 'direction' => 'descend', 'limit' => 1] );
             $last = (! empty( $last ) ) ? $last[0]->order : 10;
             $last++;
             $upgrade = false;
@@ -2632,10 +2632,10 @@ class Prototype {
             }
         }
         if (! $cb['is_new'] ) return;
-                $values = [ 'type' => 'int', 'size' => 11,
-                            'label'=> 'ID', 'is_primary' => 1,
-                            'list' => 'number', 'edit' => 'hidden',
-                            'index' => 1, 'order' => 1, 'not_null' => 1 ];
+                $values = ['type' => 'int', 'size' => 11,
+                           'label'=> 'ID', 'is_primary' => 1,
+                           'list' => 'number', 'edit' => 'hidden',
+                           'index' => 1, 'order' => 1, 'not_null' => 1];
         $app->make_column( $obj, 'id', $values );
         $db->upgrader = false;
         $model = $obj->name;
@@ -2682,8 +2682,8 @@ class Prototype {
     function post_save_asset ( $cb, $app, $obj ) {
         $db = $app->db;
         $metadata = $app->db->model( 'meta' )->get_by_key(
-                 [ 'model' => 'asset', 'object_id' => $obj->id,
-                   'key' => 'metadata', 'kind' => 'file' ] );
+                 ['model' => 'asset', 'object_id' => $obj->id,
+                  'key' => 'metadata', 'kind' => 'file'] );
         if ( $metadata->id && $metadata->text ) {
             $meta = json_decode( $metadata->text, true );
             if ( $meta['file_name'] != $obj->file_name ) {
@@ -2918,8 +2918,8 @@ class Prototype {
         $table = $app->get_table( $model );
         if (! $table ) return null;
         $obj_label = $app->translate( $table->label );
-        $columns = $db->model( 'column' )->load( [ 'table_id' => $table->id ],
-            [ 'sort' => 'order' ] );
+        $columns = $db->model( 'column' )->load( ['table_id' => $table->id ],
+            ['sort' => 'order'] );
         if (! is_array( $columns ) || empty( $columns ) ) {
             return null;
         }
@@ -3012,7 +3012,7 @@ class Prototype {
         $token = $app->param( 'token' );
         if ( $token ) {
             $session = $app->db->model( 'session' )->get_by_key(
-                ['name' => $token, 'kind' => 'RP' ] );
+                ['name' => $token, 'kind' => 'RP'] );
             if (! $session->id ) {
                 return $app->error( 'Invalid request.' );
             }
@@ -3059,7 +3059,7 @@ class Prototype {
                     $app->ctx->vars['token'] = $session_id;
                     $body = $app->ctx->build_page( $tmpl );
                     $session = $app->db->model( 'session' )->get_by_key(
-                        ['name' => $session_id, 'kind' => 'RP' ] );
+                        ['name' => $session_id, 'kind' => 'RP'] );
                     $session->start( time() );
                     $session->expires( time() + $app->token_expires );
                     $session->user_id( $user->id );
@@ -3118,11 +3118,11 @@ class Prototype {
         if (! is_readable( $tmpl ) )
             return; // Show Error
         $ctx = $app->ctx;
-        $ctx->vars[ 'language' ] = $app->language;
+        $ctx->vars['language'] = $app->language;
         if ( $app->param( '_type' ) === 'install' ) {
-            $ctx->vars[ 'page_title' ] = $app->translate( 'Install' );
+            $ctx->vars['page_title'] = $app->translate( 'Install' );
         } else {
-            $ctx->vars[ 'page_title' ] = $app->translate( 'Upgrade' );
+            $ctx->vars['page_title'] = $app->translate( 'Upgrade' );
         }
         if ( $app->request_method === 'POST' )
       {
@@ -3192,7 +3192,7 @@ class Prototype {
             $nickname = $app->param( 'nickname' );
             $password = password_hash( $password, PASSWORD_BCRYPT );
             $app->setup_db( true );
-            $user = $db->model( 'user' )->get_by_key( [ 'name' => $name ] );
+            $user = $db->model( 'user' )->get_by_key( ['name' => $name ] );
             $user->name( $name );
             $user->password( $password );
             $user->email( $email );
@@ -3230,9 +3230,9 @@ class Prototype {
 
     function get_config ( $key = null ) {
         $app = Prototype::get_instance();
-        if (! $key ) return $app->db->model( 'option' )->load( [ 'kind' => 'config' ] );
+        if (! $key ) return $app->db->model( 'option' )->load( ['kind' => 'config'] );
         $cfg = $app->db->model( 'option' )->get_by_key(
-            [ 'kind' => 'config', 'key' => $key ] );
+            ['kind' => 'config', 'key' => $key ] );
         return $cfg->id ? $cfg : null;
     }
 
@@ -3240,7 +3240,7 @@ class Prototype {
         $params = $app->param();
         foreach( $params as $key => $value ) {
             if ( $raw ) $ctx->vars[ $key ] = $value;
-            $ctx->__stash[ 'forward_' . $key ] = $value;
+            $ctx->__stash['forward_' . $key ] = $value;
             if ( preg_match( "/(^.*)_date$/", $key, $mts ) ) {
                 $name = $mts[1];
                 if ( $time = $app->param( $name . '_time' ) ) {
@@ -3368,7 +3368,7 @@ class Prototype {
     }
 
     function hdlr_vardump ( $args, $ctx ) {
-        $vars = [ 'vars' => $ctx->vars, 'local_vars' => $ctx->local_vars ];
+        $vars = ['vars' => $ctx->vars, 'local_vars' => $ctx->local_vars ];
         ob_start();
         var_dump( $vars );
         $result = ob_get_clean();
@@ -3396,10 +3396,10 @@ class Prototype {
             $tmpl = '<i class="fa fa-__" aria-hidden="true"></i>&nbsp;';
             $tmpl .= $t ? $status : "<span class=\"sr-only\">$status</span>";
             if ( count( $options ) === 5 ) {
-                $icons = [ 'pencil', 'pencil-square',
-                    'calendar', 'check-square-o', 'calendar-times-o' ];
+                $icons = ['pencil', 'pencil-square',
+                    'calendar', 'check-square-o', 'calendar-times-o'];
             } else if ( count( $options ) === 2 ) {
-                $icons = [ 'pencil-square-o', 'check-square-o' ];
+                $icons = ['pencil-square-o', 'check-square-o'];
             }
             if ( isset( $icons ) ) {
                 return str_replace( '__', $icons[ $s - 1 ], $tmpl );
@@ -3472,8 +3472,8 @@ class Prototype {
         $col = isset( $args['name'] ) ? $args['name'] : '';
         if (! $col ) return;
         if ( isset( $ctx->vars['forward_params'] ) ) {
-            $value = isset( $ctx->__stash[ 'forward_' . $col ] )
-                ? $ctx->__stash[ 'forward_' . $col ] : '';
+            $value = isset( $ctx->__stash['forward_' . $col ] )
+                ? $ctx->__stash['forward_' . $col ] : '';
             return $value;
         }
         if ( is_array( $col ) ) {
@@ -3491,7 +3491,7 @@ class Prototype {
         $app = Prototype::get_instance();
         $key  = $args['key'];
         $kind = isset( $args['kind'] ) ? $args['kind'] : 'config';
-        $obj = $app->db->model( 'option' )->load( [ 'kind' => $kind, 'key' => $key ] );
+        $obj = $app->db->model( 'option' )->load( ['kind' => $kind, 'key' => $key ] );
         if ( is_array( $obj ) && !empty( $obj ) ) {
             $obj = $obj[0];
             return $obj->value;
@@ -3567,8 +3567,8 @@ class Prototype {
         if (! $data ) {
             $cache = $ctx->stash( $model . '_meta_' . $name . '_' . $obj_id );
             $metadata = $cache ? $cache : $this->db->model( 'meta' )->get_by_key(
-                     [ 'model' => $model, 'object_id' => $obj_id,
-                       'key' => 'metadata', 'kind' => $name ] );
+                     ['model' => $model, 'object_id' => $obj_id,
+                      'key' => 'metadata', 'kind' => $name ] );
             if (! $metadata->id ) {
                 return ( $property === 'all' ) ? [] : null;
             }
@@ -3619,8 +3619,8 @@ class Prototype {
         if (!$name && $model && $id ) {
             if ( $table = $this->get_table( $model ) ) {
                 $columns = $this->db->model( 'column' )->load(
-                 ['model' => $model, 'table_id' => $table->id, 'edit' => 'file' ],
-                 ['sort' => 'order', 'direction' => 'ascend' ] );
+                 ['model' => $model, 'table_id' => $table->id, 'edit' => 'file'],
+                 ['sort' => 'order', 'direction' => 'ascend'] );
                 if (! empty( $columns ) ) {
                     foreach( $columns as $column ) {
                         if (! $column->options || $column->options === 'image' ) {
@@ -3716,8 +3716,8 @@ class Prototype {
             $height = (int) $height;
             $max_scale = ( $width > $height ) ? $width : $height;
             $image_versions = [
-                ''          => [ 'auto_orient' => true ],
-                'thumbnail' => [ 'max_width' => $max_scale, 'max_height' => $max_scale ] ];
+                ''          => ['auto_orient' => true ],
+                'thumbnail' => ['max_width' => $max_scale, 'max_height' => $max_scale ] ];
             if ( $square ) {
                 $image_versions['thumbnail']['crop'] = true;
             }
@@ -3811,7 +3811,7 @@ class Prototype {
                     if ( $id ) $ids[] = (int) $id;
                 }
                 if ( empty( $rels ) ) {
-                    $ctx->restore( [ $model, 'current_context' ] );
+                    $ctx->restore( [ $model, 'current_context'] );
                     $repeat = false;
                     return;
                 }
@@ -3819,14 +3819,14 @@ class Prototype {
                 $terms = ['id' => ['in' => $ids ] ];
                 $objects = $app->db->model( $settings[2] )->load( $terms );
                 if ( empty( $objects ) ) {
-                    $ctx->restore( [ $model, 'current_context' ] );
+                    $ctx->restore( [ $model, 'current_context'] );
                     $repeat = false;
                     return;
                 }
             } else {
                 $relations = $app->get_relations( $obj, $settings[2], $settings[0] );
                 if ( empty( $relations ) ) {
-                    $ctx->restore( [ $model, 'current_context' ] );
+                    $ctx->restore( [ $model, 'current_context'] );
                     $repeat = false;
                     return;
                 }
@@ -3838,7 +3838,7 @@ class Prototype {
             }
             if ( empty( $objects ) ) {
                 $repeat = false;
-                $ctx->restore( [ $model, 'current_context' ] );
+                $ctx->restore( [ $model, 'current_context'] );
                 return;
             }
             $ctx->local_params = $objects;
@@ -3846,7 +3846,7 @@ class Prototype {
         $params = $ctx->local_params;
         if ( empty( $params ) ) {
             $repeat = false;
-            $ctx->restore( [ $model, 'current_context' ] );
+            $ctx->restore( [ $model, 'current_context'] );
             return;
         }
         $ctx->set_loop_vars( $counter, $params );
@@ -3856,7 +3856,7 @@ class Prototype {
             $ctx->stash( 'current_context', $to_obj );
             $repeat = true;
         } else {
-            $ctx->restore( [ $model, 'current_context' ] );
+            $ctx->restore( [ $model, 'current_context'] );
         }
         return ( $counter > 1 && isset( $args['glue'] ) )
             ? $args['glue'] . $content : $content;
@@ -3961,7 +3961,7 @@ class Prototype {
 
     function hdlr_objectloop ( $args, &$content, $ctx, &$repeat, $counter ) {
         $app = Prototype::get_instance();
-        $model = isset( $args[ 'model' ] ) ? $args[ 'model' ] : null;
+        $model = isset( $args['model'] ) ? $args['model'] : null;
         $this_tag = $args['this_tag'];
         $model = $model ? $model : $ctx->stash( 'blockmodel_' . $this_tag );
         if (! $counter ) {
@@ -3991,10 +3991,10 @@ class Prototype {
                 $args['direction'] = ( stripos( $args['sort_order'], 'desc' )
                     !== false ) ? 'descend' : 'ascend';
             }
-            if ( isset( $args[ 'offset' ] ) ) {
+            if ( isset( $args['offset'] ) ) {
                 $args['offset'] = (int) $args['offset'];
             }
-            if ( isset( $args[ 'limit' ] ) ) {
+            if ( isset( $args['limit'] ) ) {
                 $args['limit'] = (int) $args['limit'];
             }
             if ( isset( $args['options'] ) ) {
@@ -4071,7 +4071,7 @@ class Prototype {
                     $terms['id'] = ['IN' => $rel_ids ];
                 } else {
                     $repeat = false;
-                    $ctx->restore( [ $model, 'current_context' ] );
+                    $ctx->restore( [ $model, 'current_context'] );
                     return;
                 }
             }
@@ -4100,7 +4100,7 @@ class Prototype {
         $params = $ctx->local_params;
         if ( empty( $params ) ) {
             $repeat = false;
-            $ctx->restore( [ $model, 'current_context' ] );
+            $ctx->restore( [ $model, 'current_context'] );
             return;
         }
         $ctx->set_loop_vars( $counter, $params );
@@ -4116,7 +4116,7 @@ class Prototype {
             }
             $repeat = true;
         } else {
-            $ctx->restore( [ $model, 'current_context' ] );
+            $ctx->restore( [ $model, 'current_context'] );
         }
         return ( $counter > 1 && isset( $args['glue'] ) )
             ? $args['glue'] . $content : $content;
@@ -4124,9 +4124,9 @@ class Prototype {
 
     function hdlr_objectcols ( $args, &$content, $ctx, &$repeat, $counter ) {
         $app = Prototype::get_instance();
-        $type = isset( $args[ 'type' ] ) ? $args[ 'type' ] : '';
+        $type = isset( $args['type'] ) ? $args['type'] : '';
         if (! $counter ) {
-            $model = isset( $args[ 'model' ] ) ? $args[ 'model' ] : null;
+            $model = isset( $args['model'] ) ? $args['model'] : null;
             if (! $model ) {
                 $model = $ctx->params['context_model'];
                 $table = $ctx->params['context_table'];
@@ -4144,16 +4144,16 @@ class Prototype {
                 $terms = [];
                 $terms['table_id'] = $table->id;
                 if ( $type ) {
-                    if ( $type === 'list' ) $terms[ 'list' ] = [ '!=' => '' ];
-                    elseif ( $type === 'edit' ) $terms[ 'edit' ] = [ '!=' => '' ];
+                    if ( $type === 'list' ) $terms['list'] = ['!=' => ''];
+                    elseif ( $type === 'edit' ) $terms['edit'] = ['!=' => ''];
                 }
-                $args = [ 'sort' => 'order' ];
+                $args = ['sort' => 'order'];
                 // cache or schema_from table ?
                 $columns = $app->db->model( 'column' )->load( $terms, $args );
                 $app->stash( $model . '_columns_' . $type, $columns );
                 $file_col = $app->db->model( 'column' )->load( [
                     'table_id' => $table->id,
-                    'edit' => 'file' ], [ 'limit' => 1 ] );
+                    'edit' => 'file'], ['limit' => 1] );
                 if (is_array( $file_col ) && count( $file_col ) ) {
                     $file_col = $file_col[0];
                     $app->stash( $model . '_file_column', $file_col );
@@ -4186,7 +4186,7 @@ class Prototype {
             foreach ( $values as $key => $value ) {
                 if ( $colprefix ) $key = preg_replace( "/^$colprefix/", '', $key );
                 if ( $key === 'edit' ) {
-                    $ctx->local_vars[ 'disp_option' ] = '';
+                    $ctx->local_vars['disp_option'] = '';
                     if ( strpos( $value, '(' ) ) {
                         list( $value, $opt ) = explode( '(', $value );
                         $opt = rtrim( $opt, ')' );
@@ -4314,7 +4314,7 @@ class Prototype {
         $cookie = $app->cookie_val( $app->cookie_name );
         if (! $cookie ) return false;
         $sess = $app->db->model( 'session' )->load(
-            [ 'name' => $cookie, 'kind' => 'US' ] );
+            ['name' => $cookie, 'kind' => 'US'] );
         if (! empty( $sess ) ) {
             $sess = $sess[0];
             $expires = $sess->expires ? $sess->expires : $app->sess_timeout;
