@@ -66,6 +66,7 @@ class PADO {
     public  $can_drop    = false;
     public  $base_model  = null;
     public static $stash = [];
+    public  $cache       = [];
     public  $app         = null;
 
     public  $callbacks   = [
@@ -471,6 +472,13 @@ class PADOBaseModel {
         if ( isset( $pado->methods['load'] ) )
             return $this->_driver->load( $terms, $args, $cols );
         $model = $this->_model;
+        if (! isset( $pado->cache[ $model ] ) ) $pado->cache[ $model ] = [];
+        if ( is_numeric( $terms ) ) {
+            if ( isset( $pado->cache[ $model ][ $terms ] ) ) {
+                return $pado->cache[ $model ][ $terms ];
+            }
+        }
+        $pado->cache[ $model ];
         $table = $this->_table;
         $colprefix = $this->_colprefix;
         if (! $pado->upgrader ) {
@@ -485,14 +493,14 @@ class PADOBaseModel {
             $and_or = 'AND';
         $illegals = PADOBaseModel::ILLEGALS;
         $model = str_replace( $illegals, '', $model );
-        if (! $model ) return [];
+        if (! $model ) return is_numeric( $terms ) ? null : [];
         if ( $cols === '*' ) {
         } elseif (! $cols ) {
             $cols = '*';
         } else {
             $cols = str_replace( $illegals, '', $cols );
         }
-        if (! $cols ) return [];
+        if (! $cols ) return is_numeric( $terms ) ? null : [];
         if ( $cols !== '*' ) {
             $columns = explode( ',', $cols );
             array_walk( $columns, function( &$col, $num, $params ) {
@@ -737,11 +745,6 @@ class PADOBaseModel {
         $pado->run_callbacks( $callback, $model, $this );
         $sql = $callback[ 'sql' ];
         $sth = $db->prepare( $sql );
-        if ( isset( $args['count'] ) && $args['count'] ) {
-            //var_dump( $terms );
-            //var_dump($sql);
-            //exit();
-        }
         if (! $count_group_by ) {
             $class = class_exists( $model ) ? $model
             : ( $this->_driver
@@ -762,8 +765,11 @@ class PADOBaseModel {
             }
             if ( $load_iter ) return $sth;
             $objects = $sth->fetchAll();
-            if ( is_numeric( $terms ) )
-                return isset( $objects[0] ) ? $objects[0] : null;
+            if ( is_numeric( $terms ) ) {
+                $obj = isset( $objects[0] ) ? $objects[0] : null;
+                if ( $obj ) $pado->cache[ $model ][ $obj->id ] = $obj;
+                return $obj;
+            }
             return $objects;
         } catch ( PDOException $e ) {
             trigger_error( 'PDOException: ' . $e->getMessage() . ", {$sql}" );
@@ -1520,8 +1526,10 @@ class PADOMySQL extends PADOBaseModel {
                 $type = '';
           }
             if (! $type ) {
-                trigger_error(
-                    'PADOBaseModelException: unknown type(' . $props['type'] . ')' );
+                if ( $pado->debug ) {
+                    trigger_error(
+                        'PADOBaseModelException: unknown type(' . $props['type'] . ')' );
+                }
                 continue;
             }
             if ( isset( $props['size'] ) ) {

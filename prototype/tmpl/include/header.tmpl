@@ -95,7 +95,7 @@ window.onload = function(){
               <mt:if name="__first__">
                 <li class="nav-item dropdown">
                 <a aria-label="<mt:trans phrase="WorkSpaces">" class="nav-link dropdown-toggle" data-toggle="dropdown" href="#">
-                  <i data-toggle="tooltip" data-placement="right" title="<mt:trans phrase="Objects for Setting">" class="fa fa-cog" aria-hidden="true"></i>
+                  <i data-toggle="tooltip" data-placement="right" title="<mt:trans phrase="Utilities">" class="fa fa-cog" aria-hidden="true"></i>
                   <span class="sr-only"><mt:trans phrase="Objects for Setting"></span>
                 </a>
                 <div class="dropdown-menu">
@@ -241,7 +241,7 @@ $(function () {
 </mt:unless>
 
     <mt:setvar name="can_action" value="1">
-      <mt:setvar name="can_create" value="1">
+    <mt:setvar name="can_create" value="1">
       <mt:if name="child_model">
         <mt:unless name="workspace_id">
             <mt:setvar name="can_create" value="0">
@@ -261,6 +261,11 @@ $(function () {
           <a class="btn btn-primary btn-sm" href="<mt:var name="script_uri">?__mode=view&amp;_type=edit&amp;_model=<mt:var name="model" escape><mt:var name="workspace_param">">
             <mt:trans phrase="New %s" params="$label">
           </a>
+          <mt:if name="has_hierarchy">
+          <a class="btn btn-secondary btn-sm" href="<mt:var name="script_uri">?__mode=view&amp;_type=hierarchy&amp;_model=<mt:var name="model" escape><mt:var name="workspace_param">">
+            <mt:trans phrase="Manage Hierarchy" params="$label">
+          </a>
+          </mt:if>
           </mt:unless>
           </mt:if>
           <mt:if name="request._type" eq="edit">
@@ -269,6 +274,11 @@ $(function () {
             <mt:trans phrase="New %s" params="$label">
           </a>
             </mt:if>
+          </mt:if>
+          <mt:if name="request._type" eq="hierarchy">
+          <a class="btn btn-primary btn-sm" href="<mt:var name="script_uri">?__mode=view&amp;_type=list&amp;_model=<mt:var name="model" escape><mt:var name="workspace_param">">
+            <mt:trans phrase="Return to List">
+          </a>
           </mt:if>
         </mt:if>
       </mt:if>

@@ -63,7 +63,7 @@ class Prototype {
 
     protected $methods= ['view', 'save', 'delete', 'upload', 'save_order',
                          'display_options', 'get_json', 'export_scheme',
-                         'recover_password'];
+                         'recover_password', 'save_hierarchy'];
 
     protected $reserved=['magic_token', 'tags', 'additional_tags', 'created_on',
                          'created_by', 'workspace_id', 'order', 'status', 'modified_on',
@@ -181,6 +181,7 @@ class Prototype {
         $ctx->register_tag( 'objectcols', 'block', 'hdlr_objectcols', $this );
         $ctx->register_tag( 'objectloop', 'block', 'hdlr_objectloop', $this );
         $ctx->register_tag( 'tables', 'block', 'hdlr_tables', $this );
+        $ctx->register_tag( 'nestableobjects', 'block', 'hdlr_nestable', $this );
         $ctx->register_tag( 'objectcontext', 'conditional', 'hdlr_objectcontext', $this );
         $ctx->register_tag( 'tablehascolumn', 'conditional', 'hdlr_tablehascolumn', $this );
         $ctx->register_tag( 'ifinarray', 'conditional', 'hdlr_ifinarray', $this );
@@ -334,8 +335,7 @@ class Prototype {
                 foreach ( $locale as $lang => $dict ) {
                     if ( $lang == 'default' ) {
                         $app->dictionary['default'] = array_merge(
-                        $app->dictionary['default'], $scheme['locale']['default']
-                        );
+                        $app->dictionary['default'], $scheme['locale']['default'] );
                     } else {
                         $phrase = key( $dict );
                         $trans = $dict[ $phrase ];
@@ -355,14 +355,14 @@ class Prototype {
             $primary = $indexes['PRIMARY'];
             $col_primary = isset( $scheme['primary'] ) ? $scheme['primary'] : null;
             $child_of = isset( $scheme['child_of'] ) ? $scheme['child_of'] : null;
-            $options = ['label', 'plural', 'auditing', 'sort_by', 'order',
+            $options = ['label', 'plural', 'auditing', 'sort_by', 'order', 'sortable',
                         'menu_type', 'template_tags', 'taggable', 'display_space',
-                        'has_basename', 'has_status', 'assign_user', 'sortable'];
+                'has_basename', 'has_status', 'assign_user', 'revisable', 'hierarchy'];
             foreach ( $options as $option ) {
                 $opt = isset( $scheme[ $option ] ) ? $scheme[ $option ] : '';
                 if (! $table->$option && $opt ) $table->$option( $opt );
             }
-            if ( $sort_by ) {
+            if ( isset( $sort_by ) ) {
                 $sort_key = key( $sort_by );
                 $sort_order = $sort_by[ $sort_key ];
                 $table->sort_by( $sort_key );
@@ -427,6 +427,11 @@ class Prototype {
                 if ( in_array( $name, $unchangeable ) ) $record->unchangeable( 1 );
                 $record->not_delete( 1 );
                 $record->order( $i );
+                if ( isset( $scheme['relation'] ) ) {
+                    if ( isset( $scheme['relation'][ $name ] ) ) {
+                        $record->options( $scheme['relation'][ $name ] );
+                    }
+                }
                 $app->set_default( $record );
                 $record->save();
                 if ( $name === 'workspace_id' ) {
@@ -601,6 +606,7 @@ class Prototype {
         $ctx->vars['model'] = $model;
         $ctx->vars['label'] = $app->translate( $label );
         $ctx->vars['plural'] = $app->translate( $plural );
+        $ctx->vars['has_hierarchy'] = $table->hierarchy;
         $scheme = $app->get_scheme_from_db( $model );
         $user = $app->user();
         $screen_id = $app->param( '_screen_id' );
@@ -610,18 +616,24 @@ class Prototype {
                     $app->error( 'Permission denied.' );
                 }
             }
-            $ctx->vars['page_title'] = $app->translate( 'List %s', $plural );
+            $ctx->vars['page_title'] = $app->translate( 'List of %s', $plural );
             $list_option = $app->get_user_opt( $model, 'list_option', $workspace_id );
             $list_props = $scheme['list_properties'];
             $column_defs = $scheme['column_defs'];
             $labels = $scheme['labels'];
             $search_props = [];
             $sort_props = [];
+            $indexes = $scheme['indexes'];
             foreach ( $column_defs as $col => $prop ) {
                 if ( $prop['type'] === 'string' || $prop['type'] === 'text' ) {
                     $search_props[ $col ] = true;
+                    if ( isset( $indexes[ $col ] ) && strpos( $col, 'rev_' ) !== 0 ) {
+                        $sort_props[ $col ] = true;
+                    }
                 } else if ( $prop['type'] === 'int' || $prop['type'] === 'datetime' ) {
-                    $sort_props[ $col ] = true;
+                    if ( strpos( $col, 'rev_' ) !== 0 ) {
+                        $sort_props[ $col ] = true;
+                    }
                 }
             }
             if ( $app->param( 'revision_select' ) ) {
@@ -772,6 +784,10 @@ class Prototype {
             $ctx->vars['list_limit'] = $limit;
             $ctx->vars['list_offset'] = $offset;
             $ctx->vars['_has_deadline'] = $obj->has_column( 'has_deadline' );
+            $maps = $db->model( 'urlmapping' )->count( ['table_id' => $table->id ] );
+            if ( $maps ) {
+                $ctx->vars['_has_mapping'] = 1;
+            }
             $next_offset = $offset + $limit;
             $prev_offset = $offset - $limit;
             if ( $count > $next_offset )
@@ -870,6 +886,13 @@ class Prototype {
                 $ctx->vars['has_mapping'] = 1;
             }
             $ctx->vars['screen_id'] = $screen_id ? $screen_id : $app->magic();
+        } elseif ( $type === 'hierarchy' ) {
+            // TODO can_do
+            $ctx->vars['page_title'] = $app->translate( 'Manage %s Hierarchy', $plural );
+            if ( $app->param( 'saved_hierarchy' ) ) {
+                $ctx->vars['header_alert_message'] =
+                    $app->translate( '%s hierarchy saved successfully.', $plural );
+            }
         }
         // todo http header
         $ctx->vars['return_args'] = http_build_query( $app->return_args );
@@ -956,6 +979,7 @@ class Prototype {
     function save_order ( $app ) {
         $model = $app->param( '_model' );
         $app->validate_magic();
+        // TODO can_do
         $objects = $app->get_object( $model );
         if (! is_array( $objects ) && is_object( $objects ) ) {
             $objects = [ $objects ];
@@ -972,7 +996,59 @@ class Prototype {
             "?__mode=view&_type=list&_model={$model}&saved_order=1" . $app->workspace_param );
     }
 
+    function save_hierarchy ( $app ) {
+        $model = $app->param( '_model' );
+        $app->validate_magic();
+        $workspace_id = $app->param( 'workspace_id' );
+        // TODO can_do
+        $_nestable_output = $app->param( '_nestable_output' );
+        $children = json_decode( $_nestable_output, true );
+        $order = 1;
+        $app->set_hierarchy( $model, $children, 0, $order, $error );
+        if ( $error ) {
+        
+        }
+        $table = $app->get_table( $model );
+        $nickname = $app->user()->nickname;
+        $plural = $app->translate( $table->plural );
+        $params = [ $plural, $nickname ];
+        $message = $app->translate( "%1\$s hierarchy changed by %2\$s.", $params );
+        $app->log( ['message'   => $message,
+                    'category'  => 'hierarchy',
+                    'table_id'  => $table->id,
+                    'metadata'  => $_nestable_output,
+                    'level'     => 'info'] );
+        $app->redirect( $app->admin_url .
+            "?__mode=view&_type=hierarchy&_model={$model}&saved_hierarchy=1"
+            . $app->workspace_param );
+    }
+
+    function set_hierarchy ( $model, $children, $parent = 0,
+                             &$order = 1, &$error = null ) {
+        $app = Prototype::get_instance();
+        $workspace = $app->workspace();
+        foreach ( $children as $value ) {
+            $id = $value['id'];
+            $children = isset( $value['children'] ) ? $value['children'] : null;
+            $obj = $app->db->model( $model )->load( $id );
+            if (! $obj ) continue;
+            if ( $obj->has_column( 'workspace' ) && $workspace ) {
+                // TODO can_do
+            }
+            $obj->parent_id( $parent );
+            if ( $obj->has_column( 'order' ) ) {
+                $obj->order( $order );
+            }
+            $obj->save();
+            $order++;
+            if ( $children ) {
+                $app->set_hierarchy( $model, $children, $id, $order, $error );
+            }
+        }
+    }
+
     function display_options ( $app ) {
+        // TODO can_do
         $model = $app->param( '_model' );
         $app->validate_magic();
         $workspace_id = $app->param( 'workspace_id' );
@@ -1108,7 +1184,7 @@ class Prototype {
         // todo permission
         $model = $app->param( 'name' );
         $scheme = $app->get_scheme_from_db( $model );
-        unset( $scheme['relations'] );
+        // unset( $scheme['relations'] );
         $table = $app->get_table( $model );
         $scheme['label'] = $table->label;
         unset( $scheme['labels'] );
@@ -1562,6 +1638,24 @@ class Prototype {
         if ( $is_changed ) {
             // TODO touch
         }
+        $nickname = $app->user()->nickname;
+        $label = $app->translate( $table->label );
+        $primary = $table->primary;
+        $name = $primary ? $obj->$primary : '';
+        $params = [ $label, $name, $obj->id, $nickname ];
+        $message = $is_new
+                 ? $app->translate( "%1\$s '%2\$s(ID:%3\$s)' created by %4\$s.", $params )
+                 : $app->translate( "%1\$s '%2\$s(ID:%3\$s)' edited by %4\$s.", $params );
+        $metadata = (! empty( $changed_cols ) && ! $is_new )
+                  ? json_encode( $changed_cols,
+                                 JSON_UNESCAPED_UNICODE|JSON_PRETTY_PRINT )
+                  : '';
+        $app->log( ['message'   => $message,
+                    'category'  => 'save',
+                    'table_id'  => $table->id,
+                    'object_id' => $obj->id,
+                    'metadata'  => $metadata,
+                    'level'     => 'info'] );
         $app->redirect( $app->admin_url . '?__mode=view&_type=edit&_model=' . $model .
             '&id=' . $id . '&saved=1' . $app->workspace_param . $add_return_args );
     }
@@ -1915,6 +2009,7 @@ class Prototype {
             return $app->forward( $model, join( "\n", $errors ) );
         }
         $children = $table->child_tables ? explode( ',', $table->child_tables ) : [];
+        $i = 0;
         foreach( $objects as $obj ) {
             $original = clone $obj;
             $callback = ['name' => 'pre_delete', 'error' => '', 'original' => $original ];
@@ -1940,6 +2035,22 @@ class Prototype {
             */
             $error = false;
             $app->remove_object( $obj, $table, $error );
+            // TODO error
+            $i++;
+            if ( $model !== 'log' ) {
+                $nickname = $app->user()->nickname;
+                $label = $app->translate( $table->label );
+                $primary = $table->primary;
+                $name = $primary ? $obj->$primary : '';
+                $params = [ $label, $name, $obj->id, $nickname ];
+                $message = $app->translate(
+                    "%1\$s '%2\$s(ID:%3\$s)' deleted by %4\$s.", $params );
+                $app->log( ['message'   => $message,
+                            'category'  => 'delete',
+                            'model'     => $table->id,
+                            'object_id' => $obj->id,
+                            'level'     => 'info'] );
+            }
             // $obj->remove();
             /* todo touch 
             if ( $obj->has_column( 'workspace_id' ) && $app->workspace() ) {
@@ -2068,11 +2179,11 @@ class Prototype {
     function get_table ( $model ) {
         $app = Prototype::get_instance();
         if ( $app->stash( 'table_' . $model ) )
-                    return $app->stash( 'table_' . $model );
+                    return $app->stash( 'table:' . $model );
         $table = $app->db->model( 'table' )->load( ['name' => $model ], ['limit' => 1] );
         if ( is_array( $table ) && !empty( $table ) ) {
             $table = $table[0];
-            $app->stash( 'table_' . $model, $table );
+            $app->stash( 'table:' . $model, $table );
             return $table;
         }
         return null;
@@ -2093,12 +2204,12 @@ class Prototype {
             $objects = $obj->load( ['id' => ['IN' => $id ] ] );
             return $objects;
         } elseif ( $id ) {
-            if ( $app->stash( $model . '_' . $id ) ) 
-                return $app->stash( $model . '_' . $id );
+            if ( $app->stash( $model . ':' . $id ) ) 
+                return $app->stash( $model . ':' . $id );
             $id = (int) $id;
             $obj = $obj->load( $id );
             if ( is_object( $obj ) )
-                $app->stash( $model . '_' . $id, $obj );
+                $app->stash( $model . ':' . $id, $obj );
         }
         return isset( $obj ) ? $obj : null;
     }
@@ -2161,8 +2272,8 @@ class Prototype {
             $cnt = $app->db->model( 'urlmapping' )->count( ['template_id' => $tpl->id ] );
             if ( $cnt ) {
                 $cb['error'] = $app->translate( 'This view could not be deleted because '
-                                                . 'it is being used for a URL map. To '
-                                                . 'delete a view, delete the URL map first.' );
+                                           . 'it is being used for a URL map. To '
+                                           . 'delete a view, delete the URL map first.' );
                 return false;
             }
         }
@@ -2448,7 +2559,8 @@ class Prototype {
         if ( $workspace_col->id ) $is_child = true;
         if( $is_child || $obj->sortable || $obj->auditing || $obj->taggable
             || $obj->has_status || $obj->start_end || $obj->has_basename
-            || $obj->assign_user || $obj->revisable || $obj->display_space ) {
+            || $obj->assign_user || $obj->revisable || $obj->display_space
+            || $obj->hierarchy ) {
             $last = $db->model( 'column' )->load
                     ( ['table_id' => $obj->id ],
                       ['sort' => 'order', 'direction' => 'descend', 'limit' => 1] );
@@ -2475,7 +2587,22 @@ class Prototype {
                     $last++;
                     $upgrade = true;
                 }
-
+            }
+            if ( $obj->hierarchy ) {
+                $name = $obj->name;
+                $primary = $obj->primary;
+                $list = "reference:{$name}:{$primary}";
+                $edit = "relation:{$name}:{$primary}:select";
+                $values = ['type' => 'int', 'size' => 11,
+                           'label'=> 'Parent',
+                           'default' => 0,
+                           'list' => $list,
+                           'edit' => $edit,
+                           'index' => 1, 'order' => $last ];
+                if ( $app->make_column( $obj, 'parent_id', $values ) ) {
+                    $last++;
+                    $upgrade = true;
+                }
             }
             if ( $obj->taggable ) {
                 $values = ['type' => 'relation',
@@ -2911,8 +3038,8 @@ class Prototype {
 
     function get_scheme_from_db ( $model, $force = false ) {
         $app = Prototype::get_instance();
-        if ( $app->stash( 'scheme_' . $model ) && ! $force ) {
-            return $app->stash( 'scheme_' . $model );
+        if ( $app->stash( 'scheme:' . $model ) && ! $force ) {
+            return $app->stash( 'scheme:' . $model );
         }
         $db = $app->db;
         $table = $app->get_table( $model );
@@ -2962,9 +3089,9 @@ class Prototype {
             $labels[ $col_name ] = $trans_label;
         }
         if ( $table->primary ) $scheme['primary'] = $table->primary;
-        $options = ['auditing', 'order', 'sortable',
+        $options = ['auditing', 'order', 'sortable', 'hierarchy',
                     'menu_type', 'template_tags', 'taggable', 'display_space',
-                    'has_basename', 'has_status', 'assign_user'];
+                    'has_basename', 'has_status', 'assign_user', 'revisable'];
         foreach ( $options as $option ) {
             if ( $table->$option ) $scheme[ $option ] = (int) $table->$option;
         }
@@ -2992,7 +3119,7 @@ class Prototype {
         $scheme['labels'] = $labels;
         $scheme['label'] = $obj_label;
         $scheme['locale'] = $locale;
-        $app->stash( 'scheme_' . $model, $scheme );
+        $app->stash( 'scheme:' . $model, $scheme );
         return $scheme;
     }
 
@@ -3484,7 +3611,14 @@ class Prototype {
             return $ctx->local_vars['object_' . $col ];
         $obj = $ctx->stash( 'object' )
              ? $ctx->stash( 'object' ) : $ctx->local_vars['__value__'];
-        return $obj ? $obj->$col : '';
+        if ( $obj && $obj->has_column( $col ) ) {
+            return $obj->$col;
+        }
+        if ( $obj && $col === 'permalink' ) {
+            $app = Prototype::get_instance();
+            return $app->get_permalink( $obj );
+        }
+        return '';
     }
 
     function hdlr_getoption ( $args, $ctx ) {
@@ -3781,11 +3915,11 @@ class Prototype {
         }
       }
         if (! $id ) return '';
-        if ( $obj = $ctx->stash( "{$model}_{$id}" ) ) {
+        if ( $obj = $app->stash( "{$model}:{$id}" ) ) {
             return $obj->$col;
         }
         $obj = $app->db->model( $model )->load( $id );
-        $ctx->stash( "{$model}_{$id}", $obj );
+        $app->stash( "{$model}:{$id}", $obj );
         if ( is_object( $obj ) ) {
             return $obj->$col;
         }
@@ -3798,57 +3932,97 @@ class Prototype {
         $current_context = $ctx->stash( 'current_context' );
         $obj = $ctx->stash( $current_context );
         $settings = $block_relations[ $this_tag ];
-        $model = $settings[1];
+        $model  = $settings[1];
         $to_obj = $settings[2];
+        $colname = $settings[0];
+        $preview_template = $ctx->stash( 'preview_template' );
+        $in_preview = false;
+        if ( $app->param( '_preview' ) && ! $preview_template ) {
+            $in_preview = true;
+        }
         if (! $counter ) {
+            $include_draft = isset( $args['include_draft'] )
+                           ? true : false;
             $objects = [];
-            $ctx->localize( [ $model, 'current_context'] );
-            $preview_template = $ctx->stash( 'preview_template' );
-            if ( $app->param( '_preview' ) && ! $preview_template ) {
-                $rels = $app->param( $settings[0] ) ? $app->param( $settings[0] ) : [];
+            $ctx->localize( [ $model, 'current_context', 'to_object'] );
+            if ( $in_preview ) {
+                if ( $to_obj === '__any__' ) {
+                    $to_obj = $app->param( "_{$colname}_model" );
+                }
+                $rels = $app->param( $colname ) ? $app->param( $colname ) : [];
                 $ids = [];
                 foreach ( $rels as $id ) {
                     if ( $id ) $ids[] = (int) $id;
                 }
                 if ( empty( $rels ) ) {
-                    $ctx->restore( [ $model, 'current_context'] );
+                    $ctx->restore( [ $model, 'current_context', 'to_object'] );
                     $repeat = false;
                     return;
                 }
                 $ids = array_unique( $ids );
                 $terms = ['id' => ['in' => $ids ] ];
-                $objects = $app->db->model( $settings[2] )->load( $terms );
+                if (! $include_draft ) {
+                    $status = $app->status_published( $to_obj );
+                    if ( $status ) {
+                        $terms['status'] = $status;
+                    }
+                }
+                $objects = $app->db->model( $to_obj )->load( $terms );
                 if ( empty( $objects ) ) {
-                    $ctx->restore( [ $model, 'current_context'] );
+                    $ctx->restore( [ $model, 'current_context', 'to_object'] );
                     $repeat = false;
                     return;
                 }
+                if ( count( $objects ) > 1 ) {
+                    $arr = [];
+                    foreach ( $objects as $obj ) {
+                        $arr[ (int) $obj->id ] = $obj;
+                    }
+                    $objects = [];
+                    foreach ( $ids as $id ) {
+                        $objects[] = $arr[ $id ];
+                    }
+                }
             } else {
-                $relations = $app->get_relations( $obj, $settings[2], $settings[0] );
+                if ( $to_obj === '__any__' ) $to_obj = null;
+                $relations = $app->get_relations( $obj, $to_obj, $colname );
                 if ( empty( $relations ) ) {
-                    $ctx->restore( [ $model, 'current_context'] );
+                    $ctx->restore( [ $model, 'current_context', 'to_object'] );
                     $repeat = false;
                     return;
                 }
                 foreach ( $relations as $relation ) {
                     $id = (int) $relation->to_id;
-                    $obj = $app->db->model( $settings[2] )->load( $id );
-                    if ( $obj ) $objects[] = $obj;
+                    $to_obj = $relation->to_obj;
+                    $obj = $app->db->model( $to_obj )->load( $id );
+                    if ( is_object( $obj ) ) {
+                        if (! $include_draft ) {
+                            $status = $app->status_published( $to_obj );
+                            if ( $status && $obj->status != $status ) {
+                                continue;
+                            }
+                        }
+                        $objects[] = $obj;
+                    }
                 }
             }
+            // Filter Status
+            $scheme = $app->db->scheme;
             if ( empty( $objects ) ) {
                 $repeat = false;
-                $ctx->restore( [ $model, 'current_context'] );
+                $ctx->restore( [ $model, 'current_context', 'to_object'] );
                 return;
             }
             $ctx->local_params = $objects;
+            $ctx->stash( 'to_object', $to_obj );
         }
         $params = $ctx->local_params;
         if ( empty( $params ) ) {
             $repeat = false;
-            $ctx->restore( [ $model, 'current_context'] );
+            $ctx->restore( [ $model, 'current_context', 'to_object'] );
             return;
         }
+        $to_obj = $ctx->stash( 'to_object' );
         $ctx->set_loop_vars( $counter, $params );
         if ( isset( $params[ $counter ] ) ) {
             $obj = $params[ $counter ];
@@ -3856,10 +4030,30 @@ class Prototype {
             $ctx->stash( 'current_context', $to_obj );
             $repeat = true;
         } else {
-            $ctx->restore( [ $model, 'current_context'] );
+            $ctx->restore( [ $model, 'current_context', 'to_object'] );
         }
         return ( $counter > 1 && isset( $args['glue'] ) )
             ? $args['glue'] . $content : $content;
+    }
+
+    function status_published ( $model ) {
+        $app = Prototype::get_instance();
+        $status = $app->stash( 'status_published:' . $model );
+        if ( isset( $status ) && $status ) return $status;
+        $scheme = $app->db->scheme;
+        if ( isset( $scheme[ $model ] ) ) {
+            $scheme = $scheme[ $model ]['column_defs'];
+            if ( isset( $scheme['status'] ) ) {
+                if ( isset( $scheme['has_deadline'] ) ) {
+                    $app->stash( 'status_published:' . $model, 4 );
+                    return 4;
+                } else {
+                    $app->stash( 'status_published:' . $model, 2 );
+                    return 2;
+                }
+            }
+        }
+        return null;
     }
 
     function get_relations ( $obj, $to_obj = null, $name = null ) {
@@ -3924,6 +4118,70 @@ class Prototype {
             }
             return $value;
         }
+    }
+
+    function hdlr_nestable ( $args, &$content, $ctx, &$repeat, $counter ) {
+        $app = Prototype::get_instance();
+        $model = isset( $args['model'] ) ? $args['model'] : '';
+        $parent_id = isset( $args['parent_id'] ) ? $args['parent_id'] : '';
+        if (! $model ) {
+            $repeat = false;
+            return;
+        }
+        if (! $counter ) {
+            $obj = $app->db->model( $model );
+            if (! $parent_id ) $parent_id = 0;
+            $terms = ['parent_id' => $parent_id];
+            if ( $app->workspace() ) {
+                $terms['workspace_id'] = $app->workspace()->id;
+            }
+            /* // TODO for not admin screen
+            $status = $app->status_published( $to_obj );
+            if ( $status ) {
+                $terms['status'] = $status;
+            }
+            */
+            $args = [];
+            if ( $obj->has_column( 'order' ) ) {
+                $args = ['sort' => 'order', 'direction' => 'ascend'];
+            }
+            $objects = $ctx->stash( 'children_object_' . $model . '_' . $parent_id )
+                ? $ctx->stash( 'children_object_' . $model . '_' . $parent_id )
+                : $obj->load( $terms, $args );
+            if (! is_array( $objects ) || empty( $objects ) ) {
+                $repeat = false;
+                return;
+            }
+            $ctx->localize( [ $model ] );
+            $ctx->local_params = $objects;
+        }
+        $params = $ctx->local_params;
+        $ctx->set_loop_vars( $counter, $params );
+        if ( isset( $params[ $counter ] ) ) {
+            $obj = $params[ $counter ];
+            $ctx->stash( $model, $obj );
+            $values = $obj->get_values();
+            $colprefix = $obj->_colprefix;
+            foreach ( $values as $key => $value ) {
+                if ( $colprefix ) $key = preg_replace( "/^$colprefix/", '', $key );
+                $ctx->local_vars[ $key ] = $value;
+            }
+            $args = [];
+            if ( $obj->has_column( 'order' ) ) {
+                $args = ['sort' => 'order', 'direction' => 'ascend'];
+            }
+            $children = $app->db->model( $model )->load( ['parent_id' => $obj->id ], $args );
+            if ( is_array( $children ) && ! empty( $children ) ) {
+                $ctx->local_vars[ 'has_children' ] = 1;
+                $ctx->stash( 'children_object_' . $model . '_' . $obj->id , $children );
+            } else {
+                unset( $ctx->local_vars[ 'has_children' ] );
+            }
+            $repeat = true;
+        } else {
+            $ctx->restore( [ $model ] );
+        }
+        return $content;
     }
 
     function hdlr_tables ( $args, &$content, $ctx, &$repeat, $counter ) {
@@ -4028,7 +4286,9 @@ class Prototype {
             $has_relation = false;
             if (! $container && $app->db->model( $context )->has_column( 'table_id' ) ) {
                 $ctx_obj = $ctx->stash( $context );
-                $ctx_model = $app->db->model( 'table' )->load( $ctx_obj->table_id );
+                $ctx_model = null;
+                if ( $ctx_obj->table_id )
+                    $ctx_model = $app->db->model( 'table' )->load( $ctx_obj->table_id );
                 $preview_template = $ctx->stash( 'preview_template' );
                 if ( $app->param( '_preview' ) && ! $preview_template ) {
                     $scheme = $app->get_scheme_from_db( $context );
@@ -4036,7 +4296,8 @@ class Prototype {
                         $relations = $scheme['relations'];
                         foreach ( $relations as $key => $value ) {
                             $rel_model = $app->param( "_{$key}_model" );
-                            if ( $rel_model && $rel_model == $ctx_model->name ) {
+                            if ( $ctx_model && $rel_model &&
+                                    $rel_model == $ctx_model->name ) {
                                 $preview_ids = $app->param( $key );
                                 $rel_ids = [];
                                 foreach ( $preview_ids as $id ) {
@@ -4047,11 +4308,13 @@ class Prototype {
                         }
                     }
                 } else {
-                    $relations = $app->db->model( 'relation' )->load( 
-                            ['from_id' => (int) $ctx_obj->id, 'from_obj' => $context,
-                             'to_obj' => $ctx_model->name ] );
-                    $has_relation = true;
-                    $relation_col = 'to_id';
+                    if ( $ctx_model ) {
+                        $relations = $app->db->model( 'relation' )->load( 
+                                ['from_id' => (int) $ctx_obj->id, 'from_obj' => $context,
+                                 'to_obj' => $ctx_model->name ] );
+                        $has_relation = true;
+                        $relation_col = 'to_id';
+                    }
                 }
             }
             if ( $container && $context ) {
@@ -4070,30 +4333,34 @@ class Prototype {
                     }
                     $terms['id'] = ['IN' => $rel_ids ];
                 } else {
-                    $repeat = false;
-                    $ctx->restore( [ $model, 'current_context'] );
-                    return;
-                }
-            }
-            $table = $app->get_table( $model );
-            if (! isset( $args['status'] ) && ! isset( $args['include_draft'] ) ) {
-                if ( $table->has_status ) {
-                    $status_col = $app->db->model( 'column' )->get_by_key(
-                        ['table_id' => $table->id, 'name' => 'status'] );
-                    $options = $status_col->options;
-                    if ( $options ) {
-                        $options = explode( ',', $options );
-                        $count = count( $options );
-                        if ( $count === 5 ) {
-                            $terms['status'] = 4;
-                        } else if ( $count === 2 ) {
-                            $terms['status'] = 2;
-                        }
+                    if ( $this_tag !== 'objectloop' ) {
+                        $repeat = false;
+                        $ctx->restore( [ $model, 'current_context'] );
+                        return;
                     }
                 }
             }
-            if ( $table->revisable ) {
-                $terms['rev_type'] = 0;
+            $table = $app->get_table( $model );
+            if ( $table ) {
+                if (! isset( $args['status'] ) && ! isset( $args['include_draft'] ) ) {
+                    if ( $table->has_status ) {
+                        $status_col = $app->db->model( 'column' )->get_by_key(
+                            ['table_id' => $table->id, 'name' => 'status'] );
+                        $options = $status_col->options;
+                        if ( $options ) {
+                            $options = explode( ',', $options );
+                            $count = count( $options );
+                            if ( $count === 5 ) {
+                                $terms['status'] = 4;
+                            } else if ( $count === 2 ) {
+                                $terms['status'] = 2;
+                            }
+                        }
+                    }
+                }
+                if ( $table->revisable ) {
+                    $terms['rev_type'] = 0;
+                }
             }
             $ctx->local_params = $obj->load( $terms, $args );
         }
@@ -4138,8 +4405,8 @@ class Prototype {
                 $repeat = false;
                 return;
             }
-            $columns = $app->stash( $model . '_columns_' . $type );
-            $file_col = $app->stash( $model . '_file_column' );
+            $columns = $app->stash( $model . ':columns:' . $type );
+            $file_col = $app->stash( $model . ':file_column' );
             if (! $columns ) {
                 $terms = [];
                 $terms['table_id'] = $table->id;
@@ -4150,13 +4417,13 @@ class Prototype {
                 $args = ['sort' => 'order'];
                 // cache or schema_from table ?
                 $columns = $app->db->model( 'column' )->load( $terms, $args );
-                $app->stash( $model . '_columns_' . $type, $columns );
+                $app->stash( $model . ':columns:' . $type, $columns );
                 $file_col = $app->db->model( 'column' )->load( [
                     'table_id' => $table->id,
                     'edit' => 'file'], ['limit' => 1] );
                 if (is_array( $file_col ) && count( $file_col ) ) {
                     $file_col = $file_col[0];
-                    $app->stash( $model . '_file_column', $file_col );
+                    $app->stash( $model . ':file_column', $file_col );
                 }
             }
             $ctx->local_vars['table_primary'] = $table->primary;
@@ -4286,7 +4553,7 @@ class Prototype {
              $phrase = $dict[ $lang ][ $phrase ];
         $phrase = is_string( $params )
             ? sprintf( $phrase, $params ) : vsprintf( $phrase, $params );
-        return htmlspecialchars( $phrase );
+        return $phrase;
     }
 
     function redirect ( $url ) {
@@ -4336,6 +4603,37 @@ class Prototype {
             }
         }
         return false;
+    }
+
+    function log ( $message ) {
+        $message = is_string( $message ) ? ['message' => $message ] : $message;
+        $app = Prototype::get_instance();
+        $ip = '';
+        if ( isset( $_SERVER[ 'HTTP_X_FORWARDED_FOR' ] ) ) {
+            $ip = $_SERVER[ 'HTTP_X_FORWARDED_FOR' ];
+        } else {
+            $ip = $_SERVER[ 'REMOTE_ADDR' ];
+        }
+        $message['remote_ip'] = $ip;
+        $log = $app->db->model( 'log' )->new( $message );
+        if (! $log->level ) {
+            $log->level(1);
+        } else {
+            if ( strtolower( $log->level ) == 'info' ) {
+                $log->level(1);
+            } elseif ( strtolower( $log->level ) == 'warning' ) {
+                $log->level(2);
+            } elseif ( strtolower( $log->level ) == 'error' ) {
+                $log->level(4) ;
+            } elseif ( strtolower( $log->level ) == 'security' ) {
+                $log->level(8) ;
+            } elseif ( strtolower( $log->level ) == 'debug' ) {
+                $log->level(16) ;
+            }
+        }
+        if (! $log->category ) $log->category( 'system' );
+        $app->set_default( $log );
+        $log->save();
     }
 
     function moved_permanently ( $url ) {

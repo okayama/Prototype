@@ -13,12 +13,11 @@
         <span class="custom-control-description"> 
         <mt:trans phrase="Display in System"></span>
     </label>
-    
     <label>
     <span><mt:trans phrase="Menu Type"> &nbsp;: </span>
     <select name="menu_type" id="menu_type" class="form-control">
       <option value="1" <mt:if name="object_menu_type" eq="1">selected</mt:if>><mt:trans phrase="Panel"></option>
-      <option value="2" <mt:if name="object_menu_type" eq="2">selected</mt:if>><mt:trans phrase="Settings"></option>
+      <option value="2" <mt:if name="object_menu_type" eq="2">selected</mt:if>><mt:trans phrase="Utility"></option>
       <option value="3" <mt:if name="object_menu_type" eq="3">selected</mt:if>><mt:trans phrase="System Object"></option>
     </select>
     </label>
@@ -36,7 +35,7 @@ $("#<mt:var name="name" escape>").click(function(){
 </mt:if>
 </mt:if>
 
-<div class="row form-group">
+<div class="row form-group row-more">
   <div class="col-lg-2">
   </div>
   <div class="col-lg-10">
@@ -145,6 +144,15 @@ $("#<mt:var name="name" escape>").click(function(){
         <mt:trans phrase="Logical Deletion"></span>
     </label>
 
+    <input type="hidden" name="hierarchy" value="0">
+    <label class="custom-control custom-checkbox">
+    <input id="hierarchy" class="custom-control-input"
+    <mt:if name="readonly">onclick="return false;"</mt:if>
+     type="checkbox" name="hierarchy" value="1" <mt:if name="object_hierarchy">checked</mt:if>>
+        <span class="custom-control-indicator"></span>
+        <span class="custom-control-description"> 
+        <mt:trans phrase="Hierarchy"></span>
+    </label>
 <!--/mt:ifinarray-->
 
   </div>

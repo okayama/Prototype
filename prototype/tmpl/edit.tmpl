@@ -182,10 +182,10 @@ $('#__view-permalink').click(function(){
 </mt:if>
 </mt:unless>
 
-<mt:setvar name="preview_width" value="150">
+<mt:setvar name="preview_width" value="128">
 
 <mt:assetproperty name="$name" model="$model" property="image_width" setvar="image_width">
-<mt:if name="image_width" lt="150">
+<mt:if name="image_width" lt="$preview_width">
   <mt:setvar name="preview_width" value="$image_width">
 </mt:if>
 
@@ -323,7 +323,7 @@ $(function () {
                 if (file.class == 'image') {
                     $('#image_preview-<mt:var name="__col_name__">').show();
                     $('#image_preview-<mt:var name="__col_name__">').prop('src','data:'+file.type+';base64,'+file.thumbnail);
-                    if(file.width < 150 ){
+                    if(file.width < <mt:var name="preview_width"> ){
                         $('#image_preview-<mt:var name="__col_name__">').prop('width',file.width);
                     } else {
                         $('#image_preview-<mt:var name="__col_name__">').prop('width',150);
@@ -361,8 +361,6 @@ $(function () {
                     image_tmpl = image_tmpl.replace('image_width', file.width);
                     image_tmpl = image_tmpl.replace('image_height', file.height);
                     prop_tmpl = prop_tmpl + image_tmpl;
-                } else {
-                
                 }
                 $('#clipboard-<mt:var name="__col_name__">-wrapper').show();
                 $('#popover-<mt:var name="__col_name__">').show();
@@ -379,12 +377,17 @@ $(function () {
                     $('#mime_type').val(file.type);
                     $('#class').val(file.class);
                     $('#size').val(file.size);
+                    $('#_object_size').html(file_size);
                     if (file.class == 'image') {
                         $('#image_width').val(file.width);
                         $('#image_height').val(file.height);
+                        $('#_object_width').html(file.width+'px');
+                        $('#_object_height').html(file.height+'px');
                     } else {
                         $('#image_width').val('');
                         $('#image_height').val('');
+                        $('#_object_width').html('');
+                        $('#_object_height').html('');
                     }
                 }
                 $('#<mt:var name="__col_name__">-alert').show();

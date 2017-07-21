@@ -305,15 +305,31 @@ $('#dialog-cancel-btn').click(function(){
       <mt:unless name="value">
       <mt:setvarblock name="value">(<mt:trans phrase="null">)</mt:setvarblock>
       </mt:unless>
-        <mt:var name="value" trim_to="24+...">
+      <mt:if name="column_name" eq="message">
+        <mt:var name="value" trim_to="120+...">
+      <mt:else>
+        <mt:var name="value" trim_to="40+...">
+      </mt:if>
       </a>
+
+      <mt:if name="_has_mapping">
+        <mt:objectvar name="permalink" escape setvar="permalink">
+        <mt:if name="permalink">
+        &nbsp; 
+        <a href="<mt:var name="permalink">" target="_blank">
+        <i class="fa fa-external-link" aria-hidden="true"></i>
+        <span class="sr-only"><mt:trans phrase="View"></span>
+        </a>
+        </mt:if>
+      </mt:if>
+      
     <mt:elseif name="list_prop" eq="checkbox">
       <mt:if name="value">
         <i class="fa fa-check-square-o" aria-hidden="true"></i>
         <span class="sr-only"><mt:trans phrase="Checked"></span>
       </mt:if>
     <mt:elseif name="list_prop" eq="datetime">
-      <mt:var name="value">
+      <mt:var name="value" format_ts="Y-m-d h:i">
     <mt:elseif name="list_prop" eq="date">
       <mt:var name="value" split=" " setvar="col_date">
       <mt:var name="col_date[0]">
@@ -367,7 +383,11 @@ $('#popover-<mt:var name="column_name">-<mt:objectvar name="id">').popover({
           <mt:if name="alt_value">
             <mt:var name="alt_value">
           <mt:else>
-            <mt:var name="value" trim_to="40+...">
+            <mt:if name="column_name" eq="modified_on">
+                <mt:var name="value" format_ts="Y-m-d H:i">
+            <mt:else>
+                <mt:var name="value" trim_to="40+...">
+            </mt:if>
           </mt:if>
         </mt:if>
       </mt:if>

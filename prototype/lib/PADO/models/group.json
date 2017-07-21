@@ -1,13 +1,14 @@
 {
-    "label"    : "URL Map",
-    "plural"   : "URL Maps",
-    "auditing" : 1,
-    "display"  : 1,
-    "sortable" : 1,
-    "order"    : 120,
+    "label"    : "Group",
+    "plural"   : "Groups",
     "primary"  : "name",
-    "menu_type": 2,
+    "display"  : 1,
+    "auditing" : 1,
+    "order"    : 140,
+    "menu_type": 1,
+    "template_tags": 1,
     "display_space": 1,
+    "has_status": 1,
     "column_defs": {
         "id": {
             "type": "int",
@@ -24,22 +25,13 @@
             "size": 11,
             "not_null": 1
         },
-        "mapping": {
-            "type": "string",
-            "size": 255,
-            "not_null": 1
+        "objects": {
+            "type": "relation"
         },
-        "container": {
+        "status": {
             "type": "int",
-            "size": 11
-        },
-        "template_id": {
-            "type": "int",
-            "size": 11
-        },
-        "publish_file": {
-            "type": "tinyint",
-            "size": 4
+            "size": 11,
+            "default": "1"
         },
         "created_on": {
             "type": "datetime"
@@ -57,58 +49,50 @@
         },
         "workspace_id": {
             "type": "int",
-            "size": 11,
-            "not_null": 1
-        },
-        "order": {
-            "type": "int",
             "size": 11
         }
     },
     "indexes": {
         "PRIMARY": "id",
+        "id": "id",
         "name": "name",
         "table_id": "table_id",
-        "container": "container",
-        "template_id": "template_id",
-        "publish_file": "publish_file",
+        "status": "status",
         "created_on": "created_on",
         "modified_on": "modified_on",
         "created_by": "created_by",
         "modified_by": "modified_by",
-        "workspace_id": "workspace_id",
-        "order": "order"
+        "workspace_id": "workspace_id"
     },
     "sort_by": {
         "id": "ascend"
+    },
+    "relations": {
+        "objects": "__any__"
     },
     "autoset": [
         "created_on",
         "modified_on",
         "created_by",
-        "modified_by"
+        "modified_by",
+        "workspace_id"
+    ],
+    "unchangeable": [
+        "workspace_id"
     ],
     "edit_properties": {
         "id": "hidden",
         "name": "primary",
-        "table_id": "relation:table:label:select",
-        "mapping": "text",
-        "container": "relation:table:label:select",
-        "template_id": "relation:template:name:dialog",
-        "publish_file": "checkbox",
-        "order": "number"
+        "table_id": "reference:table:name",
+        "objects": "relation:__any__:__primary__:dialog",
+        "status": "selection"
     },
     "list_properties": {
         "id": "number",
         "name": "primary",
         "table_id": "reference:table:label",
-        "mapping": "text",
-        "container": "reference:table:label",
-        "template_id": "reference:template:name",
-        "publish_file": "checkbox",
         "modified_on": "datetime",
         "modified_by": "reference:user:name",
-        "workspace_id": "reference:workspace:name",
-        "order": "number"
+        "workspace_id": "reference:workspace:name"
     }
 }

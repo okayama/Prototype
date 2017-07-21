@@ -1,0 +1,99 @@
+{
+    "label"    : "Category",
+    "plural"   : "Categories",
+    "primary"  : "label",
+    "auditing" : 1,
+    "order"    : 140,
+    "child_of" : "workspace",
+    "menu_type": 1,
+    "template_tags": 1,
+    "display_space": 1,
+    "has_basename": 1,
+    "column_defs": {
+        "id": {
+            "type": "int",
+            "size": 11,
+            "not_null": 1
+        },
+        "label": {
+            "type": "string",
+            "size": 255
+        },
+        "description": {
+            "type": "text"
+        },
+        "parent_id": {
+            "type": "int",
+            "size": 11
+        },
+        "order": {
+            "type": "int",
+            "size": 11
+        },
+        "basename": {
+            "type": "string",
+            "size": 255,
+            "not_null": 1
+        },
+        "workspace_id": {
+            "type": "int",
+            "size": 11
+        },
+        "created_on": {
+            "type": "datetime"
+        },
+        "modified_on": {
+            "type": "datetime"
+        },
+        "created_by": {
+            "type": "int",
+            "size": 11
+        },
+        "modified_by": {
+            "type": "int",
+            "size": 11
+        }
+    },
+    "indexes": {
+        "PRIMARY": "id",
+        "label": "label",
+        "order": "order",
+        "basename": "basename",
+        "workspace_id": "workspace_id",
+        "created_on": "created_on",
+        "modified_on": "modified_on",
+        "created_by": "created_by",
+        "modified_by": "modified_by"
+    },
+    "sort_by": {
+        "id": "ascend"
+    },
+    "autoset": [
+        "workspace_id",
+        "created_on",
+        "modified_on",
+        "created_by",
+        "modified_by"
+    ],
+    "unchangeable": [
+        "workspace_id"
+    ],
+    "edit_properties": {
+        "id": "hidden",
+        "label": "primary",
+        "description": "textarea",
+        "parent_id": "relation:category:label:select",
+        "order": "number",
+        "basename": "text_short"
+    },
+    "list_properties": {
+        "id": "number",
+        "label": "primary",
+        "description": "text_short",
+        "parent_id": "reference:category:label",
+        "order": "number",
+        "workspace_id": "reference:workspace:name",
+        "modified_on": "datetime",
+        "modified_by": "reference:user:name"
+    }
+}

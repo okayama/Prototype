@@ -188,7 +188,9 @@
     "New Password"       : "新しいパスワード",
     "%s (Confirm)"       : "%s (確認)",
     "Edit %s"            : "%sの編集",
+    "List of %s"         : "%sの一覧",
     "List %s"            : "%sの一覧",
+    "Return to List"     : "一覧に戻る",
     "Page navigation"    : "ページナビ",
     "Previous"           : "前へ",
     "Next"               : "次へ",
@@ -201,6 +203,12 @@
     "column"             : "カラム",
     "Type"               : "タイプ",
     "Class"              : "クラス",
+    "Log"                : "ログ",
+    "Logs"               : "ログ",
+    "Message"            : "メッセージ",
+    "Data"               : "データ",
+    "IP Address"         : "IPアドレス",
+    "Level"              : "レベル",
     "MIME Type"          : "MIMEタイプ",
     "Width"              : "幅",
     "Height"             : "高さ",
@@ -283,16 +291,32 @@
     "Groups"             : "グループ",
     "Changed"            : "変更",
     "Change Note"        : "変更メモ",
+    "Hierarchy"          : "階層",
+    "Manage Hierarchy"   : "階層の管理",
+    "Manage %s Hierarchy": "%s階層の管理",
+    "Drag"               : "ドラッグ",
     "Diff"               : "差分",
     "%s revision(s)"     : "%s件のリビジョン",
     "Logical Deletion"   : "論理削除",
     "Panel"              : "パネル",
     "Container"          : "コンテナ",
     "Popover"            : "ポップオーバー",
-    "Objects for Setting": "設定関連オブジェクト",
+    "Utility"            : "ユーティリティ",
+    "Utilities"          : "ユーティリティ",
+    "Metadata"           : "メタデータ",
     "List Revisions of %s"
         : "%sのリビジョン一覧",
     "To" : "〜",
+    "%1$s '%2$s(ID:%3$s)' created by %4$s."
+        : "%4$s が %1$s 「%2$s(ID:%3$s)」を作成しました。",
+    "%1$s '%2$s(ID:%3$s)' edited by %4$s."
+        : "%4$s が %1$s 「%2$s(ID:%3$s)」を更新しました。",
+    "%1$s '%2$s(ID:%3$s)' deleted by %4$s."
+        : "%4$s が %1$s 「%2$s(ID:%3$s)」を削除しました。",
+    "%1$s hierarchy changed by %2$s."
+        : "%2$s が %1$s の階層を変更しました。",
+    "%s hierarchy saved successfully."
+        : "%sの階層を保存しました。",
     "Specify the Deadline"
         : "公開終了日を指定",
     "Please specify the Model name."

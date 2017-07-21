@@ -7,11 +7,15 @@
     "auditing" : 1,
     "menu_type": 1,
     "taggable" : 1,
+    "revisable": 1,
+    "template_tags": 1,
+    "display_space": 1,
+    "has_status": 1,
     "column_defs": {
         "id": {
             "type": "int",
-            "not_null": 1,
-            "size": 11
+            "size": 11,
+            "not_null": 1
         },
         "label": {
             "type": "string",
@@ -36,12 +40,15 @@
         },
         "file_ext": {
             "type": "string",
-            "size": 60
+            "size": 255
         },
         "mime_type": {
             "type": "string",
             "size": 255,
             "not_null": 1
+        },
+        "tags": {
+            "type": "relation"
         },
         "size": {
             "type": "int",
@@ -57,8 +64,28 @@
         },
         "class": {
             "type": "string",
-            "size": 60,
+            "size": 255,
             "not_null": 1
+        },
+        "status": {
+            "type": "int",
+            "size": 11,
+            "default": "1"
+        },
+        "created_by": {
+            "type": "int",
+            "size": 11
+        },
+        "rev_note": {
+            "type": "string",
+            "size": 255
+        },
+        "modified_by": {
+            "type": "int",
+            "size": 11
+        },
+        "rev_diff": {
+            "type": "text"
         },
         "created_on": {
             "type": "datetime"
@@ -66,48 +93,88 @@
         "modified_on": {
             "type": "datetime"
         },
-        "created_by": {
-            "type": "int",
-            "size": 11
-        },
-        "modified_by": {
-            "type": "int",
-            "size": 11
-        },
         "workspace_id": {
             "type": "int",
             "size": 11
+        },
+        "has_deadline": {
+            "type": "datetime"
+        },
+        "published_on": {
+            "type": "datetime"
+        },
+        "unpublished_on": {
+            "type": "datetime"
+        },
+        "rev_type": {
+            "type": "int",
+            "size": 11,
+            "not_null": 1,
+            "default": "0"
+        },
+        "rev_object_id": {
+            "type": "int",
+            "size": 11
+        },
+        "rev_changed": {
+            "type": "string",
+            "size": 255
         }
     },
     "indexes": {
         "PRIMARY": "id",
         "label": "label",
-        "file_name": "file_name",
         "extra_path": "extra_path",
+        "file_name": "file_name",
         "file_ext": "file_ext",
         "mime_type": "mime_type",
-        "class": "class",
         "size": "size",
+        "class": "class",
         "created_on": "created_on",
         "modified_on": "modified_on",
+        "status": "status",
         "created_by": "created_by",
+        "rev_note": "rev_note",
         "modified_by": "modified_by",
-        "workspace_id": "workspace_id"
+        "workspace_id": "workspace_id",
+        "has_deadline": "has_deadline",
+        "published_on": "published_on",
+        "unpublished_on": "unpublished_on",
+        "rev_type": "rev_type",
+        "rev_object_id": "rev_object_id"
     },
     "list_properties": {
         "id": "number",
         "label": "primary",
         "file_name": "text",
+        "tags": "reference:tag:name",
         "class": "text",
         "created_on": "date",
+        "status": "number",
         "modified_by": "reference:user:nickname",
-        "workspace_id": "reference:workspace:name"
+        "workspace_id": "reference:workspace:name",
+        "has_deadline": "checkbox",
+        "published_on": "date",
+        "unpublished_on": "date"
     },
     "autoset": [
-        "workspace_id", "class", "mime_type", "size", "file_ext", "image_width", "image_height"
+        "file_ext",
+        "mime_type",
+        "size",
+        "image_width",
+        "image_height",
+        "class",
+        "rev_diff",
+        "workspace_id",
+        "rev_type",
+        "rev_object_id",
+        "rev_changed"
     ],
     "sort_by": {
         "created_on": "descend"
+    },
+    "relations": {
+        "tags": "tag"
     },
     "edit_properties": {
         "id": "hidden",
@@ -116,11 +183,10 @@
         "file": "file",
         "extra_path": "text_short",
         "file_name": "text_short",
-        "mime_type": "text_short",
+        "tags": "relation:tag:name:dialog",
         "size": "number",
-        "image_width": "number",
-        "image_height": "number",
-        "file_ext": "text_short",
-        "class": "text_short"
+        "status": "selection",
+        "published_on": "datetime",
+        "unpublished_on": "datetime"
     }
 }

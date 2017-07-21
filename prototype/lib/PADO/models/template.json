@@ -6,6 +6,7 @@
     "order"    : 130,
     "primary"  : "name",
     "menu_type": 1,
+    "revisable": 1,
     "template_tags": 1,
     "display_space": 1,
     "has_status": 1,

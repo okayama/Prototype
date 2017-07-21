@@ -185,7 +185,12 @@ input.num {
 }
 
 input.e-num {
-  width: 180px;
+  width: 120px;
+  text-align: center;
+}
+
+input.num-size {
+  width: 100px !important;
   text-align: center;
 }
 
@@ -617,4 +622,16 @@ i.required {
   font-size: 50% !important;
   color: #666;
   margin-left: 7px;
+}
+
+.asset-meta label {
+  margin-left: 16px;
+}
+
+.row-more {
+  margin-top: -8px;
+}
+
+.object-metadata {
+  margin-left: 10px;
 }

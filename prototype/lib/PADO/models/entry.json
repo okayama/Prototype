@@ -1,0 +1,182 @@
+{
+    "label"    : "Entry",
+    "plural"   : "Entries",
+    "primary"  : "title",
+    "display"  : 1,
+    "auditing" : 1,
+    "order"    : 10,
+    "menu_type": 1,
+    "taggable" : 1,
+    "revisable": 1,
+    "child_of" : "workspace",
+    "template_tags": 1,
+    "display_space": 1,
+    "has_basename": 1,
+    "has_status": 1,
+    "assign_user": 1,
+    "column_defs": {
+        "id": {
+            "type": "int",
+            "size": 11,
+            "not_null": 1
+        },
+        "title": {
+            "type": "string",
+            "size": 255,
+            "not_null": 1
+        },
+        "body": {
+            "type": "text"
+        },
+        "og_image": {
+            "type": "blob"
+        },
+        "excerpt": {
+            "type": "text"
+        },
+        "keywords": {
+            "type": "string",
+            "size": 255
+        },
+        "categories": {
+            "type": "relation"
+        },
+        "tags": {
+            "type": "relation"
+        },
+        "basename": {
+            "type": "string",
+            "size": 255,
+            "not_null": 1
+        },
+        "status": {
+            "type": "int",
+            "size": 11,
+            "default": "1"
+        },
+        "has_deadline": {
+            "type": "tinyint",
+            "size": 4
+        },
+        "published_on": {
+            "type": "datetime"
+        },
+        "unpublished_on": {
+            "type": "datetime"
+        },
+        "rev_note": {
+            "type": "string",
+            "size": 255
+        },
+        "rev_diff": {
+            "type": "text"
+        },
+        "rev_type": {
+            "type": "int",
+            "size": 11,
+            "not_null": 1,
+            "default": "0"
+        },
+        "user_id": {
+            "type": "int",
+            "size": 11
+        },
+        "rev_changed": {
+            "type": "string",
+            "size": 255
+        },
+        "created_on": {
+            "type": "datetime"
+        },
+        "modified_on": {
+            "type": "datetime"
+        },
+        "created_by": {
+            "type": "int",
+            "size": 11
+        },
+        "modified_by": {
+            "type": "int",
+            "size": 11
+        },
+        "workspace_id": {
+            "type": "int",
+            "size": 11
+        },
+        "rev_object_id": {
+            "type": "int",
+            "size": 11
+        }
+    },
+    "indexes": {
+        "PRIMARY": "id",
+        "title": "title",
+        "keywords": "keywords",
+        "basename": "basename",
+        "status": "status",
+        "has_deadline": "has_deadline",
+        "published_on": "published_on",
+        "unpublished_on": "unpublished_on",
+        "rev_note": "rev_note",
+        "rev_type": "rev_type",
+        "user_id": "user_id",
+        "created_on": "created_on",
+        "modified_on": "modified_on",
+        "created_by": "created_by",
+        "modified_by": "modified_by",
+        "workspace_id": "workspace_id",
+        "rev_object_id": "rev_object_id"
+    },
+    "sort_by": {
+        "modified_on": "descend"
+    },
+    "relations": {
+        "categories": "category",
+        "tags": "tag"
+    },
+    "autoset": [
+        "rev_diff",
+        "rev_type",
+        "rev_changed",
+        "created_on",
+        "modified_on",
+        "created_by",
+        "modified_by",
+        "workspace_id",
+        "rev_object_id"
+    ],
+    "unchangeable": [
+        "workspace_id"
+    ],
+    "edit_properties": {
+        "id": "hidden",
+        "title": "primary",
+        "body": "richtext",
+        "og_image": "file",
+        "excerpt": "textarea",
+        "keywords": "text",
+        "categories": "relation:category:label:dialog",
+        "tags": "relation:tag:name:dialog",
+        "basename": "text_short",
+        "status": "selection",
+        "published_on": "datetime",
+        "unpublished_on": "datetime",
+        "user_id": "relation:user:nickname:dialog"
+    },
+    "list_properties": {
+        "id": "number",
+        "title": "primary",
+        "categories": "reference:category:label",
+        "tags": "reference:tag:name",
+        "status": "number",
+        "has_deadline": "checkbox",
+        "published_on": "date",
+        "unpublished_on": "date",
+        "rev_diff": "text",
+        "user_id": "reference:user:nickname",
+        "modified_on": "datetime",
+        "created_by": "reference:user:nickname",
+        "modified_by": "reference:user:nickname",
+        "workspace_id": "reference:workspace:name"
+    }
+}

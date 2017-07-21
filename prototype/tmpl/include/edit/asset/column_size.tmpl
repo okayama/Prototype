@@ -1,0 +1,43 @@
+<div class="row form-group asset-meta">
+  <div class="col-lg-2">
+  <mt:trans phrase="Metadata">
+  </div>
+  <div class="col-lg-10 form-inline">
+    <label>
+      <mt:trans phrase="Extension"> : <input id="file_ext" type="text" class="form-control watch-changed num-size form-control-sm" name="file_ext" value="<mt:var name="object_file_ext" escape>" readonly>
+    </label>
+    <label>
+      <mt:trans phrase="MIME Type"> : <input id="mime_type" type="text" class="form-control watch-changed num-size form-control-sm" name="mime_type" value="<mt:var name="object_mime_type" escape>" readonly>
+    </label>
+    <label>
+      <mt:trans phrase="Class"> : <input id="class" type="text" class="form-control watch-changed num-size form-control-sm" name="class" value="<mt:var name="object_class" escape>" readonly>
+    </label>
+  </div>
+</div>
+<div class="row form-group asset-meta row-more">
+  <div class="col-lg-2">
+  </div>
+  <div class="col-lg-10 form-inline">
+    <label>
+      <mt:trans phrase="Size"> : 
+      <span id="_object_size" class="object-metadata">
+      <mt:var name="object_size" format_size="1" escape>
+      </span>
+      <input id="size" type="hidden" class="form-control watch-changed num-size form-control-sm" name="size" value="<mt:var name="object_size" escape>" readonly>
+    </label>
+    <label>
+      <mt:trans phrase="Width"> : 
+      <span id="_object_width" class="object-metadata">
+      <mt:if name="object_image_width"><mt:var name="object_image_width" escape>px</mt:if>
+      </span>
+      <input id="image_width" type="hidden" class="form-control watch-changed num-size form-control-sm" name="image_width" value="<mt:var name="object_image_width" escape>" readonly>
+    </label>
+    <label>
+      <mt:trans phrase="Height"> : 
+      <span id="_object_height" class="object-metadata">
+      <mt:if name="object_image_height"><mt:var name="object_image_height" escape>px</mt:if>
+      </span>
+      <input id="image_height" type="hidden" class="form-control watch-changed num-size form-control-sm" name="image_height" value="<mt:var name="object_image_height" escape>" readonly>
+    </label>
+  </div>
+</div>
