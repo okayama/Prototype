@@ -183,10 +183,11 @@ $('#__view-permalink').click(function(){
 </mt:unless>
 
 <mt:setvar name="preview_width" value="128">
-
 <mt:assetproperty name="$name" model="$model" property="image_width" setvar="image_width">
+<mt:if name="image_width">
 <mt:if name="image_width" lt="$preview_width">
   <mt:setvar name="preview_width" value="$image_width">
+</mt:if>
 </mt:if>
 
 <mt:assetproperty name="$name" model="$model" property="file_name" setvar="file_name">
@@ -244,8 +245,8 @@ $('#__view-permalink').click(function(){
         id="popover-<mt:var name="__col_name__">"><i class="btn fa fa-info-circle fa-2x" aria-hidden="true" aria-label="<mt:trans phrase="Properties">"></i></a>
     <mt:objectvar name="$name" escape setvar="value">
     <mt:ignore>TODO:not Image</mt:ignore>
-      &nbsp; <a id="inline-<mt:var name="__col_name__">" target="_blank" class="btn btn-secondary" href="<mt:var name="script_uri">?__mode=view&amp;_type=edit&amp;_model=<mt:var name="model">&amp;id=<mt:var name="request.id" escape>&amp;view=<mt:var name="__col_name__">&amp;_screen_id=<mt:var name="screen_id"><mt:if name="workspace_id">&amp;workspace_id=<mt:var name="workspace_id"></mt:if>"><mt:trans phrase="View"></a>
-      <a id="download-<mt:var name="__col_name__">" class="btn btn-secondary" href="<mt:var name="script_uri">?__mode=view&amp;_type=edit&amp;_model=<mt:var name="model">&amp;id=<mt:var name="request.id" escape>&amp;view=<mt:var name="__col_name__">&amp;download=1&amp;_screen_id=<mt:var name="screen_id"><mt:if name="workspace_id">&amp;workspace_id=<mt:var name="workspace_id"></mt:if>"><mt:trans phrase="Download"></a>
+      &nbsp; <a id="inline-<mt:var name="__col_name__">" target="_blank" class="btn btn-secondary <mt:unless name="value">hidden</mt:unless>" href="<mt:var name="script_uri">?__mode=view&amp;_type=edit&amp;_model=<mt:var name="model">&amp;id=<mt:var name="request.id" escape>&amp;view=<mt:var name="__col_name__">&amp;_screen_id=<mt:var name="screen_id"><mt:if name="workspace_id">&amp;workspace_id=<mt:var name="workspace_id"></mt:if>"><mt:trans phrase="View"></a>
+      <a id="download-<mt:var name="__col_name__">" class="btn btn-secondary <mt:unless name="value">hidden</mt:unless>" href="<mt:var name="script_uri">?__mode=view&amp;_type=edit&amp;_model=<mt:var name="model">&amp;id=<mt:var name="request.id" escape>&amp;view=<mt:var name="__col_name__">&amp;download=1&amp;_screen_id=<mt:var name="screen_id"><mt:if name="workspace_id">&amp;workspace_id=<mt:var name="workspace_id"></mt:if>"><mt:trans phrase="Download"></a>
       <mt:setvarblock name="attach_key">request.<mt:var name="__col_name__">-magic</mt:setvarblock>
     <input id="<mt:var name="__col_name__">-magic" type="hidden" value="<mt:var name="$attach_key" escape>" name="<mt:var name="__col_name__">-magic" class="watch-changed">
     <span class="btn btn-success fileinput-button">
@@ -267,7 +268,6 @@ $('#__view-permalink').click(function(){
   <button data-toggle="tooltip" data-placement="left" title="<mt:trans phrase="Copy to Clipboard">" type="button" class="input-group-addon copy-clipboard" data-clipboard-target="#clipboard-<mt:var name="__col_name__">"><i class="fa fa-clipboard" aria-hidden="true" aria-label="<mt:trans phrase="Copy to Clipboard">"></i></button>
   <button id="view-<mt:var name="__col_name__">" data-toggle="tooltip" data-placement="left" title="<mt:trans phrase="View">" type="button" class="input-group-addon copy-clipboard"><i class="fa fa-external-link" aria-hidden="true" aria-label="<mt:trans phrase="View">"></i></button>
 </div>
-
 </div>
 <script>
 $('#view-<mt:var name="__col_name__">').click(function(){
@@ -315,8 +315,8 @@ $(function () {
             }
             $.each(data.result.files, function (index, file) {
                 $('#files-<mt:var name="__col_name__">').html('');
-                // $('#download-<mt:var name="__col_name__">').hide();
-                // $('#inline-<mt:var name="__col_name__">').hide();
+                $('#download-<mt:var name="__col_name__">').show();
+                $('#inline-<mt:var name="__col_name__">').show();
                 $('#<mt:var name="__col_name__">-magic').val(file.magic);
                 // alert(JSON.stringify(file));
                 $('<p/>').text(file.name).appendTo('#files-<mt:var name="__col_name__">');

@@ -17,7 +17,7 @@
         },
         "from_obj": {
             "type": "string",
-            "size": "11",
+            "size": "50",
             "not_null": 1
         },
         "from_id": {
@@ -27,7 +27,7 @@
         },
         "to_obj": {
             "type": "string",
-            "size": "11",
+            "size": "50",
             "not_null": 1
         },
         "to_id": {

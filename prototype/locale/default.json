@@ -21,6 +21,7 @@
     "can_list"      : "View List",
     "can_create"    : "Create",
     "hierarchy"     : "Hierarchy",
+    "og_image"      : "og:image",
     "can_edit"      : "Edit",
     "can_delete"    : "Delete",
     "menu_type"     : "Menu Type",

@@ -325,6 +325,9 @@
             <div class="col-md-9">
             <select id="_detail_list_table" class="form-control">
               <mt:objectloop model="table" sort_by="order">
+              <mt:if name="__first__">
+              <option value=""><mt:trans phrase="(None selected)"></option>
+              </mt:if>
               <mt:var name="label" setvar="table_label">
               <option value="<mt:var name="name" escape>"><mt:trans phrase="$table_label" escape></option>
               </mt:objectloop>

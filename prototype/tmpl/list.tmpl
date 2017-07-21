@@ -283,7 +283,7 @@ $('#dialog-cancel-btn').click(function(){
 </mt:if>
 <mt:if name="__name__">
   <td class="<mt:if name="__name__" eq="id">id </mt:if><mt:if name="list_prop" eq="number"><mt:unless name="sort_order"><mt:if name="column_name" ne="status">num</mt:if></mt:unless></mt:if>">
-  <mt:if name="list_prop" like="object"><mt:getobjectname id="$value" type="$list_prop" escape trim_to="10+..." setvar="value"></mt:if>
+  <mt:if name="list_prop" like="object"><mt:getobjectname id="$value" type="$list_prop" escape trim_to="20+..." setvar="value"></mt:if>
     <mt:if name="list_prop" eq="primary">
       <a <mt:if name="request.dialog_view">target="_blank"</mt:if> href="<mt:var name="script_uri">?__mode=view&amp;_type=edit&amp;_model=<mt:var name="model" escape>&amp;id=<mt:objectvar name="id" escape><mt:if name="_workspace_id">&amp;workspace_id=<mt:var name="_workspace_id"></mt:if><mt:if name="model" eq="workspace">&amp;workspace_id=<mt:objectvar name="id"></mt:if><mt:if name="request.revision_select">&amp;edit_revision=1</mt:if>">
       <mt:if name="__file_col__">
@@ -308,7 +308,7 @@ $('#dialog-cancel-btn').click(function(){
       <mt:if name="column_name" eq="message">
         <mt:var name="value" trim_to="120+...">
       <mt:else>
-        <mt:var name="value" trim_to="40+...">
+        <mt:var name="value" trim_to="80+...">
       </mt:if>
       </a>
 
@@ -346,7 +346,7 @@ $('#dialog-cancel-btn').click(function(){
         </mt:unless>
       </mt:if>
       <mt:objectvar name="id" setvar="from_id">
-      <mt:getobjectname id="$value" from_id="$from_id" type="$list_prop" name="$name" model="$model" trim_to="18+..." escape>
+      <mt:getobjectname id="$value" from_id="$from_id" type="$list_prop" name="$name" model="$model" trim_to="40+..." escape>
       <mt:if name="column_name" eq="workspace_id">
         <mt:unless name="workspace_scope">
           </a>

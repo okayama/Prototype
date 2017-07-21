@@ -56,13 +56,18 @@ class PADO {
  * $debug: 1.error_reporting( E_ALL ) / 2.debugPrint error. /3.debugPrint SQL statement.
  */
     public  $debug       = false;
+
+/**
+ * If specified migrate db from $pado->scheme[$model].
+ */
+    public  $upgrader    = false;
+
     public  $sandbox     = false;
     public  $logging     = false;
     public  $scheme      = [];
     public  $methods     = [];
     public  $json_model  = true;
     public  $save_json   = false;
-    public  $upgrader    = false;
     public  $can_drop    = false;
     public  $base_model  = null;
     public static $stash = [];
@@ -213,24 +218,22 @@ class PADO {
  */
     function run_callbacks ( &$cb, $model, &$obj, $needle = false ) {
         $cb_name = $cb['name'];
-        if ( isset( $this->callbacks[ $cb_name ][ $model ] ) )
-      {
-        $all_callbacks = $this->callbacks[ $cb_name ][ $model ];
-        ksort( $all_callbacks );
-        foreach ( $all_callbacks as $callbacks ) {
-            foreach ( $callbacks as $callback )
-          {
-            list( $meth, $class ) = $callback;
-            $res = true;
-            if ( function_exists( $meth ) ) {
-                $res = $meth( $cb, $this, $obj );
-            } elseif ( $class && method_exists( $class, $meth ) ) {
-                $res = $class->$meth( $cb, $this, $obj );
+        if ( isset( $this->callbacks[ $cb_name ][ $model ] ) ) {
+            $all_callbacks = $this->callbacks[ $cb_name ][ $model ];
+            ksort( $all_callbacks );
+            foreach ( $all_callbacks as $callbacks ) {
+                foreach ( $callbacks as $callback ) {
+                    list( $meth, $class ) = $callback;
+                    $res = true;
+                    if ( function_exists( $meth ) ) {
+                        $res = $meth( $cb, $this, $obj );
+                    } elseif ( $class && method_exists( $class, $meth ) ) {
+                        $res = $class->$meth( $cb, $this, $obj );
+                    }
+                    if ( $needle && !$res ) return false;
+                }
             }
-            if ( $needle && !$res ) return false;
-          }
         }
-      }
         return true;
     }
 
@@ -242,10 +245,12 @@ class PADO {
  *                           names and the values are the values for that column.
  * @param  array  $args    : Search options.
  * @param  string $cols    : Get columns from records. Comma-separated text or '*'.
- * @return array  $objects : An array of objects.
+ * @param  string $extra   : String to add to the WHERE statement.
+ *                           Insufficient care is required for injection.
+ * @return array  $objects : An array of objects or single object(Specified Numeric ID).
  */
-    function load ( $model, $terms = [], $args = [], $cols = '' ) {
-        return $this->model( $model )->load( $terms, $args, $cols );
+    function load ( $model, $terms = [], $args = [], $cols = '', $extra = '' ) {
+        return $this->model( $model )->load( $terms, $args, $cols, $extra );
     }
 
 /**
@@ -287,6 +292,25 @@ class PADO {
         return $start . $str . $end;
     }
 
+/**
+ * Clear cached objects or valiable. If model is omitted, all caches are cleared.
+ * 
+ * @param  string $model : Name of model.
+*/
+    function clear_cache ( $model = null ) {
+        if ( $model ) {
+            $pado->cache[ $model ] = [];
+        } else {
+            $pado->cache = [];
+            self::$stash = [];
+        }
+    }
+
+/**
+ * Display message.
+ * 
+ * @param  string $msg : Display text.
+*/
     function debugPrint ( $msg ) {
         echo '<hr><pre>', htmlspecialchars( $msg ), '</pre><hr>';
     }
@@ -464,7 +488,7 @@ class PADOBaseModel {
  * @param  string $cols    : Get columns from records. Comma-separated text or '*'.
  * @param  string $extra   : String to add to the WHERE statement.
  *                           Insufficient care is required for injection.
- * @return array  $objects : An array of objects.
+ * @return array  $objects : An array of objects or single object(Specified Numeric ID).
  */
     function load ( $terms = [], $args = [], $cols = '', $extra = '' ) {
         if (! $terms ) $terms = [];
@@ -531,85 +555,84 @@ class PADOBaseModel {
         $in_join = false;
         $load_iter = false;
         $method = isset( $args['get_by_key'] ) ? 'get_by_key' :'load';
-        if ( is_array( $args ) && !empty( $args ) )
-      {
-        if ( isset( $args['distinct'] ) || isset( $args['unique'] ) )
-            $distinct = 'distinct ';
-        if ( isset( $args['load_iter'] ) || isset( $args['load_iter'] ) ) {
-            $load_iter = true;
-            $method = 'load_iter';
-        }
-        $args = array_change_key_case( $args, CASE_LOWER );
-        if ( isset( $args['count'] ) && $args['count'] ||
-            isset( $args['count_group_by'] ) && $args['count_group_by'] ) {
-            if ( $distinct ) {
-                $count = "COUNT(DISTINCT {$id_column}) ";
-                $distinct = '';
-            } else {
-                $count = 'COUNT(*) ';
+        if ( is_array( $args ) && !empty( $args ) ) {
+            if ( isset( $args['distinct'] ) || isset( $args['unique'] ) )
+                $distinct = 'distinct ';
+            if ( isset( $args['load_iter'] ) || isset( $args['load_iter'] ) ) {
+                $load_iter = true;
+                $method = 'load_iter';
             }
-            $method = isset( $args['count'] ) ? 'count' : 'count_group_by';
-        }
-        if ( isset( $args['count_group_by'] ) && isset( $args['group'] ) ) {
-            $columns = $args['group'];
-            array_walk( $columns, function( &$col, $num, $pfx = null ){
-                $col = strpos( $col, $pfx ) !== 0 ? $pfx . $col : $col;
-            }, $colprefix );
-            $count_group_by = join( ',', $columns );
-            $group_by = "GROUP BY {$count_group_by}";
-            $count_group_by .= ',';
-        }
-        if ( isset( $args['join'] ) ) {
-            list( $join, $col ) = $args['join'];
-            $col2 = $col;
-            if ( is_array( $col ) ) {
-                list( $col, $col2 ) = $col;
-            }
-            if (!isset( $pado->scheme[ $join ] ) && $pado->json_model ) {
-                $this->set_scheme_from_json( $join );
-            }
-            if (!isset( $pado->scheme[ $join ] ) ) {
-                $_colprefix = $pado->colprefix;
-                $_table = $pado->prefix . $join;
-                if ( strpos( $_colprefix, '<model>' ) !== false )
-                    $_colprefix = str_replace( '<model>', $join, $_colprefix );
-                elseif ( strpos( $_colprefix, '<table>' ) !== false )
-                    $_colprefix = str_replace( '<table>', $_table, $_colprefix );
-                $this->get_scheme( $join, $pado->prefix . $join, $_colprefix );
-            }
-            $join_scheme = isset( $pado->scheme[ $join ] ) ?
-                $pado->scheme[ $join ][ 'column_defs' ] : null;
-            if ( $join_scheme && !isset( $join_scheme[ $col ] ) ) {
-                trigger_error(
-                "PADOBaseModelException: unknown column '{$col}' for model '{$join}'" );
-                return false;
-            }
-            if ( $cols !== '*' ) {
-                if ( isset( $columns ) ) {
-                    array_walk( $columns, function( &$v, $num, $table = null ){
-                        $v = $table . '.' . $v;
-                    }, $table );
-                    $cols = join( ',', $columns );
+            $args = array_change_key_case( $args, CASE_LOWER );
+            if ( isset( $args['count'] ) && $args['count'] ||
+                isset( $args['count_group_by'] ) && $args['count_group_by'] ) {
+                if ( $distinct ) {
+                    $count = "COUNT(DISTINCT {$id_column}) ";
+                    $distinct = '';
+                } else {
+                    $count = 'COUNT(*) ';
                 }
-            } else {
-                $cols = $table . '.*';
+                $method = isset( $args['count'] ) ? 'count' : 'count_group_by';
             }
-            if ( $count ) $cols = '';
-            $join_prefix = $pado->colprefix;
-            if ( strpos( $join_prefix, '<model>' ) !== false )
-                $join_prefix =
-                    str_replace( '<model>', $join, $join_prefix );
-            elseif ( strpos( $join_prefix, '<table>' ) !== false )
-                $join_prefix =
-                    str_replace( '<table>', $pado->prefix . $join, $join_prefix );
-            if ( $pado->prefix && strpos( $join, $pado->prefix ) !== 0 )
-                $join = $pado->prefix . $join;
-            if ( $cols ) $cols .= ' ';
-            $sql = "SELECT {$count_group_by}{$count}{$distinct}{$cols}FROM {$table}"
-                 . " JOIN $join ON {$table}.{$col}={$join}.{$join_prefix}{$col2} ";
-            $in_join = true;
+            if ( isset( $args['count_group_by'] ) && isset( $args['group'] ) ) {
+                $columns = $args['group'];
+                array_walk( $columns, function( &$col, $num, $pfx = null ){
+                    $col = strpos( $col, $pfx ) !== 0 ? $pfx . $col : $col;
+                }, $colprefix );
+                $count_group_by = join( ',', $columns );
+                $group_by = "GROUP BY {$count_group_by}";
+                $count_group_by .= ',';
+            }
+            if ( isset( $args['join'] ) ) {
+                list( $join, $col ) = $args['join'];
+                $col2 = $col;
+                if ( is_array( $col ) ) {
+                    list( $col, $col2 ) = $col;
+                }
+                if (!isset( $pado->scheme[ $join ] ) && $pado->json_model ) {
+                    $this->set_scheme_from_json( $join );
+                }
+                if (!isset( $pado->scheme[ $join ] ) ) {
+                    $_colprefix = $pado->colprefix;
+                    $_table = $pado->prefix . $join;
+                    if ( strpos( $_colprefix, '<model>' ) !== false )
+                        $_colprefix = str_replace( '<model>', $join, $_colprefix );
+                    elseif ( strpos( $_colprefix, '<table>' ) !== false )
+                        $_colprefix = str_replace( '<table>', $_table, $_colprefix );
+                    $this->get_scheme( $join, $pado->prefix . $join, $_colprefix );
+                }
+                $join_scheme = isset( $pado->scheme[ $join ] ) ?
+                    $pado->scheme[ $join ][ 'column_defs' ] : null;
+                if ( $join_scheme && !isset( $join_scheme[ $col ] ) ) {
+                    trigger_error(
+                    "PADOBaseModelException: unknown column '{$col}' for model '{$join}'" );
+                    return false;
+                }
+                if ( $cols !== '*' ) {
+                    if ( isset( $columns ) ) {
+                        array_walk( $columns, function( &$v, $num, $table = null ){
+                            $v = $table . '.' . $v;
+                        }, $table );
+                        $cols = join( ',', $columns );
+                    }
+                } else {
+                    $cols = $table . '.*';
+                }
+                if ( $count ) $cols = '';
+                $join_prefix = $pado->colprefix;
+                if ( strpos( $join_prefix, '<model>' ) !== false )
+                    $join_prefix =
+                        str_replace( '<model>', $join, $join_prefix );
+                elseif ( strpos( $join_prefix, '<table>' ) !== false )
+                    $join_prefix =
+                        str_replace( '<table>', $pado->prefix . $join, $join_prefix );
+                if ( $pado->prefix && strpos( $join, $pado->prefix ) !== 0 )
+                    $join = $pado->prefix . $join;
+                if ( $cols ) $cols .= ' ';
+                $sql = "SELECT {$count_group_by}{$count}{$distinct}{$cols}FROM {$table}"
+                     . " JOIN $join ON {$table}.{$col}={$join}.{$join_prefix}{$col2} ";
+                $in_join = true;
+            }
         }
-      }
         if (! isset( $sql ) ) {
             if ( $count ) $cols = '';
             $sql = "SELECT {$count_group_by}{$count}{$distinct}{$cols}"
@@ -623,80 +646,79 @@ class PADOBaseModel {
             $vals[] = 1;
         } elseif ( is_array( $terms ) && ! empty( $terms ) ) {
             $has_stmt = false;
-            foreach ( $terms as $key => $cond )
-          {
-            $orig_key = $key;
-            if ( $colprefix && strpos( $key, $colprefix ) !== 0 ) {
-                $key = $colprefix . $key;
-            } else {
-                $orig_key = preg_replace( "/^$colprefix/", '', $orig_key );
-            }
-            if ( $scheme && !isset( $scheme[ $orig_key ] ) )
-                continue;
-            $regex = '/(=|>|<|<=|>=|>|BETWEEN|NOT\sBETWEEN|LIKE|IN|NOT\sLIKE|'
-                   . 'IS\sNULL|IS\sNOT\sNULL|\!=)/i';
-            list( $op, $v ) = ['=', $cond ];
-            if ( is_array( $cond ) ) {
-                $op = key( $cond );
-                $v  = $cond[ $op ];
-            }
-            if ( count( $cond ) === 1 
-                || ( $op === 'BETWEEN' || $op === 'NOT BETWEEN' || $op === 'IN' )
-            ) {
-                if ( preg_match( $regex, $op, $matchs ) ) {
-                    $op = strtoupper( $matchs[1] );
-                    if ( $op === 'IS NULL' || $op === 'IS NOT NULL' ) {
-                        $stms[] = " {$key} {$op} ";
-                    } elseif ( is_array( $v ) &&
-                        ( $op === 'BETWEEN' || $op === 'NOT BETWEEN' ) ) {
-                        list( $start, $end ) = $v;
-                        $stms[] = " {$key} {$op} ? AND ? ";
-                        $vals[] = $start;
-                        $vals[] = $end;
-                    } else {
-                        if ( $op === 'IN' && is_array( $v ) ) {
-                            array_walk( $v, function( &$val ) {
-                                $val = $this->pado()->quote( $val );
-                            });
-                            $v = '('. join( ',', $v ) . ')';
-                            $stms[] = " {$key} {$op} {$v} ";
-                        } else {
-                            $stms[] = " {$key} {$op} ? ";
-                            $vals[] = $v;
-                        }
-                    }
+            foreach ( $terms as $key => $cond ) {
+                $orig_key = $key;
+                if ( $colprefix && strpos( $key, $colprefix ) !== 0 ) {
+                    $key = $colprefix . $key;
+                } else {
+                    $orig_key = preg_replace( "/^$colprefix/", '', $orig_key );
                 }
-            } else {
+                if ( $scheme && !isset( $scheme[ $orig_key ] ) )
+                    continue;
+                $regex = '/(=|>|<|<=|>=|>|BETWEEN|NOT\sBETWEEN|LIKE|IN|NOT\sLIKE|'
+                       . 'IS\sNULL|IS\sNOT\sNULL|\!=)/i';
+                list( $op, $v ) = ['=', $cond ];
                 if ( is_array( $cond ) ) {
-                    $conds = array_values( $cond );
-                    $stm = '';
-                    foreach ( $conds as $k => $v ) {
-                        $op = key( $v );
-                        $var = $v[ $op ];
-                        if ( preg_match( $regex, $op, $matchs ) ) {
-                            $op = strtoupper( $matchs[ 1 ] );
-                            if ( is_array( $var ) ) {
-                                $_and_or = strtoupper( key( $var ) );
-                                $_and_or = ltrim( $and_or, '-' );
-                                if ( $_and_or !== 'AND' && $_and_or !== 'OR' ) {
-                                    continue;
-                                }
-                                $var = $var[ $_and_or ];
+                    $op = key( $cond );
+                    $v  = $cond[ $op ];
+                }
+                if ( count( $cond ) === 1 
+                    || ( $op === 'BETWEEN' || $op === 'NOT BETWEEN' || $op === 'IN' )
+                ) {
+                    if ( preg_match( $regex, $op, $matchs ) ) {
+                        $op = strtoupper( $matchs[1] );
+                        if ( $op === 'IS NULL' || $op === 'IS NOT NULL' ) {
+                            $stms[] = " {$key} {$op} ";
+                        } elseif ( is_array( $v ) &&
+                            ( $op === 'BETWEEN' || $op === 'NOT BETWEEN' ) ) {
+                            list( $start, $end ) = $v;
+                            $stms[] = " {$key} {$op} ? AND ? ";
+                            $vals[] = $start;
+                            $vals[] = $end;
+                        } else {
+                            if ( $op === 'IN' && is_array( $v ) ) {
+                                array_walk( $v, function( &$val ) {
+                                    $val = $this->pado()->quote( $val );
+                                });
+                                $v = '('. join( ',', $v ) . ')';
+                                $stms[] = " {$key} {$op} {$v} ";
                             } else {
-                                $_and_or = 'and';
+                                $stms[] = " {$key} {$op} ? ";
+                                $vals[] = $v;
                             }
-                            if ( $stm ) $stm .= $_and_or;
-                            $stm .= " {$key} {$op} ? ";
-                            $vals[] = $var;
                         }
                     }
-                    if ( $stm ) {
-                        $stm = " ({$stm}) ";
-                        $stms[] = $stm;
+                } else {
+                    if ( is_array( $cond ) ) {
+                        $conds = array_values( $cond );
+                        $stm = '';
+                        foreach ( $conds as $k => $v ) {
+                            $op = key( $v );
+                            $var = $v[ $op ];
+                            if ( preg_match( $regex, $op, $matchs ) ) {
+                                $op = strtoupper( $matchs[ 1 ] );
+                                if ( is_array( $var ) ) {
+                                    $_and_or = strtoupper( key( $var ) );
+                                    $_and_or = ltrim( $and_or, '-' );
+                                    if ( $_and_or !== 'AND' && $_and_or !== 'OR' ) {
+                                        continue;
+                                    }
+                                    $var = $var[ $_and_or ];
+                                } else {
+                                    $_and_or = 'and';
+                                }
+                                if ( $stm ) $stm .= $_and_or;
+                                $stm .= " {$key} {$op} ? ";
+                                $vals[] = $var;
+                            }
+                        }
+                        if ( $stm ) {
+                            $stm = " ({$stm}) ";
+                            $stms[] = $stm;
+                        }
                     }
                 }
             }
-          }
             if ( count( $stms ) ) {
                 if ( $in_join ) $sql .= 'AND';
                 $sql .= 'WHERE (' . join( " {$and_or} ", $stms ) . ')';
@@ -709,33 +731,32 @@ class PADOBaseModel {
         if ( $extra ) $sql .= $extra . ' ';
         if (!$count ) {
             $opt = '';
-            if ( is_array( $args ) && !empty( $args ) )
-          {
-            foreach ( $args as $key => $arg ) {
-                if ( $key === 'sort' || $key === 'order_by' ) $opt = $arg;
-                elseif ( $key === 'limit' ) $limit = (int) $arg;
-                elseif ( $key === 'offset' ) $offset = (int) $arg;
-                elseif ( $key === 'direction' ) $direction = strtoupper( $arg );
-            }
-            if ( $opt ) {
-                $opt = str_replace( $illegals, '', $opt );
-                if ( $colprefix && strpos( $opt, $colprefix ) !== 0 )
-                    if ( ( $colprefix && !$in_join ) 
-                        || ( $in_join && strpos( $opt, '.' ) === false ) )
-                            $opt = $colprefix . $opt;
-                $opt = " ORDER BY {$opt} ";
-                if ( isset( $direction ) ) {
-                    $direction = strpos( $direction, 'ASC' ) === 0 ? 'ASC' : 'DESC';
-                } else {
-                    $direction = 'ASC';
+            if ( is_array( $args ) && !empty( $args ) ) {
+                foreach ( $args as $key => $arg ) {
+                    if ( $key === 'sort' || $key === 'order_by' ) $opt = $arg;
+                    elseif ( $key === 'limit' ) $limit = (int) $arg;
+                    elseif ( $key === 'offset' ) $offset = (int) $arg;
+                    elseif ( $key === 'direction' ) $direction = strtoupper( $arg );
                 }
-                $opt .= $direction . ' ';
+                if ( $opt ) {
+                    $opt = str_replace( $illegals, '', $opt );
+                    if ( $colprefix && strpos( $opt, $colprefix ) !== 0 )
+                        if ( ( $colprefix && !$in_join ) 
+                            || ( $in_join && strpos( $opt, '.' ) === false ) )
+                                $opt = $colprefix . $opt;
+                    $opt = " ORDER BY {$opt} ";
+                    if ( isset( $direction ) ) {
+                        $direction = strpos( $direction, 'ASC' ) === 0 ? 'ASC' : 'DESC';
+                    } else {
+                        $direction = 'ASC';
+                    }
+                    $opt .= $direction . ' ';
+                }
+                if ( isset( $limit ) ) {
+                    if (! isset( $offset ) ) $offset = 0;
+                    $opt .= "LIMIT $limit OFFSET $offset";
+                }
             }
-            if ( isset( $limit ) ) {
-                if (! isset( $offset ) ) $offset = 0;
-                $opt .= "LIMIT $limit OFFSET $offset";
-            }
-          }
             $sql .= $opt;
         }
         if ( $pado->debug === 3 ) $pado->debugPrint( $sql );
@@ -780,7 +801,7 @@ class PADOBaseModel {
  * Load object matches the params.
  * If no matching object is found, return new object assigned params.
  * 
- * @params array  $params: An array for search or assign.
+ * @param  array  $params: An array for search or assign.
  * @return object $obj   : Single object matches the params or new object assigned params.
  */
     function get_by_key ( $params ) {
@@ -794,9 +815,8 @@ class PADOBaseModel {
 /**
  * Getting the count of a number of objects.
  * 
- * @param  mixed  $terms : The hash should have keys matching column names and the values
+ * @param  array  $terms : The hash should have keys matching column names and the values
  *                         are the values for that column.
- * @param  array  $args  : Count options. 
  * @return int    $count : Number of objects.
  */
     function count ( $terms = [], $args = [] ) {
@@ -804,11 +824,17 @@ class PADOBaseModel {
         return $this->load( $terms, $args );
     }
 
+/**
+ * The model has column or not.
+ * 
+ * @param  string $name : Column name.
+ * @return bool   $has_column : Model has column or not.
+ */
     function has_column ( $name ) {
         $model = $this->_model;
         $scheme = $this->pado()->scheme;
         $scheme = isset( $scheme[ $model ] ) ? $scheme[ $model ] : $this->_scheme;
-        return isset( $scheme['column_defs'][$name] ) ? true : false;
+        return isset( $scheme['column_defs'][ $name ] ) ? true : false;
     }
 
 /**
@@ -817,6 +843,7 @@ class PADOBaseModel {
  * @param mixed  $terms  : The hash should have keys matching column names and the values
  *                         are the values for that column.
  * @param array  $args   : Columns for grouping. (e.g.['group' => ['column1', ... ] ])
+ * @return array $result : An array of conditions and 'COUNT(*)'.
  */
     function count_group_by ( $terms = [], $args = [] ) {
         $args['count_group_by'] = true;
@@ -826,17 +853,18 @@ class PADOBaseModel {
 /**
  * Load object and get PDOStatement.
  * 
+ * @param              : See load method.
  * @return object $sth : PDOStatement.
  */
-    function load_iter ( $terms = [], $args = [], $cols = '' ) {
+    function load_iter ( $terms = [], $args = [], $cols = '', $extra ) {
         $args['load_iter'] = true;
-        return $this->load( $terms, $args, $cols );
+        return $this->load( $terms, $args, $cols, $extra );
     }
 
 /**
  * INSERT or UPDATE the object.
  * 
- * @return bool $boolean : Returns true if it succeeds.
+ * @return bool $success : Returns true if it succeeds.
  */
     function save () {
         $pado = $this->pado();
@@ -913,8 +941,8 @@ class PADOBaseModel {
 
 /**
  * DELETE the object.
-
- * @return bool $boolean : Returns true if it succeeds.
+ *
+ * @return bool $success : Returns true if it succeeds.
  */
     function remove () {
         $pado = $this->pado();
@@ -956,30 +984,29 @@ class PADOBaseModel {
 /**
  * Get table scheme from JSON file and set to $pado->scheme[ $model ].
  * 
- * @params string $model : Name of model.
+ * @param string $model : Name of model.
  */
     function set_scheme_from_json ( $model ) {
         $json = PADODIR . 'models' . DS . $model . '.json';
-        if ( file_exists( $json ) )
-      {
-        $scheme = json_decode( file_get_contents( $json ), true );
-        if ( isset( $scheme['indexes'] ) && isset( $scheme['indexes']['PRIMARY'] ) ) {
-            $id = $scheme['indexes']['PRIMARY'];
-            if ( is_array( $id ) ) $id = join( ',', $id );
-            $this->_id_column = $this->_colprefix . $id;
-        }
-        $this->_scheme = $scheme;
-        $this->pado()->scheme[ $model ] = $scheme;
-      }
+        if ( file_exists( $json ) ) {
+            $scheme = json_decode( file_get_contents( $json ), true );
+            if ( isset( $scheme['indexes'] ) && isset( $scheme['indexes']['PRIMARY'] ) ) {
+                $id = $scheme['indexes']['PRIMARY'];
+                if ( is_array( $id ) ) $id = join( ',', $id );
+                $this->_id_column = $this->_colprefix . $id;
+            }
+            $this->_scheme = $scheme;
+            $this->pado()->scheme[ $model ] = $scheme;
+       }
     }
 
 /**
  * Get table scheme from database and set to $pado->scheme[ $model ].
  * 
- * @params string $model     : Name of model.
- * @params string $table     : Name of table.
- * @params string $colprefix : Column prefix.
- * @params bool   $needle    : If specified receive results(array).
+ * @param  string $model     : Name of model.
+ * @param  string $table     : Name of table.
+ * @param  string $colprefix : Column prefix.
+ * @param  bool   $needle    : If specified receive results(array).
  * @return array  $scheme    : If $needle specified.
  */
     function get_scheme ( $model, $table, $colprefix, $needle = false ) {
@@ -992,9 +1019,9 @@ class PADOBaseModel {
 /**
  * Create new table from scheme.
  * 
- * @params string $model  : Name of model.
- * @params string $table  : Name of table. 
- * @params array  $scheme : An array of column definition and index definition.
+ * @param string $model  : Name of model.
+ * @param string $table  : Name of table.
+ * @param array  $scheme : An array of column definition and index definition.
  */
     function create_table ( $model, $table, $colprefix, $scheme ) {
         $pado = $this->pado();
@@ -1015,12 +1042,15 @@ class PADOBaseModel {
 /**
  * Set column names and values from an array.
  * 
- * @params array $params : The hash for assign.
+ * @param array $params : The hash for assign.
  */
     function set_values ( $params = [] ) {
         $this->__new( $params );
     }
 
+/**
+ * Get column names and values except model properties.
+ */
     function get_values () {
         $arr = get_object_vars( $this );
         $reserved_vars = array_keys( PADOBaseModel::RESERVED );
@@ -1033,8 +1063,10 @@ class PADOBaseModel {
 /**
  * Upgrade database scheme.
  * 
- * @params string $table  : Name of table.
- * @params array  $upgrade: Scheme information of update columns.
+ * @param  string $table     : Name of table.
+ * @param  array  $upgrade   : Scheme information of update columns.
+ * @param  string $colprefix : Column name prefix.
+ * @return bool   $success   : Returns true if it succeeds.
  */
     function upgrade ( $table, $upgrade, $colprefix ) {
         $pado = $this->pado();
@@ -1045,8 +1077,8 @@ class PADOBaseModel {
 /**
  * Whether there is a difference in array.
  * 
- * @params array $from  : The array to compare from.
- * @params array $to    : An array to compare against.
+ * @param  array $from  : The array to compare from.
+ * @param  array $to    : An array to compare against.
  * @return bool  $bool  : A difference in array.
  */
     function array_compare ( $from, $to ) {
@@ -1057,23 +1089,22 @@ class PADOBaseModel {
                         array_keys( $from ) ) ) ) {
             return true;
         } else {
-            foreach ( $from as $name => $props )
-          {
-            $_props = isset( $to[ $name ] ) ? $to[ $name ] : null;
-            if (! $_props ) {
-                return true;
-            }
-            if ( is_array( $_props ) && is_array( $props ) ) {
-                if (! empty( array_diff_assoc( $_props, $props ) )
-                    || ! empty( array_diff_assoc( $props, $_props ) ) ) {
+            foreach ( $from as $name => $props ) {
+                $_props = isset( $to[ $name ] ) ? $to[ $name ] : null;
+                if (! $_props ) {
                     return true;
                 }
-            } else {
-                if ( $_props !== $props ) {
-                    return true;
+                if ( is_array( $_props ) && is_array( $props ) ) {
+                    if (! empty( array_diff_assoc( $_props, $props ) )
+                        || ! empty( array_diff_assoc( $props, $_props ) ) ) {
+                        return true;
+                    }
+                } else {
+                    if ( $_props !== $props ) {
+                        return true;
+                    }
                 }
             }
-          }
         }
         return false;
     }
@@ -1081,7 +1112,9 @@ class PADOBaseModel {
 /**
  * Compare the schema definition with the actual schema.
  * 
- * @params string $model : Name of model.
+ * @param  string $model : Name of model.
+ * @param  string $table : Name of table.
+ * @param  string $colprefix : Column prefix.
  * @return array  $diff  : Difference in array
  *                       (['column_defs' => $upgrade_cols, 'indexes' => $upgrade_idxs ]).
  */
@@ -1095,67 +1128,64 @@ class PADOBaseModel {
             if ( $pado->json_model )
                 $this->set_scheme_from_json( $model );
         }
-        if ( isset( $pado->scheme[ $model ] ) )
-      {
-        $column_defs = $pado->scheme[ $model ]['column_defs'];
-        if ( $scheme = $this->get_scheme(
-                $model, $table, $colprefix, true ) ) {
-            $compare = $scheme['column_defs'];
-            $upgrade = $this->array_compare( $column_defs, $compare );
-            $indexes = $pado->scheme[ $model ]['indexes'];
-            $compare_idx = $scheme['indexes'];
-            $upgrade_idx = $this->array_compare( $indexes, $compare_idx );
-            if ( $upgrade || $upgrade_idx ) {
-                $upgrade_cols = $this->get_diff( $column_defs, $compare );
-                $upgrade_idxs = $this->get_diff( $indexes, $compare_idx );
-                $upgrade = ['column_defs' => $upgrade_cols, 'indexes' => $upgrade_idxs ];
-          }
+        if ( isset( $pado->scheme[ $model ] ) ) {
+            $column_defs = $pado->scheme[ $model ]['column_defs'];
+            if ( $scheme = $this->get_scheme(
+                    $model, $table, $colprefix, true ) ) {
+                $compare = $scheme['column_defs'];
+                $upgrade = $this->array_compare( $column_defs, $compare );
+                $indexes = $pado->scheme[ $model ]['indexes'];
+                $compare_idx = $scheme['indexes'];
+                $upgrade_idx = $this->array_compare( $indexes, $compare_idx );
+                if ( $upgrade || $upgrade_idx ) {
+                    $upgrade_cols = $this->get_diff( $column_defs, $compare );
+                    $upgrade_idxs = $this->get_diff( $indexes, $compare_idx );
+                    $upgrade = ['column_defs' => $upgrade_cols, 'indexes' => $upgrade_idxs ];
+              }
+            }
         }
-      }
         return $upgrade;
     }
 
     function get_diff ( $from, $to ) {
         $diff = ['new' => [], 'changed' => [], 'delete' => []];
-        foreach ( $from as $name => $props )
-      {
-        $_props = isset( $to[ $name ] ) ? $to[ $name ] : null;
-        if (! $_props ) {
-            $diff['new'][ $name ] = $props;
-            continue;
-        }
-        if ( is_array( $_props ) && is_array( $props ) ) {
-            if (! empty( array_diff_assoc( $_props, $props ) )
-                || ! empty( array_diff_assoc( $props, $_props ) ) ) {
-                $diff['changed'][ $name ] = $props;
+        foreach ( $from as $name => $props ) {
+            $_props = isset( $to[ $name ] ) ? $to[ $name ] : null;
+            if (! $_props ) {
+                $diff['new'][ $name ] = $props;
+                continue;
             }
-        } else {
-            if ( $_props !== $props ) $diff['changed'][ $name ] = $props;
-        }
-      }
-        foreach ( $to as $name => $_props )
-      {
-        $props = isset( $from[ $name ] ) ? $from[ $name ] : null;
-        if (! $props ) {
-            $diff['delete'][ $name ] = null;
-            continue;
-        }
-        if ( is_array( $_props ) && is_array( $props ) ) {
-            if (! empty( array_diff_assoc( $_props, $props ) )
-                || ! empty( array_diff_assoc( $props, $_props ) ) ) {
-                $diff['changed'][ $name ] = $props;
+            if ( is_array( $_props ) && is_array( $props ) ) {
+                if (! empty( array_diff_assoc( $_props, $props ) )
+                    || ! empty( array_diff_assoc( $props, $_props ) ) ) {
+                    $diff['changed'][ $name ] = $props;
+                }
+            } else {
+                if ( $_props !== $props ) $diff['changed'][ $name ] = $props;
             }
-        } else {
-            if ( $_props !== $props ) $diff['changed'][ $name ] = $props;
         }
-      }
+        foreach ( $to as $name => $_props ) {
+            $props = isset( $from[ $name ] ) ? $from[ $name ] : null;
+            if (! $props ) {
+                $diff['delete'][ $name ] = null;
+                continue;
+            }
+            if ( is_array( $_props ) && is_array( $props ) ) {
+                if (! empty( array_diff_assoc( $_props, $props ) )
+                    || ! empty( array_diff_assoc( $props, $_props ) ) ) {
+                    $diff['changed'][ $name ] = $props;
+                }
+            } else {
+                if ( $_props !== $props ) $diff['changed'][ $name ] = $props;
+            }
+        }
         return $diff;
     }
 
 /**
  * Validate keys and values.
  * 
- * @params array $values : An array for sanitize.
+ * @param  array $values : An array for sanitize.
  * @return array $values : Sanitized an array.
  */
     function validation ( $values, &$error = null ) {
@@ -1177,85 +1207,81 @@ class PADOBaseModel {
             }
             return $arr;
         }
-        foreach ( $scheme as $col => $props )
-      {
-        if ( $col === $pado->id_column ) continue;
-        if ( isset( $props['not_null'] ) && $props['not_null'] ) {
-            if (!isset( $values[ $col ] ) &&!isset( $values[ $colprefix . $col ] ) )
-          {
-            if ( isset( $props['default'] ) && $props['default'] ) {
-                $values[ $col ] = $props['default'];
-            } else {
-                $type = $props['type'];
-                if ( strpos( $type, 'int' ) !== false ) {
-                    $values[ $col ] = 0;
-                } else if ( strpos( $type, 'time' ) !== false ) {
-                    $default = $pado->default_ts;
-                    if ( $default === 'CURRENT_TIMESTAMP') {
-                        $values[ $col ] = date( 'YmdHis' );
+        foreach ( $scheme as $col => $props ) {
+            if ( $col === $pado->id_column ) continue;
+            if ( isset( $props['not_null'] ) && $props['not_null'] ) {
+                if (!isset( $values[ $col ] ) &&!isset( $values[ $colprefix . $col ] ) ) {
+                    if ( isset( $props['default'] ) && $props['default'] ) {
+                        $values[ $col ] = $props['default'];
                     } else {
-                        $values[ $col ] = $default;
+                        $type = $props['type'];
+                        if ( strpos( $type, 'int' ) !== false ) {
+                            $values[ $col ] = 0;
+                        } else if ( strpos( $type, 'time' ) !== false ) {
+                            $default = $pado->default_ts;
+                            if ( $default === 'CURRENT_TIMESTAMP') {
+                                $values[ $col ] = date( 'YmdHis' );
+                            } else {
+                                $values[ $col ] = $default;
+                            }
+                        } else {
+                            $values[ $col ] = '';
+                        }
                     }
-                } else {
-                    $values[ $col ] = '';
                 }
             }
-          }
         }
-      }
         foreach ( $values as $key => $val ) {
             $orig_key = $key;
             if ( $colprefix && strpos( $key, $colprefix ) === 0 )
                 $key = preg_replace( "/^$colprefix/", '', $key );
-            if (! isset( $scheme[ $key ] ) )
-          {
-            continue;
-          } else {
-            $type = $scheme[ $key ]['type'];
-            $size = isset( $scheme[ $key ]['size'] ) ? $scheme[ $key ]['size'] : null;
-            switch ( true )
-          {
-            case ( strpos( $type, 'int' ) !== false ):
-                $val += 0;
-                break;
-            case ( strpos( $type, 'float' ) !== false ):
-                $val += 0;
-                break;
-            case ( $type === 'datetime' ):
-                if ( $this->db2ts( $val ) ) {
-                    $val = $this->ts2db( $val );
-                } else {
-                    $val = null;
+            if (! isset( $scheme[ $key ] ) ) {
+                continue;
+            } else {
+                $type = $scheme[ $key ]['type'];
+                $size = isset( $scheme[ $key ]['size'] ) ? $scheme[ $key ]['size'] : null;
+                switch ( true ) {
+                case ( strpos( $type, 'int' ) !== false ):
+                    $val += 0;
+                    break;
+                case ( strpos( $type, 'float' ) !== false ):
+                    $val += 0;
+                    break;
+                case ( $type === 'datetime' ):
+                    if ( $this->db2ts( $val ) ) {
+                        $val = $this->ts2db( $val );
+                    } else {
+                        $val = null;
+                    }
+                    break;
+                case ( $type === 'date' && $val ):
+                    $val = $this->date2db( $val );
+                    break;
+                case ( $type === 'time' && $val ):
+                    $val = $this->time2db( $val );
+                    break;
+                case ( $type === 'year' ):
+                    $val = (string) $val;
+                    $val = preg_replace( '/[^0-9]/', '', $val );
+                    if ( strlen( $val ) === 2 ) {
+                        $val = ( $val > 69 ) ? '19' . $val : '20' . $val;
+                    } else {
+                        $val = substr( $this->ts2db( $val ), 0, 4 );
+                    }
+                    $val = (int) $val;
+                    break;
+                case ( $type === 'blob' ):
+                    $val = $this->serialize( $val );
+                    break;
+                case ( $type === 'string' && $size ):
+                    $val = (string) $val;
+                    if ( mb_strlen( $val ) > $size )
+                        $val = mb_substr( $val, 0, $size, $pado->charset );
+                    break;
+                default:
+                    $val = (string) $val;
                 }
-                break;
-            case ( $type === 'date' && $val ):
-                $val = $this->date2db( $val );
-                break;
-            case ( $type === 'time' && $val ):
-                $val = $this->time2db( $val );
-                break;
-            case ( $type === 'year' ):
-                $val = (string) $val;
-                $val = preg_replace( '/[^0-9]/', '', $val );
-                if ( strlen( $val ) === 2 ) {
-                    $val = ( $val > 69 ) ? '19' . $val : '20' . $val;
-                } else {
-                    $val = substr( $this->ts2db( $val ), 0, 4 );
-                }
-                $val = (int) $val;
-                break;
-            case ( $type === 'blob' ):
-                $val = $this->serialize( $val );
-                break;
-            case ( $type === 'string' && $size ):
-                $val = (string) $val;
-                if ( mb_strlen( $val ) > $size )
-                    $val = mb_substr( $val, 0, $size, $pado->charset );
-                break;
-            default:
-                $val = (string) $val;
             }
-          }
             if ( $val !== null ) $arr[ $colprefix . $key ] = $val;
         }
         return $arr;
@@ -1358,119 +1384,116 @@ class PADOMySQL extends PADOBaseModel {
             return;
         }
         $sth = $pado->db->prepare( "DESCRIBE {$table}" );
-        try
-      {
-        $sth->execute();
-        $fields = $sth->fetchAll();
-        $scheme = [];
-        foreach ( $fields as $field ) {
-            $name = $field['Field'];
-            if ( $colprefix && strpos( $name, $colprefix ) ===0 )
-                $name = preg_replace( "/^$colprefix/", '', $name );
-            $type = strtolower( $field['Type'] );
-            $not_null = ( isset( $field['Null'] )
-                && $field['Null'] === 'NO' ) ? true : false;
-            $size = null;
-            $default = ( isset( $field['Default'] ) ) ? $field['Default'] : null;
-            switch ( true )
-          {
-            case ( strpos( $type, 'int' ) !== false ||
-                   strpos( $type, 'double' ) !== false ):
-                if( strpos( $type, '(' ) !== false ) {
-                    list ( $type, $size ) = explode( '(', $type );
-                    $size = rtrim( $size, ')' );
-                }
-                break;
-            case ( strpos( $type, 'var' ) !== false
-                || strpos( $type, 'text' ) !== false ):
-                if( strpos( $type, '(' ) !== false ) {
-                    list ( $type, $size ) = explode( '(', $type );
-                    $size = (int) rtrim( $size, ')' );
-                    $type = 'string';
-                } else {
-                    $type = 'text';
-                }
-                break;
-            case ( $type === 'timestamp' || $type === 'datetime' ):
-                $type = 'datetime';
-                break;
-            case ( $type === 'date' || $type === 'time' || $type === 'year' ):
-                break;
-            case ( strpos( $type, 'blob' ) !== false ):
-                $type = 'blob';
-                break;
-            default:
-                $type = 'string';
-          }
-            $scheme[ $name ]['type'] = $type;
-            if ( $not_null ) $scheme[ $name ]['not_null'] = 1;
-            if ( $size ) $scheme[ $name ]['size'] = $size;
-            if ( $default !== null ) $scheme[ $name ]['default'] = $default;
-        }
-        $scheme = ['column_defs' => $scheme ];
-        $sth = $pado->db->prepare( "SHOW INDEX FROM {$table}" );
         try {
             $sth->execute();
             $fields = $sth->fetchAll();
-            $indexes = [];
-            $idxprefix = $pado->idxprefix;
-            if ( strpos( $idxprefix, '<table>' ) !== false )
-                $idxprefix = str_replace( '<table>', $table, $idxprefix );
-            elseif ( strpos( $idxprefix, '<model>' ) !== false )
-                $idxprefix = str_replace( '<model>', $model, $idxprefix );
-            foreach ( $fields as $field )
-          {
-            $key = $field['Key_name'];
-            if ( $idxprefix && strpos( $key, $idxprefix ) === 0 )
-                $key = preg_replace( "/^$idxprefix/", '', $key );
-            $name = $field['Column_name'];
-            if ( $colprefix &&  strpos( $name, $colprefix ) ===0 )
-                $name = preg_replace( "/^$colprefix/", '', $name );
-            if ( isset( $indexes[ $key ] ) ) {
-                if ( is_string( $indexes[ $key ] ) ) {
-                    $value = $indexes[ $key ];
-                    $indexes[ $key ] = [];
-                    $indexes[ $key ][] = $value;
-                    $indexes[ $key ][] = $name;
-                } else {
-                    $indexes[ $key ][] = $name;
+            $scheme = [];
+            foreach ( $fields as $field ) {
+                $name = $field['Field'];
+                if ( $colprefix && strpos( $name, $colprefix ) ===0 )
+                    $name = preg_replace( "/^$colprefix/", '', $name );
+                $type = strtolower( $field['Type'] );
+                $not_null = ( isset( $field['Null'] )
+                    && $field['Null'] === 'NO' ) ? true : false;
+                $size = null;
+                $default = ( isset( $field['Default'] ) ) ? $field['Default'] : null;
+                switch ( true ) {
+                case ( strpos( $type, 'int' ) !== false ||
+                       strpos( $type, 'double' ) !== false ):
+                    if( strpos( $type, '(' ) !== false ) {
+                        list ( $type, $size ) = explode( '(', $type );
+                        $size = rtrim( $size, ')' );
+                    }
+                    break;
+                case ( strpos( $type, 'var' ) !== false
+                    || strpos( $type, 'text' ) !== false ):
+                    if( strpos( $type, '(' ) !== false ) {
+                        list ( $type, $size ) = explode( '(', $type );
+                        $size = (int) rtrim( $size, ')' );
+                        $type = 'string';
+                    } else {
+                        $type = 'text';
+                    }
+                    break;
+                case ( $type === 'timestamp' || $type === 'datetime' ):
+                    $type = 'datetime';
+                    break;
+                case ( $type === 'date' || $type === 'time' || $type === 'year' ):
+                    break;
+                case ( strpos( $type, 'blob' ) !== false ):
+                    $type = 'blob';
+                    break;
+                default:
+                    $type = 'string';
                 }
-            } else {
-                $indexes[ $key ] = $name;
+                $scheme[ $name ]['type'] = $type;
+                if ( $not_null ) $scheme[ $name ]['not_null'] = 1;
+                if ( $size ) $scheme[ $name ]['size'] = $size;
+                if ( $default !== null ) $scheme[ $name ]['default'] = $default;
             }
-          }
-            $scheme['indexes'] = $indexes;
-            if ( isset( $indexes['PRIMARY'] ) ) {
-                $id = $indexes['PRIMARY'];
-                if ( is_array( $id ) ) $id = join( ',', $id );
-                $this->_id_column = $this->_colprefix . $id;
+            $scheme = ['column_defs' => $scheme ];
+            $sth = $pado->db->prepare( "SHOW INDEX FROM {$table}" );
+            try {
+                $sth->execute();
+                $fields = $sth->fetchAll();
+                $indexes = [];
+                $idxprefix = $pado->idxprefix;
+                if ( strpos( $idxprefix, '<table>' ) !== false )
+                    $idxprefix = str_replace( '<table>', $table, $idxprefix );
+                elseif ( strpos( $idxprefix, '<model>' ) !== false )
+                    $idxprefix = str_replace( '<model>', $model, $idxprefix );
+                foreach ( $fields as $field ) {
+                    $key = $field['Key_name'];
+                    if ( $idxprefix && strpos( $key, $idxprefix ) === 0 )
+                        $key = preg_replace( "/^$idxprefix/", '', $key );
+                    $name = $field['Column_name'];
+                    if ( $colprefix &&  strpos( $name, $colprefix ) ===0 )
+                        $name = preg_replace( "/^$colprefix/", '', $name );
+                    if ( isset( $indexes[ $key ] ) ) {
+                        if ( is_string( $indexes[ $key ] ) ) {
+                            $value = $indexes[ $key ];
+                            $indexes[ $key ] = [];
+                            $indexes[ $key ][] = $value;
+                            $indexes[ $key ][] = $name;
+                        } else {
+                            $indexes[ $key ][] = $name;
+                        }
+                    } else {
+                        $indexes[ $key ] = $name;
+                    }
+                }
+                $scheme['indexes'] = $indexes;
+                if ( isset( $indexes['PRIMARY'] ) ) {
+                    $id = $indexes['PRIMARY'];
+                    if ( is_array( $id ) ) $id = join( ',', $id );
+                    $this->_id_column = $this->_colprefix . $id;
+                }
+            } catch ( PDOException $e ) {
+                trigger_error( 'PDOException: ' . $e->getMessage() );
             }
+            if ( $pado->json_model && $pado->save_json ) {
+                $json = PADODIR . 'models' . DS . $model . '.json';
+                if (! file_exists( $json ) )
+                    file_put_contents( $json, json_encode( $scheme, JSON_PRETTY_PRINT ) );
+            }
+            if ( $needle ) return $scheme;
+            $pado->scheme[ $model ] = $scheme;
+            $this->_scheme = $scheme;
+            $pado->stash( $model, $scheme );
         } catch ( PDOException $e ) {
-            trigger_error( 'PDOException: ' . $e->getMessage() );
-        }
-        if ( $pado->json_model && $pado->save_json ) {
-            $json = PADODIR . 'models' . DS . $model . '.json';
-            if (! file_exists( $json ) )
-                file_put_contents( $json, json_encode( $scheme, JSON_PRETTY_PRINT ) );
-        }
-        if ( $needle ) return $scheme;
-        $pado->scheme[ $model ] = $scheme;
-        $this->_scheme = $scheme;
-        $pado->stash( $model, $scheme );
-      } catch ( PDOException $e ) {
-        $msg = $e->getMessage();
-        if ( strpos( $msg, 'not found' ) !== false ) {
-            if ( $pado->upgrader ) {
-                if ( isset( $pado->scheme[ $model ] ) ) {
-                    trigger_error( 'PDOException:' );
-                    $this->create_table(
-                        $model, $table, $colprefix, $pado->scheme[ $model ] );
-                    return [];
+            $msg = $e->getMessage();
+            if ( strpos( $msg, 'not found' ) !== false ) {
+                if ( $pado->upgrader ) {
+                    if ( isset( $pado->scheme[ $model ] ) ) {
+                        trigger_error( 'PDOException:' );
+                        $this->create_table(
+                            $model, $table, $colprefix, $pado->scheme[ $model ] );
+                        return [];
+                    }
                 }
             }
+            trigger_error( 'PDOException: ' . $msg );
         }
-        trigger_error( 'PDOException: ' . $msg );
-      }
     }
 
 /**
@@ -1483,112 +1506,82 @@ class PADOMySQL extends PADOBaseModel {
         $res = false;
         if ( is_array( $column_defs ) ) {
             $update = array_merge( $column_defs['new'], $column_defs['changed'] );
-            if (! empty( $update ) )
-        {
-            foreach ( $update as $name => $props )
-          {
-            $col_name = $name;
-            if ( $colprefix && strpos( $name, $colprefix ) === false )
-                $col_name = $colprefix . $name;
-            $vals = [];
-            $type = $props['type'];
-            $size = 0;
-            if ( isset( $props['size'] ) ) {
-                $size = $props['size'];
-            }
-            switch ( true )
-          {
-            case ( strpos( $type, 'int' ) !== false ):
-                $type = strtoupper( $type );
-                break;
-            case ( $type === 'double' ):
-                $type = strtoupper( $type );
-                break;
-            case ( $type === 'string' ):
-                $type = 'VARCHAR';
-                break;
-            case ( $type === 'text' ):
-                $type = 'MEDIUMTEXT';
-                break;
-            case ( $type === 'datetime' ):
-                $type = 'DATETIME';
-                break;
-            case ( $type === 'date' ):
-                $type = 'DATE';
-                break;
-            case ( $type === 'time' ):
-                $type = 'TIME';
-                break;
-            case ( $type === 'blob' ):
-                $type = 'MEDIUMBLOB';
-                break;
-            default:
-                $type = '';
-          }
-            if (! $type ) {
-                if ( $pado->debug ) {
-                    trigger_error(
-                        'PADOBaseModelException: unknown type(' . $props['type'] . ')' );
+            if (! empty( $update ) ) {
+                foreach ( $update as $name => $props ) {
+                    $col_name = $name;
+                    if ( $colprefix && strpos( $name, $colprefix ) === false )
+                        $col_name = $colprefix . $name;
+                    $vals = [];
+                    $type = $props['type'];
+                    $size = 0;
+                    if ( isset( $props['size'] ) ) {
+                        $size = $props['size'];
+                    }
+                    switch ( true ) {
+                    case ( strpos( $type, 'int' ) !== false ):
+                        $type = strtoupper( $type );
+                        break;
+                    case ( $type === 'double' ):
+                        $type = strtoupper( $type );
+                        break;
+                    case ( $type === 'string' ):
+                        $type = 'VARCHAR';
+                        break;
+                    case ( $type === 'text' ):
+                        $type = 'MEDIUMTEXT';
+                        break;
+                    case ( $type === 'datetime' ):
+                        $type = 'DATETIME';
+                        break;
+                    case ( $type === 'date' ):
+                        $type = 'DATE';
+                        break;
+                    case ( $type === 'time' ):
+                        $type = 'TIME';
+                        break;
+                    case ( $type === 'blob' ):
+                        $type = 'MEDIUMBLOB';
+                        break;
+                    default:
+                        $type = '';
+                    }
+                    if (! $type ) {
+                        if ( $pado->debug ) {
+                            trigger_error(
+                                'PADOBaseModelException: unknown type(' . $props['type'] . ')' );
+                        }
+                        continue;
+                    }
+                    if ( isset( $props['size'] ) ) {
+                        $type .= '(' . $props['size'] . ')';
+                    }
+                    if ( isset( $props['not_null'] ) ) {
+                        $type .= ' NOT NULL';
+                    }
+                    if ( isset( $props['default'] ) ) {
+                        $vals[] = $props['default'];
+                        $type .= ' DEFAULT ?';
+                    }
+                    $statement = isset( $column_defs['new'][ $name ] ) ? 'ADD' : 'CHANGE';
+                    $col_name = $statement === 'CHANGE' ? $col_name . ' ' . $col_name : $col_name;
+                    $sql = "ALTER TABLE {$table} {$statement} {$col_name} {$type}";
+                    if ( $pado->stash( $sql ) ) continue;
+                    if ( $pado->debug === 3 ) $pado->debugPrint( $sql );
+                    $sth = $db->prepare( $sql );
+                    try {
+                        $res = $sth->execute( $vals );
+                        $pado->stash( $sql, 1 );
+                    } catch ( PDOException $e ) {
+                        trigger_error( 'PDOException: ' . $e->getMessage() );
+                        return false;
+                    }
                 }
-                continue;
             }
-            if ( isset( $props['size'] ) ) {
-                $type .= '(' . $props['size'] . ')';
-            }
-            if ( isset( $props['not_null'] ) ) {
-                $type .= ' NOT NULL';
-            }
-            if ( isset( $props['default'] ) ) {
-                $vals[] = $props['default'];
-                $type .= ' DEFAULT ?';
-            }
-            $statement = isset( $column_defs['new'][ $name ] ) ? 'ADD' : 'CHANGE';
-            $col_name = $statement === 'CHANGE' ? $col_name . ' ' . $col_name : $col_name;
-            $sql = "ALTER TABLE {$table} {$statement} {$col_name} {$type}";
-            if ( $pado->stash( $sql ) ) continue;
-            if ( $pado->debug === 3 ) $pado->debugPrint( $sql );
-            $sth = $db->prepare( $sql );
-            try {
-                $res = $sth->execute( $vals );
-                $pado->stash( $sql, 1 );
-            } catch ( PDOException $e ) {
-                trigger_error( 'PDOException: ' . $e->getMessage() );
-                return false;
-            }
-          }
-        }
-        if ( $pado->can_drop ) {
-            $delete = $column_defs['delete'];
-            if (! empty( $delete ) )
-          {
-            foreach ( $delete as $name => $props ) {
-                $sql = "ALTER TABLE {$table} DROP {$colprefix}{$name}";
-                if ( $pado->stash( $sql ) ) continue;
-                if ( $pado->debug === 3 ) $pado->debugPrint( $sql );
-                $sth = $db->prepare( $sql );
-                try {
-                    $res = $sth->execute();
-                    $pado->stash( $sql, 1 );
-                } catch ( PDOException $e ) {
-                    trigger_error( 'PDOException: ' . $e->getMessage() );
-                }
-              }
-            }
-          }
-        }
-        $indexes = $upgrade['indexes'];
-        if ( is_array( $indexes ) ) {
-            $update = array_merge( $indexes['delete'], $indexes['changed'] );
-            if (! empty( $update ) )
-          {
-            foreach ( $update as $name => $props ) {
-                if ( $name === 'PRIMARY' ) {
-                    trigger_error(
-                        'PADOBaseModelException: PRIMARY KEY could not be changed.' );
-                    continue;
-                }
-                if ( isset( $indexes['changed'][ $name ] ) || $this->pado()->can_drop ) {
-                    if ( isset( $sql ) ) {
+            if ( $pado->can_drop ) {
+                $delete = $column_defs['delete'];
+                if (! empty( $delete ) ) {
+                    foreach ( $delete as $name => $props ) {
+                        $sql = "ALTER TABLE {$table} DROP {$colprefix}{$name}";
                         if ( $pado->stash( $sql ) ) continue;
                         if ( $pado->debug === 3 ) $pado->debugPrint( $sql );
                         $sth = $db->prepare( $sql );
@@ -1601,38 +1594,62 @@ class PADOMySQL extends PADOBaseModel {
                     }
                 }
             }
-          }
-            $update = array_merge( $indexes['new'], $indexes['changed'] );
-            if (! empty( $update ) )
-          {
-            foreach ( $update as $name => $props ) {
-                if (! is_array( $props ) ) $props = explode( ',', $props );
-                if ( $colprefix ) {
-                    array_walk( $props, function( &$col, $num, $pfx = null ){
-                        $col = strpos( $col, $pfx ) !== 0 ? $pfx . $col : $col;
-                    }, $colprefix );
+        }
+        $indexes = $upgrade['indexes'];
+        if ( is_array( $indexes ) ) {
+            $update = array_merge( $indexes['delete'], $indexes['changed'] );
+            if (! empty( $update ) ) {
+                foreach ( $update as $name => $props ) {
+                    if ( $name === 'PRIMARY' ) {
+                        trigger_error(
+                            'PADOBaseModelException: PRIMARY KEY could not be changed.' );
+                        continue;
+                    }
+                    if ( isset( $indexes['changed'][ $name ] ) || $this->pado()->can_drop ) {
+                        if ( isset( $sql ) ) {
+                            if ( $pado->stash( $sql ) ) continue;
+                            if ( $pado->debug === 3 ) $pado->debugPrint( $sql );
+                            $sth = $db->prepare( $sql );
+                            try {
+                                $res = $sth->execute();
+                                $pado->stash( $sql, 1 );
+                            } catch ( PDOException $e ) {
+                                trigger_error( 'PDOException: ' . $e->getMessage() );
+                            }
+                        }
+                    }
                 }
-                $props = join( ',', $props );
-                if ( $name === 'PRIMARY' ) {
-                    trigger_error(
-                    'PADOBaseModelException: PRIMARY KEY could not be changed.' );
-                    continue;
-                } else {
-                    $name = $table . '_' . $name;
-                    $sql = "CREATE INDEX {$name} ON {$table}({$props})";
-                    if ( $pado->stash( $sql ) ) continue;
-                    if ( $pado->debug === 3 ) $pado->debugPrint( $sql );
-                }
-                $sth = $db->prepare( $sql );
-                try {
-                    $res = $sth->execute();
-                    $pado->stash( $sql, 1 );
-                } catch ( PDOException $e ) {
-                    trigger_error( 'PDOException: ' . $e->getMessage() );
-                    return false;
-              }
             }
-          }
+            $update = array_merge( $indexes['new'], $indexes['changed'] );
+            if (! empty( $update ) ) {
+                foreach ( $update as $name => $props ) {
+                    if (! is_array( $props ) ) $props = explode( ',', $props );
+                    if ( $colprefix ) {
+                        array_walk( $props, function( &$col, $num, $pfx = null ){
+                            $col = strpos( $col, $pfx ) !== 0 ? $pfx . $col : $col;
+                        }, $colprefix );
+                    }
+                    $props = join( ',', $props );
+                    if ( $name === 'PRIMARY' ) {
+                        trigger_error(
+                        'PADOBaseModelException: PRIMARY KEY could not be changed.' );
+                        continue;
+                    } else {
+                        $name = $table . '_' . $name;
+                        $sql = "CREATE INDEX {$name} ON {$table}({$props})";
+                        if ( $pado->stash( $sql ) ) continue;
+                        if ( $pado->debug === 3 ) $pado->debugPrint( $sql );
+                    }
+                    $sth = $db->prepare( $sql );
+                    try {
+                        $res = $sth->execute();
+                        $pado->stash( $sql, 1 );
+                    } catch ( PDOException $e ) {
+                        trigger_error( 'PDOException: ' . $e->getMessage() );
+                        return false;
+                    }
+                }
+            }
         }
         return $res;
     }

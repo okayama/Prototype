@@ -1525,56 +1525,56 @@ class Prototype {
             }
         }
         $has_file = false;
-        foreach ( $properties as $key => $val )
-      {
-        if ( $val === 'file' ) {
-            $metadata = $db->model( 'meta' )->get_by_key(
-                     ['model' => $model, 'object_id' => $obj->id,
-                      'key' => 'metadata', 'kind' => $key ] );
-            $magic = $app->param( "{$key}-magic" );
-            if ( $magic ) {
-                $sess = $db->model( 'session' )
-                    ->get_by_key( ['name' => $magic,
-                                   'user_id' => $app->user()->id, 'kind' => 'UP'] );
-                if ( $sess->id ) {
-                    $obj->$key( $sess->data );
-                    $has_file = true;
-                    $metadata->data( $sess->metadata );
-                    $metadata->type( $sess->key );
-                    $metadata->text( $sess->text );
-                    $metadata->value( $sess->value );
-                    $metadata->metadata( $sess->extradata );
-                    $metadata->save();
-                    if ( $obj->id ) $is_changed = true;
-                    $sess->remove();
-                    if ( $table->revisable ) $changed_cols[ $key ] = true;
+        foreach ( $properties as $key => $val ) {
+            if ( $val === 'file' ) {
+                $metadata = $db->model( 'meta' )->get_by_key(
+                         ['model' => $model, 'object_id' => $obj->id,
+                          'key' => 'metadata', 'kind' => $key ] );
+                $magic = $app->param( "{$key}-magic" );
+                if ( $magic ) {
+                    $sess = $db->model( 'session' )
+                        ->get_by_key( ['name' => $magic,
+                                       'user_id' => $app->user()->id, 'kind' => 'UP'] );
+                    if ( $sess->id ) {
+                        $obj->$key( $sess->data );
+                        $has_file = true;
+                        $metadata->data( $sess->metadata );
+                        $metadata->type( $sess->key );
+                        $metadata->text( $sess->text );
+                        $metadata->value( $sess->value );
+                        $metadata->metadata( $sess->extradata );
+                        $metadata->save();
+                        if ( $obj->id ) $is_changed = true;
+                        $sess->remove();
+                        if ( $table->revisable ) $changed_cols[ $key ] = true;
+                    }
+                }
+                if ( $model === 'asset' && $key === 'file' ) continue;
+                if (! $metadata->id ) continue;
+                $file_meta = json_decode( $metadata->text, true );
+                $mime_type = $file_meta['mime_type'];
+                $file_ext = $file_meta['extension'];
+                $file = "{$model}/{$model}-{$key}-" . $obj->id;
+                if ( $file_ext ) $file .= '.' . $file_ext;
+                $base_url = $app->site_url;
+                $base_path = $app->site_path;
+                $extra_path = $app->extra_path;
+                if ( $workspace = $app->workspace() ) {
+                    $base_url = $workspace->site_url;
+                    $base_path = $workspace->site_path;
+                    $extra_path = $workspace->extra_path;
+                }
+                $file_path = $base_path . '/'. $extra_path . $file;
+                $file_path = str_replace( '/', DS, $file_path );
+                $url = $base_url . '/'. $extra_path . $file;
+                if (! $table->revisable || ! $obj->rev_type ) {
+                    $app->publish( $file_path, $obj, $key, $mime_type );
+                }
+                if ( isset( $changed_cols[ $key ] ) ) {
+                    $changed_cols[ $key ] = $url;
                 }
             }
-            if ( $model === 'asset' && $key === 'file' ) continue;
-            $file_meta = json_decode( $metadata->text, true );
-            $mime_type = $file_meta['mime_type'];
-            $file_ext = $file_meta['extension'];
-            $file = "{$model}/{$model}-{$key}-" . $obj->id;
-            if ( $file_ext ) $file .= '.' . $file_ext;
-            $base_url = $app->site_url;
-            $base_path = $app->site_path;
-            $extra_path = $app->extra_path;
-            if ( $workspace = $app->workspace() ) {
-                $base_url = $workspace->site_url;
-                $base_path = $workspace->site_path;
-                $extra_path = $workspace->extra_path;
-            }
-            $file_path = $base_path . '/'. $extra_path . $file;
-            $file_path = str_replace( '/', DS, $file_path );
-            $url = $base_url . '/'. $extra_path . $file;
-            if (! $table->revisable || ! $obj->rev_type ) {
-                $app->publish( $file_path, $obj, $key, $mime_type );
-            }
-            if ( isset( $changed_cols[ $key ] ) ) {
-                $changed_cols[ $key ] = $url;
-            }
         }
-      }
         if ( $has_file && ! $as_revision ) $obj->save();
         $id = $obj->id;
         $mappings = $db->model( 'urlmapping' )->load( ['table_id' => $table->id ] );
@@ -1896,7 +1896,7 @@ class Prototype {
         $basename = preg_replace( "/\s{1,}/", ' ', $basename );
         $basename = str_replace( " ", '_', $basename );
         $basename = trim( $basename, '_' );
-        $basename = mb_substr( $basename, 0, 255, $app->db->charset );
+        $basename = mb_substr( $basename, 0, 30, $app->db->charset );
         if (! $basename ) $basename = $obj->_model;
         if ( $unique ) {
             $terms = [];
@@ -3447,8 +3447,12 @@ class Prototype {
         $obj = $ctx->stash( 'object' );
         $vars = $obj->get_values();
         $colprefix = $obj->_colprefix;
+        $column_defs = $app->db->scheme[ $obj->_model ]['column_defs'];
         foreach ( $vars as $col => $value ) {
             if ( $colprefix ) $col = preg_replace( "/^$colprefix/", '', $col );
+            if ( $column_defs[ $col ]['type'] === 'blob' ) {
+                $value = $value ? 1 : '';
+            }
             $ctx->local_vars['object_' . $col ] = $value;
         }
         $scheme = $app->get_scheme_from_db( $obj->_model );
@@ -3892,28 +3896,28 @@ class Prototype {
         $id = $args['id'];
         $id = (int) $id;
         $col = isset( $args['wants'] ) ? $args['wants'] : $col;
-        if (! $id && $name )
-      {
-        $this_model = isset( $args['model'] ) ? $args['model'] : '';
-        $scheme = $app->get_scheme_from_db( $this_model );
-        if ( isset( $scheme['relations'] ) ) {
-            $from_id = isset( $args['from_id'] ) ? $args['from_id'] : '';
-            if ( isset( $scheme['relations'][$name] ) && $from_id ) {
-                $obj = $app->db->model( $this_model )->new();
-                $obj->id = $from_id;
-                // TODO join
-                $relations = $app->get_relations( $obj, $model, $name );
-                $names = [];
-                foreach ( $relations as $r ) {
-                    $rel_obj = $app->db->model( $model )->load( $r->to_id );
-                    if ( is_object( $rel_obj  ) && $rel_obj->has_column( $col ) ) {
-                        $names[] = $rel_obj->$col;
+        if (! $id && $name ) {
+            $this_model = isset( $args['model'] ) ? $args['model'] : '';
+            $scheme = $app->get_scheme_from_db( $this_model );
+            if ( isset( $scheme['relations'] ) ) {
+                $from_id = isset( $args['from_id'] ) ? $args['from_id'] : '';
+                if ( isset( $scheme['relations'][$name] ) && $from_id ) {
+                    $obj = $app->db->model( $this_model )->new();
+                    $obj->id = $from_id;
+                    // TODO join
+                    $relations = $app->get_relations( $obj, $model, $name );
+                    $names = [];
+                    foreach ( $relations as $r ) {
+                        $rel_obj = $app->db->model( $model )->load( $r->to_id );
+                        if ( is_object( $rel_obj  ) && $rel_obj->has_column( $col ) ) {
+                            $names[] = $ctx->modifier_truncate(
+                                                        $rel_obj->$col, '5+...', $ctx );
+                        }
                     }
+                    return !empty( $names ) ? join( ', ', $names ) : '';
                 }
-                return !empty( $names ) ? join( ', ', $names ) : '';
             }
         }
-      }
         if (! $id ) return '';
         if ( $obj = $app->stash( "{$model}:{$id}" ) ) {
             return $obj->$col;
