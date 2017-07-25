@@ -239,7 +239,6 @@ $(function () {
 <mt:unless name="output_container">
     <div class="container-fluid">
 </mt:unless>
-
     <mt:setvar name="can_action" value="1">
     <mt:setvar name="can_create" value="1">
       <mt:if name="child_model">
@@ -248,6 +247,9 @@ $(function () {
         </mt:unless>
       </mt:if>
       <mt:if name="this_mode" eq="error">
+        <mt:setvar name="can_create" value="0">
+      </mt:if>
+      <mt:if name="menu_type" eq="3">
         <mt:setvar name="can_create" value="0">
       </mt:if>
 

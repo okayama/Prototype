@@ -282,7 +282,18 @@ $('#dialog-cancel-btn').click(function(){
   </mt:if>
 </mt:if>
 <mt:if name="__name__">
+  <mt:objectvar name="id" setvar="_object_id">
+  
+  <mt:setvarblock name="include_path">include/list/<mt:var name="model">/column_<mt:var name="column_name">.tmpl</mt:setvarblock>
+  <mt:include file="$include_path" setvar="alt_value">
+  <mt:unless name="alt_value">
+    <mt:setvarblock name="include_path">include/list/column_<mt:var name="column_name">.tmpl</mt:setvarblock>
+    <mt:include file="$include_path" setvar="alt_value">
+  </mt:unless>
   <td class="<mt:if name="__name__" eq="id">id </mt:if><mt:if name="list_prop" eq="number"><mt:unless name="sort_order"><mt:if name="column_name" ne="status">num</mt:if></mt:unless></mt:if>">
+  <mt:if name="alt_value">
+    <mt:var name="alt_value">
+  <mt:else>
   <mt:if name="list_prop" like="object"><mt:getobjectname id="$value" type="$list_prop" escape trim_to="20+..." setvar="value"></mt:if>
     <mt:if name="list_prop" eq="primary">
       <a <mt:if name="request.dialog_view">target="_blank"</mt:if> href="<mt:var name="script_uri">?__mode=view&amp;_type=edit&amp;_model=<mt:var name="model" escape>&amp;id=<mt:objectvar name="id" escape><mt:if name="_workspace_id">&amp;workspace_id=<mt:var name="_workspace_id"></mt:if><mt:if name="model" eq="workspace">&amp;workspace_id=<mt:objectvar name="id"></mt:if><mt:if name="request.revision_select">&amp;edit_revision=1</mt:if>">
@@ -322,7 +333,7 @@ $('#dialog-cancel-btn').click(function(){
         </a>
         </mt:if>
       </mt:if>
-      
+
     <mt:elseif name="list_prop" eq="checkbox">
       <mt:if name="value">
         <i class="fa fa-check-square-o" aria-hidden="true"></i>
@@ -377,18 +388,12 @@ $('#popover-<mt:var name="column_name">-<mt:objectvar name="id">').popover({
             <mt:var name="value">
           </mt:if>
         <mt:else>
-          <mt:setvarblock name="include_path">include/list/column_<mt:var name="column_name">.tmpl</mt:setvarblock>
           <mt:objectvar name="id" setvar="_object_id">
-          <mt:include file="$include_path" setvar="alt_value">
-          <mt:if name="alt_value">
-            <mt:var name="alt_value">
-          <mt:else>
             <mt:if name="column_name" eq="modified_on">
                 <mt:var name="value" format_ts="Y-m-d H:i">
             <mt:else>
                 <mt:var name="value" trim_to="40+...">
             </mt:if>
-          </mt:if>
         </mt:if>
       </mt:if>
     </mt:if>
@@ -398,6 +403,7 @@ $('#popover-<mt:var name="column_name">-<mt:objectvar name="id">').popover({
       (<mt:trans phrase="Edit">)
       </a>
     </mt:unless>
+  </mt:if>
   </mt:if>
 </td>
 </mt:if>

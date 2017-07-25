@@ -1,0 +1,3 @@
+<mt:objectvar name="id" setvar="from_id">
+<mt:getobjectname id="$value" from_id="$from_id" type="$list_prop" name="$name" model="$model" split=", " setvar="this_models">
+<mt:loop name="this_models" glue=", "><mt:trans phrase="$__value__"></mt:loop>

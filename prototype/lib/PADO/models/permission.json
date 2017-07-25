@@ -4,80 +4,46 @@
     "display"  : 1,
     "order"    : 80,
     "menu_type": 2,
+    "display_space": 1,
     "column_defs": {
         "id": {
             "type": "int",
-            "size": "11",
-            "not_null": 1
-        },
-        "table_id": {
-            "type": "int",
-            "size": "11",
+            "size": 11,
             "not_null": 1
         },
         "user_id": {
             "type": "int",
-            "size": "11"
+            "size": 11,
+            "not_null": 1
+        },
+        "roles": {
+            "type": "relation"
         },
         "workspace_id": {
             "type": "int",
-            "size": "11"
-        },
-        "can_view": {
-            "type": "tinyint",
-            "size": "4"
-        },
-        "can_list": {
-            "type": "tinyint",
-            "size": "4"
-        },
-        "can_create": {
-            "type": "tinyint",
-            "size": "4"
-        },
-        "can_edit": {
-            "type": "tinyint",
-            "size": "4"
-        },
-        "can_delete": {
-            "type": "tinyint",
-            "size": "4"
+            "size": 11
         }
     },
     "indexes": {
-        "PRIMARY"     : "id",
-        "table_id"    : "table_id",
-        "user_id"     : "user_id",
-        "workspace_id": "workspace_id",
-        "can_view"    : "can_view",
-        "can_list"    : "can_list",
-        "can_create"  : "can_create",
-        "can_edit"    : "can_edit",
-        "can_delete"  : "can_delete"
+        "PRIMARY": "id",
+        "user_id": "user_id",
+        "workspace_id": "workspace_id"
     },
-    "display_space" : 1,
     "sort_by": {
         "id": "ascend"
     },
     "list_properties": {
-        "table_id"    : "reference:table:label",
-        "user_id"     : "reference:user:nickname",
-        "can_view"    : "checkbox",
-        "can_list"    : "checkbox",
-        "can_create"  : "checkbox",
-        "can_edit"    : "checkbox",
-        "can_delete"  : "checkbox",
+        "user_id": "reference:user:nickname",
+        "roles": "reference:role:name",
         "workspace_id": "reference:workspace:name"
     },
     "edit_properties": {
-        "id"          : "hidden",
-        "table_id"    : "relation:table:label:select",
-        "user_id"     : "relation:user:nickname:dialog",
-        "can_view"    : "checkbox",
-        "can_list"    : "checkbox",
-        "can_create"  : "checkbox",
-        "can_edit"    : "checkbox",
-        "can_delete"  : "checkbox",
+        "id": "hidden",
+        "user_id": "relation:user:nickname:dialog",
+        "roles": "relation:role:name:dialog",
         "workspace_id": "number"
+    },
+    "relations": {
+        "roles": "role"
     }
 }

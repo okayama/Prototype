@@ -1,0 +1,18 @@
+<div class="row form-group">
+  <div class="col-lg-2">
+    <label for="<mt:var name="name" escape>">
+    <mt:var name="label" escape="1">
+    </label>
+  </div>
+  <div class="col-lg-10">
+        <mt:setvarblock name="__rel_name__">object_<mt:var name="__col_name__"></mt:setvarblock>
+        <mt:setvarblock name="table_option">'display_space','1'</mt:setvarblock>
+        <mt:objectloop model="table" sort_by="order" options="$table_option">
+        <label class="custom-control custom-checkbox">
+          <input type="checkbox" class="custom-control-input watch-changed" name="<mt:var name="__col_name__">[]" value="<mt:var name="id">" <mt:ifinarray array="$__rel_name__" value="$id">checked</mt:ifinarray>>
+          <span class="custom-control-indicator"></span>
+          <span class="custom-control-description"><mt:trans phrase="$label"></span>
+        </label>
+        </mt:objectloop>
+  </div>
+</div>

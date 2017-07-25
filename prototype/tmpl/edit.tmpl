@@ -648,6 +648,9 @@ $(function () {
               <script>
                   $('#<mt:var name="__col_name__">').sortable ( {
                   // TODO keyboard oparation
+                      stop: function( evt, ui ) {
+                          editContentChanged = true;
+                      }
                   });
               </script>
             <mt:else>

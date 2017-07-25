@@ -59,7 +59,7 @@ Set properties from JSON\.
 ### $db\->model\( $model \);
 
 Initializing the model\. 
-When class exists model use it\. or PADO \+ driver name\(e\.g\.PADOMySQL\) use it\.  
+When class exists model use it\. or PADO \+ driver name\(e\.g\.PADOMySQL\) use it\.
 Otherwise use PADOBaseModel\.
 
 #### parameters
@@ -70,7 +70,7 @@ Otherwise use PADOBaseModel\.
 
 * object $class : Class model object\.
 
-### $db\->register_callback\( $model, $kind, $meth, $priority, $obj = null \);
+### $db\->register_callback\( $model, $kind, $meth, $priority, $obj \);
 
 Register plugin callback\.
 
@@ -82,7 +82,7 @@ Register plugin callback\.
 * int    $priority : Callback priority.
 * object $class    : Plugin class object.
 
-### $db\->run_callbacks\( $cb, $model, $obj, $needle = false \);
+### $db\->run_callbacks\( $cb, $model, $obj, $needle \);
 
 Run callbacks\.
 
@@ -134,7 +134,7 @@ stash: Where the variable is stored\.
 
 * mixed  $var  : Stored data\.
 
-### $db\->escape\_like\($str, $start,$end\);
+### $db\->escape\_like\($str, $start, $end\);
 
 Quotes a string for like statement\.
 
@@ -180,7 +180,7 @@ $debug: 1\.error\_reporting\( E\_ALL \) / 2\.debugPrint error\. /3\.debugPrint S
 
 ### $upgrader\(false\)
 
-If specified migrate db from $pado\->scheme\[$model\]\.
+If specified migrate db from $pado\->scheme\[ $model \]\.
 
 # PADOBaseModel : PADO Base Model
 

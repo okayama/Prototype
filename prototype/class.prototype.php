@@ -26,7 +26,7 @@ class Prototype {
     public    $timezone      = 'Asia/Tokyo';
     public    $list_limit    = 50;
     public    $passwd_min    = 8;
-    public    $passwd_rule   = 1;
+    public    $passwd_rule   = false;
     public    $sess_timeout  = 86400;
     public    $token_expires = 7200;
     public    $cookie_path   = '';
@@ -52,29 +52,29 @@ class Prototype {
     public    $current_magic;
     public    $temp_dir = '/tmp';
 
-    public    $videos = ['mov', 'avi', 'qt', 'mp4', 'wmv',
-                         '3gp', 'asx', 'mpg', 'flv', 'mkv', 'ogm'];
+    public    $videos        = ['mov', 'avi', 'qt', 'mp4', 'wmv',
+                                '3gp', 'asx', 'mpg', 'flv', 'mkv', 'ogm'];
 
-    public    $images = ['jpeg', 'jpg', 'png', 'bmp', 'ico',
-                         'tiff', 'jpe', 'xbm', 'psd', 'pict', 'pic'];
+    public    $images        = ['jpeg', 'jpg', 'png', 'bmp', 'ico',
+                                'tiff', 'jpe', 'xbm', 'psd', 'pict', 'pic'];
 
-    public    $audios = ['mp3', 'mid', 'midi', 'wav', 'aif', 'aac', 'flac',
-                         'aiff', 'aifc', 'au', 'snd', 'ogg', 'wma', 'm4a'];
+    public    $audios        = ['mp3', 'mid', 'midi', 'wav', 'aif', 'aac', 'flac',
+                                'aiff', 'aifc', 'au', 'snd', 'ogg', 'wma', 'm4a'];
 
-    protected $methods= ['view', 'save', 'delete', 'upload', 'save_order',
-                         'display_options', 'get_json', 'export_scheme',
-                         'recover_password', 'save_hierarchy'];
+    protected $methods       = ['view', 'save', 'delete', 'upload', 'save_order',
+                                'display_options', 'get_json', 'export_scheme',
+                                'recover_password', 'save_hierarchy'];
 
-    protected $reserved=['magic_token', 'tags', 'additional_tags', 'created_on',
-                         'created_by', 'workspace_id', 'order', 'status', 'modified_on',
-                         'modified_by', 'published_on', 'unpublished_on', 'user_id',
-                         'basename', 'delete', 'remove', 'save', 'has_deadline',
-                         'rev_type', 'rev_object_id', 'rev_note', 'rev_changed',
-                         'rev_diff', 'workspace_id'];
+    protected $reserved      = ['magic_token', 'tags', 'additional_tags', 'created_on',
+                                'created_by', 'workspace_id', 'order', 'status', 'modified_on',
+                                'modified_by', 'published_on', 'unpublished_on', 'user_id',
+                                'basename', 'delete', 'remove', 'save', 'has_deadline',
+                                'rev_type', 'rev_object_id', 'rev_note', 'rev_changed',
+                                'rev_diff', 'workspace_id'];
 
-    public $callbacks = ['pre_save'     => [], 'post_save'   => [],
-                         'pre_delete'   => [], 'post_delete' => [],
-                         'save_filter'  => [], 'delete_filter'=> [] ];
+    public $callbacks        = ['pre_save'     => [], 'post_save'   => [],
+                                'pre_delete'   => [], 'post_delete' => [],
+                                'save_filter'  => [], 'delete_filter'=> [] ];
 
     protected $disp_option;
     protected $workspace_param;
@@ -187,7 +187,6 @@ class Prototype {
         $ctx->register_tag( 'ifinarray', 'conditional', 'hdlr_ifinarray', $this );
         $ctx->register_tag( 'includeparts', 'function', 'hdlr_includeparts', $this );
         $ctx->register_tag( 'statustext', 'function', 'hdlr_statustext', $this );
-        $ctx->register_tag( 'split', 'modifier', 'filter_split', $this );
         $ctx->register_tag( 'epoch2str', 'modifier', 'filter_epoch2str', $this );
         $ctx->register_tag( 'format_size', 'modifier', 'filter_format_size', $this );
         $ctx->vars['script_uri'] = $this->admin_url;
@@ -522,37 +521,36 @@ class Prototype {
             $name = $app->param( 'name' );
             $password = $app->param( 'password' );
             $user = $app->db->model( 'user' )->load( ['name' => $name ] );
-            if (! empty( $user ) )
-          {
-            $user = $user[0];
-            if ( password_verify( $password, $user->password ) ) {
-                $remember = $app->param( 'remember' ); // todo session
-                $expires = $app->sess_timeout;
-                if ( $remember ) {
-                    $expires = 60 * 60 * 24 * 365;
+            if (! empty( $user ) ) {
+                $user = $user[0];
+                if ( password_verify( $password, $user->password ) ) {
+                    $remember = $app->param( 'remember' ); // todo session
+                    $expires = $app->sess_timeout;
+                    if ( $remember ) {
+                        $expires = 60 * 60 * 24 * 365;
+                    }
+                    $token = $app->magic();
+                    $sess = $app->db->model( 'session' )
+                        ->get_by_key( ['user_id' => $user->id, 'kind' => 'US'] );
+                    $sess->name = $token;
+                    $sess->expires = time() + $expires;
+                    $sess->start = time();
+                    $sess->save();
+                    $path = $app->cookie_path ? $app->cookie_path : $app->path;
+                    $name = $app->cookie_name;
+                    $app->bake_cookie( $name, $token, $expires, $path, $remember );
                 }
-                $token = $app->magic();
-                $sess = $app->db->model( 'session' )
-                    ->get_by_key( ['user_id' => $user->id, 'kind' => 'US'] );
-                $sess->name = $token;
-                $sess->expires = time() + $expires;
-                $sess->start = time();
-                $sess->save();
-                $path = $app->cookie_path ? $app->cookie_path : $app->path;
-                $name = $app->cookie_name;
-                $app->bake_cookie( $name, $token, $expires, $path, $remember );
+                $user->last_login_on( date( 'YmdHis' ) );
+                $user->save();
+                if ( $get ) return $user;
+                // todo next_url
+                $admin_url = $app->admin_url;
+                if ( $workspace_param = $app->workspace_param ) {
+                    $workspace_param = ltrim( '&', $workspace_param );
+                    $admin_url .= '?' . $workspace_param;
+                }
+                $app->redirect( $app->admin_url );
             }
-            $user->last_login_on( date( 'YmdHis' ) );
-            $user->save();
-            if ( $get ) return $user;
-            // todo next_url
-            $admin_url = $app->admin_url;
-            if( $workspace_param = $app->workspace_param ) {
-                $workspace_param = ltrim( '&', $workspace_param );
-                $admin_url .= '?' . $workspace_param;
-            }
-            $app->redirect( $app->admin_url );
-          }
         }
     }
 
@@ -617,6 +615,7 @@ class Prototype {
                 }
             }
             $ctx->vars['page_title'] = $app->translate( 'List of %s', $plural );
+            $ctx->vars['menu_type'] = $table->menu_type;
             $list_option = $app->get_user_opt( $model, 'list_option', $workspace_id );
             $list_props = $scheme['list_properties'];
             $column_defs = $scheme['column_defs'];
@@ -784,7 +783,7 @@ class Prototype {
             $ctx->vars['list_limit'] = $limit;
             $ctx->vars['list_offset'] = $offset;
             $ctx->vars['_has_deadline'] = $obj->has_column( 'has_deadline' );
-            $maps = $db->model( 'urlmapping' )->count( ['table_id' => $table->id ] );
+            $maps = $db->model( 'urlmapping' )->count( ['model' => $model ] );
             if ( $maps ) {
                 $ctx->vars['_has_mapping'] = 1;
             }
@@ -903,13 +902,13 @@ class Prototype {
     function get_permalink ( $obj, $has_map = false ) {
         $app = Prototype::get_instance();
         $table = $app->get_table( $obj->_model );
-        $terms = ['table_id' => $table->id ];
+        $terms = ['model' => $obj->_model ];
         // if ( $obj->has_column( 'workspace_id' ) ) {
         //     $terms['workspace_id'] = $obj->workspace_id;
         // }
         if ( $has_map && $obj->_model === 'template' ) {
             $terms['template_id'] = $obj->id;
-            unset( $terms['table_id'] );
+            unset( $terms['model'] );
         }
         $urlmapping = $app->db->model( 'urlmapping' )->load( $terms,
             ['sort_by' => 'order', 'direction' => 'ascend', 'limit'=>1] );
@@ -917,7 +916,7 @@ class Prototype {
             $urlmapping = $urlmapping[0];
             if ( $has_map ) return $urlmapping;
             if ( $fi = $app->db->model( 'fileinfo' )->get_by_key(
-                ['urlmapping' => $urlmapping->id, 'table_id' => $table->id,
+                ['urlmapping' => $urlmapping->id, 'model' => $table->name,
                  'type' => 'archive', 'object_id' => $obj->id ] ) ) {
                 return $fi->url;
             }
@@ -1013,11 +1012,11 @@ class Prototype {
         $plural = $app->translate( $table->plural );
         $params = [ $plural, $nickname ];
         $message = $app->translate( "%1\$s hierarchy changed by %2\$s.", $params );
-        $app->log( ['message'   => $message,
-                    'category'  => 'hierarchy',
-                    'table_id'  => $table->id,
-                    'metadata'  => $_nestable_output,
-                    'level'     => 'info'] );
+        $app->log( ['message'  => $message,
+                    'category' => 'hierarchy',
+                    'model'    => $table->name,
+                    'metadata' => $_nestable_output,
+                    'level'    => 'info'] );
         $app->redirect( $app->admin_url .
             "?__mode=view&_type=hierarchy&_model={$model}&saved_hierarchy=1"
             . $app->workspace_param );
@@ -1184,7 +1183,6 @@ class Prototype {
         // todo permission
         $model = $app->param( 'name' );
         $scheme = $app->get_scheme_from_db( $model );
-        // unset( $scheme['relations'] );
         $table = $app->get_table( $model );
         $scheme['label'] = $table->label;
         unset( $scheme['labels'] );
@@ -1577,11 +1575,19 @@ class Prototype {
         }
         if ( $has_file && ! $as_revision ) $obj->save();
         $id = $obj->id;
-        $mappings = $db->model( 'urlmapping' )->load( ['table_id' => $table->id ] );
+        // $mappings = $db->model( 'urlmapping' )->load( ['table_id' => $table->id ] );
+        $mappings = $db->model( 'urlmapping' )->load( ['model' => $model ] );
         if (! $table->revisable || (! $obj->rev_type && ! $as_revision ) ) {
             foreach ( $mappings as $mapping ) {
                 if ( $obj->_model === 'template' ) {
                     if ( $obj->id != $mapping->template_id ) {
+                        continue;
+                    }
+                }
+                if ( $mapping->link_status && $obj->has_column( 'status' ) ) {
+                    $status_published = $app->status_published( $obj->_model );
+                    if ( $original->status != $status_published &&
+                        $obj->status != $status_published ) {
                         continue;
                     }
                 }
@@ -1652,7 +1658,7 @@ class Prototype {
                   : '';
         $app->log( ['message'   => $message,
                     'category'  => 'save',
-                    'table_id'  => $table->id,
+                    'model'     => $table->name,
                     'object_id' => $obj->id,
                     'metadata'  => $metadata,
                     'level'     => 'info'] );
@@ -1692,7 +1698,7 @@ class Prototype {
     function preview ( $obj, $properties ) {
         $app = Prototype::get_instance();
         $map = $app->get_permalink( $obj, true );
-        if (! $map || ! $map->template || ! $map->table ) {
+        if (! $map || ! $map->template || ! $map->model ) {
             return $app->error( 'View or Model not specified.' );
         }
         // TODO Set model context
@@ -1702,7 +1708,8 @@ class Prototype {
         $template = $map->template;
         if ( $obj->_model === 'template' ) {
             $tmpl = $obj->text;
-            $table = $map->table;
+            //$table = $map->table;
+            $table = $app->get_table( $map->model );
             $terms = [];
             if ( $map->workspace_id ) {
                 $terms['workspace_id'] = $map->workspace_id;
@@ -1711,18 +1718,8 @@ class Prototype {
                 $terms['rev_type'] = 0;
             }
             if ( $table->has_status ) {
-                $status_col = $app->db->model( 'column' )->get_by_key(
-                    ['table_id' => $table->id, 'name' => 'status'] );
-                $options = $status_col->options;
-                if ( $options ) {
-                    $options = explode( ',', $options );
-                    $count = count( $options );
-                    if ( $count === 5 ) {
-                        $terms['status'] = 4;
-                    } else if ( $count === 2 ) {
-                        $terms['status'] = 2;
-                    }
-                }
+                $status_published = $app->status_published( $table->name );
+                $terms['status'] = $status_published;
             }
             $preview_obj = $db->model( $table->name )->load( $terms,
                 ['limit' => 1, 'sort' => 'id', 'direction' => 'descend'] );
@@ -1734,29 +1731,28 @@ class Prototype {
             $tmpl = $template->text;
         }
         if ( $map->container ) {
-            $container = $db->model( 'table' )->load( $map->container );
-            if ( $container ) {
+            $container = $app->get_table( $map->container );
+            if ( is_object( $container ) ) {
                 $ctx->stash( 'current_container', $container->name );
             }
         }
         $ctx->stash( 'current_template', $template );
         $ctx->stash( 'current_context', $obj->_model );
         $ctx->stash( $obj->_model, $obj );
-        foreach ( $properties as $key => $val )
-      {
-        if ( $val === 'file' ) {
-            $magic = $app->param( "{$key}-magic" );
-            if ( $magic ) {
-                $sess = $db->model( 'session' )
-                    ->get_by_key( ['name' => $magic,
-                                   'user_id' => $app->user()->id, 'kind' => 'UP'] );
-                if ( $sess->id ) {
-                    $obj->$key( $sess->data );
-                    $ctx->stash( 'current_session_' . $key, $sess );
+        foreach ( $properties as $key => $val ) {
+            if ( $val === 'file' ) {
+                $magic = $app->param( "{$key}-magic" );
+                if ( $magic ) {
+                    $sess = $db->model( 'session' )
+                        ->get_by_key( ['name' => $magic,
+                                       'user_id' => $app->user()->id, 'kind' => 'UP'] );
+                    if ( $sess->id ) {
+                        $obj->$key( $sess->data );
+                        $ctx->stash( 'current_session_' . $key, $sess );
+                    }
                 }
             }
         }
-      }
         echo $ctx->build( $tmpl );
         exit();
     }
@@ -2047,7 +2043,7 @@ class Prototype {
                     "%1\$s '%2\$s(ID:%3\$s)' deleted by %4\$s.", $params );
                 $app->log( ['message'   => $message,
                             'category'  => 'delete',
-                            'model'     => $table->id,
+                            'model'     => $table->name,
                             'object_id' => $obj->id,
                             'level'     => 'info'] );
             }
@@ -2132,13 +2128,13 @@ class Prototype {
         }
         $relations = $db->model( 'relation' )->load(
             ['from_obj' => $obj->_model, 'from_id' => $obj->id ] );
-        foreach ( $relations as $$rel ) {
-            $$rel->remove();
+        foreach ( $relations as $rel ) {
+            $rel->remove();
         }
         $relations = $db->model( 'relation' )->load(
             ['to_obj' => $obj->_model, 'to_id' => $obj->id ] );
-        foreach ( $relations as $$rel ) {
-            $$rel->remove();
+        foreach ( $relations as $rel ) {
+            $rel->remove();
         }
         if ( $obj->has_column( 'rev_type' ) && ! $obj->rev_type ) {
             $revisions = $db->model( $obj->_model )->load(
@@ -2281,7 +2277,8 @@ class Prototype {
     }
 
     function save_filter_urlmapping ( &$cb, $app, $obj ) {
-        if (! $obj->template_id || ! $obj->table_id ) {
+        //if (! $obj->template_id || ! $obj->table_id ) {
+        if (! $obj->template_id || ! $obj->model ) {
             $cb['error'] = $app->translate( 'Model and View are required.' );
             return false;
         }
@@ -2850,6 +2847,7 @@ class Prototype {
         $old_path = '';
         $publish = false;
         $unlink = false;
+        $link_status = false;
         $template;
         $mapping = '';
         $workspace = $obj->workspace;
@@ -2864,15 +2862,16 @@ class Prototype {
             }
             $workspace = $key->workspace;
             if ( $key->container ) {
-                $container = $db->model( 'table' )->load( $key->container );
-                if ( $container ) {
+                $container = $app->get_table( $key->container );
+                if ( is_object( $container ) ) {
                     $ctx->stash( 'current_container', $container->name );
                 }
             }
+            $link_status = $key->link_status;
             $key = '';
         }
         if ( $fi->id ) {
-            if ( $key == $fi->key && $fi->table_id == $table->id &&
+            if ( $key == $fi->key && $fi->model == $table->name &&
                 $fi->urlmapping_id == $urlmapping_id && $fi->object_id == $obj->id ) {
                 $fi_exists = true;
             } else {
@@ -2903,7 +2902,7 @@ class Prototype {
         }
         if (! $fi_exists ) {
             $old = $db->model( 'fileinfo' )->get_by_key(
-                ['table_id' => $table->id, 'key' => $key, 'object_id' => $obj->id,
+                ['model' => $table->name, 'key' => $key, 'object_id' => $obj->id,
                  'type' => $type, 'urlmapping_id' => $urlmapping_id ] );
             $fi->id( $old->id );
             $old_path = $old->file_path;
@@ -2921,7 +2920,7 @@ class Prototype {
         $relative_path = preg_replace( "/^{$search}\//", '', $file_path );
         $url = $base_url . str_replace( '/', DS, $relative_path );
         $relative_url = preg_replace( '!^https{0,1}:\/\/.*?\/!', '/', $url );
-        $fi->set_values( ['table_id' => $table->id,
+        $fi->set_values( ['model' => $table->name,
                           'url' => $url,
                           'key' => $key,
                           'object_id' => $obj->id,
@@ -2933,15 +2932,9 @@ class Prototype {
                           'relative_path' => '%r' . DS . $relative_path,
                           'workspace_id' => $obj->workspace_id ] );
         if ( $obj->has_column( 'status' ) ) {
-            if ( $obj->has_column( 'has_deadline' ) ) {
-                // TODO status_sype
-                if ( $obj->status != 4 ) {
-                    $unlink = true;
-                }
-            } else {
-                if ( $obj->status != 2 ) {
-                    $unlink = true;
-                }
+            $status_published = $app->status_published( $obj->_model );
+            if ( $obj->status != $status_published ) {
+                $unlink = true;
             }
         }
         if ( $type === 'file' || $publish ) {
@@ -3003,7 +2996,11 @@ class Prototype {
                 }
             }
         }
-        $fi->save();
+        if ( $unlink && $link_status ) {
+            if ( $fi->id ) $fi->remove();
+        } else {
+            $fi->save();
+        }
         return $file_path;
     }
 
@@ -3386,11 +3383,6 @@ class Prototype {
         return $var;
     }
 
-    function filter_split ( $str, $arg, $ctx ) {
-        $arr = explode( $arg, $str ); // todo CSV?
-        return $arr;
-    }
-
     function filter_epoch2str ( $ts, $arg, $ctx ) {
         if (! $ts ) $this->translate( 'Just Now' );
         $ts = time() - $ts;
@@ -3430,10 +3422,12 @@ class Prototype {
     }
 
     function hdlr_tablehascolumn ( $args, $content, $ctx, $repeat, $counter ) {
+        $app = Prototype::get_instance();
         $column = $args['column'];
-        $obj = $ctx->stash( 'object' );
+        $model = isset( $args['model'] ) ? $args['model'] : '';
+        $obj = $model ? $app->db->model( $model ) : $ctx->stash( 'object' );
         if (! $obj ) return;
-        if ( $obj->_model !== 'table' ) {
+        if ( $obj->_model !== 'table' || $model ) {
             return $obj->has_column( $column );
         }
         $app = Prototype::get_instance();
@@ -3911,7 +3905,7 @@ class Prototype {
                         $rel_obj = $app->db->model( $model )->load( $r->to_id );
                         if ( is_object( $rel_obj  ) && $rel_obj->has_column( $col ) ) {
                             $names[] = $ctx->modifier_truncate(
-                                                        $rel_obj->$col, '5+...', $ctx );
+                                                        $rel_obj->$col, '10+...', $ctx );
                         }
                     }
                     return !empty( $names ) ? join( ', ', $names ) : '';
@@ -4288,11 +4282,12 @@ class Prototype {
             $container = $ctx->stash( 'current_container' );
             $context = $ctx->stash( 'current_context' );
             $has_relation = false;
-            if (! $container && $app->db->model( $context )->has_column( 'table_id' ) ) {
+            if (! $container && $app->db->model( $context )->has_column( 'model' ) ) {
                 $ctx_obj = $ctx->stash( $context );
                 $ctx_model = null;
-                if ( $ctx_obj->table_id )
-                    $ctx_model = $app->db->model( 'table' )->load( $ctx_obj->table_id );
+                if ( $ctx_obj && $ctx_obj->model ) {
+                    $ctx_model = $app->get_table( $ctx_obj->model );
+                }
                 $preview_template = $ctx->stash( 'preview_template' );
                 if ( $app->param( '_preview' ) && ! $preview_template ) {
                     $scheme = $app->get_scheme_from_db( $context );

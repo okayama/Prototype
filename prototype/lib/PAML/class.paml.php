@@ -116,7 +116,7 @@ class PAML {
       'modifier'    => ['escape' ,'setvar', 'format_ts', 'zero_pad', 'trim_to', 'eval',
                         'strip_linefeeds', 'sprintf', 'encode_js', 'truncate', 'wrap',
                         'trim_space', 'regex_replace', 'setvartemplate', 'replace',
-                        'to_json', 'from_json', 'nocache'],
+                        'to_json', 'from_json', 'nocache', 'split', 'join'],
       'function'    => ['getvar', 'trans', 'setvar', 'property', 'ldelim', 'include',
                         'rdelim', 'fetch', 'var', 'date', 'assign', 'count'],
       'include'     => ['include', 'includeblock', 'extends'] ];
@@ -125,7 +125,7 @@ class PAML {
  */
     public    $modifier_funcs = [
       'lower_case'  => 'strtolower', 'upper_case' => 'strtoupper', 'trim' => 'trim',
-      'ltrim'       => 'ltrim',  'remove_html'=> 'strip_tags', 'rtrim'=> 'rtrim',
+      'ltrim'       => 'ltrim',  'remove_html' => 'strip_tags', 'rtrim' => 'rtrim',
       'nl2br'       => 'nl2br', 'base64_encode' => 'base64_encode' ];
 /**
  * $callbacks: Array of Callbacks.
@@ -1028,11 +1028,12 @@ class PAML {
 
     function function_trans ( $args, $ctx ) {
         $phrase = ! isset( $args['phrase'] ) ? '' : $args['phrase'];
+        $lang = isset( $args['language'] ) ? $args['language'] : $ctx->language;
         if (!$phrase ) return;
         $component = isset( $args['component'] )
                    ? $ctx->component( $args['component'] ) : $ctx->default_component;
         if (! $component ) $component = $ctx;
-        if ( ( $lang = $ctx->language ) && $component ) {
+        if ( $lang && $component ) {
             $dict = isset( $component->dictionary ) ? $component->dictionary : null;
             if ( ( empty( $dict ) || !isset ( $component->dictionary[ $lang ] ) )
             && $path = $component->path ) {
@@ -1045,8 +1046,8 @@ class PAML {
             }
         }
         if ( $component && ( $dict = $component->dictionary )
-            && isset( $dict[ $ctx->language ] )
-            && ( $dict = $dict[ $ctx->language ] ) )
+            && isset( $dict[ $lang ] )
+            && ( $dict = $dict[ $lang ] ) )
             $phrase = isset( $dict[ $phrase ] ) ? $dict[ $phrase ] : $phrase;
         if ( $phrase && ( $params = isset( $args['params'] )
             ? $args['params'] : '' ) ) return ! is_array( $params )
@@ -1084,6 +1085,15 @@ class PAML {
 
     function modifier_setvar ( $str, $arg, $ctx ) {
         $ctx->vars[ $arg ] = $str;
+    }
+
+    function modifier_split ( $str, $arg, $ctx ) {
+        $arr = explode( $arg, $str );
+        return $arr;
+    }
+
+    function modifier_join ( $arr, $arg, $ctx ) {
+        return is_array( $arr )? join( $arg, $arr ) : $arr;
     }
 
     function modifier_format_ts ( $date, $format ) {

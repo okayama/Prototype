@@ -6,54 +6,54 @@
     </label>
   </div>
   <div class="col-lg-10">
-        <mt:var name="edit" split=":" setvar="edit_props">
-        <mt:var name="edit_props[1]" setvar="rel_model">
-        <mt:var name="edit_props[2]" setvar="rel_col">
-        <mt:var name="edit_props[3]" setvar="rel_type">
-        <mt:setvarblock name="__rel_model__">object_<mt:var name="__col_name__">_model</mt:setvarblock>
-        <mt:var name="$__rel_model__" setvar="selected_model">
-        <mt:if name="object_model">
-          <mt:setvar name="selected_model" value="$object_model">
-        </mt:if>
-        <mt:if name="workspace_id">
-          <mt:setvar name="table_type" value="display_space">
-        <mt:else>
-          <mt:setvar name="table_type" value="display_system">
-        </mt:if>
-          <mt:tables menu_type="1" type="$table_type">
-          <mt:if name="__first__">
-          <select <mt:if name="object_table_id">readonly onmousedown="return false;" onkeydown="return false;"</mt:if> class="form-control short watch-changed short" name="_<mt:var name="__col_name__">_model" id="<mt:var name="__col_name__">-selector">
-            <mt:unless name="object_table_id">
-            <option value="" <mt:unless name="request.id">selected</mt:unless>>
-              <mt:trans phrase="Unspecified">
-            </option>
-            </mt:unless>
-          </mt:if>
-          <mt:if name="primary">
-            <mt:if name="menu_type" eq="1">
-              <mt:if name="object_table_id">
-                <mt:if name="id" eq="$object_table_id">
-                <option data-table-id="<mt:var name="id">" selected value="<mt:var name="name">"><mt:trans phrase="$label" escape></option>
-                </mt:if>
-              <mt:else>
-                <option data-table-id="<mt:var name="id">" value="<mt:var name="name">"><mt:trans phrase="$label" escape></option>
-              </mt:if>
-              <mt:setvars name="model_primary">
-                <mt:var name="name">=<mt:var name="primary" escape>
-              </mt:setvars>
-              <mt:if name="name" eq="$selected_model">
-                <mt:setvar name="model_primary_col" value="$primary">
-                <mt:setvar name="model_model" value="$name">
-              </mt:if>
-              <mt:var name="model_primary" to_json="1" setvar="model_primary_json">
+    <mt:var name="edit" split=":" setvar="edit_props">
+    <mt:var name="edit_props[1]" setvar="rel_model">
+    <mt:var name="edit_props[2]" setvar="rel_col">
+    <mt:var name="edit_props[3]" setvar="rel_type">
+    <mt:setvarblock name="__rel_model__">object_<mt:var name="__col_name__">_model</mt:setvarblock>
+    <mt:var name="$__rel_model__" setvar="selected_model">
+    <mt:if name="object_model">
+      <mt:setvar name="selected_model" value="$object_model">
+    </mt:if>
+    <mt:if name="workspace_id">
+      <mt:setvar name="table_type" value="display_space">
+    <mt:else>
+      <mt:setvar name="table_type" value="display_system">
+    </mt:if>
+      <mt:tables menu_type="1" type="$table_type">
+      <mt:if name="__first__">
+      <select <mt:if name="object_model">readonly onmousedown="return false;" onkeydown="return false;"</mt:if> class="form-control short watch-changed short" name="_<mt:var name="__col_name__">_model" id="<mt:var name="__col_name__">-selector">
+        <mt:unless name="object_model">
+        <option value="" <mt:unless name="request.id">selected</mt:unless>>
+          <mt:trans phrase="Unspecified">
+        </option>
+        </mt:unless>
+      </mt:if>
+      <mt:if name="primary">
+        <mt:if name="menu_type" eq="1">
+          <mt:if name="object_model">
+            <mt:if name="name" eq="$object_model">
+            <option data-model="<mt:var name="name">" selected value="<mt:var name="name">"><mt:trans phrase="$label" escape></option>
             </mt:if>
+          <mt:else>
+            <option data-model="<mt:var name="name">" value="<mt:var name="name">"><mt:trans phrase="$label" escape></option>
           </mt:if>
-          <mt:if name="__last__">
-            </select>
+          <mt:setvars name="model_primary">
+            <mt:var name="name">=<mt:var name="primary" escape>
+          </mt:setvars>
+          <mt:if name="name" eq="$selected_model">
+            <mt:setvar name="model_primary_col" value="$primary">
+            <mt:setvar name="model_model" value="$name">
           </mt:if>
-          </mt:tables>
+          <mt:var name="model_primary" to_json="1" setvar="model_primary_json">
+        </mt:if>
+      </mt:if>
+      <mt:if name="__last__">
+        </select>
+      </mt:if>
+      </mt:tables>
       <mt:setvarblock name="__rel_name__">object_<mt:var name="__col_name__"></mt:setvarblock>
-      <input type="hidden" id="_group_table_id" name="table_id" value="<mt:var name="object_table_id" escape>">
+      <input type="hidden" id="_group_model" name="model" value="<mt:var name="object_model" escape>">
   </div>
 </div>
 <div class="row form-group">
@@ -101,7 +101,7 @@ $('#<mt:var name="__col_name__">-selector').change(function(){
         return;
     }
     $('#<mt:var name="__col_name__">-chooser').show();
-    $('#_group_table_id').val( $('#<mt:var name="__col_name__">-selector option:selected').attr('data-table-id') );
+    $('#_group_model').val( $('#<mt:var name="__col_name__">-selector option:selected').attr('data-model') );
     var primary_col = <mt:var name="__col_name__">_primary[$(this).val()];
     var tmp_url = <mt:var name="__col_name__">_data_href;
     tmp_url = tmp_url.replace( /_model=__any__/, '_model=' + $(this).val() );
@@ -113,6 +113,9 @@ $('#<mt:var name="__col_name__">-selector').change(function(){
 $('#<mt:var name="__col_name__">-selector').trigger('change');
 $('#<mt:var name="__col_name__">').sortable ( {
 // TODO keyboard oparation
+    stop: function( evt, ui ) {
+        editContentChanged = true;
+    }
 });
 
 $('.group-item').mouseover(function() {

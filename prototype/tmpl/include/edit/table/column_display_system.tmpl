@@ -6,7 +6,7 @@
     <input type="hidden" name="<mt:var name="name" escape>" value="0">
     <mt:ignore>Before checkbox, input hidden value="0"</mt:ignore>
     <label class="custom-control custom-checkbox custom-label-checkbox">
-    <input id="<mt:var name="name" escape>" class="form-control custom-control-input"
+    <input id="<mt:var name="name" escape>" class="form-control custom-control-input watch-changed"
     <mt:if name="readonly">onclick="return false;"</mt:if>
      type="checkbox" name="<mt:var name="name" escape>" value="1" <mt:if name="value">checked</mt:if>>
         <span class="custom-control-indicator"></span>
@@ -42,7 +42,7 @@ $("#<mt:var name="name" escape>").click(function(){
 
     <input type="hidden" name="auditing" value="0">
     <label class="custom-control custom-checkbox">
-    <input id="auditing" class="custom-control-input"
+    <input id="auditing" class="form-control custom-control-input watch-changed"
     <mt:if name="readonly">onclick="return false;"</mt:if>
      type="checkbox" name="auditing" value="1" <mt:if name="object_auditing">checked</mt:if>>
         <span class="custom-control-indicator"></span>
@@ -52,7 +52,7 @@ $("#<mt:var name="name" escape>").click(function(){
 
     <input type="hidden" name="taggable" value="0">
     <label class="custom-control custom-checkbox">
-    <input id="taggable" class="form-control custom-control-input"
+    <input id="taggable" class="form-control custom-control-input watch-changed"
     <mt:if name="readonly">onclick="return false;"</mt:if>
      type="checkbox" name="taggable" value="1" <mt:if name="object_taggable">checked</mt:if>>
         <span class="custom-control-indicator"></span>
@@ -62,7 +62,7 @@ $("#<mt:var name="name" escape>").click(function(){
 
     <input type="hidden" name="api" value="0">
     <label class="custom-control custom-checkbox">
-    <input id="api" class="custom-control-input"
+    <input id="api" class="form-control custom-control-input watch-changed"
     <mt:if name="readonly">onclick="return false;"</mt:if>
      type="checkbox" name="api" value="1" <mt:if name="object_api">checked</mt:if>>
         <span class="custom-control-indicator"></span>
@@ -72,7 +72,7 @@ $("#<mt:var name="name" escape>").click(function(){
 
     <input type="hidden" name="template_tags" value="0">
     <label class="custom-control custom-checkbox">
-    <input id="template_tags" class="custom-control-input"
+    <input id="template_tags" class="form-control custom-control-input watch-changed"
     <mt:if name="readonly">onclick="return false;"</mt:if>
      type="checkbox" name="template_tags" value="1" <mt:if name="object_template_tags">checked</mt:if>>
         <span class="custom-control-indicator"></span>
@@ -86,7 +86,7 @@ $("#<mt:var name="name" escape>").click(function(){
 
     <input type="hidden" name="start_end" value="0">
     <label class="custom-control custom-checkbox">
-    <input id="start_end" class="custom-control-input"
+    <input id="start_end" class="form-control custom-control-input watch-changed"
     <mt:if name="readonly">onclick="return false;"</mt:if>
      type="checkbox" name="start_end" value="1" <mt:if name="object_start_end">checked</mt:if>>
         <span class="custom-control-indicator"></span>
@@ -96,7 +96,7 @@ $("#<mt:var name="name" escape>").click(function(){
 
     <input type="hidden" name="has_status" value="0">
     <label class="custom-control custom-checkbox">
-    <input id="has_status" class="custom-control-input"
+    <input id="has_status" class="form-control custom-control-input watch-changed"
     <mt:if name="readonly">onclick="return false;"</mt:if>
      type="checkbox" name="has_status" value="1" <mt:if name="object_has_status">checked</mt:if>>
         <span class="custom-control-indicator"></span>
@@ -106,7 +106,7 @@ $("#<mt:var name="name" escape>").click(function(){
 
     <input type="hidden" name="has_basename" value="0">
     <label class="custom-control custom-checkbox">
-    <input id="has_status" class="custom-control-input"
+    <input id="has_status" class="form-control custom-control-input watch-changed"
     <mt:if name="readonly">onclick="return false;"</mt:if>
      type="checkbox" name="has_basename" value="1" <mt:if name="object_has_basename">checked</mt:if>>
         <span class="custom-control-indicator"></span>
@@ -116,7 +116,7 @@ $("#<mt:var name="name" escape>").click(function(){
 
     <input type="hidden" name="assign_user" value="0">
     <label class="custom-control custom-checkbox">
-    <input id="has_status" class="custom-control-input"
+    <input id="has_status" class="form-control custom-control-input watch-changed"
     <mt:if name="readonly">onclick="return false;"</mt:if>
      type="checkbox" name="assign_user" value="1" <mt:if name="object_assign_user">checked</mt:if>>
         <span class="custom-control-indicator"></span>
@@ -126,7 +126,7 @@ $("#<mt:var name="name" escape>").click(function(){
 
     <input type="hidden" name="revisable" value="0">
     <label class="custom-control custom-checkbox">
-    <input id="revisable" class="custom-control-input"
+    <input id="revisable" class="form-control custom-control-input watch-changed"
     <mt:if name="readonly">onclick="return false;"</mt:if>
      type="checkbox" name="revisable" value="1" <mt:if name="object_revisable">checked</mt:if>>
         <span class="custom-control-indicator"></span>
@@ -136,7 +136,7 @@ $("#<mt:var name="name" escape>").click(function(){
 
     <input type="hidden" name="logical_delete" value="0">
     <label class="custom-control custom-checkbox">
-    <input id="logical_delete" class="custom-control-input"
+    <input id="logical_delete" class="form-control custom-control-input watch-changed"
     <mt:if name="readonly">onclick="return false;"</mt:if>
      type="checkbox" name="logical_delete" value="1" <mt:if name="object_logical_delete">checked</mt:if>>
         <span class="custom-control-indicator"></span>
@@ -146,7 +146,7 @@ $("#<mt:var name="name" escape>").click(function(){
 
     <input type="hidden" name="hierarchy" value="0">
     <label class="custom-control custom-checkbox">
-    <input id="hierarchy" class="custom-control-input"
+    <input id="hierarchy" class="form-control custom-control-input watch-changed"
     <mt:if name="readonly">onclick="return false;"</mt:if>
      type="checkbox" name="hierarchy" value="1" <mt:if name="object_hierarchy">checked</mt:if>>
         <span class="custom-control-indicator"></span>

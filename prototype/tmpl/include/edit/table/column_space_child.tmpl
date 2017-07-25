@@ -4,7 +4,6 @@
 <mt:if name="object_name" ne="table">
 <mt:if name="object_name" ne="user">
 <mt:if name="object_name" ne="relation">
-<mt:if name="object_name" ne="permission">
 <mt:if name="object_name" ne="workspace">
 
 <div class="row form-group">
@@ -14,7 +13,7 @@
     <input type="hidden" name="<mt:var name="name" escape>" value="0">
     <mt:ignore>Before checkbox, input hidden value="0"</mt:ignore>
     <label class="custom-control custom-checkbox">
-    <input id="<mt:var name="name" escape>" class="custom-control-input disp_option"
+    <input id="<mt:var name="name" escape>" class="form-control custom-control-input watch-changed"
     <mt:if name="readonly">onclick="return false;"</mt:if>
      type="checkbox" name="<mt:var name="name" escape>" value="1" <mt:if name="value">checked</mt:if>>
         <span class="custom-control-indicator"></span>
@@ -24,7 +23,6 @@
   </div>
 </div>
 
-</mt:if>
 </mt:if>
 </mt:if>
 </mt:if>
