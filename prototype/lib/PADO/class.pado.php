@@ -32,7 +32,6 @@ class PADO {
     public  $max_packet  = 16777216;
     public  $charset     = 'utf-8';
     public  $default_ts  = 'CURRENT_TIMESTAMP';
-
 /**
  * Table prefix.
  */
@@ -64,6 +63,7 @@ class PADO {
 
     public  $sandbox     = false;
     public  $logging     = false;
+    public  $log_path;
     public  $scheme      = [];
     public  $methods     = [];
     public  $json_model  = true;
