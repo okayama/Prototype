@@ -235,18 +235,30 @@ $('#dialog-cancel-btn').click(function(){
 <mt:var name="list" setvar="list_prop">
 <mt:objectvar name="$column_name" escape setvar="value">
 <mt:objectvar name="$column_name" setvar="raw_value">
-
 <mt:if name="__first__">
 <td>
   <mt:if name="__get_col">
   <mt:objectcols>
+<mt:if name="__first__">
+<mt:setvar name="__status__" value="0">
+</mt:if>
     <mt:if name="list" eq="primary">
         <mt:objectvar name="$__get_col" setvar="__primary_value">
     </mt:if>
     <mt:if name="name" eq="$__get_col">
         <mt:objectvar name="$__get_col" setvar="__get_col_value">
     </mt:if>
-  </mt:objectcols>
+    <mt:if name="request.from_obj" eq="group">
+      <mt:if name="name" eq="status">
+        <mt:unless name="__status__">
+        <mt:objectvar name="status" setvar="__status__">
+        <mt:setvarblock name="__get_col_value" append="1">
+          (<mt:statustext status="$__status__" options="$options" icon="1" text="1">)
+        </mt:setvarblock>
+        </mt:unless>
+      </mt:if>
+    </mt:if>
+</mt:objectcols>
   <input type="hidden" id="__get_col_<mt:objectvar name="id">" value="<mt:var name="__get_col_value" escape>">
   </mt:if>
   <mt:unless name="__single_select">

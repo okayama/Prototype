@@ -534,7 +534,8 @@ div.mce-fullscreen {
 }
 
 .relation-list li {
-  display: inline;
+  display: inline-block;
+  padding-right: 4px;
 }
 
 .relation-list .hidden {
@@ -605,9 +606,9 @@ input.time {
 }
 
 .badge-relation {
-  margin-right: 12px;
-  display: inline;
-  padding: 4px 2px 4px 8px;
+  margin-right: 6px;
+  display: inline-block;
+  padding: 4px 8px 4px 8px;
   white-space: nowrap !important;
 }
 

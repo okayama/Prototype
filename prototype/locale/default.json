@@ -15,6 +15,7 @@
     "tag"           : "Tag",
     "permission"    : "Permission",
     "role"          : "Role",
+    "kind"          : "Kind",
     "group"         : "Group",
     "log"           : "Log",
     "fileinfo"      : "File",

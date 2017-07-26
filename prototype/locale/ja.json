@@ -56,6 +56,7 @@
     "Relative Path"      : "相対パス",
     "Site URL"           : "サイトURL",
     "Post"               : "投稿",
+    "Kind"               : "種別",
     "Posts"              : "投稿",
     "Entry"              : "記事",
     "Entries"            : "記事",
@@ -310,9 +311,14 @@
     "Utilities"          : "ユーティリティ",
     "Metadata"           : "メタデータ",
     "Linked with Status" : "ステータスと連動",
+    "Syetem's Role"      : "システムのロール",
+    "New WorkSpace's Role"
+        : "新しいスペースのロール",
     "List Revisions of %s"
         : "%sのリビジョン一覧",
     "To" : "〜",
+    "You can not change the %s."
+        : "%s は変更できません。",
     "%1$s '%2$s(ID:%3$s)' created by %4$s."
         : "%4$s が %1$s 「%2$s(ID:%3$s)」を作成しました。",
     "%1$s '%2$s(ID:%3$s)' edited by %4$s."

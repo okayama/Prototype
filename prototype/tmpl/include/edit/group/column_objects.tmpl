@@ -80,6 +80,12 @@
       <li class="<mt:var name="__col_name__">-child card card-inverse group-item">
         <span>
         <mt:getobjectname id="$__value__" wants="$model_primary_col" model="$model_model" escape>
+        <mt:if name="statu_options">
+          <mt:getobjectname id="$__value__" wants="status" model="$model_model" escape setvar="__status__">
+          <mt:if name="__status__">
+           (<mt:statustext status="$__status__" options="$statu_options" icon="1" text="1">)
+          </mt:if>
+        </mt:if>
         </span>
         <button type="button" class="btn btn-secondary btn-sm close-sm" aria-label="<mt:trans phrase="Detach">" data-name="<mt:var name="__col_name__">">
         <span aria-hidden="true">&times;</span>
@@ -89,12 +95,12 @@
     </mt:loop>
     </ul>
       <button id="<mt:var name="__col_name__">-chooser" type="button" class="hidden btn btn-primary btn-sm dialog-chooser group-chooser" data-toggle="modal" data-target="#modal"
-        data-href="<mt:var name="script_uri">?__mode=view&amp;_type=list&amp;_model=<mt:var name="rel_model" escape><mt:if name="workspace_id">&amp;workspace_id=<mt:var name="workspace_id"></mt:if>&amp;dialog_view=1&amp;target=<mt:var name="__col_name__">&amp;get_col=<mt:var name="rel_col" escape>&amp;selected_ids=<mt:var name="selected_ids" escape>"><mt:trans phrase="Select..."></button>
+        data-href="<mt:var name="script_uri">?__mode=view&amp;_type=list&amp;_model=<mt:var name="rel_model" escape><mt:if name="workspace_id">&amp;workspace_id=<mt:var name="workspace_id"></mt:if>&amp;dialog_view=1&amp;target=<mt:var name="__col_name__">&amp;get_col=<mt:var name="rel_col" escape>&amp;selected_ids=<mt:var name="selected_ids" escape>&amp;from_obj=group"><mt:trans phrase="Select..."></button>
   </div>
 </div>
 <script>
 var <mt:var name="__col_name__">_primary = <mt:var name="model_primary_json">;
-var <mt:var name="__col_name__">_data_href ='<mt:var name="script_uri">?__mode=view&amp;_type=list&amp;_model=<mt:var name="rel_model" escape><mt:if name="workspace_id">&amp;workspace_id=<mt:var name="workspace_id"></mt:if>&amp;dialog_view=1&amp;target=<mt:var name="__col_name__">&amp;get_col=<mt:var name="rel_col" escape>&amp;selected_ids=<mt:var name="selected_ids" escape>';
+var <mt:var name="__col_name__">_data_href ='<mt:var name="script_uri">?__mode=view&amp;_type=list&amp;_model=<mt:var name="rel_model" escape><mt:if name="workspace_id">&amp;workspace_id=<mt:var name="workspace_id"></mt:if>&amp;dialog_view=1&amp;target=<mt:var name="__col_name__">&amp;get_col=<mt:var name="rel_col" escape>&amp;selected_ids=<mt:var name="selected_ids" escape>&amp;from_obj=group';
 $('#<mt:var name="__col_name__">-selector').change(function(){
     if ( $(this).val() == '' ) {
         $('#<mt:var name="__col_name__">-chooser').hide();
@@ -121,5 +127,4 @@ $('#<mt:var name="__col_name__">').sortable ( {
 $('.group-item').mouseover(function() {
     $(this).css('cursor','move');
 });
-
 </script>

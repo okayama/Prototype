@@ -5,18 +5,30 @@
     </label>
   </div>
   <div class="col-lg-10">
-        <mt:setvarblock name="__rel_name__">object_<mt:var name="__col_name__"></mt:setvarblock>
-        <mt:setvarblock name="table_option">'display_space','1'</mt:setvarblock>
-        <mt:objectloop model="table" sort_by="order" options="$table_option">
-        <mt:tablehascolumn column="status" model="$name">
-        <mt:tablehascolumn column="has_deadline" model="$name">
-        <label class="custom-control custom-checkbox">
-          <input type="checkbox" class="custom-control-input watch-changed" name="<mt:var name="__col_name__">[]" value="<mt:var name="id">" <mt:ifinarray array="$__rel_name__" value="$id">checked</mt:ifinarray>>
-          <span class="custom-control-indicator"></span>
-          <span class="custom-control-description"><mt:trans phrase="$label"></span>
-        </label>
-        </mt:tablehascolumn>
-        </mt:tablehascolumn>
-        </mt:objectloop>
+    <mt:setvarblock name="__rel_name__">object_<mt:var name="__col_name__"></mt:setvarblock>
+    <mt:objectvar name="class" setvar="__class__">
+    <mt:unless name="request.id">
+      <mt:if name="request.workspace_role">
+        <mt:setvar name="__class__" value="2">
+      <mt:else>
+        <mt:setvar name="__class__" value="1">
+      </mt:if>
+    </mt:unless>
+    <mt:if name="__class__" eq="2">
+      <mt:setvarblock name="table_option">'display_space','1'</mt:setvarblock>
+    <mt:else>
+      <mt:setvarblock name="table_option">'display','1','space_child','0'</mt:setvarblock>
+    </mt:if>
+    <mt:objectloop model="table" sort_by="order" options="$table_option">
+    <mt:tablehascolumn column="status" model="$name">
+    <mt:tablehascolumn column="has_deadline" model="$name">
+    <label class="custom-control custom-checkbox">
+      <input type="checkbox" class="custom-control-input watch-changed" name="<mt:var name="__col_name__">[]" value="<mt:var name="id">" <mt:ifinarray array="$__rel_name__" value="$id">checked</mt:ifinarray>>
+      <span class="custom-control-indicator"></span>
+      <span class="custom-control-description"><mt:trans phrase="$label"></span>
+    </label>
+    </mt:tablehascolumn>
+    </mt:tablehascolumn>
+    </mt:objectloop>
   </div>
 </div>
