@@ -3141,6 +3141,7 @@ class Prototype {
                  'type' => $type, 'urlmapping_id' => $urlmapping_id ] );
             $fi->id( $old->id );
             $old_path = $old->file_path;
+            $old_path = str_replace( '/', DS, $old_path );
         }
         $base_url = $app->site_url;
         $base_path = $app->site_path;
@@ -3150,10 +3151,13 @@ class Prototype {
             $base_path = $workspace->site_path;
             $asset_publish = $workspace->asset_publish;
         }
+        $file_path = str_replace( DS, '/', $file_path );
+        $base_path = str_replace( DS, '/', $base_path );
         $search = preg_quote( $base_path, '/' );
-        // TODO Windows OS
         $relative_path = preg_replace( "/^{$search}\//", '', $file_path );
-        $url = $base_url . str_replace( '/', DS, $relative_path );
+        $url = $base_url . $relative_path;
+        $url = str_replace( DS, '/', $url );
+        $relative_path = str_replace( '/', DS, $relative_path );
         $relative_url = preg_replace( '!^https{0,1}:\/\/.*?\/!', '/', $url );
         $fi->set_values( ['model' => $table->name,
                           'url' => $url,
