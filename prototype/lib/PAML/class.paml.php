@@ -443,61 +443,56 @@ class PAML {
         $caching = $this->caching;
         if (!$src && ( $path = realpath( $path ) ) && !file_exists( $path ) ) return;
         if ( $_SERVER['REQUEST_METHOD'] !== 'GET' ) $this->caching = $caching = false;
-        if ( $caching && !$force_compile )
-      { // Page cache.
-        $this->init_cache( $this->cache_driver );
-        if (!$cache_id )
-       {
-        $req = isset( $_SERVER['HTTP_X_REWRITE_URL'] )
-        ? $_SERVER['HTTP_X_REWRITE_URL'] :
-        isset( $_SERVER['REQUEST_URI'] ) ? $_SERVER['REQUEST_URI'] : $path;
-        $req = $_SERVER['HTTP_HOST'] . $_SERVER['SERVER_PORT'] . $req;
-        $cache_id = 'c__' . md5( $req . ':' . $path );
-       }
-        $this->cache_id = $cache_id;
-        $this->cache_path = $this->get_cache( $cache_id, $this->cache_ttl );
-        if ( $this->out !== null ) {
-            $out = $this->out;
-            if ( $disp ) echo $out;
-            unset( $this->out, $this->meta );
-            return $out;
+        if ( $caching && !$force_compile ) { // Page cache.
+            $this->init_cache( $this->cache_driver );
+            if (!$cache_id ) {
+                $req = isset( $_SERVER['HTTP_X_REWRITE_URL'] )
+                ? $_SERVER['HTTP_X_REWRITE_URL'] :
+                isset( $_SERVER['REQUEST_URI'] ) ? $_SERVER['REQUEST_URI'] : $path;
+                $req = $_SERVER['HTTP_HOST'] . $_SERVER['SERVER_PORT'] . $req;
+                $cache_id = 'c__' . md5( $req . ':' . $path );
+            }
+            $this->cache_id = $cache_id;
+            $this->cache_path = $this->get_cache( $cache_id, $this->cache_ttl );
+            if ( $this->out !== null ) {
+                $out = $this->out;
+                if ( $disp ) echo $out;
+                unset( $this->out, $this->meta );
+                return $out;
+            }
         }
-      }
         $compile_key = '';
         $compile_path = '';
         $this->restore_vars = $this->vars;
-        if ( $path )
-      {
-        $this->include_paths[ dirname( $path ) ] = true;
-        $this->template_paths[ $path ] = filemtime( $path );
-        $this->template_file = $path;
-        $compile_key = md5( $path );
-      }
+        if ( $path ) {
+            $this->include_paths[ dirname( $path ) ] = true;
+            $this->template_paths[ $path ] = filemtime( $path );
+            $this->template_file = $path;
+            $compile_key = md5( $path );
+        }
         $this->init();
         $this->re_compile = false;
-        if (!$force_compile )
-      { // Compile cache.
-        $compile_path = $this->get_cache( $compile_key );
-        if ( $this->out !== null ) {
-            if ( $this->nocache && $caching )
-          {
-            $this->literal_vars = [];
-            $this->re_compile = true;
-          } else {
-            if (!$caching )
-            {
-            $out = $this->out;
-            if (!empty( $this->callbacks['output_filter'] ) )
-                $out = $this->call_filter( $out, 'output_filter' );
-            if ( $disp ) echo $out;
-            unset( $this->out, $this->meta, $this->old_params, $this->old_vars,
-                   $this->template_paths, $this->literal_vars, $this->template_file );
-            return $out;
+        if (!$force_compile ) { // Compile cache.
+            $compile_path = $this->get_cache( $compile_key );
+            if ( $this->out !== null ) {
+                if ( $this->nocache && $caching ) {
+                    $this->literal_vars = [];
+                    $this->re_compile = true;
+                } else {
+                    if (!$caching ) {
+                        $out = $this->out;
+                        if (!empty( $this->callbacks['output_filter'] ) )
+                            $out = $this->call_filter( $out, 'output_filter' );
+                        if ( $disp ) echo $out;
+                        unset( $this->out, $this->meta, $this->old_params,
+                               $this->old_vars, $this->template_paths,
+                               $this->literal_vars, $this->template_file );
+                        return $out;
+                    }
+                    return $this->finish( null, $disp, $this->callbacks );
+                }
             }
-            return $this->finish( null, $disp, $this->callbacks );
-          }
         }
-      }
         $this->literal_vars = [];
         $this->id = $this->magic();
         $this->compile_path = $compile_path;
@@ -1920,7 +1915,7 @@ class PAML {
     }
 
     function _eval ( $out ) {
-        ob_start();eval( '?>' . $out . '<?' ); $out = ob_get_clean();
+        ob_start();eval( '?>' . $out ); $out = ob_get_clean();
         if ( $err = error_get_last() )
         $this->errorHandler( $err['type'], $err['message'], $err['file'], $err['line'] );
         return $out;

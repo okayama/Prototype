@@ -9,7 +9,8 @@ if (! defined( 'LIB_DIR' ) ) {
 if (! defined( 'TMPL_DIR' ) ) {
     define( 'TMPL_DIR', __DIR__ . DS . 'tmpl' . DS );
 }
-ini_set( 'include_path', __DIR__ . DS . 'lib' . ':' . ini_get( 'include_path' ) );
+ini_set( 'include_path', ini_get( 'include_path' )
+                         . PATH_SEPARATOR . __DIR__ . DS . 'lib' );
 
 class Prototype {
 
