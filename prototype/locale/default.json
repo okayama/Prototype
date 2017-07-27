@@ -25,6 +25,7 @@
     "phrase"        : "Phrase",
     "description"   : "Description",
     "excerpt"       : "Excerpt",
+    "remote_ip"     : "Remote IP",
     "body"          : "Body",
     "primary"       : "Primary",
     "plural"        : "Plural",

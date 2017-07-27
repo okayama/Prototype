@@ -160,6 +160,8 @@ class Prototype {
         $this->register_callback( 'workspace', 'post_save', 'post_save_workspace', 1, $this );
         $this->register_callback( 'role', 'post_save', 'post_save_role', 1, $this );
         $this->register_callback( 'permission', 'post_save', 'post_save_permission', 1, $this );
+        $this->register_callback( 'role', 'post_delete', 'post_save_role', 1, $this );
+        $this->register_callback( 'permission', 'post_delete', 'post_save_permission', 1, $this );
         $this->register_callback( 'table', 'delete_filter', 'delete_filter_table', 1, $this );
         $this->register_callback( 'table', 'post_save', 'post_save_table', 1, $this );
         $this->register_callback( 'template', 'delete_filter', 'delete_filter_template', 1, $this );
@@ -2740,6 +2742,7 @@ class Prototype {
                 $user_ids[] = $perm->user_id;
             }
             if (! empty( $user_ids ) ) {
+                $user_ids = array_unique( $user_ids );
                 $sessions =
                     $app->db->model( 'session' )->load( ['user_id' => ['IN', $user_ids ],
                         'name' => 'user_permissions', 'kind' => 'PM' ] );
@@ -4596,7 +4599,8 @@ class Prototype {
             if ( $container && $context ) {
                 if ( $to_obj = $ctx->stash( $context ) ) {
                     $relations = $app->db->model( 'relation' )->load( 
-                        ['to_id' => (int) $to_obj->id, 'to_obj' => $context ] );
+                        ['to_id' => (int) $to_obj->id, 'to_obj' => $context,
+                         'from_obj' => $obj->_model ] );
                     $has_relation = true;
                     $relation_col = 'from_id';
                 }

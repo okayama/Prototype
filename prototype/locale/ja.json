@@ -35,6 +35,7 @@
     "System Objects"     : "システムオブジェクト",
     "Toggle Navigation"  : "ナビゲーションの開閉",
     "Edit Revision of %s": "リビジョン(%s)の編集",
+    "Remote IP"          : "IPアドレス",
     "Toggle"             : "開閉",
     "Enable"             : "有効",
     "Disable"            : "無効",

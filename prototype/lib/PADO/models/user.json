@@ -32,6 +32,10 @@
             "not_null": 1,
             "size": 255
         },
+        "photo": {
+            "type": "blob",
+            "default": null
+        },
         "language": {
             "type": "string",
             "size": 30
@@ -92,11 +96,13 @@
     "edit_properties": {
         "id": "hidden",
         "name": "primary",
-        "nickname": "text",
-        "email": "text",
-        "language" : "languages",
         "password": "password(hash)",
+        "email": "text",
+        "nickname": "text",
+        "photo": "file",
+        "language": "languages",
         "is_superuser": "checkbox",
-        "created_on": "datetime"
+        "created_on": "datetime",
+        "last_login_on": "datetime"
     }
 }

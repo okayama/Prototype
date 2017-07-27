@@ -6,6 +6,7 @@
     "order"    : 140,
     "child_of" : "workspace",
     "menu_type": 1,
+    "hierarchy": 1,
     "template_tags": 1,
     "display_space": 1,
     "has_basename": 1,

@@ -19,9 +19,9 @@
             "size": 255,
             "not_null": 1
         },
-        "table_id": {
-            "type": "int",
-            "size": 11,
+        "model": {
+            "type": "string",
+            "size": 255,
             "not_null": 1
         },
         "mapping": {
@@ -30,8 +30,8 @@
             "not_null": 1
         },
         "container": {
-            "type": "int",
-            "size": 11
+            "type": "string",
+            "size": 255
         },
         "template_id": {
             "type": "int",
@@ -40,6 +40,11 @@
         "publish_file": {
             "type": "tinyint",
             "size": 4
+        },
+        "link_status": {
+            "type": "tinyint",
+            "size": 4,
+            "default": null
         },
         "created_on": {
             "type": "datetime"
@@ -68,9 +73,8 @@
     "indexes": {
         "PRIMARY": "id",
         "name": "name",
-        "table_id": "table_id",
         "container": "container",
-        "template_id": "template_id",
+        "model": "model",
         "publish_file": "publish_file",
         "created_on": "created_on",
         "modified_on": "modified_on",
@@ -91,21 +95,23 @@
     "edit_properties": {
         "id": "hidden",
         "name": "primary",
-        "table_id": "relation:table:label:select",
+        "model": "text",
         "mapping": "text",
-        "container": "relation:table:label:select",
+        "container": "text",
         "template_id": "relation:template:name:dialog",
         "publish_file": "checkbox",
+        "link_status": "checkbox",
         "order": "number"
     },
     "list_properties": {
         "id": "number",
         "name": "primary",
-        "table_id": "reference:table:label",
+        "model": "text",
         "mapping": "text",
-        "container": "reference:table:label",
+        "container": "text",
         "template_id": "reference:template:name",
         "publish_file": "checkbox",
+        "link_status": "checkbox",
         "modified_on": "datetime",
         "modified_by": "reference:user:name",
         "workspace_id": "reference:workspace:name",

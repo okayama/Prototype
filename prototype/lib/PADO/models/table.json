@@ -111,6 +111,11 @@
             "type": "tinyint",
             "size": 4
         },
+        "hierarchy": {
+            "type": "tinyint",
+            "size": 4,
+            "default": null
+        },
         "revisable": {
             "type": "tinyint",
             "size": 4
@@ -157,6 +162,7 @@
         "space_child": "space_child",
         "order": "order",
         "api": "api",
+        "hierarchy": "hierarchy",
         "template_tags": "template_tags"
     },
     "unique": [

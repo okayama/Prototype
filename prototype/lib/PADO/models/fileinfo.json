@@ -5,6 +5,7 @@
     "order"    : 110,
     "primary"  : "relative_path",
     "menu_type": 3,
+    "display_space": 1,
     "column_defs": {
         "id": {
             "type": "int",
@@ -25,9 +26,9 @@
             "size": "255",
             "not_null": 1
         },
-        "table_id": {
-            "type": "int",
-            "size": "11"
+        "model": {
+            "type": "string",
+            "size": 255
         },
         "key": {
             "type": "string",
@@ -71,7 +72,7 @@
         "relative_path": "relative_path",
         "type": "type",
         "relative_url": "relative_url",
-        "table_id": "table_id",
+        "model": "model",
         "key": "key",
         "object_id": "object_id",
         "urlmapping_id": "urlmapping_id",
@@ -93,7 +94,7 @@
         "relative_path": "primary",
         "type": "text_short",
         "relative_url": "text",
-        "table_id": "relation:table:label:select",
+        "model": "text",
         "key": "text_short",
         "object_id": "number",
         "urlmapping_id": "reference:urlmapping:name",
@@ -108,7 +109,7 @@
         "relative_path": "primary",
         "type": "text_short",
         "relative_url": "text",
-        "table_id": "reference:table:label",
+        "model": "text",
         "key": "text_short",
         "object_id": "number",
         "urlmapping_id": "reference:urlmapping:name",

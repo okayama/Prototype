@@ -1,0 +1,122 @@
+{
+    "label"    : "Role",
+    "plural"   : "Roles",
+    "primary"  : "name",
+    "auditing" : 1,
+    "order"    : 160,
+    "menu_type": 2,
+    "display"  : 1,
+    "column_defs": {
+        "id": {
+            "type": "int",
+            "size": 11,
+            "not_null": 1
+        },
+        "name": {
+            "type": "string",
+            "size": 255
+        },
+        "class": {
+            "type": "int",
+            "size": 11,
+            "not_null": 1
+        },
+        "description": {
+            "type": "text"
+        },
+        "can_list": {
+            "type": "relation"
+        },
+        "can_create": {
+            "type": "relation"
+        },
+        "can_update_own": {
+            "type": "relation"
+        },
+        "can_update_all": {
+            "type": "relation"
+        },
+        "can_review": {
+            "type": "relation"
+        },
+        "can_activate": {
+            "type": "relation"
+        },
+        "can_delete": {
+            "type": "relation"
+        },
+        "created_on": {
+            "type": "datetime"
+        },
+        "modified_on": {
+            "type": "datetime"
+        },
+        "created_by": {
+            "type": "int",
+            "size": 11
+        },
+        "modified_by": {
+            "type": "int",
+            "size": 11
+        }
+    },
+    "indexes": {
+        "PRIMARY": "id",
+        "id": "id",
+        "name": "name",
+        "class": "class",
+        "created_on": "created_on",
+        "modified_on": "modified_on",
+        "created_by": "created_by",
+        "modified_by": "modified_by"
+    },
+    "relations": {
+        "can_list": "table",
+        "can_create": "table",
+        "can_update_own": "table",
+        "can_update_all": "table",
+        "can_review": "table",
+        "can_activate": "table",
+        "can_delete": "table"
+    },
+    "sort_by": {
+        "id": "ascend"
+    },
+    "autoset": [
+        "created_on",
+        "modified_on",
+        "created_by",
+        "modified_by"
+    ],
+    "unchangeable": [
+        "class"
+    ],
+    "edit_properties": {
+        "id": "hidden",
+        "name": "primary",
+        "class": "number",
+        "description": "textarea",
+        "can_list": "relation:table:name:checkbox",
+        "can_create": "relation:table:label:checkbox",
+        "can_update_own": "relation:table:label:checkbox",
+        "can_update_all": "relation:table:label:checkbox",
+        "can_review": "relation:table:label:checkbox",
+        "can_activate": "relation:table:label:checkbox",
+        "can_delete": "relation:table:label:checkbox"
+    },
+    "list_properties": {
+        "id": "number",
+        "name": "primary",
+        "class": "text",
+        "description": "text",
+        "can_list": "reference:table:label",
+        "can_create": "reference:table:label",
+        "can_update_own": "reference:table:label",
+        "can_update_all": "reference:table:label",
+        "can_review": "reference:table:label",
+        "can_activate": "reference:table:label",
+        "can_delete": "reference:table:label",
+        "modified_on": "datetime",
+        "modified_by": "reference:user:name"
+    }
+}
