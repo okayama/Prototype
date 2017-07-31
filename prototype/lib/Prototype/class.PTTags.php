@@ -21,6 +21,8 @@ class PTTags {
         $obj = $ctx->stash( 'object' );
         $vars = $obj->get_values();
         $colprefix = $obj->_colprefix;
+        $ctx->stash( 'current_context', $obj->_model );
+        $ctx->stash( $obj->_model, $obj );
         $column_defs = $app->db->scheme[ $obj->_model ]['column_defs'];
         foreach ( $vars as $col => $value ) {
             if ( $colprefix ) $col = preg_replace( "/^$colprefix/", '', $col );
