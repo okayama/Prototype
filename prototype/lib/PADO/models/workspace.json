@@ -2,10 +2,9 @@
     "label"    : "WorkSpace",
     "plural"   : "WorkSpaces",
     "primary"  : "name",
-    "version"  : "0.1",
     "display"  : true,
     "sortable" : true,
-    "order"    : 7,
+    "order"    : 80,
     "auditing" : 1,
     "menu_type": 1,
     "template_tags": 1,
@@ -25,10 +24,12 @@
         },
         "site_url": {
             "type": "string",
+            "not_null": 1,
             "size": "255"
         },
         "site_path": {
             "type": "string",
+            "not_null": 1,
             "size": "255"
         },
         "extra_path": {

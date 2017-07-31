@@ -94,19 +94,9 @@ $("#<mt:var name="name" escape>").click(function(){
         <mt:trans phrase="Expiration Date"></span>
     </label>
 
-    <input type="hidden" name="has_status" value="0">
-    <label class="custom-control custom-checkbox">
-    <input id="has_status" class="form-control custom-control-input watch-changed"
-    <mt:if name="readonly">onclick="return false;"</mt:if>
-     type="checkbox" name="has_status" value="1" <mt:if name="object_has_status">checked</mt:if>>
-        <span class="custom-control-indicator"></span>
-        <span class="custom-control-description"> 
-        <mt:trans phrase="Has Status"></span>
-    </label>
-
     <input type="hidden" name="has_basename" value="0">
     <label class="custom-control custom-checkbox">
-    <input id="has_status" class="form-control custom-control-input watch-changed"
+    <input id="has_basename" class="form-control custom-control-input watch-changed"
     <mt:if name="readonly">onclick="return false;"</mt:if>
      type="checkbox" name="has_basename" value="1" <mt:if name="object_has_basename">checked</mt:if>>
         <span class="custom-control-indicator"></span>
@@ -116,7 +106,7 @@ $("#<mt:var name="name" escape>").click(function(){
 
     <input type="hidden" name="assign_user" value="0">
     <label class="custom-control custom-checkbox">
-    <input id="has_status" class="form-control custom-control-input watch-changed"
+    <input id="assign_user" class="form-control custom-control-input watch-changed"
     <mt:if name="readonly">onclick="return false;"</mt:if>
      type="checkbox" name="assign_user" value="1" <mt:if name="object_assign_user">checked</mt:if>>
         <span class="custom-control-indicator"></span>
@@ -153,8 +143,49 @@ $("#<mt:var name="name" escape>").click(function(){
         <span class="custom-control-description"> 
         <mt:trans phrase="Hierarchy"></span>
     </label>
-<!--/mt:ifinarray-->
 
+    <input type="hidden" name="has_status" value="0">
+    <label class="custom-control custom-checkbox form-inline">
+    <input id="has_status" class="form-control custom-control-input watch-changed"
+    <mt:if name="readonly">onclick="return false;"</mt:if>
+     type="checkbox" name="has_status" value="1" <mt:if name="object_has_status">checked</mt:if>>
+        <span class="custom-control-indicator"></span>
+        <span class="custom-control-description">
+        <mt:trans phrase="Has Status">
+        </span>
+        <span id="default-status-selecter" class="hidden"> &nbsp;
+        ( <mt:trans phrase="Default">
+        <select class="form-control short watch-changed" name="default_status" id="_default_status">
+        </select>) </span>
+    </label>
+
+<script>
+toggle_status_selecter ();
+$('#has_status').change(function(){
+    toggle_status_selecter();
+});
+function toggle_status_selecter () {
+    if ( $('#has_status').prop('checked') ) {
+        $('#default-status-selecter').show();
+    } else {
+        $('#default-status-selecter').hide();
+        return;
+    }
+    if ( $('#start_end').prop('checked') ) {
+        status_texts = '<mt:trans phrase="Draft,Review,Reserved,Publish,Unpublished (End)">'.split(',');
+    } else {
+        status_texts = '<mt:trans phrase="Disable,Enable">'.split(',');
+    }
+    $('#_default_status').children().remove();
+    for ( var i = 0; i < status_texts.length; i++ ) {
+        _counter = i + 1;
+        _option = '<option value="'+_counter+'">' + status_texts[i] + '</option>';
+        $('#_default_status').append( _option );
+    }
+    $('#_default_status').val('<mt:var name="object_default_status" escape>');
+}
+</script>
+<!--/mt:ifinarray-->
   </div>
 </div>
 <script>

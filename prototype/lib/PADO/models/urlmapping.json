@@ -37,6 +37,16 @@
             "type": "int",
             "size": 11
         },
+        "date_based": {
+            "type": "string",
+            "size": 255
+        },
+        "fy_start": {
+            "type": "int",
+            "size": 11,
+            "not_null": 1,
+            "default": null
+        },
         "publish_file": {
             "type": "tinyint",
             "size": 4
@@ -74,6 +84,8 @@
         "PRIMARY": "id",
         "name": "name",
         "container": "container",
+        "date_based": "date_based",
+        "fy_start": "fy_start",
         "model": "model",
         "publish_file": "publish_file",
         "created_on": "created_on",
@@ -85,6 +97,9 @@
     },
     "sort_by": {
         "id": "ascend"
+    },
+    "options" : {
+        "date_based" : "Yearly,Fiscal-Yearly,Monthly"
     },
     "autoset": [
         "created_on",
@@ -99,6 +114,7 @@
         "mapping": "text",
         "container": "text",
         "template_id": "relation:template:name:dialog",
+        "date_based": "selection",
         "publish_file": "checkbox",
         "link_status": "checkbox",
         "order": "number"
@@ -110,6 +126,7 @@
         "mapping": "text",
         "container": "text",
         "template_id": "reference:template:name",
+        "date_based": "text",
         "publish_file": "checkbox",
         "link_status": "checkbox",
         "modified_on": "datetime",

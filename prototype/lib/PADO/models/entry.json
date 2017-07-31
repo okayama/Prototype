@@ -9,11 +9,13 @@
     "taggable" : 1,
     "revisable": 1,
     "child_of" : "workspace",
+    "start_end": 1,
     "template_tags": 1,
     "display_space": 1,
     "has_basename": 1,
     "has_status": 1,
     "assign_user": 1,
+    "display_dashboard": 1,
     "column_defs": {
         "id": {
             "type": "int",
@@ -25,7 +27,7 @@
             "size": 255,
             "not_null": 1
         },
-        "body": {
+        "text": {
             "type": "text"
         },
         "og_image": {
@@ -151,7 +153,7 @@
     "edit_properties": {
         "id": "hidden",
         "title": "primary",
-        "body": "richtext",
+        "text": "richtext",
         "og_image": "file",
         "excerpt": "textarea",
         "keywords": "text",

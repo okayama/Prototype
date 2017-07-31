@@ -9,6 +9,7 @@
     "Permissions"        : "権限",
     "Key"                : "キー",
     "Value"              : "値",
+    "More"               : "続き",
     "Profile"            : "プロフィール",
     "Install"            : "インストール",
     "Required"           : "必須項目",
@@ -35,6 +36,12 @@
     "System Objects"     : "システムオブジェクト",
     "Toggle Navigation"  : "ナビゲーションの開閉",
     "Edit Revision of %s": "リビジョン(%s)の編集",
+    "Fiscal Year Start"  : "年度の開始月",
+    "Date-Based"         : "日付ベース",
+    "Yearly"             : "年別",
+    "Fiscal-Yearly"      : "年度別",
+    "Monthly"            : "月別",
+    "Default Status"     : "ステータス(既定値)",
     "Remote IP"          : "IPアドレス",
     "Toggle"             : "開閉",
     "Enable"             : "有効",
@@ -92,7 +99,7 @@
     "Name"               : "名前",
     "Data Type"          : "データ型",
     "Size"               : "サイズ",
-    "Default"            : "デフォルト",
+    "Default"            : "既定値",
     "Label"              : "ラベル",
     "Plural"             : "複数形",
     "Display"            : "表示",
@@ -313,6 +320,8 @@
     "Metadata"           : "メタデータ",
     "Linked with Status" : "ステータスと連動",
     "Syetem's Role"      : "システムのロール",
+    "Archive Date"       : "アーカイブ日付",
+    "Archive Type"       : "アーカイブ種別",
     "New WorkSpace's Role"
         : "新しいスペースのロール",
     "List Revisions of %s"
@@ -356,6 +365,8 @@
         : "スペースに表示",
     "Display in Dashboard"
         : "ダッシュボードに表示",
+    "Start month of fiscal year"
+        : "年度の開始月",
     "Welcome to %s!"
         : "%sへようこそ!",
     "The Model can not be hidden."
@@ -440,6 +451,10 @@
         : "リビジョンをマスタに適用しました。",
     "Are you sure you want to apply this revision to master?"
         : "このリビジョンをマスタに適用してもよろしいですか?",
+    "Disable,Enable"
+        : "無効,有効",
+    "Draft,Review,Reserved,Publish,Unpublished (End)"
+        : "下書き,レビュー,公開予約,公開,非公開(公開終了)",
     "The file has successfully uploaded. The uploaded file will not be reflected until you save this page."
         : "ファイルをアップロードしました。アップロードしたファイルは、このページを保存するまで反映されません。",
     "This view could not be deleted because it is being used for a URL map. To delete a view, delete the URL map first."

@@ -45,6 +45,7 @@ class PAML {
     public    $cache_dir;
     public    $compile_dir;
     public    $logging       = false;
+    public    $log_path;
     public    $csv_delimiter = ':';
     public    $csv_enclosure = "'";
     public    $plugin_compat = 'smarty_';
@@ -112,13 +113,14 @@ class PAML {
       'block'       => ['block', 'loop', 'foreach', 'for','section', 'literal'],
       'block_once'  => ['ignore', 'setvars', 'capture', 'setvarblock',
                         'assignvars', 'setvartemplate', 'nocache', 'isinchild'],
-      'conditional' => ['else', 'elseif', 'if', 'unless', 'ifgetvar', 'elseifgetvar'],
+      'conditional' => ['else', 'elseif', 'if', 'unless', 'ifgetvar', 'elseifgetvar',
+                        'ifinarray'],
       'modifier'    => ['escape' ,'setvar', 'format_ts', 'zero_pad', 'trim_to', 'eval',
                         'strip_linefeeds', 'sprintf', 'encode_js', 'truncate', 'wrap',
                         'trim_space', 'regex_replace', 'setvartemplate', 'replace',
-                        'to_json', 'from_json', 'nocache', 'split', 'join'],
+                        'to_json', 'from_json', 'nocache', 'split', 'join', 'format_size'],
       'function'    => ['getvar', 'trans', 'setvar', 'property', 'ldelim', 'include',
-                        'rdelim', 'fetch', 'var', 'date', 'assign', 'count'],
+                        'rdelim', 'fetch', 'var', 'date', 'assign', 'count', 'vardump'],
       'include'     => ['include', 'includeblock', 'extends'] ];
 /**
  * $modifier_funcs: Mappings of modifier and PHP functions.
@@ -965,6 +967,14 @@ class PAML {
             $this->vars[ $args['name'] ] ? true : false );
     }
 
+    function conditional_ifinarray ( $args, $content, $ctx, $repeat, $counter ) {
+        $value = $args['value'];
+        $array = isset( $args['array'] ) ? $args['array'] : $args['name'];
+        if ( is_string( $array ) ) $array = $ctx->get_any( $array );
+        if (! is_array( $array ) ) return false;
+        return in_array( $value, $array ) ? true : false;
+    }
+
     function function_var ( $args, $ctx ) {
         if (!isset( $args['name'] ) ) return;
         if ( isset( $args['value'] ) ) return $ctx->function_setvar( $args, $ctx );
@@ -987,6 +997,18 @@ class PAML {
         if (!$f = $ctx->get_template_path( $f ) ) return '';
         if (!$incl = file_get_contents( $f ) ) return '';
         return $ctx->build( $incl );
+    }
+
+    function function_vardump ( $args, $ctx ) {
+        $vars = ['vars' => $ctx->vars, 'local_vars' => $ctx->local_vars ];
+        ob_start();
+        var_dump( $vars );
+        $result = ob_get_clean();
+        if (isset( $args['preformat'] ) ) {
+            $result = htmlspecialchars( $result );
+            $result = "<pre>{$result}</pre>";
+        }
+        return $result;
     }
 
     function function_property ( $args, $ctx ) {
@@ -1172,6 +1194,21 @@ class PAML {
 
     function modifier_to_json ( $v ) {
         return json_encode( $v );
+    }
+
+    function modifier_format_size ( $size, $precision, $ctx ) {
+        $size = (int) $size;
+        $precision = (int) $precision;
+        if ( $size >= 1073741824 ) {
+            $size = round( $size / 1073741824, $precision ) . 'GB';
+        } else if ( $size >= 1048576 ) {
+            $size = round( $size / 1048576, $precision ) . 'MB';
+        } else if ( $size >= 1024 ) {
+            $size = round( $size / 1024, $precision ) . 'KB';
+        } else {
+            $size .= 'Byte';
+        }
+        return $size;
     }
 
     function modifier_eval ( $str, $arg, $ctx ) {

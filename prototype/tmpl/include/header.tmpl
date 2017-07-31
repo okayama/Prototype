@@ -11,7 +11,6 @@
 
     <!-- Bootstrap core CSS -->
     <link href="assets/css/bootstrap.min.css" rel="stylesheet">
-
     <!-- Custom styles for this template -->
     <script src="assets/js/jquery-3.2.1.min.js"></script>
     <script src="assets/js/tether.min.js"></script>
@@ -24,14 +23,13 @@
     <!-- CSS to style the file input field as button and adjust the Bootstrap progress bars -->
     <link rel="stylesheet" href="assets/css/jquery.fileupload.css">
     <style type="text/css">
-        .nav-top,.brand-prototype{ background-color: <mt:getoption key="barcolor"> !important; color: <mt:getoption key="bartextcolor"> !important; }
-        <mt:if name="workspace_barcolor"><mt:if name="workspace_bartextcolor">
-        .brand-workspace, .workspace-bar{ background-color: <mt:var name="workspace_barcolor"> !important; color: <mt:var name="workspace_bartextcolor"> !important; }
-        </mt:if>
-        </mt:if>
+      .nav-top,.brand-prototype{ background-color: <mt:getoption key="barcolor"> !important; color: <mt:getoption key="bartextcolor"> !important; }
+      <mt:if name="workspace_barcolor"><mt:if name="workspace_bartextcolor">
+      .brand-workspace, .workspace-bar{ background-color: <mt:var name="workspace_barcolor"> !important; color: <mt:var name="workspace_bartextcolor"> !important; }
+      </mt:if>
+      </mt:if>
     </style>
   </head>
-
   <body>
 <mt:if name="request._type" eq="edit">
 <div id="__loader-bg">
@@ -96,7 +94,7 @@ window.onload = function(){
                 <li class="nav-item dropdown">
                 <a aria-label="<mt:trans phrase="WorkSpaces">" class="nav-link dropdown-toggle" data-toggle="dropdown" href="#">
                   <i data-toggle="tooltip" data-placement="right" title="<mt:trans phrase="Utilities">" class="fa fa-cog" aria-hidden="true"></i>
-                  <span class="sr-only"><mt:trans phrase="Objects for Setting"></span>
+                  <span class="sr-only"><mt:trans phrase="Utilities"></span>
                 </a>
                 <div class="dropdown-menu">
               </mt:if>
@@ -172,8 +170,8 @@ window.onload = function(){
               <mt:if name="__first__">
                 <li class="nav-item dropdown">
                 <a aria-label="<mt:trans phrase="WorkSpaces">" class="nav-link dropdown-toggle" data-toggle="dropdown" href="#">
-                  <i data-toggle="tooltip" data-placement="right" title="<mt:trans phrase="Objects for Setting">" class="fa fa-cog" aria-hidden="true"></i>
-                  <span class="sr-only"><mt:trans phrase="Objects for Setting"></span>
+                  <i data-toggle="tooltip" data-placement="right" title="<mt:trans phrase="Utilities">" class="fa fa-cog" aria-hidden="true"></i>
+                  <span class="sr-only"><mt:trans phrase="Utilities"></span>
                 </a>
                 <div class="dropdown-menu">
               </mt:if>
@@ -235,7 +233,6 @@ $(function () {
   $('[data-toggle="tooltip"]').tooltip();
 })
 </script>
-
 <mt:unless name="output_container">
     <div class="container-fluid">
 </mt:unless>
@@ -251,7 +248,6 @@ $(function () {
       <mt:if name="menu_type" eq="3">
         <mt:setvar name="can_create" value="0">
       </mt:if>
-
       <div class="row">
         <main class="col-md-12 pt-3">
           <h1<mt:if name="has_option"> class="title-with-opt"</mt:if>><span class="title"><mt:var name="page_title"></span>

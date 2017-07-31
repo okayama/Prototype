@@ -80,12 +80,10 @@
       <li class="<mt:var name="__col_name__">-child card card-inverse group-item">
         <span>
         <mt:getobjectname id="$__value__" wants="$model_primary_col" model="$model_model" escape>
-        <mt:if name="statu_options">
           <mt:getobjectname id="$__value__" wants="status" model="$model_model" escape setvar="__status__">
           <mt:if name="__status__">
-           (<mt:statustext status="$__status__" options="$statu_options" icon="1" text="1">)
+           (<mt:statustext status="$__status__" model="$object_model" icon="1" text="1">)
           </mt:if>
-        </mt:if>
         </span>
         <button type="button" class="btn btn-secondary btn-sm close-sm" aria-label="<mt:trans phrase="Detach">" data-name="<mt:var name="__col_name__">">
         <span aria-hidden="true">&times;</span>

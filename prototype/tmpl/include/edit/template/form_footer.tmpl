@@ -18,20 +18,18 @@
 </mt:if>
 <tr>
 <td>
-
 <a href="<mt:var name="script_uri">?__mode=view&_type=edit&_model=urlmapping&id=<mt:var name="id">&workspace_id=<mt:if name="workspace_id"><mt:var name="workspace_id"></mt:if>">
 <mt:var name="name" escape>
 </a>
 </td>
 <td>
-<mt:getobjectname id="$table_id" type="reference:table:label" setvar="model_label">
-<mt:trans phrase="$model_label" escape>
+<mt:trans phrase="$model" language="default" setvar="map_model">
+<mt:trans phrase="$map_model">
 </td>
 <td>
-<mt:getobjectname id="$container" type="reference:table:label" setvar="container_name">
-<mt:trans phrase="$container_name" escape>
+<mt:trans phrase="$container" language="default" setvar="map_container">
+<mt:trans phrase="$map_container">
 </td>
-
 <td>
 <mt:getobjectname id="$workspace_id" type="reference:workspace:name" escape>
 </td>

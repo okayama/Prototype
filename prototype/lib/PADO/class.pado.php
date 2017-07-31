@@ -676,7 +676,7 @@ class PADOBaseModel {
                             $vals[] = $start;
                             $vals[] = $end;
                         } else {
-                            if ( $op === 'IN' && is_array( $v ) ) {
+                            if ( $op === 'IN' && is_array( $v ) && ! empty( $v ) ) {
                                 array_walk( $v, function( &$val ) {
                                     $val = $this->pado()->quote( $val );
                                 });
@@ -856,7 +856,7 @@ class PADOBaseModel {
  * @param              : See load method.
  * @return object $sth : PDOStatement.
  */
-    function load_iter ( $terms = [], $args = [], $cols = '', $extra ) {
+    function load_iter ( $terms = [], $args = [], $cols = '', $extra = '' ) {
         $args['load_iter'] = true;
         return $this->load( $terms, $args, $cols, $extra );
     }

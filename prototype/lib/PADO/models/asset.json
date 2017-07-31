@@ -10,6 +10,7 @@
     "revisable": 1,
     "template_tags": 1,
     "display_space": 1,
+    "display_dashboard": 1,
     "has_status": 1,
     "column_defs": {
         "id": {

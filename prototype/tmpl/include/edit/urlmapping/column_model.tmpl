@@ -15,10 +15,10 @@
         <mt:objectloop model="table" sort_by="order" options="$table_option">
         <mt:if name="__first__">
           <option value="">
-            <mt:trans phrase="Unspecified" component="Prototype">
+            <mt:trans phrase="Unspecified">
           </option>
         </mt:if>
-          <option <mt:if name="__col_value__" eq="$name">selected</mt:if> value="<mt:var name="name">"><mt:trans phrase="$label" component="Prototype" escape></option>
+          <option <mt:if name="__col_value__" eq="$name">selected</mt:if> value="<mt:var name="name">"><mt:trans phrase="$label" escape></option>
         </mt:objectloop>
         </select>
   </div>

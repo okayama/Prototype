@@ -1,10 +1,10 @@
 {
-    "label"    : "View",
-    "plural"   : "Views",
+    "label"    : "Model",
+    "plural"   : "Models",
     "primary"  : "name",
     "display"  : true,
     "sortable" : true,
-    "order"    : 2,
+    "order"    : 90,
     "auditing" : 1,
     "menu_type": 2,
     "template_tags": 1,
@@ -114,6 +114,11 @@
         "hierarchy": {
             "type": "tinyint",
             "size": 4,
+            "default": null
+        },
+        "default_status": {
+            "type": "int",
+            "size": 11,
             "default": null
         },
         "revisable": {

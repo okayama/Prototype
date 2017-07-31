@@ -3,7 +3,7 @@
     "plural"   : "Categories",
     "primary"  : "label",
     "auditing" : 1,
-    "order"    : 140,
+    "order"    : 20,
     "child_of" : "workspace",
     "menu_type": 1,
     "hierarchy": 1,
@@ -25,7 +25,8 @@
         },
         "parent_id": {
             "type": "int",
-            "size": 11
+            "size": 11,
+            "not_null": 1
         },
         "order": {
             "type": "int",

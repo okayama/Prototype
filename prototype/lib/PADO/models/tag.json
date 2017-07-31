@@ -8,6 +8,7 @@
     "primary"  : "name",
     "menu_type": 1,
     "template_tags": 1,
+    "display_space": 1,
     "column_defs": {
         "id": {
             "type": "int",

@@ -1,5 +1,4 @@
 <mt:var name="options" split="," setvar="_options_loop">
-
 <div class="row form-group">
   <div class="col-lg-2">
     <label for="<mt:var name="__col_name__">">
@@ -11,7 +10,7 @@
     <select class="form-control short" name="<mt:var name="__col_name__">">
     <mt:loop name="_options_loop">
       <mt:if name="__counter__" le="$max_status">
-        <option <mt:unless name="object_status"></mt:unless><mt:if name="object_status" eq="$__counter__">selected</mt:if> value="<mt:var name="__counter__">"><mt:trans phrase="$__value__" escape></option>
+        <option <mt:unless name="object_status"><mt:if name="_default_status" eq="$__counter__">selected</mt:if></mt:unless><mt:if name="object_status" eq="$__counter__">selected</mt:if> value="<mt:var name="__counter__">"><mt:trans phrase="$__value__" escape></option>
       </mt:if>
     </mt:loop>
     </select>
@@ -27,7 +26,6 @@
 </mt:tablehascolumn>
   </div>
 </div>
-
 <mt:tablehascolumn column="published_on">
 <div class="row form-group">
   <div class="col-lg-2">
@@ -38,7 +36,6 @@
     <input id="published_on_date" type="date" class="form-control date" name="published_on_date" value="<mt:if name="object_published_on"><mt:var name="object_published_on" format_ts="Y-m-d"></mt:if>">
     <input id="published_on_time" type="time" step="1" class="form-control time" name="published_on_time" value="<mt:if name="object_published_on"><mt:var name="object_published_on" format_ts="H:i:s"></mt:if>">
 </label>
-
 <mt:tablehascolumn column="unpublished_on">
 <span class="period-separator" class="unpublished-on-col">
 <i class="fa fa-arrows-h unpublished-on-col" aria-hidden="true"></i>
@@ -51,7 +48,6 @@
 </mt:tablehascolumn>
   </div>
 </div>
-
 <script>
 $(function () {
     if ( $('#has_deadline').prop('checked') == false ) {

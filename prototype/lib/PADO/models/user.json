@@ -4,7 +4,7 @@
     "primary"  : "name",
     "version"  : "0.1",
     "display"  : true,
-    "order"    : 1,
+    "order"    : 130,
     "auditing" : 1,
     "menu_type": 1,
     "column_defs": {

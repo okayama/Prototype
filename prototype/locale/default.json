@@ -32,9 +32,13 @@
     "workspace_id"  : "WorkSpace",
     "template_id"   : "View",
     "user_id"       : "User",
+    "default_status": "Default Status",
     "can_view"      : "View",
     "can_list"      : "View List",
     "can_create"    : "Create",
+    "date_based"    : "Date-Based",
+    "archive_date"  : "Archive Date",
+    "archive_type"  : "Archive Type",
     "hierarchy"     : "Hierarchy",
     "og_image"      : "og:image",
     "can_edit"      : "Edit",
@@ -124,6 +128,7 @@
     "has_deadline"  : "Specify the Deadline",
     "published_on"  : "Publish Date",
     "unpublished_on": "Unpublish Date",
+    "fy_start"      : "Fiscal Year Start",
     "display_dashboard"
                     : "Display in Dashboard"
 }

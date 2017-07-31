@@ -2,6 +2,158 @@
 
 class PTUpgrader {
 
+    protected $reserved = ['magic_token', 'tags', 'additional_tags', 'created_on',
+                           'created_by', 'workspace_id', 'order', 'status', 'modified_on',
+                           'modified_by', 'published_on', 'unpublished_on', 'user_id',
+                           'basename', 'delete', 'remove', 'save', 'has_deadline',
+                           'rev_type', 'rev_object_id', 'rev_note', 'rev_changed',
+                           'rev_diff', 'workspace_id'];
+
+    function upgrade () {
+        $app = Prototype::get_instance();
+        $tmpl = TMPL_DIR . 'upgrade.tmpl';
+        if (! is_readable( $tmpl ) )
+            return; // Show Error
+        $ctx = $app->ctx;
+        $ctx->vars['language'] = $app->language;
+        if ( $app->param( '_type' ) === 'install' ) {
+            $ctx->vars['page_title'] = $app->translate( 'Install' );
+        } else {
+            $ctx->vars['page_title'] = $app->translate( 'Upgrade' );
+        }
+        if ( $app->request_method === 'POST' ) {
+            if ( $app->param( 'type' ) === 'install' ) {
+                $name = $app->param( 'name' );
+                $pass = $app->param( 'password' );
+                $verify = $app->param( 'password-verify' );
+                $email = $app->param( 'email' );
+                $appname = $app->param( 'appname' );
+                $site_path = $app->param( 'site_path' );
+                $site_url = $app->param( 'site_url' );
+                $extra_path = $app->param( 'extra_path' );
+                $asset_publish = $app->param( 'asset_publish' );
+                $copyright = $app->param( 'copyright' );
+                $system_email = $app->param( 'system_email' );
+                $errors = [];
+                if (!$appname || !$site_url || !$system_email ) {
+                    $errors[] = $app->translate(
+                        'App Name, System Email and Site URL are required.' );
+                }
+                if (!$name || !$pass || !$email ) {
+                    $errors[] = $app->translate( 'Name, Password and Email are required.' );
+                } else {
+                    if (!$app->is_valid_email( $system_email, $msg ) ) {
+                        $errors[] = $msg;
+                    }
+                    if (!$app->is_valid_password( $pass, $verify, $msg ) ) {
+                        $errors[] = $msg;
+                    }
+                    if (!$app->is_valid_email( $email, $msg ) ) {
+                        $errors[] = $msg;
+                    }
+                    if ( $site_url && !$app->is_valid_url( $site_url, $msg ) ) {
+                        $errors[] = $msg;
+                    }
+                    if (! preg_match( '/\/$/', $site_url ) ) {
+                        $site_url .= '/';
+                    }
+                    $app->sanitize_dir( $extra_path );
+                    if ( $extra_path &&
+                        !$app->is_valid_property( str_replace( '/', '', $extra_path ) ) ) {
+                        $errors[] = $app->translate(
+                            'Upload Path contains an illegal character.' );
+                    }
+                }
+                if (! empty( $errors ) ) {
+                    $app->assign_params( $app, $ctx );
+                    $ctx->vars['error'] = join( "\n", $errors );
+                    echo $ctx->build_page( $tmpl );
+                    exit();
+                }
+                $default_widget = TMPL_DIR . 'import' . DS . 'default_widget.tmpl';
+                $default_widget = file_get_contents( $default_widget );
+                $db = $app->db;
+                $cfgs = ['appname'    => $appname,
+                         'site_path'  => $site_path,
+                         'site_url'   => $site_url,
+                         'extra_path' => $extra_path,
+                         'copyright'  => $copyright,
+                         'system_email' => $system_email,
+                         'asset_publish' => $asset_publish,
+                         'default_widget' => $default_widget ];
+                $app->set_config( $cfgs );
+                $password = $app->param( 'password' );
+                $language = $app->param( 'language' );
+                $nickname = $app->param( 'nickname' );
+                $password = password_hash( $password, PASSWORD_BCRYPT );
+                $this->setup_db( true );
+                $user = $db->model( 'user' )->get_by_key( ['name' => $name ] );
+                $user->name( $name );
+                $user->password( $password );
+                $user->email( $email );
+                $user->nickname( $nickname );
+                $user->language( $language ); // White List Check
+                $user->is_superuser( 1 );
+                $user->modified_on( date( 'YmdHis' ) );
+                $user->created_on( date( 'YmdHis' ) );
+                $user->save();
+                $app->redirect( $app->admin_url );
+            }
+        } else {
+            $ctx->vars['site_url'] = $app->base . '/prototype/site/';
+            $ctx->vars['site_path'] = $app->document_root . DS . 'prototype' . DS . 'site';
+            $ctx->vars['extra_path'] = 'assets/';
+        }
+        echo $ctx->build_page( $tmpl );
+        exit();
+    }
+
+    function upgrade_scheme ( $name ) {
+        $app = Prototype::get_instance();
+        $db = $app->db;
+        $table = $app->get_table( $name );
+        if (! $table ) return;
+        $table_id =  $table->id;
+        $columns = $db->model( 'column' )->load( ['table_id' => $table_id,
+                                                  'type' => ['not' => 'relation'] ] );
+        list( $column_defs, $indexes ) = [ [], [] ];
+        foreach ( $columns as $column ) {
+            $col_name = $column->name;
+            $props = [];
+            $props['type'] = $column->type;
+            if ( $column->size ) $props['size'] = $column->size;
+            $not_null = $column->not_null;
+            if ( $not_null ) $props['not_null'] = 1;
+            if ( $column->default !== null ) $props['default'] = $column->default;
+            $column_defs[ $column->name ] = $props;
+            if ( $column->is_primary ) $indexes['PRIMARY'] = $col_name;
+            if ( $column->index ) $indexes[ $col_name ] = $col_name;
+        }
+        $model  = $db->model( $name );
+        $scheme = $model->get_scheme(
+            $model->_model, $model->_table, $model->_colprefix, true );
+        $comp_defs = $scheme['column_defs'] ? $scheme['column_defs'] : [];
+        $comp_idxs = $scheme['indexes'];
+        foreach ( $column_defs as $key => $props ) {
+            unset( $column_defs[ $key ]['default'] );
+            if ( $column_defs[ $key ]['type'] === 'relation' ) {
+                unset( $column_defs[ $key ] );
+            }
+        }
+        foreach ( $comp_defs as $key => $props ) {
+            unset( $comp_defs[ $key ]['default'] );
+        }
+        $upgrade = $model->array_compare( $column_defs, $comp_defs );
+        $upgrade_idx = $model->array_compare( $indexes, $comp_idxs );
+        if ( $upgrade || $upgrade_idx ) {
+            $upgrade_cols = $model->get_diff( $column_defs, $comp_defs );
+            $upgrade_idxs = $model->get_diff( $indexes, $comp_idxs );
+            $upgrade = ['column_defs' => $upgrade_cols, 'indexes' => $upgrade_idxs ];
+            $db->drop = false; // 
+            return $model->upgrade( $model->_table, $upgrade, $model->_colprefix );
+        }
+    }
+
     function setup_db ( $force = false ) {
         $app = Prototype::get_instance();
         $db = $app->db;
@@ -27,14 +179,13 @@ class PTUpgrader {
             if ( $item === 'column' || $item === 'option'
                 || $item === 'meta' || $item === 'session' ) continue;
             $table = $db->model( 'table' )->get_by_key( ['name' => $item ] );
-            $scheme = $properties = $db->scheme[ $item ];
+            $scheme = $db->scheme[ $item ];
             if ( isset( $scheme['locale'] ) ) {
                 $locale = $scheme['locale'];
                 foreach ( $locale as $lang => $dict ) {
                     if ( $lang == 'default' ) {
                         $app->dictionary['default'] = array_merge(
-                        $app->dictionary['default'], $scheme['locale']['default']
-                        );
+                        $app->dictionary['default'], $scheme['locale']['default'] );
                     } else {
                         $phrase = key( $dict );
                         $trans = $dict[ $phrase ];
@@ -52,29 +203,23 @@ class PTUpgrader {
             $child_tables = isset( $scheme['child_tables'] )
                           ? $scheme['child_tables'] : [];
             $primary = $indexes['PRIMARY'];
-            $label = $properties['label'];
-            $plural = $properties['plural'];
-            $auditing = isset( $properties['auditing'] ) ? $properties['auditing'] : 0;
-            $sort_by = isset( $properties['sort_by'] ) ? $properties['sort_by'] : null;
-            $col_primary = isset( $properties['primary'] ) ? $properties['primary'] : null;
-            $order = isset( $properties['order'] ) ? $properties['order'] : 0;
-            // $version = isset( $properties['version'] ) ? $properties['version'] : null;
-            $child_of = isset( $properties['child_of'] ) ? $properties['child_of'] : null;
-            $display_space = isset( $properties['display_space'] )
-                ? $properties['display_space'] : null;
-            if (! $table->label ) $table->label( $label );
-            if (! $table->plural ) $table->plural( $plural );
-            if (! $table->order ) $table->order( $order );
-            if (! $table->display_space ) $table->display_space( $display_space );
-            $table->auditing( $auditing );
-            if ( $sort_by ) {
+            $col_primary = isset( $scheme['primary'] ) ? $scheme['primary'] : null;
+            $child_of = isset( $scheme['child_of'] ) ? $scheme['child_of'] : null;
+            $options = ['label', 'plural', 'auditing', 'sort_by', 'order', 'sortable',
+                'menu_type', 'template_tags', 'taggable', 'display_space', 'start_end',
+                'has_basename', 'has_status', 'assign_user', 'revisable', 'hierarchy'];
+            foreach ( $options as $option ) {
+                $opt = isset( $scheme[ $option ] ) ? $scheme[ $option ] : '';
+                if (! $table->$option && $opt ) $table->$option( $opt );
+            }
+            if ( isset( $sort_by ) ) {
                 $sort_key = key( $sort_by );
                 $sort_order = $sort_by[ $sort_key ];
                 $table->sort_by( $sort_key );
                 $table->sort_order( $sort_order );
             }
             foreach ( $child_tables as $child ) {
-                $table = $app->set_child_tables( $child, $table, true, false );
+                $table = $this->set_child_tables( $child, $table, true, false );
             }
             if ( $child_of === 'workspace' ) {
                 $table->space_child( 1 );
@@ -83,15 +228,16 @@ class PTUpgrader {
             }
             $table->primary( $col_primary );
             if ( isset( $scheme['display'] ) && $scheme['display'] ) {
-                $table->display( 1 );
+                $table->display_system( 1 );
             } else {
-                $table->display( 0 );
+                $table->display_system( 0 );
             }
-            if ( isset( $scheme['sortable'] ) && $scheme['sortable'] )
-                $table->sortable( 1 );
             $app->set_default( $table );
             $table->not_delete( 1 );
             $table->save();
+            $original = clone $table;
+            $cb = ['is_new' => false, 'original' => $original ];
+            $app->post_save_table( $cb, $app, $table, true );
             if ( $item === 'workspace' ) {
                 $workspace = $table;
             }
@@ -105,6 +251,7 @@ class PTUpgrader {
             $unchangeable = isset( $scheme['unchangeable'] ) ?
                 $scheme['unchangeable'] : [];
             $autoset = isset( $scheme['autoset'] ) ? $scheme['autoset'] : [];
+            $col_options = isset( $scheme['options'] ) ? $scheme['options'] : [];
             $i = 1;
             $locale = $app->dictionary['default'];
             foreach ( $column_defs as $name => $defs ) {
@@ -123,7 +270,10 @@ class PTUpgrader {
                 } else {
                     $phrases = explode( '_', $name );
                     array_walk( $phrases, function( &$str ) { $str = ucfirst( $str ); } );
-                    $label = $app->translate( join( ' ', $phrases ) );
+                    $label = join( ' ', $phrases );
+                }
+                if ( $item === 'entry' && $name === 'text' ) {
+                    $label = 'Body';
                 }
                 $record->label( $label );
                 if ( isset( $edit_props[ $name ] ) ) 
@@ -134,6 +284,13 @@ class PTUpgrader {
                 if ( in_array( $name, $unchangeable ) ) $record->unchangeable( 1 );
                 $record->not_delete( 1 );
                 $record->order( $i );
+                if ( isset( $scheme['relations'] ) ) {
+                    if ( isset( $scheme['relations'][ $name ] ) ) {
+                        $record->options( $scheme['relations'][ $name ] );
+                    }
+                }
+                if ( isset( $col_options[ $name ] ) ) 
+                    $record->options( $col_options[ $name ] );
                 $app->set_default( $record );
                 $record->save();
                 if ( $name === 'workspace_id' ) {
@@ -144,7 +301,7 @@ class PTUpgrader {
                 ++$i;
             }
             if ( $item === 'phrase' ) {
-                $locale_dir = __DIR__ . DS . 'locale';
+                $locale_dir = dirname( LIB_DIR ) . DS . 'locale';
                 $locales = scandir( $locale_dir );
                 foreach ( $locales as $locale ) {
                     if ( strpos( $locale, '.' ) === 0 ) continue;
@@ -165,33 +322,16 @@ class PTUpgrader {
         }
         if (! empty( $ws_children ) && $workspace ) {
             foreach ( $ws_children as $child ) {
-                $workspace = $app->set_child_tables( $child, $workspace, true, false );
+                $workspace = $this->set_child_tables( $child, $workspace, true, false );
             }
             $workspace->save();
         }
         $app->set_config( ['default_models' => join( ',', $default_models ) ] );
     }
 
-
-    function delete_filter_table ( &$cb, $app, &$obj ) {
-        $ids = $app->param( 'id' );
-        if (!is_array( $ids ) ) $ids = [ $ids ];
-        $tables = $app->db->model( 'table' )->load( [ 'id' => [ 'IN' => $ids ] ] );
-        $not_delete = [];
-        foreach ( $tables as $table ) {
-            if ( $table->not_delete ) {
-                $not_delete[] = $table->name;
-            }
-        }
-        if (! empty( $not_delete ) ) {
-            $cb['error'] = $app->translate(
-                '%s cannot be deleted.', join( ',', $not_delete ) );
-            return false;
-        }
-        return true;
-    }
-
     function save_filter_table ( &$cb, $app, &$obj ) {
+        if ( $app->param( '_preview' ) ) return true;
+        $validation = $app->param( '__validation' );
         if (! $obj->id ) {
             $name = strtolower( $app->param( 'name' ) );
             if (! $app->is_valid_property( $name, $msg, true ) ) {
@@ -202,7 +342,7 @@ class PTUpgrader {
             if ( $default_models ) {
                 $default_models = explode( ',', $default_models->value );
                 if ( in_array( $name, $default_models ) ) {
-                    $cb['error'] = $app->translate( "The name %s is reserved.", $name );
+                    $cb['error'] = $app->translate( 'The name %s is reserved.', $name );
                     return false;
                 }
             }
@@ -221,24 +361,23 @@ class PTUpgrader {
         foreach ( $new_ids as $col )
             if ( $col ) $add_ids[] = (int) $col;
         $ids = $app->param( '_column_id' );
-        $not_specify = ['save', 'delete', 'remove'];
-        $types       = ['boolean'  => [ 'tinyint', 4 ],
-                        'integer'  => [ 'int', 11 ],
-                        'text'     => [ 'text', '' ],
-                        'blob'     => [ 'blob', '' ],
-                        'relation' => [ 'relation', '' ],
-                        'datetime' => [ 'datetime', '' ],
-                        'string'   => [ 'string', 255 ] ];
-        $list_types  = ['checkbox', 'number', 'primary', 'text',
+        $not_specify = $this->reserved;
+        $types       = ['boolean'  => ['tinyint', 4],
+                        'integer'  => ['int', 11],
+                        'text'     => ['text', ''],
+                        'blob'     => ['blob', ''],
+                        'relation' => ['relation', ''],
+                        'datetime' => ['datetime', ''],
+                        'string'   => ['string', 255] ];
+        $list_types  = ['checkbox', 'number', 'primary', 'text', 'popover',
                         'text_short', 'password', 'datetime', 'date'];
         $edit_types  = ['hidden', 'checkbox', 'number', 'primary', 'text', 'file',
                         'text_short', 'textarea', 'password', 'password(hash)',
                         'datetime', 'languages', 'richtext', 'selection', 'color'];
         $db = $app->db;
         $db->can_drop = true;
-        $columns = $db->model( 'column' )->load( [ 'table_id' => $obj->id ] );
+        $columns = $db->model( 'column' )->load( ['table_id' => $obj->id ] );
         $col_names = [];
-        $validation = $app->param( '__validation' );
         foreach ( $columns as $column ) {
             $col_name = $column->name;
             $col_names[] = $column->name;
@@ -252,9 +391,17 @@ class PTUpgrader {
                 if (! $validation ) $column->save();
                 continue;
             }
-            if (!in_array( $id, $ids ) ) {
+            if (! in_array( $id, $ids ) ) {
                 if ( $col_name !== $obj->primary && !$column->not_delete ) {
-                    if (! $validation ) $column->remove();
+                    // TODO Cleanup relation( from and to )
+                    if (! $validation ) {
+                        $column->remove();
+                        //unset( $obj->$col_name );
+                        //$_col_name = $obj->_prefix . $col_name;
+                        //unset( $obj->$_col_name );
+                        unset( $db->scheme['table']['column_defs'][ $col_name ] );
+                    }
+                    //if (! $validation ) $column->remove();
                     continue;
                 }
             }
@@ -365,24 +512,24 @@ class PTUpgrader {
                     $list = '';
                 }
             }
-            $column = $db->model( 'column' )->get_by_key( [
-                'table_id'     => $obj->id,
-                'name'         => $name,
-                'label'        => $label,
-                'type'         => $type,
-                'size'         => $size,
-                'order'        => $order,
-                'not_null'     => $not_null,
-                'index'        => $index,
-                'options'      => $options,
-                'disp_edit'    => $disp_edit,
-                'unique'       => $unique,
-                'list'         => $list,
-                'edit'         => $edit,
-                'autoset'      => $autoset,
-                'unchangeable' => $unchangeable,
-            ] );
             if ( empty( $errors ) ) {
+                $column = $db->model( 'column' )->get_by_key( [
+                    'table_id'  => $obj->id,
+                    'name'      => $name,
+                    'label'     => $label,
+                    'type'      => $type,
+                    'size'      => $size,
+                    'order'     => $order,
+                    'not_null'  => $not_null,
+                    'index'     => $index,
+                    'options'   => $options,
+                    'disp_edit' => $disp_edit,
+                    'unique'    => $unique,
+                    'list'      => $list,
+                    'edit'      => $edit,
+                    'autoset'   => $autoset,
+                    'unchangeable' => $unchangeable,
+                ] );
                 $app->set_default( $column );
                 if (! $validation ) $column->save();
             }
@@ -405,58 +552,172 @@ class PTUpgrader {
         return true;
     }
 
-    function post_save_table ( &$cb, $app, $obj ) {
+    function post_save_table ( $cb, $app, $obj, $force = false ) {
         $is_child = $obj->space_child;
         $db = $app->db;
+        $db->logging = false;
+        $ctx = $app->ctx;
+        $ctx->logging = false;
         $workspace_col = $db->model( 'column' )->get_by_key
-            ( [ 'table_id' => $obj->id, 'name' => 'workspace_id' ] );
+            ( ['table_id' => $obj->id, 'name' => 'workspace_id'] );
         if ( $workspace_col->id ) $is_child = true;
-        if( $is_child || $obj->sortable || $obj->auditing ) {
+        if( $is_child || $obj->sortable || $obj->auditing || $obj->taggable
+            || $obj->has_status || $obj->start_end || $obj->has_basename
+            || $obj->assign_user || $obj->revisable || $obj->display_space
+            || $obj->hierarchy ) {
             $last = $db->model( 'column' )->load
-                    ( [ 'table_id' => $obj->id ],
-                      ['sort' => 'order', 'direction' => 'descend', 'limit' => 1 ] );
+                    ( ['table_id' => $obj->id ],
+                      ['sort' => 'order', 'direction' => 'descend', 'limit' => 1] );
             $last = (! empty( $last ) ) ? $last[0]->order : 10;
             $last++;
             $upgrade = false;
             if ( $obj->sortable ) {
-                $order_col = $db->model( 'column' )->get_by_key
-                    ( [ 'table_id' => $obj->id, 'name' => 'order' ] );
-                if (! $order_col->id ) {
-                    $order_col->type( 'int' );
-                    $order_col->size( 4 );
-                    $order_col->label( 'Order' );
-                    $order_col->list( 'number' );
-                    $order_col->edit( 'number' );
-                    $order_col->index( 1 );
-                    $order_col->order( $last );
-                    $app->set_default( $order_col );
-                    $order_col->save();
+                $values = ['type' => 'int', 'size' => 4,
+                           'label'=> 'Order',
+                           'list' => 'number', 'edit' => 'number',
+                           'index' => 1, 'order' => $last ];
+                if ( $this->make_column( $obj, 'order', $values, $force ) ) {
                     $last++;
                     $upgrade = true;
                 }
             }
-            if ( $obj->space_child ) {
-                $workspace_col = $db->model( 'column' )->get_by_key
-                    ( [ 'table_id' => $obj->id, 'name' => 'workspace_id' ] );
-                if (! $workspace_col->id ) {
-                    $workspace_col->type( 'int' );
-                    $workspace_col->size( 4 );
-                    $workspace_col->label( 'WorkSpace' );
-                    $workspace_col->list( 'reference:workspace:name' );
-                    $workspace_col->unchangeable( 1 );
-                    $workspace_col->index( 1 );
-                    $workspace_col->autoset( 1 );
-                    $workspace_col->order( $last );
-                    $app->set_default( $workspace_col );
-                    $workspace_col->save();
-                    $upgrade = true;
+            if ( $obj->assign_user ) {
+                $values = ['type' => 'int', 'size' => 11,
+                           'label'=> 'User',
+                           'list' => 'reference:user:nickname',
+                           'edit' => 'relation:user:nickname:dialog',
+                           'index' => 1, 'order' => $last ];
+                if ( $this->make_column( $obj, 'user_id', $values, $force ) ) {
                     $last++;
+                    $upgrade = true;
                 }
+            }
+            if ( $obj->hierarchy ) {
+                $name = $obj->name;
+                $primary = $obj->primary;
+                $list = "reference:{$name}:{$primary}";
+                $edit = "relation:{$name}:{$primary}:select";
+                $values = ['type' => 'int', 'size' => 11,
+                           'label'=> 'Parent',
+                           'default' => 0,
+                           'list' => $list,
+                           'edit' => $edit,
+                           'not_null' => 1,
+                           'index' => 1, 'order' => $last ];
+                if ( $this->make_column( $obj, 'parent_id', $values, $force ) ) {
+                    $last++;
+                    $upgrade = true;
+                }
+            }
+            if ( $obj->taggable ) {
+                $values = ['type' => 'relation',
+                           'label'=> 'Tags',
+                           'list' => 'reference:tag:name',
+                           'edit' => 'relation:tag:name:dialog',
+                           'options' => 'tag', 'order' => $last ];
+                if ( $this->make_column( $obj, 'tags', $values, $force ) ) {
+                    $last++;
+                    $upgrade = true;
+                }
+            }
+            if ( $obj->start_end ) {
+                $start_end_cols = ['published_on' => 'Publish Date',
+                                   'unpublished_on' => 'Unpublish Date',
+                                   'has_deadline' => 'Specify the Deadline'];
+                foreach ( $start_end_cols as $name => $label ) {
+                    $col = $db->model( 'column' )->get_by_key
+                      ( ['table_id' => $obj->id, 'name' => $name ] );
+                    if (! $col->id ) {
+                        $col->label( $label );
+                        if ( $name !== 'has_deadline' ) {
+                            $col->set_values( ['type' => 'datetime', 'index' => 1,
+                                               'list' => 'date', 'edit' => 'datetime',
+                                               'order' => $last ] );
+                        } else {
+                            $col->set_values( ['type' => 'boolean',
+                            'list' => 'checkbox', 'index' => 1, 'order' => $last ] );
+                        }
+                        $app->set_default( $col );
+                        $col->save();
+                        $upgrade = true;
+                        $last++;
+                    }
+                }
+            }
+            if ( $obj->has_status ) {
+                if ( $obj->start_end ) {
+                    $status_opt = 'Draft,Review,Reserved,Publish,Unpublished (End)';
+                } else {
+                    $status_opt = 'Disable,Enable';
+                }
+                $values = ['type' => 'int', 'size' => 11, 'default' => 1,
+                           'label'=> 'Status', 'list' => 'number',
+                           'edit' => 'selection', 'disp_edit' => 'select',
+                           'options' => $status_opt, 'index' => 1, 'order' => $last ];
+                if ( $this->make_column( $obj, 'status', $values, $force ) ) {
+                    $last++;
+                    $upgrade = true;
+                }
+            }
+            if ( $obj->has_basename ) {
+                $values = ['type' => 'string', 'size' => 255,
+                           'label'=> 'Basename',
+                           'edit' => 'text_short', 'not_null' => 1,
+                           'index' => 1, 'order' => $last ];
+                if ( $this->make_column( $obj, 'basename', $values, $force ) ) {
+                    $last++;
+                    $upgrade = true;
+                }
+            }
+            if ( $obj->space_child || $obj->display_space ) {
+                $values = ['type' => 'int', 'size' => 4,
+                           'label'=> 'WorkSpace',
+                           'list' => 'reference:workspace:name', 'unchangeable' => 1,
+                           'autoset' => 1, 'index' => 1, 'order' => $last ];
+                if ( $this->make_column( $obj, 'workspace_id', $values, $force ) ) {
+                    $last++;
+                    $upgrade = true;
+                }
+            }
+            if ( $obj->revisable ) {
+                $values = ['type' => 'int', 'size' => 11, 'autoset' => 1,
+                           'label'=> 'Type', 'not_null' => 1,
+                           'default' => '0', 'index' => 1, 'order' => $last ];
+                if ( $this->make_column( $obj, 'rev_type', $values, $force ) ) {
+                    $last++;
+                    $upgrade = true;
+                }
+                $values = ['type' => 'int', 'size' => 11,
+                           'label'=> 'Object ID', 'autoset' => 1,
+                           'index' => 1, 'order' => $last ];
+                if ( $this->make_column( $obj, 'rev_object_id', $values, $force ) ) {
+                    $last++;
+                    $upgrade = true;
+                }
+                $values = ['type' => 'string', 'size' => 255, 'autoset' => 1,
+                           'label'=> 'Changed', 'order' => $last ];
+                if ( $this->make_column( $obj, 'rev_changed', $values, $force ) ) {
+                    $last++;
+                    $upgrade = true;
+                }
+                $values = ['type' => 'string', 'size' => 255, 'index' => 1,
+                           'label'=> 'Change Note', 'order' => $last ];
+                if ( $this->make_column( $obj, 'rev_note', $values, $force ) ) {
+                    $last++;
+                    $upgrade = true;
+                }
+                $values = ['type' => 'text', 'label'=> 'Diff',
+                           'order' => $last, 'autoset' => 1];
+                if ( $this->make_column( $obj, 'rev_diff', $values, $force ) ) {
+                    $last++;
+                    $upgrade = true;
+                }
+                if (! $obj->auditing ) $obj->auditing( 2 );
             }
             if ( $is_child ) {
                 $ws_table = $db->model( 'table' )->get_by_key( ['name' => 'workspace'] );
                 if ( $ws_table->id ) {
-                    $app->set_child_tables( $obj->name, $ws_table, true, true );
+                    $this->set_child_tables( $obj->name, $ws_table, true, true );
                 }
             }
             if ( $obj->auditing ) {
@@ -472,29 +733,27 @@ class PTUpgrader {
                      ];
                 foreach ( $auditing_cols as $name => $props ) {
                     $col = $db->model( 'column' )->get_by_key
-                      ( [ 'table_id' => $obj->id, 'name' => $name ] );
+                      ( ['table_id' => $obj->id, 'name' => $name ] );
                     if (! $col->id ) {
                         list( $label, $type ) = [ $props['label'], $props['type'] ];
                         $col->label( $label );
                         if ( $type === 'datetime' ) {
                             $col->type( $type );
-                            $col->edit( $type );
-                            if ( $name == 'modified_on' ) {
-                                $col->list( $type );
-                            }
+                            if ( $name === 'modified_on' ) $col->list( $type );
                         } else {
                             $col->type( 'int' );
                             $col->size( 4 );
-                            $col->edit( $type );
-                            if ( $name == 'modified_by' ) {
-                                $col->list( $type );
+                            if ( $name == 'modified_by' ) $col->list( $type );
+                        }
+                        $col->set_values(
+                            ['index' => 1, 'autoset' => 1, 'order' => $last ] );
+                        $app->set_default( $col );
+                        if ( $obj->auditing == 1 ) $col->save();
+                        if ( $obj->auditing == 2 ) {
+                            if ( strpos( $name, 'modified' ) === 0 ) {
+                                $col->save();
                             }
                         }
-                        $col->index( 1 );
-                        $col->autoset( 1 );
-                        $col->order( $last );
-                        $app->set_default( $col );
-                        $col->save();
                     }
                     $upgrade = true;
                     $last++;
@@ -505,20 +764,11 @@ class PTUpgrader {
             }
         }
         if (! $cb['is_new'] ) return;
-        $column = $db->model( 'column' )->get_by_key( [
-            'table_id'     => $obj->id,
-            'name'         => 'id',
-            'label'        => 'ID',
-            'type'         => 'int',
-            'size'         => 11,
-            'order'        => 1,
-            'not_null'     => 1,
-            'is_primary'   => 1,
-            'list'         => 'number',
-            'edit'         => 'hidden'
-        ] );
-        $app->set_default( $column );
-        $column->save();
+                $values = ['type' => 'int', 'size' => 11,
+                           'label'=> 'ID', 'is_primary' => 1,
+                           'list' => 'number', 'edit' => 'hidden',
+                           'index' => 1, 'order' => 1, 'not_null' => 1];
+        $this->make_column( $obj, 'id', $values, $force );
         $db->upgrader = false;
         $model = $obj->name;
         $scheme = $app->get_scheme_from_db( $model );
@@ -526,155 +776,39 @@ class PTUpgrader {
         if ( $colprefix ) {
             if ( strpos( $colprefix, '<model>' ) !== false )
                 $colprefix = str_replace( '<model>', $model, $colprefix );
-            elseif ( strpos( $colprefix, '<table>' ) !== false )
+            else if ( strpos( $colprefix, '<table>' ) !== false )
                 $colprefix = str_replace( '<table>', $app->_table, $colprefix );
         }
-        return $db->base_model->create_table( $model, $db->prefix . $model,
+        $res = $db->base_model->create_table( $model, $db->prefix . $model,
                                                 $colprefix, $scheme );
+        $db->logging = true;
+        $ctx->logging = true;
+        return $res;
     }
 
-
-    function upgrade () {
+    function make_column ( $obj, $name, $values, $force = false ) {
         $app = Prototype::get_instance();
-        $tmpl = TMPL_DIR . 'upgrade.tmpl';
-        if (! is_readable( $tmpl ) )
-            return; // Show Error
-        $ctx = $app->ctx;
-        $ctx->vars[ 'language' ] = $app->language;
-        if ( $app->param( '_type' ) === 'install' ) {
-            $ctx->vars[ 'page_title' ] = $app->translate( 'Install' );
+        $col = $app->db->model( 'column' )->get_by_key
+            ( ['table_id' => $obj->id, 'name' => $name ] );
+        if (! $col->id || $force ) {
+            $col->set_values( $values );
+            $app->set_default( $col );
+            return $col->save();
+        }
+    }
+
+    function set_child_tables ( $child, &$parent, $attach = true, $save = true ) {
+        $child_tables = $parent->child_tables;
+        $child_tables = $child_tables ? explode( ',', $parent->child_tables ) : [];
+        $flipped = array_flip( $child_tables );
+        if ( $attach ) {
+            $flipped[ $child ] = $attach;
         } else {
-            $ctx->vars[ 'page_title' ] = $app->translate( 'Upgrade' );
+            unset( $flipped[ $child ] );
         }
-        if ( $app->request_method === 'POST' )
-      {
-        if ( $app->param( '_type' ) === 'install' ) {
-            $name = $app->param( 'name' );
-            $pass = $app->param( 'password' );
-            $verify = $app->param( 'password-verify' );
-            $email = $app->param( 'email' );
-            $appname = $app->param( 'appname' );
-            $site_path = $app->param( 'site_path' );
-            $site_url = $app->param( 'site_url' );
-            $extra_path = $app->param( 'extra_path' );
-            $copyright = $app->param( 'copyright' );
-            $system_email = $app->param( 'system_email' );
-            $errors = [];
-            if (!$appname || !$site_url || !$system_email ) {
-                $errors[] = $app->translate( 'App Name, System Email and Site URL are required.' );
-            }
-            if (!$name || !$pass || !$email ) {
-                $errors[] = $app->translate( 'Name, Password and Email are required.' );
-            } else {
-                if (!$app->is_valid_email( $system_email, $msg ) ) {
-                    $errors[] = $msg;
-                }
-                if (!$app->is_valid_password( $pass, $verify, $msg ) ) {
-                    $errors[] = $msg;
-                }
-                if (!$app->is_valid_email( $email, $msg ) ) {
-                    $errors[] = $msg;
-                }
-                if ( $site_url && !$app->is_valid_url( $site_url, $msg ) ) {
-                    $errors[] = $msg;
-                }
-                if (! preg_match( '/\/$/', $site_url ) ) {
-                    $site_url .= '/';
-                }
-                // $app->sanitize_dir( $site_path ); // TODO writable check .htaccess
-                $app->sanitize_dir( $extra_path );
-                if ( $site_path &&
-                    !$app->is_valid_property( str_replace( '/', '', $site_path ) ) ) {
-                    $errors[] = $app->translate(
-                        'Site URL contains an illegal character.' );
-                }
-                if ( $extra_path &&
-                    !$app->is_valid_property( str_replace( '/', '', $extra_path ) ) ) {
-                    $errors[] = $app->translate(
-                        'Upload Path contains an illegal character.' );
-                }
-            }
-            if (! empty( $errors ) ) {
-                $app->assign_params( $app, $ctx );
-                $ctx->vars['error'] = join( "\n", $errors );
-                echo $ctx->build_page( $tmpl );
-                exit();
-            }
-            $default_widget = TMPL_DIR . 'parts' . DS . 'default_widget.tmpl';
-            $default_widget = file_get_contents( $default_widget );
-            $db = $app->db;
-            $cfgs = ['appname'    => $appname,
-                     'site_path'  => $site_path,
-                     'site_url'   => $site_url,
-                     'extra_path' => $extra_path,
-                     'copyright'  => $copyright,
-                     'system_email' => $system_email,
-                     'default_widget' => $default_widget ];
-            $app->set_config( $cfgs );
-            $password = $app->param( 'password' );
-            $language = $app->param( 'language' );
-            $nickname = $app->param( 'nickname' );
-            $password = password_hash( $password, PASSWORD_BCRYPT );
-            $this->setup_db( true );
-            $user = $db->model( 'user' )->get_by_key( [ 'name' => $name ] );
-            $user->name( $name );
-            $user->password( $password );
-            $user->email( $email );
-            $user->nickname( $nickname );
-            $user->language( $language ); // White List Check
-            $user->is_superuser( 1 );
-            $user->modified_on( date( 'YmdHis' ) );
-            $user->created_on( date( 'YmdHis' ) );
-            $user->save();
-            $app->redirect( $app->admin_url );
-        }
-      } else {
-        $ctx->vars['site_url'] = $app->base . '/';
-        $ctx->vars['site_path'] = ltrim( $app->path, '/' ) . 'site/';
-      }
-        echo $ctx->build_page( $tmpl );
-        exit();
+        $parent->child_tables( join( ',', array_keys( $flipped ) ) );
+        if ( $save ) $parent->save();
+        return $parent;
     }
 
-    function upgrade_scheme ( $name ) {
-        $app = Prototype::get_instance();
-        $db = $app->db;
-        $table = $app->get_table( $name );
-        if (! $table ) return;
-        $table_id =  $table->id;
-        $columns = $db->model( 'column' )->load( ['table_id' => $table_id,
-                                                  'type' => ['not' => 'relation'] ] );
-        list( $column_defs, $indexes ) = [ [], [] ];
-        foreach ( $columns as $column ) {
-            $col_name = $column->name;
-            $props = [];
-            $props['type'] = $column->type;
-            if ( $column->size ) $props['size'] = $column->size;
-            $not_null = $column->not_null;
-            if ( $not_null ) $props['not_null'] = 1;
-            if ( $column->default !== null ) $props['default'] = $column->default;
-            $column_defs[ $column->name ] = $props;
-            if ( $column->is_primary ) $indexes['PRIMARY'] = $col_name;
-            if ( $column->index ) $indexes[ $col_name ] = $col_name;
-        }
-        $model  = $db->model( $name );
-        $scheme = $model->get_scheme(
-            $model->_model, $model->_table, $model->_colprefix, true );
-        $comp_defs = $scheme['column_defs'];
-        $comp_idxs = $scheme['indexes'];
-        foreach ( $column_defs as $key => $props ) {
-            unset( $column_defs[ $key ]['default'] );
-        }
-        foreach ( $comp_defs as $key => $props ) {
-            unset( $comp_defs[ $key ]['default'] );
-        }
-        $upgrade = $model->array_compare( $column_defs, $comp_defs );
-        $upgrade_idx = $model->array_compare( $indexes, $comp_idxs );
-        if ( $upgrade || $upgrade_idx ) {
-            $upgrade_cols = $model->get_diff( $column_defs, $comp_defs );
-            $upgrade_idxs = $model->get_diff( $indexes, $comp_idxs );
-            $upgrade = ['column_defs' => $upgrade_cols, 'indexes' => $upgrade_idxs ];
-            return $model->upgrade( $model->_table, $upgrade, $model->_colprefix );
-        }
-    }
 }
