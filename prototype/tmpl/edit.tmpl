@@ -189,24 +189,25 @@ $('#__view-permalink').click(function(){
 </mt:if>
 </mt:if>
 
-<mt:assetproperty name="$name" model="$model" property="file_name" setvar="file_name">
+<mt:assetproperty id="$object_id" name="$name" model="$model" property="file_name" setvar="file_name">
+
 <mt:if name="file_name">
 
-<mt:assetproperty name="$name" model="$model" property="url" setvar="asset_url">
+<mt:assetproperty id="$object_id" name="$name" model="$model" property="url" setvar="asset_url">
 
 <mt:setvarblock name="file_meta">
     <b><mt:trans phrase="Name"></b> :
-      <mt:assetproperty name="$name" model="$model" property="file_name"><br>
+      <mt:assetproperty id="$object_id" name="$name" model="$model" property="file_name"><br>
     <b><mt:trans phrase="Size"></b> :
-      <mt:assetproperty name="$name" model="$model" property="file_size" format_size="1"><br>
+      <mt:assetproperty id="$object_id" name="$name" model="$model" property="file_size" format_size="1"><br>
     <b><mt:trans phrase="Type"></b> :
-      <mt:assetproperty name="$name" model="$model" property="mime_type">
+      <mt:assetproperty id="$object_id" name="$name" model="$model" property="mime_type">
     <mt:if name="class" eq="image">
     <br>
     <b><mt:trans phrase="Width"></b> :
-      <mt:assetproperty name="$name" model="$model" property="image_width">px<br>
+      <mt:assetproperty id="$object_id" name="$name" model="$model" property="image_width">px<br>
     <b><mt:trans phrase="Height"></b> : 
-      <mt:assetproperty name="$name" model="$model" property="image_height">px
+      <mt:assetproperty id="$object_id" name="$name" model="$model" property="image_height">px
     </mt:if>
 </mt:setvarBlock>
 </mt:if>
@@ -228,7 +229,6 @@ $('#__view-permalink').click(function(){
     <b><mt:trans phrase="Height"></b> : 
       image_heightpx
 </mt:setvarBlock>
-
     <div class="alert alert-success hidden" id="<mt:var name="__col_name__">-alert" role="alert" tabindex="0">
       <button onclick="$('#<mt:var name="__col_name__">-alert').hide();" type="button" id="header-alert-close" class="close" aria-label="<mt:trans phrase="Detach">">
         <span aria-hidden="true">&times;</span>
@@ -947,7 +947,6 @@ $('#__save').click(function(){
 </script>
   </mt:if>
 </mt:if>
-
 </form>
 
 <div id="modal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="modal" aria-hidden="true">

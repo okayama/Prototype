@@ -41,7 +41,7 @@
             "type": "string",
             "size": 255
         },
-        "fy_start": {
+        "fiscal_start": {
             "type": "int",
             "size": 11,
             "not_null": 1,
@@ -85,7 +85,7 @@
         "name": "name",
         "container": "container",
         "date_based": "date_based",
-        "fy_start": "fy_start",
+        "fiscal_start": "fiscal_start",
         "model": "model",
         "publish_file": "publish_file",
         "created_on": "created_on",

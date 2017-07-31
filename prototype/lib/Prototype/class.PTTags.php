@@ -85,6 +85,12 @@ class PTTags {
         return $ctx->stash( 'current_archive_title' );
     }
 
+    function hdlr_archivedate ( $args, $ctx ) {
+        $ts = $ctx->stash( 'current_timestamp' );
+        $args['ts'] = $ts;
+        return $ctx->function_date( $args, $ctx );
+    }
+
     function hdlr_statustext ( $args, $ctx ) {
         $app = $ctx->app;
         $s = isset( $args['status'] ) ? (int) $args['status'] : 0;
@@ -226,26 +232,19 @@ class PTTags {
         $property = isset( $args['property'] ) ? $args['property'] : '';
         $model = isset( $args['model'] ) ? $args['model'] : $app->param( 'model' );
         $name = isset( $args['name'] ) ? $args['name'] : null;
-        $current_context = $ctx->stash( 'current_context' );
-        if ( $current_context ) {
-            $obj = $ctx->stash( $current_context );
+        if ( isset( $args['id'] ) && $args['id'] ) {
+            $id = (int) $args['id'];
+            $obj = $ctx->app->db->model( $model )->load( $id );
         }
-        if (! isset( $obj ) || ! $obj ) {
-            if (!$property ||!$model ||!$name ) return;
-            if ( isset( $args['id'] ) && $args['id'] ) {
-                $id = (int) $args['id'];
-                $obj = $ctx->app->db->model( $model )->load( $id );
-            }
+        $current_context = $ctx->stash( 'current_context' );
+        if (! isset( $obj ) && $current_context ) {
+            $obj = $ctx->stash( $current_context );
         }
         $obj = isset( $obj ) ? $obj : $ctx->stash( $model );
         if (! $obj ) {
             $obj = $ctx->stash( 'workspace' );
         }
         if (! $obj ) return;
-        /* todo
-        if (! $obj ) return;
-        if ( is_array( $obj ) ) $obj = $obj[0];
-        */
         return $app->get_assetproperty( $obj, $name, $property );
     }
 
@@ -271,7 +270,7 @@ class PTTags {
                 }
             }
         }
-        if (! $model ) $model = $ctx->stash( 'current_context' );
+        if (!$model ) $model = $ctx->stash( 'current_context' );
         if (!$model || !$name ) return;
         $data_uri = isset( $args['data_uri'] ) ? $args['data_uri'] : null;
         if (! $id ) {
@@ -373,7 +372,6 @@ class PTTags {
             rmdir( $thumbnail_dir );
             unlink( $file );
             rmdir( $upload_dir );
-            // todo db cache
         }
         if ( $data_uri && $data ) {
             $data = base64_encode( $data );
@@ -410,7 +408,7 @@ class PTTags {
                     $names = [];
                     foreach ( $relations as $r ) {
                         $rel_obj = $app->db->model( $model )->load( $r->to_id );
-                        if ( is_object( $rel_obj  ) && $rel_obj->has_column( $col ) ) {
+                        if ( is_object( $rel_obj ) && $rel_obj->has_column( $col ) ) {
                             $names[] = $ctx->modifier_truncate(
                                                         $rel_obj->$col, '10+...', $ctx );
                         }

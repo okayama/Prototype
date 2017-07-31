@@ -24,6 +24,7 @@
     "label_local"   : "Label(L10N)",
     "phrase"        : "Phrase",
     "description"   : "Description",
+    "text_more"     : "More",
     "excerpt"       : "Excerpt",
     "remote_ip"     : "Remote IP",
     "body"          : "Body",
@@ -128,7 +129,7 @@
     "has_deadline"  : "Specify the Deadline",
     "published_on"  : "Publish Date",
     "unpublished_on": "Unpublish Date",
-    "fy_start"      : "Fiscal Year Start",
+    "fiscal_start"  : "Fiscal Year Start",
     "display_dashboard"
                     : "Display in Dashboard"
 }

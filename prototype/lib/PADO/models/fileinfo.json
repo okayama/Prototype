@@ -38,6 +38,14 @@
             "type": "int",
             "size": "11"
         },
+        "archive_type": {
+            "type": "string",
+            "size": 255,
+            "default": null
+        },
+        "archive_date": {
+            "type": "datetime"
+        },
         "urlmapping_id": {
             "type": "int",
             "size": "11",
@@ -75,6 +83,8 @@
         "model": "model",
         "key": "key",
         "object_id": "object_id",
+        "archive_type": "archive_type",
+        "archive_date": "archive_date",
         "urlmapping_id": "urlmapping_id",
         "file_path": "file_path",
         "is_published": "is_published",
@@ -97,6 +107,8 @@
         "model": "text",
         "key": "text_short",
         "object_id": "number",
+        "archive_type": "text",
+        "archive_date": "datetime",
         "urlmapping_id": "reference:urlmapping:name",
         "file_path": "text",
         "is_published": "checkbox",
@@ -112,6 +124,7 @@
         "model": "text",
         "key": "text_short",
         "object_id": "number",
+        "archive_type": "text",
         "urlmapping_id": "reference:urlmapping:name",
         "file_path": "text",
         "is_published": "checkbox",

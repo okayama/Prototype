@@ -33,6 +33,9 @@
         "og_image": {
             "type": "blob"
         },
+        "text_more": {
+            "type": "text"
+        },
         "excerpt": {
             "type": "text"
         },
@@ -155,6 +158,7 @@
         "title": "primary",
         "text": "richtext",
         "og_image": "file",
+        "text_more": "textarea",
         "excerpt": "textarea",
         "keywords": "text",
         "categories": "relation:category:label:dialog",
@@ -180,5 +184,9 @@
         "created_by": "reference:user:nickname",
         "modified_by": "reference:user:nickname",
         "workspace_id": "reference:workspace:name"
+    },
+    "options": {
+        "text_more": "3",
+        "status": "Draft,Review,Reserved,Publish,Unpublished (End)"
     }
 }

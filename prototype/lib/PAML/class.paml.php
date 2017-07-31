@@ -499,7 +499,8 @@ class PAML {
         $this->id = $this->magic();
         $this->compile_path = $compile_path;
         $this->compile_key = $compile_key;
-        $content = ( $src ) ? $src : file_get_contents( $path );
+        $content = ( $src ) ? $src : $path &&
+            is_readable( $path ) ? file_get_contents( $path ) : '';
         if ( $this->use_plugin && !$this->functions ) $this->init_functions();
         $this->cache_includes = [];
         return $this->compile( $content, $disp, null, null, $params );

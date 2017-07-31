@@ -171,7 +171,7 @@ class Prototype {
         $tags = [
             'function'   => ['objectvar', 'include', 'includeparts', 'getobjectname',
                              'assetthumbnail', 'assetproperty', 'getoption', 'statustext',
-                             'archivetitle'],
+                             'archivetitle', 'archivedate'],
             'block'      => ['objectcols', 'objectloop', 'tables', 'nestableobjects'],
             'conditional'=> ['objectcontext', 'tablehascolumn', 'isadmin'],
             'modifier'   => ['epoch2str'] ];
@@ -309,7 +309,6 @@ class Prototype {
         $app = Prototype::get_instance();
         if ( $mode === 'logout' ) $app->logout();
         $tmpl = TMPL_DIR . $mode . '.tmpl';
-        // 
         $ctx = $app->ctx;
         $ctx->vars['this_mode'] = $mode;
         if ( $mode === 'login' ) $app->login();
@@ -463,7 +462,8 @@ class Prototype {
                 }
             }
             if ( $app->param( 'revision_select' ) ) {
-                $ctx->vars['page_title'] = $app->translate( 'List Revisions of %s', $label );
+                $ctx->vars['page_title'] =
+                    $app->translate( 'List Revisions of %s', $label );
                 $list_option->number = 0;
                 $cols = 'rev_note,rev_changed,rev_diff,rev_type,modified_by,modified_on';
                 if (! $app->param( 'dialog_view') ) {
@@ -509,7 +509,7 @@ class Prototype {
                 $sortable = true;
             }
             $limit = $app->param( 'limit' ) ? $app->param( 'limit' )
-                : $list_option->number;
+                   : $list_option->number;
             $limit = (int) $limit;
             $offset = $app->param( 'offset' );
             $offset = (int) $offset;
@@ -1128,7 +1128,6 @@ class Prototype {
     }
 
     function upload ( $app ) {
-        // todo permission
         $app->validate_magic();
         $upload_dir = $app->upload_dir();
         $screen_id = $app->param( '_screen_id' );
@@ -1136,6 +1135,12 @@ class Prototype {
         $model = $app->param( '_model' );
         $table = $app->get_table( $model );
         if (! $table ) return $app->error( 'Invalid request.' );
+        if (! $app->can_do( $model, 'create' ) ) {
+            $error = $app->translate( 'Permission denied.' );
+            header( 'Content-type: application/json' );
+            echo json_encode( ['message'=> $error ] );
+            exit();
+        }
         $column = $app->db->model( 'column' )->load(
             ['table_id' => $table->id, 'name' => $name, 'edit' => 'file'] );
         if ( is_array( $column ) && !empty( $column ) ) {
@@ -1150,6 +1155,7 @@ class Prototype {
                 if (! in_array( $ext, $extensions ) ) {
                     $error = $app->translate( 'The file must be an %s.',
                         $app->translate( $type_label ) );
+                    header( 'Content-type: application/json' );
                     echo json_encode( ['message'=> $error ] );
                     exit();
                 }
@@ -1212,8 +1218,9 @@ class Prototype {
 
     function save_config ( $app ) {
         $app->validate_magic();
-        // todo permission
-        // appname // site_path
+        if (! $app->user()->is_superuser ) {
+            $app->error( 'Permission denied.' );
+        }
         $appname = $app->param( 'appname' );
         $site_path = $app->param( 'site_path' );
         $site_url = $app->param( 'site_url' );
@@ -1239,7 +1246,6 @@ class Prototype {
         }
         $site_path = rtrim( $site_path, DS );
         $app->sanitize_dir( $extra_path );
-        // TODO Check Path
         if ( $extra_path &&
             !$app->is_valid_property( str_replace( '/', '', $extra_path ) ) ) {
             $errors[] = $app->translate(
@@ -1843,7 +1849,7 @@ class Prototype {
             $columns = $scheme['column_defs'];
             $locale = $scheme['locale']['default'];
             $edit_properties = $scheme['edit_properties'];
-            $relations = $scheme['relations'];
+            $relations = isset( $scheme['relations'] ) ? $scheme['relations'] : [];
             $obj = $app->db->model( $table->name )->new();
             foreach ( $columns as $key => $props ) {
                 if (! isset( $relations[ $key ] ) ) {
@@ -2008,13 +2014,13 @@ class Prototype {
         } elseif ( $archive_type == 'Fiscal-Yearly' ) {
             $y = substr( $ts, 0, 4 );
             $m = substr( $ts, 4, 2 );
-            $fy_start = $mapping->fy_start;
-            $fy_end = $fy_start == 1 ? 12 : $fy_start - 1;
+            $fiscal_start = $mapping->fiscal_start;
+            $fy_end = $fiscal_start == 1 ? 12 : $fiscal_start - 1;
             $start_y = $y;
-            $end_y = $fy_start == 1 ? $y : $y + 1;
-            $fy_start = sprintf( '%02d', $fy_start );
+            $end_y = $fiscal_start == 1 ? $y : $y + 1;
+            $fiscal_start = sprintf( '%02d', $fiscal_start );
             $fy_end = sprintf( '%02d', $fy_end );
-            $start_ym = $start_y . $fy_start;
+            $start_ym = $start_y . $fiscal_start;
             $end_ym = $end_y . $fy_end;
             $ym = $y . $m;
             if ( $ym >= $start_ym && $ym <= $end_ym ) {
@@ -2488,7 +2494,13 @@ class Prototype {
         } else {
             $files = $app->db->model( 'fileinfo' )->load_iter();
         }
-        foreach ( $files as $fi ){
+        foreach ( $files as $fi ) {
+            $map = $fi->urlmapping;
+            if ( $workspace && $map && $workspace->workspace_id != $map->workspace_id ) {
+                continue;
+            } else if (! $workspace && $map && $map->workspace_id ) {
+                continue;
+            }
             $relative_path = $fi->relative_path;
             $file_path = str_replace( '%r', $path, $relative_path );
             $file_path = str_replace( '/', DS, $file_path );
