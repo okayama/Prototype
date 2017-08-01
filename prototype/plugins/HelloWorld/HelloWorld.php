@@ -6,7 +6,5 @@ class HelloWorld extends Prototype {
     }
 
     function post_save_entry ( &$cb, $app, $obj ) {
-        //echo 88;
-        //return true;
     }
 }

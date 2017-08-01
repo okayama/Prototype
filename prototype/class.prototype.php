@@ -2508,7 +2508,7 @@ class Prototype {
                     $values = $_values;
                     $list_type = isset( $list_props[ $key ] ) ? $list_props[ $key ] : '';
                     if ( $type === 'relation' || strpos( $list_type, ':' ) !== false ) {
-                        $r_cond = [];
+                        $_cond = [];
                         list( $rel_model, $rel_col ) = ['', ''];
                         if (! $list_type ) {
                             $col = $app->db->column( 'column' )->get_by_key(
@@ -2532,13 +2532,13 @@ class Prototype {
                         foreach ( $conds as $val ) {
                             $value = $values[ $i ];
                             if ( count( $values ) > 2 ) {
-                                $r_cond[ $op ] = [ 'and' => $value ];
+                                $_cond[ $op ] = [ 'and' => $value ];
                             } else {
-                                $r_cond[ $op ] = $value;
+                                $_cond[ $op ] = $value;
                             }
                             ++$i;
                         }
-                        $rel_objs = $rel_obj->load( [ $rel_col => $r_cond ] );
+                        $rel_objs = $rel_obj->load( [ $rel_col => $_cond ] );
                         if ( is_array( $rel_objs ) && !empty( $rel_objs ) ) {
                             $rel_ids = [];
                             foreach ( $rel_objs as $_obj ) {

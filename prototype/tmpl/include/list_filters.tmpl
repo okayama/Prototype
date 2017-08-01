@@ -151,6 +151,10 @@ $('#filter-select-delete-button').click(function(){
         }
         $("#header-alert").show();
         setTimeout(focus_header_dialog, 500);
+        $(".current-filter").hide();
+        $('#this_mode').val( 'list' );
+        $('#_filter_id').val('');
+        $('#filter-select-delete-button').hide();
     },
     "json"
     );
@@ -230,7 +234,7 @@ $('.detach-filter').click(function(){
     if(!confirm('<mt:trans phrase="Are you sure you want to remove this filter condition?">')){
         return false;
     }
-    $(this).parent().remove();
+    $(this).parent().parent().remove();
     filter_itemCount--;
 });
 </script>
