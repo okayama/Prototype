@@ -130,6 +130,10 @@
     "published_on"  : "Publish Date",
     "unpublished_on": "Unpublish Date",
     "fiscal_start"  : "Fiscal Year Start",
+    "can_update_own": "Can Update Own",
+    "can_update_all": "Can Update All",
+    "can_review"    : "Can Review",
+    "can_activate"  : "Can Activate",
     "display_dashboard"
                     : "Display in Dashboard"
 }

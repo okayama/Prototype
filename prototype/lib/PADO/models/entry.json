@@ -178,7 +178,6 @@
         "has_deadline": "checkbox",
         "published_on": "date",
         "unpublished_on": "date",
-        "rev_diff": "text",
         "user_id": "reference:user:nickname",
         "modified_on": "datetime",
         "created_by": "reference:user:nickname",

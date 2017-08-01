@@ -110,7 +110,6 @@
     "Hidden"             : "隠し項目",
     "Checkbox"           : "チェックボックス",
     "Number"             : "数値",
-    "Number"             : "数値",
     "Text Box"           : "テキスト",
     "Short Text"         : "短縮テキスト",
     "Flag"               : "フラグ",
@@ -128,6 +127,7 @@
     "To ID"              : "参照先ID",
     "Reference"          : "参照",
     "Detach"             : "関連を解除",
+    "Detach Filter"      : "フィルタを解除",
     "Sort By"            : "ソート設定",
     "Sort"               : "ソート",
     "Radio Buttons"      : "ラジオボタン",
@@ -177,6 +177,24 @@
     "Unpublish Date"     : "公開終了日",
     "Created By"         : "作成者",
     "Modified By"        : "更新者",
+    "Filters"            : "フィルタ",
+    "Add New Filter"     : "新しいフィルタ",
+    "Current Filter"     : "現在のフィルタ",
+    "Apply"              : "適用",
+    "Save and Apply"     : "保存して適用",
+    " is "               : " が ",
+    "Equal"              : "等しい",
+    "Not Equal"          : "等しくない",
+    "Less than"          : "より小さい",
+    "Grater than"        : "より大きい",
+    "Greater Equal"      : "以上",
+    "Less Equal"         : "以下",
+    "Contains"           : "を含む",
+    "Not Contains"       : "を含まない",
+    "Begin with"         : "で始まる",
+    "End with"           : "で終わる",
+    "Newer than"         : "より新しい",
+    "Older than"         : "より古い",
     "Language"           : "言語",
     "Translate"          : "翻訳",
     "Paging"             : "表示数",
@@ -194,6 +212,11 @@
     "Edit Type"          : "編集表示",
     "Uneditable"         : "変更不可",
     "Unique"             : "ユニーク",
+    "Can Update Own"     : "自分のオブジェクト",
+    "Can Update All"     : "すべてのオブジェクト",
+    "Can Review"         : "レビュー",
+    "Can Review"         : "レビュー",
+    "Can Activate"       : "有効化 (公開)",
     "New %s"             : "新しい%s",
     "Removed %s."        : "%sを削除しました。",
     "New %s (Confirm)"   : "新しい%s (確認)",
@@ -306,6 +329,7 @@
     "Changed"            : "変更",
     "Change Note"        : "変更メモ",
     "Hierarchy"          : "階層",
+    "Your Filter"        : "自分のフィルタ",
     "Manage Hierarchy"   : "階層の管理",
     "Manage %s Hierarchy": "%s階層の管理",
     "Drag"               : "ドラッグ",
@@ -341,6 +365,8 @@
         : "%sの階層を保存しました。",
     "Specify the Deadline"
         : "公開終了日を指定",
+    "Filter not specified."
+        : "フィルタが指定されていません。",
     "Please specify the Model name."
         : "モデル名を入力してください。",
     "View or Model not specified."
@@ -349,6 +375,10 @@
         : "パスワードをお忘れですか?",
     "An error occurred while uploading."
         : "ファイルのアップロード中にエラーが発生しました。",
+    "Please enter the Name of this Filter."
+        : "フィルタ名を入力して下さい。",
+    "The Filter Name is required."
+        : "フィルタ名は必須です。",
     "The name %s is reserved."
         : "「%s」という名前はシステムに予約されています。",
     "The name '%s' can not be specified."
@@ -395,6 +425,10 @@
         : "%sの画面オプションを保存しました。",
     "Are you sure you want to detach this relation?"
         : "関連付けを解除してもよろしいですか?",
+    "Are you sure you want to remove selected filter?"
+        : "選択されたフィルタを削除してもよろしいですか?",
+    "Are you sure you want to remove this filter condition?"
+        : "フィルタ条件を削除してもよろしいですか?",
     "Model can not be set child of workspace."
         : "モデルをスペースの子モデルにはできません。",
     "Are you sure you want to remove this Column?"
@@ -453,6 +487,10 @@
         : "このリビジョンをマスタに適用してもよろしいですか?",
     "Disable,Enable"
         : "無効,有効",
+    "The Filter has successfully deleted."
+        : "選択されたフィルタを削除しました。",
+    "An error occurred while removing the Filter."
+        : "フィルタの削除中にエラーが発生しました。",
     "Draft,Review,Reserved,Publish,Unpublished (End)"
         : "下書き,レビュー,公開予約,公開,非公開(公開終了)",
     "The file has successfully uploaded. The uploaded file will not be reflected until you save this page."

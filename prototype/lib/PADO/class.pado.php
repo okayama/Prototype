@@ -778,7 +778,6 @@ class PADOBaseModel {
             self::$_Driver = $this->_driver;
         }
         try {
-            // $condition = [ $terms, $args, $cols, $sql, $vals ];
             $sth->execute( $vals );
             if ( $count && !$count_group_by ) {
                 $count = (int) $sth->fetchColumn();

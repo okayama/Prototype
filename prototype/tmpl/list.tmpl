@@ -21,13 +21,11 @@
 <mt:if name="request.get_col">
 <mt:var name="request.get_col" setvar="__get_col">
 </mt:if>
-
 <mt:setvarblock name="dialog_param">&amp;dialog_view=1</mt:setvarblock>
 <mt:if name="request.single_select">
 <mt:setvar name="__single_select" value="1">
 </mt:if>
 </mt:if>
-
 <mt:setvarblock name="setup_search">
 $(".search-btn").click(function(){
   $("#__mode").prop('value','view');
@@ -134,13 +132,11 @@ $('#dialog-cancel-btn').click(function(){
 <mt:if name="_sortable">
   <button type="submit" class="__save_order btn btn-secondary btn-sm"><mt:trans phrase="Save Order"></button>
 </mt:if>
-
 </mt:if>
-
 <mt:if name="_per_page">
   <mt:var name="search_box">
 </mt:if>
-
+<mt:if name="current_filter_name"><span class="current-filter"> (<mt:trans phrase="Current Filter"> : <a href="javascript:void(0);" data-toggle="modal" data-target="#filterOptions"><mt:var name="current_filter_name" escape></a>)</span></mt:if>
 </td>
 <td class="pagination-col">
 <mt:if name="_per_page">

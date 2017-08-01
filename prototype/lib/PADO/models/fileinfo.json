@@ -107,7 +107,7 @@
         "model": "text",
         "key": "text_short",
         "object_id": "number",
-        "archive_type": "text",
+        "archive_type": "text_short",
         "archive_date": "datetime",
         "urlmapping_id": "reference:urlmapping:name",
         "file_path": "text",

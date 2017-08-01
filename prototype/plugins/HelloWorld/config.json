@@ -1,0 +1,26 @@
+{
+    "menu_actions": {
+        "hello": {
+            "display_space" : 1,
+            "permission"    : "create_entry",
+            "mode"          : "hello",
+            "label"         : "Hello",
+            "order"         : 10
+        }
+    },
+    "methods": {
+        "hello": {
+            "component"     : "HelloWorld",
+            "method"        : "hello"
+        }
+    },
+    "callbacks": {
+            "entry": {
+                "post_save" : {
+                    "component"     : "HelloWorld",
+                    "method"        : "post_save_entry",
+                    "priority"      : 1
+                }
+        }
+    }
+}

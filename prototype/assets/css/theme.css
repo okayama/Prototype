@@ -106,6 +106,14 @@ input[type="radio"] {
   width: 380px !important;
 }
 
+.delete-bun-sm {
+  margin-left: 1.2em !important;
+}
+
+.current-filter {
+  margin-left: 0.8em !important;
+}
+
 .period-separator {
   margin-left: 1em;
 }

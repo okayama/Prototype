@@ -215,6 +215,7 @@ window.onload = function(){
     <mt:if name="request.__mode" eq="view">
         <mt:if name="request._type" eq="list">
         <mt:unless name="request.revision_select">
+          <mt:include file="include/list_filters.tmpl">
           <mt:include file="include/list_options.tmpl">
           <mt:setvar name="has_option" value="1">
         </mt:unless>
@@ -252,26 +253,31 @@ $(function () {
         <main class="col-md-12 pt-3">
           <h1<mt:if name="has_option"> class="title-with-opt"</mt:if>><span class="title"><mt:var name="page_title"></span>
       <mt:if name="this_mode" ne="login">
+        <mt:if name="request._type" eq="list">
+          <button type="button" class="btn btn-outline-primary btn-sm" data-toggle="modal" data-target="#filterOptions">
+            <mt:trans phrase="Filters">
+          </button>
+        </mt:if>
         <mt:if name="can_create">
           <mt:if name="request._type" eq="list">
-          <mt:unless name="request.revision_select">
-          <mt:if name="model" eq="role">
-            <mt:trans phrase="Syetem's Role" setvar="label">
-          </mt:if>
+            <mt:unless name="request.revision_select">
+            <mt:if name="model" eq="role">
+              <mt:trans phrase="Syetem's Role" setvar="label">
+            </mt:if>
           <a class="btn btn-primary btn-sm" href="<mt:var name="script_uri">?__mode=view&amp;_type=edit&amp;_model=<mt:var name="model" escape><mt:var name="workspace_param">">
             <mt:trans phrase="New %s" params="$label">
           </a>
-          <mt:if name="model" eq="role">
+            <mt:if name="model" eq="role">
           <a class="btn btn-primary btn-sm" href="<mt:var name="script_uri">?__mode=view&amp;_type=edit&amp;_model=<mt:var name="model" escape>&amp;workspace_role=1">
             <mt:trans phrase="New WorkSpace's Role">
           </a>
-          </mt:if>
-          <mt:if name="has_hierarchy">
+            </mt:if>
+            <mt:if name="has_hierarchy">
           <a class="btn btn-secondary btn-sm" href="<mt:var name="script_uri">?__mode=view&amp;_type=hierarchy&amp;_model=<mt:var name="model" escape><mt:var name="workspace_param">">
             <mt:trans phrase="Manage Hierarchy" params="$label">
           </a>
-          </mt:if>
-          </mt:unless>
+            </mt:if>
+            </mt:unless>
           </mt:if>
           <mt:if name="request._type" eq="edit">
             <mt:if name="request.saved">

@@ -175,12 +175,11 @@ class PAML {
             $this->include_paths[ dirname( $f ) ] = true;
         if (!$this->force_compile && !$this->caching )
             $this->init_cache( $this->cache_driver );
-        if ( $this->use_plugin )
-      {
-        if ( ( $plugin_d = PAMLDIR . 'plugins' ) && is_dir( $plugin_d ) )
-            $this->plugin_paths[] = $plugin_d;
-        $this->init_plugins();
-      }
+        if ( $this->use_plugin ) {
+            if ( ( $plugin_d = PAMLDIR . 'plugins' ) && is_dir( $plugin_d ) )
+                $this->plugin_paths[] = $plugin_d;
+            $this->init_plugins();
+        }
         if ( $this->ldelim && $this->rdelim )
             $this->tag_block = [ $this->ldelim, $this->rdelim ];
         $this->inited = true;

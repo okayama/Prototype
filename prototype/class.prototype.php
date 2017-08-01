@@ -36,8 +36,12 @@ class Prototype {
     public    $debug         = false;
     public    $logging       = false;
     public    $stash         = [];
-    protected $init_tags;
+    public    $init_tags;
     protected $protocol;
+    public    $use_plugin    = true;
+    public    $plugin_paths  = [];
+    public    $plugin_order  = 0; // 0=asc, 1=desc
+    public    $components    = [];
     public    $remote_ip;
     public    $user;
     public    $appname;
@@ -52,7 +56,8 @@ class Prototype {
     public    $admin_url;
     public    $request_method;
     public    $current_magic;
-    public    $temp_dir = '/tmp';
+    public    $temp_dir      = '/tmp';
+    public    $registory     = [];
 
     public    $videos        = ['mov', 'avi', 'qt', 'mp4', 'wmv',
                                 '3gp', 'asx', 'mpg', 'flv', 'mkv', 'ogm'];
@@ -65,11 +70,12 @@ class Prototype {
 
     protected $methods       = ['view', 'save', 'delete', 'upload', 'save_order',
                                 'display_options', 'get_json', 'export_scheme',
-                                'recover_password', 'save_hierarchy'];
+                                'recover_password', 'save_hierarchy', 'delete_filter'];
 
     public $callbacks        = ['pre_save'     => [], 'post_save'   => [],
                                 'pre_delete'   => [], 'post_delete' => [],
-                                'save_filter'  => [], 'delete_filter'=> [] ];
+                                'save_filter'  => [], 'delete_filter'=> [],
+                                'pre_listing'  => [] ];
 
     public $disp_option;
     public $workspace_param;
@@ -146,20 +152,8 @@ class Prototype {
         }
         $db->init();
         $this->db = $db;
-        $callbacks = ['save_filter_table', 'save_filter_urlmapping',
-                      'save_filter_workspace', 'post_save_workspace', 'post_save_role',
-                      'post_save_permission', 'delete_filter_table', 'post_save_table',
-                      'delete_filter_template', 'post_save_asset', 'save_filter_tag'];
-        foreach ( $callbacks as $meth ) {
-            $cb = explode( '_', $meth );
-            $this->register_callback( $cb[2], $cb[0] . '_' . $cb[1], $meth, 1, $this );
-        }
-        $this->register_callback( 'role', 'post_delete', 'post_save_role', 1, $this );
-        $this->register_callback( 'permission', 'post_delete',
-                                                    'post_save_permission', 1, $this );
         require_once( LIB_DIR . 'PAML' . DS .'class.paml.php' );
         $ctx = new PAML();
-        //$ctx->debug = 1;
         $ctx->prefix = 'mt';
         $ctx->app = $this;
         $ctx->default_component = $this;
@@ -192,7 +186,6 @@ class Prototype {
         if (!$this->language )
             $this->language = substr( $_SERVER['HTTP_ACCEPT_LANGUAGE'], 0, 2 );
         $locale_dir = __DIR__ . DS . 'locale';
-        $locale_dir = __DIR__ . DS . 'locale';
         $locale = $locale_dir . DS . 'default.json';
         if ( file_exists( $locale ) )
             $this->dictionary['default']
@@ -202,7 +195,7 @@ class Prototype {
         if ( file_exists( $locale ) )
             $this->dictionary[ $lang ]
                 = json_decode( file_get_contents( $locale ), true );
-        if ( $app->mode == 'setup_db' ) {
+        if ( $this->param( 'setup_db' ) ) {
             require_once( LIB_DIR . 'Prototype' . DS . 'class.PTUpgrader.php' );
             $upgrader = new PTUpgrader;
             $upgrader->setup_db( true );
@@ -249,6 +242,77 @@ class Prototype {
             $ctx->logging = 1;
             $ctx->log_path = __DIR__ . DS . 'log' . DS;
         }
+        if ( $this->use_plugin ) {
+            if ( ( $plugin_d = __DIR__ . DS . 'plugins' ) && is_dir( $plugin_d ) )
+                $this->plugin_paths[] = $plugin_d;
+            $this->init_plugins();
+        }
+    }
+
+    function init_plugins () {
+        $plugin_paths = $this->plugin_paths;
+        foreach ( $plugin_paths as $dir ) {
+            $items = scandir( $dir, $this->plugin_order );
+            foreach ( $items as $plugin ) {
+                if ( strpos( $plugin, '.' ) === 0 ) continue;
+                $plugin = $dir . DS . $plugin;
+                if (! is_dir( $plugin ) ) continue;
+                $plugins = scandir( $plugin, $this->plugin_order );
+                foreach ( $plugins as $f ) {
+                    if ( strpos( $f, '.' ) === 0 ) continue;
+                    $_plugin = $plugin . DS . $f;
+                    $extension = isset( pathinfo( $_plugin )['extension'] )
+                        ? pathinfo( $_plugin )['extension'] : '';
+                    if (! is_file( $_plugin ) 
+                        && ( $extension !== 'json' && $extension !== 'php' ) ) {
+                        continue;
+                    }
+                    if ( $extension === 'json' ) {
+                        $r = json_decode( file_get_contents( $_plugin ), true );
+                        foreach ( $r as $key => $props ) {
+                            if ( $key === 'methods' ) {
+                                $methods = $r[ $key ];
+                                foreach ( $methods as $meth => $prop ) {
+                                    $this->registory['methods'][ $meth ] = $prop;
+                                }
+                            } else {
+                                $this->registory[ $key ][] = $props;
+                            }
+                        }
+                    } else if ( $extension === 'php' ) {
+                        $this->components[ pathinfo( $f )['filename'] ] = $_plugin;
+                    }
+                }
+            }
+        }
+    }
+
+    function init_callbacks ( $model, $action ) {
+        $app = Prototype::get_instance();
+        $registory = $app->registory;
+        $callbacks = isset( $registory['callbacks'] ) ? $registory['callbacks'] : [];
+        if (! isset( $callbacks ) ) return;
+        $components = $app->components;
+        foreach ( $callbacks as $callback ) {
+            $_model = key( $callback );
+            if ( $_model !== $model ) continue;
+            $callback = $callback[ $model ];
+            if ( strpos( key( $callback ), $action ) !== false ) {
+                $kind = key( $callback );
+                $callback = $callback[ key( $callback ) ];
+                if ( isset( $components[ $callback['component'] ] ) ) {
+                    $_plugin = $components[ $callback['component'] ];
+                    if (!include( $_plugin ) )
+                        trigger_error( "Plugin '{$_plugin}' load failed!" );
+                    $plugin = $callback['component'];
+                    if ( class_exists( $plugin ) ) {
+                        $plugin = new $plugin();
+                        $app->register_callback( $model, $kind, $callback['method'],
+                                                        $callback['priority'], $plugin );
+                    }
+                }
+            }
+        }
     }
 
     function run () {
@@ -274,6 +338,12 @@ class Prototype {
             $ctx->vars['workspace_extra_path'] = $workspace->extra_path;
             $ctx->vars['workspace_id'] = $workspace_id;
         }
+        $user = $app->user();
+        if ( $user ) {
+            $ctx->vars['user_name'] = $user->name;
+            $ctx->vars['user_nickname'] = $user->nickname;
+            $ctx->vars['user_id'] = $user->id;
+        }
         if ( isset( $table ) ) {
             if ( $workspace ) {
                 $ctx->vars['workspace_scope'] = $table->space_child;
@@ -293,9 +363,24 @@ class Prototype {
         if ( in_array( $mode, $app->methods ) ) {
             return $app->$mode( $app );
         }
-        /*
-            TODO autoload plugins
-        */
+        $registory = $this->registory;
+        if ( isset( $registory['methods'] ) && isset( $registory['methods'][ $mode ] ) ) {
+            $meth = $registory['methods'][ $mode ];
+            $component = $meth['component'];
+            $components = $this->components;
+            if ( isset( $components[ $component ] ) ) {
+                $_plugin = $components[ $component ];
+                if (!include( $_plugin ) )
+                    trigger_error( "Plugin '{$_plugin}' load failed!" );
+                if ( class_exists( $component ) ) {
+                    $plugin = new $component();
+                    $method = $meth['method'];
+                    if ( method_exists( $plugin, $method ) ) {
+                        return $plugin->$method( $app );
+                    }
+                }
+            }
+        }
         return $app->__mode( $mode );
     }
 
@@ -447,7 +532,8 @@ class Prototype {
             $column_defs = $scheme['column_defs'];
             $labels = $scheme['labels'];
             $search_props = [];
-            $sort_props = [];
+            $sort_props   = [];
+            $filter_plops = [];
             $indexes = $scheme['indexes'];
             foreach ( $column_defs as $col => $prop ) {
                 if ( $prop['type'] === 'string' || $prop['type'] === 'text' ) {
@@ -459,6 +545,18 @@ class Prototype {
                     if ( strpos( $col, 'rev_' ) !== 0 ) {
                         $sort_props[ $col ] = true;
                     }
+                }
+                if ( strpos( $col, 'rev_' ) !== 0 && $prop['type'] !== 'blob' ) {
+                    if ( $app->workspace() && $col === 'workspace_id' ) continue;
+                    $list_prop = isset( $list_props[ $col ] ) ? $list_props[ $col ] : null;
+                    $type = $prop['type'];
+                    if ( $list_prop ) {
+                        if ( strpos( $list_prop, 'reference:' ) !== false ) {
+                            $type = 'reference';
+                        }
+                    }
+                    $filter_plops[] = ['name' => $col, 'type' => $type,
+                        'label' => $labels[ $col ] ];
                 }
             }
             if ( $app->param( 'revision_select' ) ) {
@@ -499,10 +597,11 @@ class Prototype {
             $descend = isset( $sort_option[1] ) && $sort_option[1] == 'descend' ? 1 : 0;
             $order_props = ['1' => [ $app->translate( 'Ascend' ), $ascend ],
                             '2' => [ $app->translate( 'Descend' ), $descend ] ];
-            $ctx->vars['disp_options'] = $sorted_props;
+            $ctx->vars['disp_options']   = $sorted_props;
             $ctx->vars['search_options'] = $search_props;
-            $ctx->vars['sort_options'] = $sort_props;
-            $ctx->vars['order_options'] = $order_props;
+            $ctx->vars['sort_options']   = $sort_props;
+            $ctx->vars['order_options']  = $order_props;
+            $ctx->vars['filter_options'] = $filter_plops;
             $sortable = false;
             if ( in_array( 'order', $user_options ) && $table->sortable ) {
                 $ctx->vars['sortable'] = 1;
@@ -667,6 +766,13 @@ class Prototype {
                     $extra .= " {$_colprefix}workspace_id IN ({$ws_ids})";
                 }
             }
+            $app->register_callback( $model, 'pre_listing', 'pre_listing', 1, $app );
+            $app->init_callbacks( $model, 'pre_listing' );
+            $callback = ['name' => 'pre_listing', 'extra' => $extra, 'args' => $args,
+                         'scheme' => $scheme, 'table' => $table ];
+            $app->run_callbacks( $callback, $model, $terms, $extra );
+            $extra = $callback['extra'];
+            $args  = $callback['args'];
             $objects = $obj->load( $terms, $args, '*', $extra );
             unset( $args['limit'], $args['offset'] );
             $count = $obj->count( $terms, $args );
@@ -1046,6 +1152,27 @@ class Prototype {
             . $app->workspace_param );
     }
 
+    function delete_filter ( $app ) {
+        $app->validate_magic();
+        header( 'Content-type: application/json' );
+        $_filter_id = (int) $app->param( '_filter_id' );
+        if (! $_filter_id ) {
+            echo json_encode( ['result' => false ] );
+            exit();
+        }
+        $option = $app->db->model( 'option' )->load( $_filter_id );
+        if ( $option && $option->id ) {
+            if ( $option->user_id == $app->user()->id && $option->kind == 'list_filter'
+                && $option->key == $app->param( '_model' ) ) {
+                $res = $option->remove();
+                echo json_encode( ['result' => $res ] );
+                exit();
+            }
+        }
+        echo json_encode( ['result' => true ] );
+        exit();
+    }
+
     function set_hierarchy ( $model, $children, $parent = 0,
                              &$order = 1, &$error = null ) {
         $app = Prototype::get_instance();
@@ -1117,7 +1244,7 @@ class Prototype {
         $res = $user_option->save();
         if ( $type === 'edit' ) {
             header( 'Content-type: application/json' );
-            echo json_encode( ['result'=> $res ] );
+            echo json_encode( ['result' => $res ] );
             exit();
         }
         $dialog_view = $app->param( 'dialog_view' ) ? '&dialog_view=1' : '';
@@ -1301,6 +1428,15 @@ class Prototype {
         if (! $app->can_do( $model, $action, $obj ) ) {
             $app->error( 'Permission denied.' );
         }
+        $callbacks = ['save_filter_table', 'save_filter_urlmapping',
+                      'save_filter_workspace', 'post_save_workspace', 'post_save_role',
+                      'post_save_permission', 'post_save_table',
+                      'post_save_asset', 'save_filter_tag'];
+        foreach ( $callbacks as $meth ) {
+            $cb = explode( '_', $meth );
+            $app->register_callback( $cb[2], $cb[0] . '_' . $cb[1], $meth, 1, $app );
+        }
+        $app->init_callbacks( $model, 'save' );
         $orig_relations = $app->get_relations( $obj );
         $orig_metadata  = $app->get_meta( $obj );
         $original = clone $obj;
@@ -1832,96 +1968,8 @@ class Prototype {
     function init_tags () {
         $app = Prototype::get_instance();
         if ( $app->init_tags ) return;
-        $ctx = $app->ctx;
-        $tables = $app->db->model( 'table' )->load( ['template_tags' => 1] );
-        $block_relations = [];
-        $function_relations = [];
-        $function_date = [];
-        $workspace_tags = [];
-        $alias = [];
-        $tags = $this->core_tags;
-        foreach ( $tables as $table ) {
-            $plural = strtolower( $table->plural );
-            $plural = preg_replace( '/[^a-z]/', '' , $plural );
-            $ctx->register_tag( $plural, 'block', 'hdlr_objectloop', $tags );
-            $ctx->stash( 'blockmodel_' . $plural, $table->name );
-            $scheme = $app->get_scheme_from_db( $table->name );
-            $columns = $scheme['column_defs'];
-            $locale = $scheme['locale']['default'];
-            $edit_properties = $scheme['edit_properties'];
-            $relations = isset( $scheme['relations'] ) ? $scheme['relations'] : [];
-            $obj = $app->db->model( $table->name )->new();
-            foreach ( $columns as $key => $props ) {
-                if (! isset( $relations[ $key ] ) ) {
-                    $label = strtolower( $locale[ $key ] );
-                    $label = preg_replace( '/[^a-z]/', '' , $label );
-                    $tag_name = str_replace( '_', '', $key );
-                    if ( $props['type'] === 'datetime' ) {
-                        $function_date[] = $table->name . $key;
-                    }
-                    if ( $key !== $tag_name ) {
-                        $alias[ $table->name . $tag_name ] = $table->name . $key;
-                    }
-                    $ctx->register_tag(
-                        $table->name . $tag_name, 'function', 'hdlr_get_objectcol', $tags );
-                    if ( $table->name === 'workspace' ) {
-                        $workspace_tags[] = $table->name . $tag_name;
-                    }
-                    if ( $label && $label != $tag_name ) {
-                        if (! $obj->has_column( $label ) ) {
-                            $ctx->register_tag(
-                                $table->name . $label,
-                                    'function', 'hdlr_get_objectcol', $tags );
-                            $alias[ $table->name . $label ] 
-                                = $table->name . $key;
-                        }
-                    }
-                    if ( $key === 'published_on' ) {
-                        $ctx->register_tag(
-                            $table->name . 'date', 'function',
-                                                'hdlr_get_objectcol', $tags );
-                            $alias[ $table->name . 'date'] 
-                                = $table->name . $key;
-                    }
-                }
-                if ( preg_match( '/(^.*)_id$/', $key, $mts ) ) {
-                    if ( isset( $edit_properties[ $key ] ) ) {
-                        $prop = $edit_properties[ $key ];
-                        if ( strpos( $prop, ':' ) !== false ) {
-                            $edit = explode( ':', $prop );
-                            if ( $edit[0] === 'relation' || $edit[0] === 'reference' ) {
-                                $ctx->register_tag( $table->name . $mts[1],
-                                    'function', 'hdlr_get_objectcol', $tags );
-                                $function_relations[ $table->name . $mts[1] ]
-                                    = [ $key, $table->name, $mts[1], $edit[2] ];
-                                $alias[ $table->name . $label ] = $table->name . $mts[1];
-                                if ( $key === 'user_id' ) {
-                                        $ctx->register_tag( $table->name . 'author',
-                                            'function', 'hdlr_get_objectcol', $tags );
-                                    $alias[ $table->name . 'author']
-                                        = $table->name . $mts[1];
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-            foreach ( $relations as $key => $model ) {
-                $ctx->register_tag( $table->name . $key, 'block',
-                    'hdlr_get_relatedobjs', $tags );
-                $block_relations[ $table->name . $key ] = [ $key, $table->name, $model ];
-            }
-            if ( $table->taggable ) {
-                // TODO $table->name . 'iftagged'
-            }
-        }
-        $ctx->stash( 'workspace', $app->workspace() );
-        $ctx->stash( 'function_relations', $function_relations );
-        $ctx->stash( 'block_relations', $block_relations );
-        $ctx->stash( 'function_date', $function_date );
-        $ctx->stash( 'workspace_tags', $workspace_tags );
-        $ctx->stash( 'alias_functions', $alias );
-        $app->init_tags = true;
+        $core_tags = $app->core_tags;
+        $core_tags->init_tags();
     }
 
     function build_path_with_map ( $obj, $mapping, $table, $ts = null, $url = false ) {
@@ -2133,17 +2181,18 @@ class Prototype {
     function run_callbacks ( &$cb, $model, &$obj = null, $needle = true ) {
         $app = Prototype::get_instance();
         $cb_name = $cb['name'];
-        if ( isset( $app->callbacks[ $cb_name ][ $model ] ) ) {
-            $all_callbacks = $app->callbacks[ $cb_name ][ $model ];
+        $all_callbacks = isset( $app->callbacks[ $cb_name ][ $model ] ) ?
+            $app->callbacks[ $cb_name ][ $model ] : [];
+        if (! empty( $all_callbacks ) ) {
             ksort( $all_callbacks );
             foreach ( $all_callbacks as $callbacks ) {
                 foreach ( $callbacks as $callback ) {
                     list( $meth, $class ) = $callback;
                     $res = true;
                     if ( function_exists( $meth ) ) {
-                        $res = $meth( $cb, $app, $obj );
+                        $res = $meth( $cb, $app, $obj, $needle );
                     } else if ( $class && method_exists( $class, $meth ) ) {
-                        $res = $class->$meth( $cb, $app, $obj );
+                        $res = $class->$meth( $cb, $app, $obj, $needle );
                     }
                     if ( $needle && !$res ) return false;
                 }
@@ -2161,6 +2210,14 @@ class Prototype {
             $objects = [ $objects ];
         }
         $table = $app->get_table( $model );
+        $this->register_callback( 'table', 'delete_filter',
+                                                    'delete_filter_table', 1, $app );
+        $this->register_callback( 'template', 'delete_filter',
+                                                    'delete_filter_template', 1, $app );
+        $this->register_callback( 'role', 'post_delete', 'post_save_role', 1, $app );
+        $this->register_callback( 'permission', 'post_delete',
+                                                    'post_save_permission', 1, $app );
+        $app->init_callbacks( $model, 'delete' );
         $errors = [];
         $callback = ['name' => 'delete_filter', 'error' => ''];
         $delete_filter = $app->run_callbacks( $callback, $model );
@@ -2378,6 +2435,168 @@ class Prototype {
             return $app->view( $app, $model, 'edit' );
         }
         return $app->view( $app, $model, 'list' );
+    }
+
+    function pre_listing ( &$cb, $app, &$terms, &$extra ) {
+        if ( $app->param( '_filter' ) ) {
+            $params = $app->param();
+            $conditions = [];
+            $scheme = $cb['scheme'];
+            $table  = $cb['table'];
+            $column_defs = $scheme['column_defs'];
+            $list_props = $scheme['list_properties'];
+            $model = $app->param( '_model' );
+            $obj = $app->db->model( $model )->new();
+            $op_map = ['gt' => '>', 'lt' => '<', 'eq' => '=', 'ne' => '!=', 'ge' => '>=',
+                       'le' => '<=', 'ct' => 'LIKE', 'nc' => 'NOT LIKE', 'bw' => 'LIKE',
+                       'ew' => 'LIKE'];
+            $_filter_id = $app->param( '_filter_id' );
+            $workspace_id = $app->workspace() ? $app->workspace()->id : 0;
+            if ( $_filter_id ) $_filter_id = (int) $_filter_id;
+            if ( $_filter_id ) {
+                $filter_terms = ['user_id' => $app->user()->id,
+                                 'workspace_id' => $workspace_id,
+                                 'id'    => $_filter_id,
+                                 'key'   => $model,
+                                 'kind'  => 'list_filter'];
+                $filter = $app->db->model( 'option' )->get_by_key( $filter_terms );
+                if (! $filter->id ) {
+                    $terms['id'] = 0;
+                    return;
+                }
+                $filter_val = $filter->data;
+                $app->ctx->vars['current_filter_id'] = $_filter_id;
+                $app->ctx->vars['current_filter_name'] = $filter->value;
+                if ( $filter_val ) {
+                    $filters = json_decode( $filter_val, true );
+                    foreach ( $filters as $filter => $values ) {
+                        $params[ $filter ] = $values;
+                    }
+                }
+            }
+            $filter_params = [];
+            foreach ( $params as $key => $conds ) {
+                if ( strpos( $key, '_filter_cond_' ) === 0 ) {
+                    $filter_params[ $key ] = $conds;
+                    $cond = [];
+                    $key = preg_replace( '/^_filter_cond_/', '', $key );
+                    $values = isset( $params['_filter_value_' . $key ] )
+                            ? $params['_filter_value_' . $key ] : [];
+                    $filter_params[ '_filter_value_' . $key ] = $values;
+                    if (! isset( $column_defs[ $key ]['type'] ) ) continue;
+                    $type = $column_defs[ $key ]['type'];
+                    $i = 0;
+                    $_values = [];
+                    foreach ( $conds as $val ) {
+                        $value = $values[ $i ];
+                        if (! isset( $op_map[ $val ] ) ) continue;
+                        $op = $op_map[ $val ];
+                        if ( $type == 'datetime' ) {
+                            $value = $obj->db2ts( $value );
+                            $value = $obj->ts2db( $value );
+                        } else if ( $op === 'LIKE' ) {
+                            if ( $val === 'bw' ) {
+                                $value = $app->db->escape_like( $value, false, 1 );
+                            } elseif ( $val === 'ew' ) {
+                                $value = $app->db->escape_like( $value, 1, false );
+                            } else {
+                                $value = $app->db->escape_like( $value, 1, 1 );
+                            }
+                        }
+                        $_values[] = $value;
+                    }
+                    $values = $_values;
+                    $list_type = isset( $list_props[ $key ] ) ? $list_props[ $key ] : '';
+                    if ( $type === 'relation' || strpos( $list_type, ':' ) !== false ) {
+                        $r_cond = [];
+                        list( $rel_model, $rel_col ) = ['', ''];
+                        if (! $list_type ) {
+                            $col = $app->db->column( 'column' )->get_by_key(
+                                                    ['name' => $key,
+                                                     'table_id' => $table->id ] );
+                            if (! $col->id ) continue;
+                            $rel_model = $col->options;
+                            $_table = $app->db->column( 'table' )->get_by_key(
+                                                            ['name' => $rel_model ] );
+                            if (! $_table->id ) continue;
+                            $rel_col = $_table->primary;
+                        } else {
+                            $props = explode( ':', $list_type );
+                            if ( count( $props ) > 2 ) {
+                                $rel_model = $props[1];
+                                $rel_col = $props[2];
+                            }
+                        }
+                        if (! $rel_model || ! $rel_col ) continue;
+                        $rel_obj = $app->db->model( $rel_model )->new();
+                        foreach ( $conds as $val ) {
+                            $value = $values[ $i ];
+                            if ( count( $values ) > 2 ) {
+                                $r_cond[ $op ] = [ 'and' => $value ];
+                            } else {
+                                $r_cond[ $op ] = $value;
+                            }
+                            ++$i;
+                        }
+                        $rel_objs = $rel_obj->load( [ $rel_col => $r_cond ] );
+                        if ( is_array( $rel_objs ) && !empty( $rel_objs ) ) {
+                            $rel_ids = [];
+                            foreach ( $rel_objs as $_obj ) {
+                                $rel_ids[] = (int) $_obj->id;
+                            }
+                            if ( $type === 'relation' ) {
+                                $rel_terms = ['to_id'    => ['IN' => $rel_ids ],
+                                              'to_obj'   => $rel_model,
+                                              'from_obj' => $model ];
+                                $relations =
+                                    $app->db->model( 'relation' )->load( $rel_terms );
+                                if ( is_array( $relations ) && !empty( $relations ) ) {
+                                    $from_ids = [];
+                                    foreach ( $relations as $rel ) {
+                                        $from_ids[] = (int) $rel->from_id;
+                                    }
+                                    $from_ids = array_unique( $from_ids );
+                                    $terms['id'] = ['IN' => $from_ids ];
+                                } else {
+                                    $terms['id'] = 0; // No object found.
+                                }
+                            } else {
+                                $terms[ $key ] = ['IN' => $rel_ids ];
+                            }
+                        } else {
+                            $terms['id'] = 0;  // No object found.
+                        }
+                    } else {
+                        foreach ( $conds as $val ) {
+                            $value = $values[ $i ];
+                            $op = $op_map[ $val ];
+                            if ( count( $values ) > 2 ) {
+                                $cond[ $op ] = [ 'and' => $value ];
+                            } else {
+                                $cond[ $op ] = $value;
+                            }
+                            ++$i;
+                        }
+                        $conditions[ $key ] = $cond;
+                    }
+                }
+            }
+            foreach ( $conditions as $col => $cond ) {
+                $terms[ $col ] = $cond;
+            }
+            if (! $_filter_id && $filter_name = $app->param( '_save_filter_name' ) ) {
+                $filter_terms = ['user_id' => $app->user()->id,
+                                 'workspace_id' => $workspace_id,
+                                 'key'   => $model,
+                                 'value' => $filter_name,
+                                 'kind'  => 'list_filter'];
+                $filter_terms['data'] = json_encode( $filter_params );
+                $filter = $app->db->model( 'option' )->get_by_key( $filter_terms );
+                $filter->save();
+                $app->ctx->vars['current_filter_id'] = $filter->id;
+                $app->ctx->vars['current_filter_name'] = $filter_name;
+            }
+        }
     }
 
     function save_filter_tag ( &$cb, $app, &$obj ) {
@@ -3582,4 +3801,5 @@ class Prototype {
         if ( $this->logging ) error_log( date( 'Y-m-d H:i:s T', time() ) .
             "\t" . $msg . "\n", 3, $this->log_path . 'error.log' );
     }
+
 }

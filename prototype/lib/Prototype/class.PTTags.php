@@ -2,6 +2,101 @@
 
 class PTTags {
 
+    function init_tags () {
+        $app = Prototype::get_instance();
+        if ( $app->init_tags ) return;
+        $ctx = $app->ctx;
+        $tables = $app->db->model( 'table' )->load( ['template_tags' => 1] );
+        $block_relations = [];
+        $function_relations = [];
+        $function_date = [];
+        $workspace_tags = [];
+        $alias = [];
+        $tags = $this;
+        foreach ( $tables as $table ) {
+            $plural = strtolower( $table->plural );
+            $plural = preg_replace( '/[^a-z]/', '' , $plural );
+            $ctx->register_tag( $plural, 'block', 'hdlr_objectloop', $tags );
+            $ctx->stash( 'blockmodel_' . $plural, $table->name );
+            $scheme = $app->get_scheme_from_db( $table->name );
+            $columns = $scheme['column_defs'];
+            $locale = $scheme['locale']['default'];
+            $edit_properties = $scheme['edit_properties'];
+            $relations = isset( $scheme['relations'] ) ? $scheme['relations'] : [];
+            $obj = $app->db->model( $table->name )->new();
+            foreach ( $columns as $key => $props ) {
+                if (! isset( $relations[ $key ] ) ) {
+                    $label = strtolower( $locale[ $key ] );
+                    $label = preg_replace( '/[^a-z]/', '' , $label );
+                    $tag_name = str_replace( '_', '', $key );
+                    if ( $props['type'] === 'datetime' ) {
+                        $function_date[] = $table->name . $key;
+                    }
+                    if ( $key !== $tag_name ) {
+                        $alias[ $table->name . $tag_name ] = $table->name . $key;
+                    }
+                    $ctx->register_tag(
+                        $table->name . $tag_name, 'function', 'hdlr_get_objectcol', $tags );
+                    if ( $table->name === 'workspace' ) {
+                        $workspace_tags[] = $table->name . $tag_name;
+                    }
+                    if ( $label && $label != $tag_name ) {
+                        if (! $obj->has_column( $label ) ) {
+                            $ctx->register_tag(
+                                $table->name . $label,
+                                    'function', 'hdlr_get_objectcol', $tags );
+                            $alias[ $table->name . $label ] 
+                                = $table->name . $key;
+                        }
+                    }
+                    if ( $key === 'published_on' ) {
+                        $ctx->register_tag(
+                            $table->name . 'date', 'function',
+                                                'hdlr_get_objectcol', $tags );
+                            $alias[ $table->name . 'date'] 
+                                = $table->name . $key;
+                    }
+                }
+                if ( preg_match( '/(^.*)_id$/', $key, $mts ) ) {
+                    if ( isset( $edit_properties[ $key ] ) ) {
+                        $prop = $edit_properties[ $key ];
+                        if ( strpos( $prop, ':' ) !== false ) {
+                            $edit = explode( ':', $prop );
+                            if ( $edit[0] === 'relation' || $edit[0] === 'reference' ) {
+                                $ctx->register_tag( $table->name . $mts[1],
+                                    'function', 'hdlr_get_objectcol', $tags );
+                                $function_relations[ $table->name . $mts[1] ]
+                                    = [ $key, $table->name, $mts[1], $edit[2] ];
+                                $alias[ $table->name . $label ] = $table->name . $mts[1];
+                                if ( $key === 'user_id' ) {
+                                        $ctx->register_tag( $table->name . 'author',
+                                            'function', 'hdlr_get_objectcol', $tags );
+                                    $alias[ $table->name . 'author']
+                                        = $table->name . $mts[1];
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            foreach ( $relations as $key => $model ) {
+                $ctx->register_tag( $table->name . $key, 'block',
+                    'hdlr_get_relatedobjs', $tags );
+                $block_relations[ $table->name . $key ] = [ $key, $table->name, $model ];
+            }
+            if ( $table->taggable ) {
+                // TODO $table->name . 'iftagged'
+            }
+        }
+        $ctx->stash( 'workspace', $app->workspace() );
+        $ctx->stash( 'function_relations', $function_relations );
+        $ctx->stash( 'block_relations', $block_relations );
+        $ctx->stash( 'function_date', $function_date );
+        $ctx->stash( 'workspace_tags', $workspace_tags );
+        $ctx->stash( 'alias_functions', $alias );
+        $app->init_tags = true;
+    }
+
     function hdlr_tablehascolumn ( $args, $content, $ctx, $repeat, $counter ) {
         $app = $ctx->app;
         $column = $args['column'];
