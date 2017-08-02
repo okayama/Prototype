@@ -644,3 +644,7 @@ i.required {
 .object-metadata {
   margin-left: 10px;
 }
+
+.CodeMirror {
+    border: 1px solid #ccc !important;
+}
