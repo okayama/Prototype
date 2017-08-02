@@ -43,6 +43,9 @@ $(".query-box").keypress(function(e){
   <input class="query-box form-control mb-2 mr-sm-2 mb-sm-0 form-control-sm" name="query[]" type="text" value="<mt:var name="query" escape>" placeholder="<mt:trans phrase="Keyword">">
   <button class="search-btn btn btn-secondary search-button btn-sm" type="submit"><mt:trans phrase="Search"></button>
 </mt:setvarblock>
+<mt:setvarblock name="current_filter">
+<mt:if name="current_filter_name"><span class="current-filter"> ( <mt:trans phrase="Current Filter"> : <a href="javascript:void(0);" data-toggle="modal" data-target="#filterOptions"><mt:var name="current_filter_name" escape></a> - <a href="<mt:var name="this_url">&amp;_detach_filter=1"><mt:trans phrase="Detach"></a> )</span></mt:if>
+</mt:setvarblock>
 
 <mt:var name="sortable" setvar="_sortable">
 <mt:trans phrase="ascend" setvar="order_asc">
@@ -103,6 +106,7 @@ $(".query-box").keypress(function(e){
 <mt:if name="query">
   <div class="full">
   <mt:var name="search_box">
+  <mt:var name="current_filter">
   </div>
 <script>
 var in_search = false;
@@ -136,7 +140,7 @@ $('#dialog-cancel-btn').click(function(){
 <mt:if name="_per_page">
   <mt:var name="search_box">
 </mt:if>
-<mt:if name="current_filter_name"><span class="current-filter"> (<mt:trans phrase="Current Filter"> : <a href="javascript:void(0);" data-toggle="modal" data-target="#filterOptions"><mt:var name="current_filter_name" escape></a>)</span></mt:if>
+<mt:var name="current_filter">
 </td>
 <td class="pagination-col">
 <mt:if name="_per_page">
@@ -329,7 +333,6 @@ $('#dialog-cancel-btn').click(function(){
         <mt:var name="value" trim_to="80+...">
       </mt:if>
       </a>
-
       <mt:if name="_has_mapping">
         <mt:objectvar name="permalink" escape setvar="permalink">
         <mt:if name="permalink">

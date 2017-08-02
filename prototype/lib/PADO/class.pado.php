@@ -698,6 +698,7 @@ class PADOBaseModel {
                             if ( preg_match( $regex, $op, $matchs ) ) {
                                 $op = strtoupper( $matchs[ 1 ] );
                                 if ( is_array( $var ) ) {
+                                    $var = array_change_key_case( $var, CASE_UPPER );
                                     $_and_or = strtoupper( key( $var ) );
                                     $_and_or = ltrim( $and_or, '-' );
                                     if ( $_and_or !== 'AND' && $_and_or !== 'OR' ) {
@@ -705,7 +706,7 @@ class PADOBaseModel {
                                     }
                                     $var = $var[ $_and_or ];
                                 } else {
-                                    $_and_or = 'and';
+                                    $_and_or = 'AND';
                                 }
                                 if ( $stm ) $stm .= $_and_or;
                                 $stm .= " {$key} {$op} ? ";
@@ -760,6 +761,7 @@ class PADOBaseModel {
             $sql .= $opt;
         }
         if ( $pado->debug === 3 ) $pado->debugPrint( $sql );
+        if ( $pado->debug === 3 ) var_dump( $vals );
         $db = $pado->db;
         $callback = ['name' => 'pre_load', 'sql' => $sql,
                      'values' => $vals, 'method' => $method ];

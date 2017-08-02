@@ -69,7 +69,7 @@ class Prototype {
                                 'aiff', 'aifc', 'au', 'snd', 'ogg', 'wma', 'm4a'];
 
     protected $methods       = ['view', 'save', 'delete', 'upload', 'save_order',
-                                'display_options', 'get_json', 'export_scheme',
+                                'display_options', 'get_columns_json', 'export_scheme',
                                 'recover_password', 'save_hierarchy', 'delete_filter'];
 
     public $callbacks        = ['pre_save'     => [], 'post_save'   => [],
@@ -322,7 +322,6 @@ class Prototype {
         if ( $app->mode !== 'start_recover' 
              && $app->mode !== 'recover_password' && ! $app->is_login() )
             return $app->__mode( 'login' );
-        // $this->app = $this;
         $mode = $app->mode;
         if ( $model = $app->param( '_model' ) ) {
             $table = $app->get_table( $model );
@@ -519,6 +518,9 @@ class Prototype {
         $scheme = $app->get_scheme_from_db( $model );
         $user = $app->user();
         $screen_id = $app->param( '_screen_id' );
+        $ctx->vars['has_status'] = $table->has_status;
+        $ctx->vars['max_status'] = $app->max_status( $user, $model );
+        $ctx->vars['status_published'] = $app->status_published( $model );
         if ( $type === 'list' ) {
             if (! $app->param( 'dialog_view' ) ) {
                 if (! $app->can_do( $model, 'list' ) ) {
@@ -650,10 +652,10 @@ class Prototype {
                 }
             }
             $query = $app->param( 'query' );
-            // todo Search or Filter
             $terms = [];
             if ( is_array( $query ) ) {
-                $q = $query[0] ? $query[0] : $query[1];
+                $q = $query[0] ? $query[0] : '';
+                if (! $q && isset( $query[1] ) ) $q = $query[1];
                 if ( $q ) {
                     $args['and_or'] = 'or';
                     $ctx->vars['query'] = $q;
@@ -667,14 +669,14 @@ class Prototype {
                         foreach ( $qs as $s ) {
                             $s = $db->escape_like( $s, 1, 1 );
                             if (! $counter ) {
-                                $conditions[] = ['like' => $s ];
+                                $conditions[] = ['LIKE' => $s ];
                             } else {
-                                $conditions[] = ['like' => ['or' => $s ] ];
+                                $conditions[] = ['LIKE' => ['or' => $s ] ];
                             }
                             $counter++;
                         }
                     } else {
-                        $conditions = ['like' => $db->escape_like( $q, 1, 1 ) ];
+                        $conditions = ['LIKE' => $db->escape_like( $q, 1, 1 ) ];
                     }
                     foreach ( $cols as $col ) {
                         if ( $obj->has_column( $col ) )
@@ -885,7 +887,6 @@ class Prototype {
                 $app->error( 'Permission denied.' );
             }
             $ctx->vars['can_create'] = 1;
-            $ctx->vars['max_status'] = $app->max_status( $user, $model );
             $ctx->stash( 'current_context', $model );
             if ( $app->get_permalink( $obj, true ) ) {
                 $ctx->vars['has_mapping'] = 1;
@@ -920,10 +921,10 @@ class Prototype {
         if (! empty( $urlmapping ) ) {
             $urlmapping = $urlmapping[0];
             if ( $has_map ) return $urlmapping;
-            if ( $fi = $app->db->model( 'fileinfo' )->get_by_key(
+            if ( $ui = $app->db->model( 'urlinfo' )->get_by_key(
                 ['urlmapping' => $urlmapping->id, 'model' => $table->name,
-                 'type' => 'archive', 'object_id' => $obj->id ] ) ) {
-                return $fi->url;
+                 'class' => 'archive', 'object_id' => $obj->id ] ) ) {
+                return $ui->url;
             }
         }
         return false;
@@ -957,7 +958,6 @@ class Prototype {
     }
 
     function can_do ( $model, $action, $obj = null  ) {
-        // create, edit, list, delete
         $app = Prototype::get_instance();
         $table = $app->get_table( $model );
         if (! $app->workspace() ) {
@@ -996,7 +996,7 @@ class Prototype {
             }
         } else if ( $action === 'edit' || $action === 'save' || $action === 'delete' ) {
             list( $name, $range ) = ['', ''];
-            if (! $obj->id ) {
+            if (! $obj || ! $obj->id ) {
                 $name = 'can_create_' . $model;
             } else {
                 $range = 'can_update_all_' . $model;
@@ -1164,6 +1164,15 @@ class Prototype {
         if ( $option && $option->id ) {
             if ( $option->user_id == $app->user()->id && $option->kind == 'list_filter'
                 && $option->key == $app->param( '_model' ) ) {
+                $workspace_id = $app->workspace() ? $app->workspace()->id : 0;
+                $filter_primary = ['key' => $option->key, 'user_id' => $app->user()->id,
+                                   'workspace_id' => $workspace_id,
+                                   'kind'  => 'list_filter_primary',
+                                   'object_id' => $option->id ];
+                $primary = $app->db->model( 'option' )->get_by_key( $filter_primary );
+                if ( $primary->id ) {
+                    $primary->remove();
+                }
                 $res = $option->remove();
                 echo json_encode( ['result' => $res ] );
                 exit();
@@ -1322,8 +1331,8 @@ class Prototype {
         return $upload_dir;
     }
 
-    function get_json ( $app ) {
-        // todo permission
+    function get_columns_json ( $app ) {
+        $app->validate_magic();
         $model = $app->param( '_model' );
         $scheme = $app->get_scheme_from_db( $model );
         header( 'Content-type: application/json' );
@@ -1331,7 +1340,7 @@ class Prototype {
     }
 
     function export_scheme ( $app ) {
-        // todo permission
+        $app->validate_magic();
         $model = $app->param( 'name' );
         $scheme = $app->get_scheme_from_db( $model );
         $table = $app->get_table( $model );
@@ -1400,7 +1409,7 @@ class Prototype {
         $app_path = $app->site_path;
         $app_url  = $app->site_url;
         if ( $site_path !== $app_path || $site_url !== $app_url ) {
-            $app->rebuild_fileinfo( $site_url, $site_path );
+            $app->rebuild_urlinfo( $site_url, $site_path );
         }
         $app->redirect( $app->admin_url . '?__mode=config&saved=1'
                          . $app->workspace_param );
@@ -1726,6 +1735,7 @@ class Prototype {
                 $file_path = str_replace( '/', DS, $file_path );
                 $url = $base_url . '/'. $extra_path . $file;
                 if (! $table->revisable || ! $obj->rev_type ) {
+                    // todo check timestamp
                     $app->publish( $file_path, $obj, $key, $mime_type );
                 }
                 if ( isset( $changed_cols[ $key ] ) ) {
@@ -1809,9 +1819,7 @@ class Prototype {
                 $meta_rev->save();
             }
             if ( $as_revision ) $id = $original->id;
-            // TODO Clone Children
         }
-        // TODO Duplicate ( Check Unique Cols)
         $add_return_args = '';
         if ( $app->param( '_apply_to_master' ) ) {
             $add_return_args = '&apply_to_master=1';
@@ -1952,7 +1960,7 @@ class Prototype {
                 $magic = $app->param( "{$key}-magic" );
                 if ( $magic ) {
                     $sess = $db->model( 'session' )
-                        ->get_by_key( ['name' => $magic,
+                               ->get_by_key( ['name' => $magic,
                                        'user_id' => $app->user()->id, 'kind' => 'UP'] );
                     if ( $sess->id ) {
                         $obj->$key( $sess->data );
@@ -2289,7 +2297,7 @@ class Prototype {
         foreach ( $meta_objs as $meta ) {
             if (! $meta->remove() ) $error = true;
         }
-        if ( $model === 'fileinfo' ) {
+        if ( $model === 'urlinfo' ) {
             if ( $obj->is_published && $obj->file_path ) {
                 $file_path = $obj->file_path;
                 $file_path = str_replace( '/', DS, $file_path );
@@ -2298,7 +2306,7 @@ class Prototype {
                 }
             }
         } else {
-            $fi_objs = $db->model( 'fileinfo' )->load(
+            $url_objs = $db->model( 'urlinfo' )->load(
                 ['model' => $model, 'object_id' => $obj->id ] );
             if ( $model === 'urlmapping' || $model === 'template' ) {
                 $map_ids = [];
@@ -2312,12 +2320,12 @@ class Prototype {
                     }
                 }
                 if (! empty( $map_ids ) ) {
-                    $_fi_objs = $db->model( 'fileinfo' )->load(
+                    $_url_objs = $db->model( 'urlinfo' )->load(
                         ['urlmapping_id' => ['IN' => $map_ids ] ] );
-                    $fi_objs = array_merge( $fi_objs, $_fi_objs );
+                    $url_objs = array_merge( $url_objs, $_url_objs );
                 }
             }
-            foreach ( $fi_objs as $fi ) {
+            foreach ( $url_objs as $fi ) {
                 if ( $fi->is_published && $fi->file_path ) {
                     $file_path = $fi->file_path;
                     $file_path = str_replace( '/', DS, $file_path );
@@ -2438,6 +2446,25 @@ class Prototype {
     }
 
     function pre_listing ( &$cb, $app, &$terms, &$extra ) {
+        $model = $app->param( '_model' );
+        $workspace_id = $app->workspace() ? $app->workspace()->id : 0;
+        $user_id = $app->user()->id;
+        $filter_primary = ['key' => $model, 'user_id' => $user_id,
+                           'workspace_id' => $workspace_id,
+                           'kind'  => 'list_filter_primary'];
+        $op_map = ['gt' => '>', 'lt' => '<', 'eq' => '=', 'ne' => '!=', 'ge' => '>=',
+                   'le' => '<=', 'ct' => 'LIKE', 'nc' => 'NOT LIKE', 'bw' => 'LIKE',
+                   'ew' => 'LIKE'];
+        $primary = $app->db->model( 'option' )->get_by_key( $filter_primary );
+        if ( $app->param( '_detach_filter' ) ) {
+            $app->param( '_filter', 0 );
+            if ( $primary->id ) $primary->remove();
+        } else {
+            if ( $primary->id ) {
+                $app->param( '_filter', 1 );
+                $app->param( '_filter_id', $primary->object_id );
+            }
+        }
         if ( $app->param( '_filter' ) ) {
             $params = $app->param();
             $conditions = [];
@@ -2445,16 +2472,11 @@ class Prototype {
             $table  = $cb['table'];
             $column_defs = $scheme['column_defs'];
             $list_props = $scheme['list_properties'];
-            $model = $app->param( '_model' );
             $obj = $app->db->model( $model )->new();
-            $op_map = ['gt' => '>', 'lt' => '<', 'eq' => '=', 'ne' => '!=', 'ge' => '>=',
-                       'le' => '<=', 'ct' => 'LIKE', 'nc' => 'NOT LIKE', 'bw' => 'LIKE',
-                       'ew' => 'LIKE'];
             $_filter_id = $app->param( '_filter_id' );
-            $workspace_id = $app->workspace() ? $app->workspace()->id : 0;
             if ( $_filter_id ) $_filter_id = (int) $_filter_id;
             if ( $_filter_id ) {
-                $filter_terms = ['user_id' => $app->user()->id,
+                $filter_terms = ['user_id' => $user_id,
                                  'workspace_id' => $workspace_id,
                                  'id'    => $_filter_id,
                                  'key'   => $model,
@@ -2463,6 +2485,11 @@ class Prototype {
                 if (! $filter->id ) {
                     $terms['id'] = 0;
                     return;
+                }
+                if ( $primary->object_id != $filter->id ) {
+                    $primary->object_id( $filter->id );
+                    $primary->data( $filter->data );
+                    $primary->save();
                 }
                 $filter_val = $filter->data;
                 $app->ctx->vars['current_filter_id'] = $_filter_id;
@@ -2504,6 +2531,7 @@ class Prototype {
                             }
                         }
                         $_values[] = $value;
+                        $i++;
                     }
                     $values = $_values;
                     $list_type = isset( $list_props[ $key ] ) ? $list_props[ $key ] : '';
@@ -2567,15 +2595,22 @@ class Prototype {
                             $terms['id'] = 0;  // No object found.
                         }
                     } else {
+                        $cnt = 0;
                         foreach ( $conds as $val ) {
-                            $value = $values[ $i ];
+                            $value = $values[ $cnt ];
                             $op = $op_map[ $val ];
-                            if ( count( $values ) > 2 ) {
-                                $cond[ $op ] = [ 'and' => $value ];
+                            if ( $cnt ) {
+                                $orig = [];
+                                $orig[] = $cond;
+                                if (! is_array( $orig ) ) {
+                                    $orig = [ $orig ];
+                                }
+                                $orig[] = [ $op => [ 'and' => $value ] ];
+                                $cond = $orig;
                             } else {
                                 $cond[ $op ] = $value;
                             }
-                            ++$i;
+                            ++$cnt;
                         }
                         $conditions[ $key ] = $cond;
                     }
@@ -2593,6 +2628,11 @@ class Prototype {
                 $filter_terms['data'] = json_encode( $filter_params );
                 $filter = $app->db->model( 'option' )->get_by_key( $filter_terms );
                 $filter->save();
+                if ( $primary->object_id != $filter->id ) {
+                    $primary->object_id( $filter->id );
+                    $primary->data( $filter->data );
+                    $primary->save();
+                }
                 $app->ctx->vars['current_filter_id'] = $filter->id;
                 $app->ctx->vars['current_filter_name'] = $filter_name;
             }
@@ -2665,7 +2705,7 @@ class Prototype {
         $original = $cb['original'];
         if ( $original->site_url !== $obj->site_url ||
             $original->site_path !== $obj->site_path ) {
-            $app->rebuild_fileinfo( $obj->site_url, $obj->site_path, $obj );
+            $app->rebuild_urlinfo( $obj->site_url, $obj->site_path, $obj );
         }
     }
 
@@ -2705,13 +2745,13 @@ class Prototype {
         }
     }
 
-    function rebuild_fileinfo ( $url, $path, $workspace = null ) {
+    function rebuild_urlinfo ( $url, $path, $workspace = null ) {
         $terms = $workspace ? ['workspace_id' => $workspace->id ] : null;
         $app = Prototype::get_instance();
         if ( $terms ) {
-            $files = $app->db->model( 'fileinfo' )->load_iter( $terms );
+            $files = $app->db->model( 'urlinfo' )->load_iter( $terms );
         } else {
-            $files = $app->db->model( 'fileinfo' )->load_iter();
+            $files = $app->db->model( 'urlinfo' )->load_iter();
         }
         foreach ( $files as $fi ) {
             $map = $fi->urlmapping;
@@ -2787,7 +2827,7 @@ class Prototype {
         if (! $table ) return;
         $db = $app->db;
         $ctx = $app->ctx;
-        $fi = $db->model( 'fileinfo' )->get_by_key( ['file_path' => $file_path ] );
+        $fi = $db->model( 'urlinfo' )->get_by_key( ['file_path' => $file_path ] );
         if (! $mime_type ) {
             // TODO
         }
@@ -2835,7 +2875,7 @@ class Prototype {
                 $unique = false;
                 while ( $unique === false ) {
                     $rename = $basename . '-' . $i . '.' . $file_ext;
-                    $exists = $db->model( 'fileinfo' )->get_by_key(
+                    $exists = $db->model( 'urlinfo' )->get_by_key(
                         ['file_path' => $rename ] );
                     if (! $exists->id ) {
                         $unique = true;
@@ -2853,9 +2893,9 @@ class Prototype {
             }
         }
         if (! $fi_exists ) {
-            $old = $db->model( 'fileinfo' )->get_by_key(
+            $old = $db->model( 'urlinfo' )->get_by_key(
                 ['model' => $table->name, 'key' => $key, 'object_id' => $obj->id,
-                 'type' => $type, 'urlmapping_id' => $urlmapping_id ] );
+                 'class' => $type, 'urlmapping_id' => $urlmapping_id ] );
             $fi->id( $old->id );
             $old_path = $old->file_path;
             $old_path = str_replace( '/', DS, $old_path );
@@ -2884,7 +2924,7 @@ class Prototype {
                           'urlmapping_id' => (int) $urlmapping_id,
                           'file_path' => $file_path,
                           'mime_type' => $mime_type,
-                          'type' => $type,
+                          'class' => $type,
                           'relative_path' => '%r' . DS . $relative_path,
                           'workspace_id' => $obj->workspace_id ] );
         if ( $obj->has_column( 'status' ) ) {
@@ -3176,7 +3216,6 @@ class Prototype {
         $app = Prototype::get_instance();
         $is_valid = true;
         if (! $app->user() ) $is_valid = false;
-        if ( $app->request_method !== 'POST' ) $is_valid = false;
         $token = $app->param( 'magic_token' );
         if (! $token || $token !== $app->current_magic ) $is_valid = false;
         if (! $is_valid ) return $app->error( 'Invalid request.' );
@@ -3386,7 +3425,7 @@ class Prototype {
                 return $app->admin_url . $params;
             }
             if ( is_object( $obj ) ) {
-                $fi = $app->db->model( 'fileinfo' )->get_by_key(
+                $fi = $app->db->model( 'urlinfo' )->get_by_key(
                     ['model' => $model, 'object_id' => $obj_id, 'key' => $name ]
                 );
                 return $fi->url;

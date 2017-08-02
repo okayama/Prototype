@@ -14,6 +14,7 @@
             <input type="hidden" name="_filter" value="1">
             <input type="hidden" name="_filter_id" id="_filter_id" value="">
             <input type="hidden" name="_save_filter_name" id="_save_filter_name" value="">
+            <input type="hidden" name="_detach_filter" id="_detach_filter" value="">
             <input type="hidden" name="magic_token" value="<mt:var name="magic_token">">
           <mt:if name="workspace_id">
             <input type="hidden" name="workspace_id" value="<mt:var name="workspace_id">">
@@ -41,8 +42,8 @@
                   </div>
                 </div>
                 <div class="row form-group new-filter-elem hidden">
-                  <div class="col-md-3"><b><mt:trans phrase="Columns"></b></div>
-                  <div class="col-md-9 form-inline" style="white-space:nowrap">
+                  <div class="col-md-3" style="float:left;"><b><mt:trans phrase="Columns"></b></div>
+                  <div class="col-md-9 form-inline">
                     <select name="filters-selector" class="form-control" id="filters-selector">
                     <mt:loop name="filter_options">
                     <mt:if name="__first__">
@@ -62,7 +63,7 @@
                           <div class="form-inline">
                             <span class="selector_col"></span> 
                             &nbsp; <mt:trans phrase=" is ">
-                              <input type="text" class="form-control form-control-sm" name="">
+                              <input type="number" class="form-control form-control-sm" name="">
                             <select name="" class="form-control form-control-sm">
                               <option value="eq"><mt:trans phrase="Equal"></option>
                               <option value="lt"><mt:trans phrase="Less than"></option>
@@ -82,10 +83,10 @@
                             &nbsp; <mt:trans phrase=" is ">
                               <input type="text" class="form-control form-control-sm" name="">
                             <select name="" class="form-control form-control-sm">
-                              <option value="eq"><mt:trans phrase="Equal"></option>
-                              <option value="ne"><mt:trans phrase="Not Equal"></option>
                               <option value="ct"><mt:trans phrase="Contains"></option>
                               <option value="nc"><mt:trans phrase="Not Contains"></option>
+                              <option value="eq"><mt:trans phrase="Equal"></option>
+                              <option value="ne"><mt:trans phrase="Not Equal"></option>
                               <option value="bw"><mt:trans phrase="Begin with"></option>
                               <option value="ew"><mt:trans phrase="End with"></option>
                             </select>
@@ -108,13 +109,35 @@
                             </button>
                           </div>
                         </li>
+                        <li class="list-group-item hidden" id="selector-tmpl-status">
+                          <div class="form-inline">
+                            <span class="selector_col"></span> 
+                            &nbsp; <mt:trans phrase=" is ">
+                            <mt:if name="status_published" eq="4">
+                            <mt:trans phrase="Draft,Review,Reserved,Publish,Unpublished (End)" split="," setvar="status_label">
+                            <mt:else>
+                            <mt:trans phrase="Disable,Enable" split="," setvar="status_label">
+                            </mt:if>
+                            <select class="form-control short" name="">
+                            <mt:for from="1" to="$max_status">
+                              <mt:if name="__counter__" le="$max_status">
+                                <option value="<mt:var name="__counter__">"><mt:var name="$status_label[$__index__]"></option>
+                              </mt:if>
+                            </mt:for>
+                            </select>
+                            <input type="text" name="" value="eq">
+                            <button type="button" class="btn btn-secondary btn-sm close-sm detach-filter" aria-label="<mt:trans phrase="Detach">">
+                              <span aria-hidden="true">&times;</span>
+                            </button>
+                          </div>
+                        </li>
                       </ul>
                     </div>
                   </div>
                 </div>
             </div>
             <div class="modal-footer">
-              <button type="submit" class="btn btn-secondary" id="detach-filter-button"><mt:trans phrase="Detach Filter"></button>
+              <button type="submit" class="btn btn-secondary delete-filter-elem hidden" id="detach-filter-button"><mt:trans phrase="Detach Filter"></button>
               <button type="button" class="btn btn-secondary" data-dismiss="modal"><mt:trans phrase="Cancel"></button>
               <button type="submit" class="btn btn-primary new-filter-elem hidden" id="filter-apply"><mt:trans phrase="Apply"></button>
               <button type="submit" class="btn btn-secondary new-filter-elem hidden" id="filter-save-apply"><mt:trans phrase="Save and Apply"></button>
@@ -207,6 +230,7 @@ $('#filter-save-apply').click(function(){
 });
 $('#detach-filter-button').click(function(){
     $('#filters-list').remove();
+    $('#_detach_filter').val(1);
 });
 $('#filter-add-button').click(function(){
     var selected_col = $('#filters-selector').val();
@@ -214,7 +238,9 @@ $('#filter-add-button').click(function(){
     var sel_label = $('[name=filters-selector] option:selected').text();
     sel_class = sel_class.replace( 'coltype_', '' );
     var filter_tmpl = $('#selector-tmpl-text');
-    if ( sel_class == 'int' || sel_class == 'tinyint' ) {
+    if ( selected_col == 'status' ) {
+        filter_tmpl = $('#selector-tmpl-status');
+    } else if ( sel_class == 'int' || sel_class == 'tinyint' ) {
         filter_tmpl = $('#selector-tmpl-int');
     } else if ( sel_class == 'datetime' ) {
         filter_tmpl = $('#selector-tmpl-date');
@@ -223,8 +249,13 @@ $('#filter-add-button').click(function(){
     addSelecter.removeClass('hidden');
     addSelecter.removeAttr('id');
     addSelecter.children('div').children('span').html(sel_label);
-    addSelecter.children('div').children('input').attr('name', '_filter_value_' + selected_col + '[]');
-    addSelecter.children('div').children('select').attr('name', '_filter_cond_' + selected_col + '[]');
+    if ( selected_col == 'status' ) {
+        addSelecter.children('div').children('input').attr('name', '_filter_cond_' + selected_col + '[]');
+        addSelecter.children('div').children('select').attr('name', '_filter_value_' + selected_col + '[]');
+    } else {
+        addSelecter.children('div').children('input').attr('name', '_filter_value_' + selected_col + '[]');
+        addSelecter.children('div').children('select').attr('name', '_filter_cond_' + selected_col + '[]');
+    }
     $('#filter-parant-block').show();
     $('#filter-parant-block').css('border','none');
     addSelecter.show();

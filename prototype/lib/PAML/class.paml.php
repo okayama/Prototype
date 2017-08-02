@@ -628,13 +628,12 @@ class PAML {
                 $v = isset( $vars[ $v ] ) ? $vars[ $v ] : '';
                 if ( isset( $idx ) ) {
                     $args[ $k ] = isset( $v[ $idx ] ) ? $v[ $idx ] : '';
-                    if ( strpos( $idx ,'$' ) === 0 )
-                  {
-                    $idx = ltrim( $idx, '$' );
-                    $idx = isset( $vars[ $idx ] ) ? $vars[ $idx ] : '';
-                    if ( is_array( $v ) && isset( $v[ $idx ] ) )
-                        $args[ $k ] = ['__array__' => $v[ $idx ] ];
-                  }
+                    if ( strpos( $idx ,'$' ) === 0 ) {
+                        $idx = ltrim( $idx, '$' );
+                        $idx = isset( $vars[ $idx ] ) ? $vars[ $idx ] : '';
+                        if ( is_array( $v ) && isset( $v[ $idx ] ) )
+                            $args[ $k ] = ['__array__' => $v[ $idx ] ];
+                    }
                 } else {
                     $args[ $k ] = $this->setup_args( $v );
                 }

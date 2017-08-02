@@ -853,8 +853,8 @@ $('#add_col').click( function(){
     focusobj.focus();
 });
 function set_column_names( model, type, column ) {
-    $('#_detail_' + type + '_column option').remove(); // todo magic_token
-    $.getJSON('<mt:var name="script_uri">?__mode=get_json&_model=' + model, function( data ) {
+    $('#_detail_' + type + '_column option').remove();
+    $.getJSON('<mt:var name="script_uri">?magic_token=<mt:var name="magic_token">&__mode=get_columns_json&_model=' + model, function( data ) {
         $.each( data.labels, function( key, val ) {
             var sele = false;
             if ( key == column ) {

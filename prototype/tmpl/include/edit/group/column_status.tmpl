@@ -1,6 +1,4 @@
 <mt:var name="options" split="," setvar="_options_loop">
-
-<mt:if name="has_mapping">
 <div class="row form-group">
   <mt:count name="_options_loop" setvar="status_type">
   <mt:if name="status_type" eq="2">
@@ -37,7 +35,6 @@
 </mt:tablehascolumn>
   </div>
 </div>
-</mt:if>
 <mt:tablehascolumn column="published_on">
 <div class="row form-group">
   <div class="col-lg-2">

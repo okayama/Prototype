@@ -100,5 +100,10 @@
         "modified_on": "datetime",
         "modified_by": "reference:user:name",
         "workspace_id": "reference:workspace:name"
+    },
+    "locale": {
+        "default": {
+            "status": "Archive"
+        }
     }
 }

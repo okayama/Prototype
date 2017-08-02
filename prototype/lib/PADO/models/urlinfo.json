@@ -1,6 +1,6 @@
 {
-    "label"    : "File",
-    "plural"   : "Files",
+    "label"    : "URL",
+    "plural"   : "URLs",
     "display"  : 1,
     "order"    : 110,
     "primary"  : "relative_path",
@@ -12,19 +12,24 @@
             "size": "11",
             "not_null": 1
         },
-        "relative_path": {
+        "url": {
             "type": "string",
             "size": "255",
             "not_null": 1
-        },
-        "type": {
-            "type": "string",
-            "size": "255"
         },
         "relative_url": {
             "type": "string",
             "size": "255",
             "not_null": 1
+        },
+        "relative_path": {
+            "type": "string",
+            "size": "255",
+            "not_null": 1
+        },
+        "class": {
+            "type": "string",
+            "size": "255"
         },
         "model": {
             "type": "string",
@@ -60,11 +65,6 @@
             "type": "tinyint",
             "size": "4"
         },
-        "url": {
-            "type": "string",
-            "size": "255",
-            "not_null": 1
-        },
         "mime_type": {
             "type": "string",
             "size": "255"
@@ -78,7 +78,7 @@
     "indexes": {
         "PRIMARY": "id",
         "relative_path": "relative_path",
-        "type": "type",
+        "class": "class",
         "relative_url": "relative_url",
         "model": "model",
         "key": "key",
@@ -99,11 +99,29 @@
         "file_path",
         "url"
     ],
+    "autoset": [
+        "id",
+        "url",
+        "relative_url",
+        "relative_path",
+        "class",
+        "model",
+        "key",
+        "object_id",
+        "archive_type",
+        "archive_date",
+        "urlmapping_id",
+        "file_path",
+        "is_published",
+        "mime_type",
+        "workspace_id"
+    ],
     "edit_properties": {
         "id": "hidden",
-        "relative_path": "primary",
-        "type": "text_short",
+        "url": "primary",
+        "class": "text_short",
         "relative_url": "text",
+        "relative_path": "primary",
         "model": "text",
         "key": "text_short",
         "object_id": "number",
@@ -112,23 +130,17 @@
         "urlmapping_id": "reference:urlmapping:name",
         "file_path": "text",
         "is_published": "checkbox",
-        "url": "text",
         "mime_type": "text_short",
         "workspace_id": "reference:workspace:name"
     },
     "list_properties": {
         "id": "number",
-        "relative_path": "primary",
-        "type": "text_short",
-        "relative_url": "text",
+        "url": "primary",
+        "class": "text_short",
         "model": "text",
-        "key": "text_short",
-        "object_id": "number",
         "archive_type": "text",
         "urlmapping_id": "reference:urlmapping:name",
-        "file_path": "text",
         "is_published": "checkbox",
-        "url": "text",
         "mime_type": "text_short",
         "workspace_id": "reference:workspace:name"
     }
