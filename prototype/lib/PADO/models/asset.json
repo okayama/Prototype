@@ -8,6 +8,7 @@
     "menu_type": 1,
     "taggable" : 1,
     "revisable": 1,
+    "start_end": 1,
     "template_tags": 1,
     "display_space": 1,
     "display_dashboard": 1,
@@ -176,6 +177,9 @@
     },
     "relations": {
         "tags": "tag"
+    },
+    "options": {
+        "status": "Draft,Review,Reserved,Publish,Unpublished (End)"
     },
     "edit_properties": {
         "id": "hidden",

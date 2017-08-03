@@ -301,7 +301,7 @@ $('#dialog-cancel-btn').click(function(){
     <mt:setvarblock name="include_path">include/list/column_<mt:var name="column_name">.tmpl</mt:setvarblock>
     <mt:include file="$include_path" setvar="alt_value">
   </mt:unless>
-  <td class="<mt:if name="__name__" eq="id">id </mt:if><mt:if name="list_prop" eq="number"><mt:unless name="sort_order"><mt:if name="column_name" ne="status">num</mt:if></mt:unless></mt:if>">
+  <td class="<mt:if name="__name__" eq="id">id </mt:if><mt:if name="list_prop" eq="number"><mt:unless name="sort_order"><mt:if name="column_name" ne="status">num</mt:if></mt:unless></mt:if> list-col<mt:if name="list" eq="primary">-primary</mt:if>">
   <mt:if name="alt_value">
     <mt:var name="alt_value">
   <mt:else>

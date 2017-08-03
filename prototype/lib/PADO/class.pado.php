@@ -299,10 +299,30 @@ class PADO {
 */
     function clear_cache ( $model = null ) {
         if ( $model ) {
-            $pado->cache[ $model ] = [];
+            $this->cache[ $model ] = [];
         } else {
-            $pado->cache = [];
+            $this->cache = [];
             self::$stash = [];
+        }
+    }
+
+/**
+ * Drop Table
+ * 
+ * @param  string $model : Name of model.
+*/
+    function drop ( $model ) {
+        if (! $this->can_drop ) return;
+        $table = $this->prefix . $model;
+        $_model = $this->model( $model )->new();
+        if ( is_array( $this->scheme[ $model ] ) && count( $this->scheme[ $model ] ) ) {
+            $sql = "DROP TABLE {$table}";
+            $sth = $this->db->prepare( $sql );
+            try {
+                return $sth->execute( $vals );
+            } catch ( PDOException $e ) {
+                trigger_error( 'PDOException: ' . $e->getMessage() . ", {$sql}" );
+            }
         }
     }
 

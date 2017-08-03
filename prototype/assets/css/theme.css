@@ -11,6 +11,7 @@ html {
 body {
   padding-top: 50px;
   margin-bottom: 90px;
+  font-size: 95%;
 }
 
 body.dialog {
@@ -139,7 +140,7 @@ input[type="radio"] {
 }
 
 .nav-top {
-  padding: 2px 16px 2px 17px;
+  padding: 0px 16px 0px 17px;
 }
 
  /* Placeholders */
@@ -333,7 +334,7 @@ select.short {
   padding: 0px 0px 1px 17px;
   background-color: #333 !important;
   color: white !important;
-  margin-top: -9px;
+  margin-top: -13px;
 }
 
 .workspace-bar ul {
@@ -625,6 +626,19 @@ input.time {
   margin-top: -5px;
   font-size: 75%;
   height: 18px;
+}
+
+.list-col {
+  max-width: 130px;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+}
+
+.list-col-primary {
+  max-width: 300px;
+  min-width: 130px;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
 }
 
 i.required {
