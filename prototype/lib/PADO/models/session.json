@@ -39,6 +39,10 @@
         "extradata": {
             "type": "blob"
         },
+        "workspace_id": {
+            "type": "int",
+            "size": 11
+        },
         "start": {
             "type": "int",
             "size": 11
@@ -55,6 +59,7 @@
         "key": "key",
         "value": "value",
         "kind": "kind",
+        "workspace_id": "workspace_id",
         "start": "start",
         "expires": "expires"
     }

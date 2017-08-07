@@ -41,6 +41,7 @@ class Prototype {
     public    $use_plugin    = true;
     public    $plugin_paths  = [];
     public    $plugin_order  = 0; // 0=asc, 1=desc
+    public    $class_paths   = [];
     public    $components    = [];
     public    $remote_ip;
     public    $user;
@@ -57,7 +58,7 @@ class Prototype {
     public    $request_method;
     public    $current_magic;
     public    $temp_dir      = '/tmp';
-    public    $registory     = [];
+    public    $registry      = [];
 
     public    $videos        = ['mov', 'avi', 'qt', 'mp4', 'wmv',
                                 '3gp', 'asx', 'mpg', 'flv', 'mkv', 'ogm'];
@@ -69,18 +70,20 @@ class Prototype {
                                 'aiff', 'aifc', 'au', 'snd', 'ogg', 'wma', 'm4a'];
 
     protected $methods       = ['view', 'save', 'delete', 'upload', 'save_order',
-                                'display_options', 'get_columns_json', 'export_scheme',
-                                'recover_password', 'save_hierarchy', 'delete_filter'];
+                                'list_action', 'display_options', 'get_columns_json',
+                                'export_scheme', 'recover_password', 'save_hierarchy',
+                                'delete_filter'];
 
-    public $callbacks        = ['pre_save'     => [], 'post_save'   => [],
+    public    $callbacks     = ['pre_save'     => [], 'post_save'   => [],
                                 'pre_delete'   => [], 'post_delete' => [],
                                 'save_filter'  => [], 'delete_filter'=> [],
                                 'pre_listing'  => [] ];
 
-    public $disp_option;
-    public $workspace_param;
-    public $return_args = [];
+    public    $disp_option;
+    public    $workspace_param;
+    public    $return_args   = [];
     protected $core_tags;
+    private   $encrypt_key   = 'prototype-default-encrypt-key';
 
     static function get_instance() {
         return self::$app;
@@ -193,11 +196,11 @@ class Prototype {
         if ( file_exists( $locale ) )
             $this->dictionary[ $lang ]
                 = json_decode( file_get_contents( $locale ), true );
-        if ( $this->param( 'setup_db' ) ) {
-            require_once( 'class.PTUpgrader.php' );
-            $upgrader = new PTUpgrader;
-            $upgrader->setup_db( true );
-        }
+        // if ( $this->param( 'setup_db' ) ) {
+            // require_once( 'class.PTUpgrader.php' );
+            // $upgrader = new PTUpgrader;
+            // $upgrader->setup_db( true );
+        // }
         $sql = "SHOW TABLES LIKE '{$prefix}table'";
         $sth = $db->db->prepare( $sql );
         $sth->execute();
@@ -236,10 +239,11 @@ class Prototype {
             $ctx->vars['site_path'] = $this->site_path;
         }
         if ( $this->mode !== 'upgrade' ) {
-            $db->logging = 1;
-            $ctx->logging = 1;
+            $db->logging = true;
+            $ctx->logging = true;
             $ctx->log_path = __DIR__ . DS . 'log' . DS;
         }
+        $this->components['Core'] = $this;
         if ( $this->use_plugin ) {
             if ( ( $plugin_d = __DIR__ . DS . 'plugins' ) && is_dir( $plugin_d ) )
                 $this->plugin_paths[] = $plugin_d;
@@ -271,14 +275,14 @@ class Prototype {
                             if ( $key === 'methods' ) {
                                 $methods = $r[ $key ];
                                 foreach ( $methods as $meth => $prop ) {
-                                    $this->registory['methods'][ $meth ] = $prop;
+                                    $this->registry['methods'][ $meth ] = $prop;
                                 }
                             } else {
-                                $this->registory[ $key ][] = $props;
+                                $this->registry[ $key ][] = $props;
                             }
                         }
                     } else if ( $extension === 'php' ) {
-                        $this->components[ pathinfo( $f )['filename'] ] = $_plugin;
+                        $this->class_paths[ pathinfo( $f )['filename'] ] = $_plugin;
                     }
                 }
             }
@@ -287,10 +291,10 @@ class Prototype {
 
     function init_callbacks ( $model, $action ) {
         $app = Prototype::get_instance();
-        $registory = $app->registory;
-        $callbacks = isset( $registory['callbacks'] ) ? $registory['callbacks'] : [];
+        $registry = $app->registry;
+        $callbacks = isset( $registry['callbacks'] ) ? $registry['callbacks'] : [];
         if (! isset( $callbacks ) ) return;
-        $components = $app->components;
+        $components = $app->class_paths;
         foreach ( $callbacks as $callback ) {
             $_model = key( $callback );
             if ( $_model !== $model ) continue;
@@ -304,9 +308,10 @@ class Prototype {
                         trigger_error( "Plugin '{$_plugin}' load failed!" );
                     $plugin = $callback['component'];
                     if ( class_exists( $plugin ) ) {
-                        $plugin = new $plugin();
+                        $component = new $plugin();
+                        $app->components[ $plugin ] = $component;
                         $app->register_callback( $model, $kind, $callback['method'],
-                                                        $callback['priority'], $plugin );
+                                                 $callback['priority'], $component );
                     }
                 }
             }
@@ -364,20 +369,21 @@ class Prototype {
         if ( in_array( $mode, $app->methods ) ) {
             return $app->$mode( $app );
         }
-        $registory = $app->registory;
-        if ( isset( $registory['methods'] ) && isset( $registory['methods'][ $mode ] ) ) {
-            $meth = $registory['methods'][ $mode ];
-            $component = $meth['component'];
-            $components = $app->components;
+        $registry = $app->registry;
+        if ( isset( $registry['methods'] ) && isset( $registry['methods'][ $mode ] ) ) {
+            $meth = $registry['methods'][ $mode ];
+            $plugin = $meth['component'];
+            $components = $app->class_paths;
             if ( isset( $components[ $component ] ) ) {
                 $_plugin = $components[ $component ];
                 if (!include( $_plugin ) )
                     trigger_error( "Plugin '{$_plugin}' load failed!" );
-                if ( class_exists( $component ) ) {
-                    $plugin = new $component();
+                if ( class_exists( $plugin ) ) {
+                    $component = new $plugin();
+                    $app->components[ $plugin ] = $component;
                     $method = $meth['method'];
-                    if ( method_exists( $plugin, $method ) ) {
-                        return $plugin->$method( $app );
+                    if ( method_exists( $component, $method ) ) {
+                        return $component->$method( $app );
                     }
                 }
             }
@@ -385,9 +391,84 @@ class Prototype {
         return $app->__mode( $mode );
     }
 
+    function component ( $component ) {
+        $components = $this->components;
+        if ( isset( $components[ $component ] ) ) return $components[ $component ];
+        $component_paths = $this->component_paths;
+        if ( isset( $component_paths[ $component ] ) ) {
+            $_plugin = $component_paths[ $component ];
+            if (!include( $_plugin ) )
+                trigger_error( "Plugin '{$_plugin}' load failed!" );
+            if ( class_exists( $component ) ) {
+                $class = new $component();
+                $this->components[ $component ] = $class;
+                return $class;
+            }
+        }
+        foreach ( $components as $class ) {
+            if ( strtolower( $class ) == strtolower( $component ) ) {
+                return $components[ $class ];
+            }
+        }
+        return null;
+    }
+
     function register_callback ( $model, $kind, $meth, $priority, $obj = null ) {
         if (! $priority ) $priority = 5;
         $this->callbacks[ $kind ][ $model ][ $priority ][] = [ $meth, $obj ];
+    }
+
+    function get_registries ( $model, $name, &$registries = [] ) {
+        $app = Prototype::get_instance();
+        $registry = $app->registry;
+        $table = $app->get_table( $model );
+        $plugin_registries = [];
+        if ( isset( $registry[ $name ] ) ) {
+            $_registries = $registry[ $name ];
+            foreach ( $_registries as $props ) {
+                $registry_model = key( $props );
+                if ( $model != $registry_model ) continue;
+                $method = $props[ $model ];
+                $prop = $method[ key( $method ) ];
+                $order = isset( $prop['order'] ) ? $prop['order'] : 5;
+                $order = (int) $order;
+                $methods = isset( $plugin_registries[ $order ] )
+                         ? $plugin_registries[ $order ] : [];
+                $methods[] = $method;
+                $plugin_registries[ $order ] = $methods;
+            }
+        }
+        if (! empty( $plugin_registries ) ) {
+            ksort( $plugin_registries, SORT_NUMERIC );
+            $components = $app->class_paths;
+            foreach ( $plugin_registries as $methods ) {
+                foreach ( $methods as $method ) {
+                    $method_name = key( $method );
+                    $prop = $method[ $method_name ];
+                    $input = isset( $prop['input'] ) ? (int) $prop['input'] : 0;
+                    $label = $prop['label'];
+                    $plugin = $prop['component'];
+                    $_plugin = $components[ $plugin ];
+                    $meth = $prop['method'];
+                    if (!include( $_plugin ) )
+                        trigger_error( "Plugin '{$_plugin}' load failed!" );
+                    if ( class_exists( $plugin ) ) {
+                        $component = new $plugin();
+                        $label = $app->translate( $label, null, $component );
+                        $registries[] = ['name'  => $method_name,
+                                         'input' => $input,
+                                         'label' => $label,
+                                         'component' => $component,
+                                         'method' => $meth ];
+                    }
+                }
+            }
+        }
+        $all_registries = [];
+        foreach ( $registries as $reg ) {
+            $all_registries[ $reg['name'] ] = $reg;
+        }
+        return $all_registries;
     }
 
     function __mode ( $mode ) {
@@ -496,6 +577,7 @@ class Prototype {
         $table = $app->get_table( $model );
         $workspace = $app->workspace();
         $workspace_id = $workspace ? $workspace->id : 0;
+        $registry = $app->registry;
         if (! $app->param( 'dialog_view' ) && $workspace ) {
             if (! $table->display_space ) {
                 if ( $model !== 'workspace' || 
@@ -521,8 +603,11 @@ class Prototype {
         $user = $app->user();
         $screen_id = $app->param( '_screen_id' );
         $ctx->vars['has_status'] = $table->has_status;
-        $ctx->vars['max_status'] = $app->max_status( $user, $model );
-        $ctx->vars['status_published'] = $app->status_published( $model );
+        $max_status = $app->max_status( $user, $model );
+        $status_published = $app->status_published( $model );
+        $ctx->vars['max_status'] = $max_status;
+        $ctx->vars['status_published'] = $status_published;
+        $ctx->vars['_default_status'] = $table->default_status;
         if ( $type === 'list' ) {
             if (! $app->param( 'dialog_view' ) ) {
                 if (! $app->can_do( $model, 'list' ) ) {
@@ -537,7 +622,7 @@ class Prototype {
             $labels = $scheme['labels'];
             $search_props = [];
             $sort_props   = [];
-            $filter_plops = [];
+            $filter_props = [];
             $indexes = $scheme['indexes'];
             foreach ( $column_defs as $col => $prop ) {
                 if ( $prop['type'] === 'string' || $prop['type'] === 'text' ) {
@@ -559,7 +644,7 @@ class Prototype {
                             $type = 'reference';
                         }
                     }
-                    $filter_plops[] = ['name' => $col, 'type' => $type,
+                    $filter_props[] = ['name' => $col, 'type' => $type,
                         'label' => $labels[ $col ] ];
                 }
             }
@@ -567,7 +652,7 @@ class Prototype {
                 $ctx->vars['page_title'] =
                     $app->translate( 'List Revisions of %s', $label );
                 $list_option->number = 0;
-                $cols = 'rev_note,rev_changed,rev_diff,rev_type,modified_by,modified_on';
+                $cols = 'rev_note,rev_diff,rev_changed,rev_type,modified_by,modified_on';
                 if (! $app->param( 'dialog_view') ) {
                     $cols = $table->primary . ',' . $cols;
                 }
@@ -605,7 +690,20 @@ class Prototype {
             $ctx->vars['search_options'] = $search_props;
             $ctx->vars['sort_options']   = $sort_props;
             $ctx->vars['order_options']  = $order_props;
-            $ctx->vars['filter_options'] = $filter_plops;
+            $ctx->vars['filter_options'] = $filter_props;
+            if (! $app->param( 'revision_select' ) ) {
+                require_once( LIB_DIR . 'Prototype' . DS . 'class.PTListActions.php' );
+                $actions_class = new PTListActions();
+                $list_actions = [];
+                $actions_class->get_list_actions( $model, $list_actions );
+                if (! empty( $list_actions ) ) $ctx->vars['list_actions'] = $list_actions;
+                require_once( LIB_DIR . 'Prototype' . DS . 'class.PTSystemFilters.php' );
+                $filters_class = new PTSystemFilters();
+                $system_filters = [];
+                $filters_class->get_system_filters( $model, $system_filters );
+                if (! empty( $system_filters ) )
+                    $ctx->vars['system_filters'] = $system_filters;
+            }
             $sortable = false;
             if ( in_array( 'order', $user_options ) && $table->sortable ) {
                 $ctx->vars['sortable'] = 1;
@@ -621,6 +719,7 @@ class Prototype {
             $args['offset'] = $offset;
             $sort = $app->param( 'sort' );
             $obj = $db->model( $model );
+            $_colprefix = $obj->_colprefix;
             $relations = isset( $scheme['relations'] ) ? $scheme['relations'] : [];
             if ( $sort && !$obj->has_column( $sort ) ) $sort = null;
             if ( $sort && isset( $relations[ $sort ] ) ) {
@@ -653,45 +752,39 @@ class Prototype {
                     }
                 }
             }
-            $query = $app->param( 'query' );
             $terms = [];
-            if ( is_array( $query ) ) {
-                $q = $query[0] ? $query[0] : '';
-                if (! $q && isset( $query[1] ) ) $q = $query[1];
-                if ( $q ) {
-                    $args['and_or'] = 'or';
-                    $ctx->vars['query'] = $q;
-                    $cols = array_keys( $search_props );
-                    $q = trim( $q );
-                    $q = mb_convert_kana( $q, 's', $app->encoding );
-                    $qs = preg_split( "/\s+/", $q );
-                    $conditions = [];
-                    $counter = 0;
-                    if ( count( $qs ) > 1 ) {
-                        foreach ( $qs as $s ) {
-                            $s = $db->escape_like( $s, 1, 1 );
-                            if (! $counter ) {
-                                $conditions[] = ['LIKE' => $s ];
-                            } else {
-                                $conditions[] = ['LIKE' => ['or' => $s ] ];
-                            }
-                            $counter++;
+            if ( $q = $app->param( 'query' ) ) {
+                $args['and_or'] = 'or';
+                $ctx->vars['query'] = $q;
+                $cols = array_keys( $search_props );
+                $q = trim( $q );
+                $q = mb_convert_kana( $q, 's', $app->encoding );
+                $qs = preg_split( "/\s+/", $q );
+                $conditions = [];
+                $counter = 0;
+                if ( count( $qs ) > 1 ) {
+                    foreach ( $qs as $s ) {
+                        $s = $db->escape_like( $s, 1, 1 );
+                        if (! $counter ) {
+                            $conditions[] = ['LIKE' => $s ];
+                        } else {
+                            $conditions[] = ['LIKE' => ['or' => $s ] ];
                         }
-                    } else {
-                        $conditions = ['LIKE' => $db->escape_like( $q, 1, 1 ) ];
+                        $counter++;
                     }
-                    foreach ( $cols as $col ) {
-                        if ( $obj->has_column( $col ) )
-                            $terms[ $col ] = $conditions;
-                    }
+                } else {
+                    $conditions = ['LIKE' => $db->escape_like( $q, 1, 1 ) ];
+                }
+                foreach ( $cols as $col ) {
+                    if ( $obj->has_column( $col ) )
+                        $terms[ $col ] = $conditions;
                 }
             }
             $extra = null;
             if ( $ws = $app->workspace() ) {
                 if ( isset( $column_defs['workspace_id'] ) ) {
                     $ws_id = (int) $ws->id;
-                    $pfx = $obj->_colprefix;
-                    $extra = " AND {$pfx}workspace_id={$ws_id}";
+                    $extra = " AND {$_colprefix}workspace_id={$ws_id}";
                 }
             }
             if ( $table->revisable ) {
@@ -699,8 +792,6 @@ class Prototype {
                     $terms['rev_object_id'] = (int) $rev_object_id;
                     $app->return_args['revision_select'] = 1;
                     $app->return_args['rev_object_id'] = $rev_object_id;
-                } else {
-                    $terms['rev_type'] = 0;
                 }
             }
             if ( $user->is_superuser ) {
@@ -722,7 +813,7 @@ class Prototype {
                     if ( $has_deadline ) $status_published--;
                 }
                 $extra_permission = [];
-                $_colprefix = $obj->_colprefix;
+                // $_colprefix = $obj->_colprefix;
                 if ( empty( $permissions ) ) {
                     $app->error( 'Permission denied.' );
                 }
@@ -776,10 +867,18 @@ class Prototype {
                          'scheme' => $scheme, 'table' => $table ];
             $app->run_callbacks( $callback, $model, $terms, $extra );
             $extra = $callback['extra'];
-            $args  = $callback['args'];
+            if ( $table->revisable ) {
+                if (! $app->param( 'rev_object_id' ) ) {
+                    $extra .= " AND {$_colprefix}rev_type=0";
+                }
+            }
+            $args = $callback['args'];
             $objects = $obj->load( $terms, $args, '*', $extra );
             unset( $args['limit'], $args['offset'] );
-            $count = $obj->count( $terms, $args );
+            $count = $obj->count( $terms, $args, '*', $extra );
+            $filter_params = ['terms' => $terms, 'args' => $args, 'extra' => $extra ];
+            $filter_params = json_encode( $filter_params );
+            $ctx->vars['filter_params'] = $app->encrypt( $filter_params );
             $ctx->vars['objects'] = $objects;
             $ctx->vars['object_count'] = $count;
             $ctx->vars['list_limit'] = $limit;
@@ -811,7 +910,6 @@ class Prototype {
             $ctx->vars['display_options'] = $display_options;
             $ctx->vars['_auditing'] = $table->auditing;
             $ctx->vars['_revisable'] = $table->revisable;
-            $ctx->vars['_default_status'] = $table->default_status;
             if ( $key = $app->param( 'view' ) ) {
                 if ( $db->model( $model )->has_column( $key ) ) {
                     if ( $screen_id ) {
@@ -910,6 +1008,22 @@ class Prototype {
         exit();
     }
 
+    function list_action ( $app ) {
+        require_once( LIB_DIR . 'Prototype' . DS . 'class.PTListActions.php' );
+        $actions_class = new PTListActions();
+        return $actions_class->list_action( $app );
+    }
+
+    function encrypt ( $text, $key = '', $meth = 'AES-128-ECB' ) {
+        if (! $key ) $key = $this->encrypt_key;
+        return bin2hex( openssl_encrypt( $text, $meth, $key ) );
+    }
+
+    function decrypt ( $text, $key = '', $meth = 'AES-128-ECB' ) {
+        if (! $key ) $key = $this->encrypt_key;
+        return openssl_decrypt( hex2bin( $text ), $meth, $key );
+    }
+
     function get_permalink ( $obj, $has_map = false ) {
         $app = Prototype::get_instance();
         $table = $app->get_table( $obj->_model );
@@ -962,11 +1076,13 @@ class Prototype {
     function can_do ( $model, $action, $obj = null  ) {
         $app = Prototype::get_instance();
         $table = $app->get_table( $model );
-        if (! $app->workspace() ) {
-            if ( $table->space_child && $action === 'edit' ) {
-                return false;
-            } else if ( $action === 'list' && !$table->display_system ) {
-                return false;
+        if ( $app->mode !== 'list_action' ) {
+            if (! $app->workspace() ) {
+                if ( $table->space_child && $action === 'edit' ) {
+                    return false;
+                } else if ( $action === 'list' && !$table->display_system ) {
+                    return false;
+                }
             }
         }
         if ( $app->user()->is_superuser ) return true;
@@ -2099,14 +2215,16 @@ class Prototype {
         return [ $title, $start, $end ];
     }
 
-    function set_relations ( $args, $ids ) {
+    function set_relations ( $args, $ids, $add_only = false ) {
         $app = Prototype::get_instance();
         $is_changed = false;
-        $relations = $app->db->model( 'relation' )->load( $args );
-        foreach ( $relations as $rel ) {
-            if (! in_array( $rel->to_id, $ids ) ) {
-                $rel->remove();
-                $is_changed = true;
+        if (! $add_only ) {
+            $relations = $app->db->model( 'relation' )->load( $args );
+            foreach ( $relations as $rel ) {
+                if (! in_array( $rel->to_id, $ids ) ) {
+                    $rel->remove();
+                    $is_changed = true;
+                }
             }
         }
         $i = 0;
@@ -2203,7 +2321,7 @@ class Prototype {
             */
             $error = false;
             $app->remove_object( $obj, $table, $error );
-            // TODO error
+            // todo error
             $i++;
             if ( $model !== 'log' ) {
                 $nickname = $app->user()->nickname;
@@ -2338,8 +2456,7 @@ class Prototype {
 
     function get_table ( $model ) {
         $app = Prototype::get_instance();
-        if ( $app->stash( 'table_' . $model ) )
-                    return $app->stash( 'table:' . $model );
+        if ( $app->stash( 'table_' . $model ) ) return $app->stash( 'table:' . $model );
         $table = $app->db->model( 'table' )->load( ['name' => $model ], ['limit' => 1] );
         if ( is_array( $table ) && !empty( $table ) ) {
             $table = $table[0];
@@ -2352,26 +2469,43 @@ class Prototype {
     function get_object ( $model ) {
         $app = Prototype::get_instance();
         if (! $model ) $model = $app->param( '_model' );
-        $obj = $app->db->model( $model )->new();
+        $db = $app->db;
+        $obj = $db->model( $model )->new();
         $scheme = $app->get_scheme_from_db( $model );
         if (! $scheme ) return null;
         $primary = $scheme['indexes']['PRIMARY'];
-        $id = $app->param( $primary );
-        if ( is_array( $id ) ) {
-            array_walk( $id, function( &$id ) {
+        $objects = [];
+        if ( $app->param( 'all_selected' ) ) {
+            $filter_params = json_decode(
+                $app->decrypt( $app->param( 'filter_params' ) ), true );
+            $terms = $filter_params['terms'];
+            $args = $filter_params['args'];
+            $extra = $filter_params['extra'];
+            $original = "'${extra}'";
+            $quoted = $db->quote( $extra );
+            if ( $original != $quoted ) {
+                return $app->error( 'Invalid request.' );
+            }
+            $objects = $obj->load( $terms, $args, '*', $extra );
+        } else {
+            $id = $app->param( 'id' );
+            if ( is_array( $id ) ) {
+                array_walk( $id, function( &$id ) {
+                    $id = (int) $id;
+                });
+                $objects = $obj->load( ['id' => ['IN' => $id ] ] );
+                return $objects;
+            } else if ( $id ) {
+                if ( $app->stash( $model . ':' . $id ) ) 
+                    return $app->stash( $model . ':' . $id );
                 $id = (int) $id;
-            });
-            $objects = $obj->load( ['id' => ['IN' => $id ] ] );
-            return $objects;
-        } else if ( $id ) {
-            if ( $app->stash( $model . ':' . $id ) ) 
-                return $app->stash( $model . ':' . $id );
-            $id = (int) $id;
-            $obj = $obj->load( $id );
-            if ( is_object( $obj ) )
-                $app->stash( $model . ':' . $id, $obj );
+                $obj = $obj->load( $id );
+                if ( is_object( $obj ) )
+                    $app->stash( $model . ':' . $id, $obj );
+            }
+            return isset( $obj ) ? $obj : null;
         }
-        return isset( $obj ) ? $obj : null;
+        return null;
     }
 
     function forward ( $model, $error = '' ) {
@@ -2403,7 +2537,12 @@ class Prototype {
         } else {
             if ( $primary->id ) {
                 $app->param( '_filter', 1 );
-                $app->param( '_filter_id', $primary->object_id );
+                if ( $primary->object_id ) {
+                    $app->param( '_filter_id', $primary->object_id );
+                } else if ( $primary->value == 'system_filter' ) {
+                    $app->param( 'select_system_filters', $primary->extra );
+                    $app->param( '_system_filters_option', $primary->data );
+                }
             }
         }
         if ( $app->param( '_filter' ) ) {
@@ -2414,168 +2553,197 @@ class Prototype {
             $column_defs = $scheme['column_defs'];
             $list_props = $scheme['list_properties'];
             $obj = $app->db->model( $model )->new();
-            $_filter_id = $app->param( '_filter_id' );
-            if ( $_filter_id ) $_filter_id = (int) $_filter_id;
-            if ( $_filter_id ) {
-                $filter_terms = ['user_id' => $user_id,
-                                 'workspace_id' => $workspace_id,
-                                 'id'    => $_filter_id,
-                                 'key'   => $model,
-                                 'kind'  => 'list_filter'];
-                $filter = $app->db->model( 'option' )->get_by_key( $filter_terms );
-                if (! $filter->id ) {
-                    $terms['id'] = 0;
-                    return;
-                }
-                if ( $primary->object_id != $filter->id ) {
-                    $primary->object_id( $filter->id );
-                    $primary->data( $filter->data );
-                    $primary->save();
-                }
-                $filter_val = $filter->data;
-                $app->ctx->vars['current_filter_id'] = $_filter_id;
-                $app->ctx->vars['current_filter_name'] = $filter->value;
-                if ( $filter_val ) {
-                    $filters = json_decode( $filter_val, true );
-                    foreach ( $filters as $filter => $values ) {
-                        $params[ $filter ] = $values;
+            $system_filter = $app->param( 'select_system_filters' );
+            $apply_filter = false;
+            if ( $system_filter ) {
+                $filters_option = $app->param( '_system_filters_option' );
+                require_once( LIB_DIR . 'Prototype' . DS . 'class.PTSystemFilters.php' );
+                $filters_class = new PTSystemFilters();
+                $filters = $filters_class->get_system_filters( $model, $system_filters );
+                if ( isset( $filters[ $system_filter ] ) ) {
+                    $filter = $filters[ $system_filter ];
+                    $app->ctx->vars['current_filter_name'] = $filter['label'];
+                    $app->ctx->vars['current_system_filter'] = $filter['name'];
+                    $component = $filter['component'];
+                    $meth = $filter['method'];
+                    if ( method_exists( $component, $meth ) ) {
+                        $option = isset( $filters_option ) ? $filters_option : '';
+                        $component->$meth( $app, $terms, $model, $option );
+                        $primary->object_id( 0 );
+                        $primary->value( 'system_filter' );
+                        $primary->extra( $filter['name'] );
+                        $primary->data( $filters_option );
+                        $primary->save();
+                        $apply_filter = true;
                     }
+                }
+            } else {
+                $_filter_id = $app->param( '_filter_id' );
+                if ( $_filter_id ) $_filter_id = (int) $_filter_id;
+                if ( $_filter_id ) {
+                    $filter_terms = ['user_id' => $user_id,
+                                     'workspace_id' => $workspace_id,
+                                     'id'    => $_filter_id,
+                                     'key'   => $model,
+                                     'kind'  => 'list_filter'];
+                    $filter = $app->db->model( 'option' )->get_by_key( $filter_terms );
+                    if (! $filter->id ) {
+                        $terms['id'] = 0;
+                        return;
+                    }
+                    if ( $primary->object_id != $filter->id ) {
+                        $primary->object_id( $filter->id );
+                        $primary->data( $filter->data );
+                        $primary->save();
+                    }
+                    $filter_val = $filter->data;
+                    $app->ctx->vars['current_filter_id'] = $_filter_id;
+                    $app->ctx->vars['current_filter_name'] = $filter->value;
+                    if ( $filter_val ) {
+                        $filters = json_decode( $filter_val, true );
+                        foreach ( $filters as $filter => $values ) {
+                            $params[ $filter ] = $values;
+                        }
+                    }
+                    $apply_filter = true;
                 }
             }
-            $filter_params = [];
-            foreach ( $params as $key => $conds ) {
-                if ( strpos( $key, '_filter_cond_' ) === 0 ) {
-                    $filter_params[ $key ] = $conds;
-                    $cond = [];
-                    $key = preg_replace( '/^_filter_cond_/', '', $key );
-                    $values = isset( $params['_filter_value_' . $key ] )
-                            ? $params['_filter_value_' . $key ] : [];
-                    $filter_params[ '_filter_value_' . $key ] = $values;
-                    if (! isset( $column_defs[ $key ]['type'] ) ) continue;
-                    $type = $column_defs[ $key ]['type'];
-                    $i = 0;
-                    $_values = [];
-                    foreach ( $conds as $val ) {
-                        $value = $values[ $i ];
-                        if (! isset( $op_map[ $val ] ) ) continue;
-                        $op = $op_map[ $val ];
-                        if ( $type == 'datetime' ) {
-                            $value = $obj->db2ts( $value );
-                            $value = $obj->ts2db( $value );
-                        } else if ( $op === 'LIKE' ) {
-                            if ( $val === 'bw' ) {
-                                $value = $app->db->escape_like( $value, false, 1 );
-                            } elseif ( $val === 'ew' ) {
-                                $value = $app->db->escape_like( $value, 1, false );
-                            } else {
-                                $value = $app->db->escape_like( $value, 1, 1 );
-                            }
-                        }
-                        $_values[] = $value;
-                        $i++;
-                    }
-                    $values = $_values;
-                    $list_type = isset( $list_props[ $key ] ) ? $list_props[ $key ] : '';
-                    if ( $type === 'relation' || strpos( $list_type, ':' ) !== false ) {
-                        $_cond = [];
-                        list( $rel_model, $rel_col ) = ['', ''];
-                        if (! $list_type ) {
-                            $col = $app->db->column( 'column' )->get_by_key(
-                                                    ['name' => $key,
-                                                     'table_id' => $table->id ] );
-                            if (! $col->id ) continue;
-                            $rel_model = $col->options;
-                            $_table = $app->db->column( 'table' )->get_by_key(
-                                                            ['name' => $rel_model ] );
-                            if (! $_table->id ) continue;
-                            $rel_col = $_table->primary;
-                        } else {
-                            $props = explode( ':', $list_type );
-                            if ( count( $props ) > 2 ) {
-                                $rel_model = $props[1];
-                                $rel_col = $props[2];
-                            }
-                        }
-                        if (! $rel_model || ! $rel_col ) continue;
-                        $rel_obj = $app->db->model( $rel_model )->new();
+            if (! $apply_filter ) {
+                $filter_params = [];
+                foreach ( $params as $key => $conds ) {
+                    if ( strpos( $key, '_filter_cond_' ) === 0 ) {
+                        $filter_params[ $key ] = $conds;
+                        $cond = [];
+                        $key = preg_replace( '/^_filter_cond_/', '', $key );
+                        $values = isset( $params['_filter_value_' . $key ] )
+                                ? $params['_filter_value_' . $key ] : [];
+                        $filter_params[ '_filter_value_' . $key ] = $values;
+                        if (! isset( $column_defs[ $key ]['type'] ) ) continue;
+                        $type = $column_defs[ $key ]['type'];
+                        $i = 0;
+                        $_values = [];
                         foreach ( $conds as $val ) {
                             $value = $values[ $i ];
-                            if ( count( $values ) > 2 ) {
-                                $_cond[ $op ] = [ 'and' => $value ];
-                            } else {
-                                $_cond[ $op ] = $value;
-                            }
-                            ++$i;
-                        }
-                        $rel_objs = $rel_obj->load( [ $rel_col => $_cond ] );
-                        if ( is_array( $rel_objs ) && !empty( $rel_objs ) ) {
-                            $rel_ids = [];
-                            foreach ( $rel_objs as $_obj ) {
-                                $rel_ids[] = (int) $_obj->id;
-                            }
-                            if ( $type === 'relation' ) {
-                                $rel_terms = ['to_id'    => ['IN' => $rel_ids ],
-                                              'to_obj'   => $rel_model,
-                                              'from_obj' => $model ];
-                                $relations =
-                                    $app->db->model( 'relation' )->load( $rel_terms );
-                                if ( is_array( $relations ) && !empty( $relations ) ) {
-                                    $from_ids = [];
-                                    foreach ( $relations as $rel ) {
-                                        $from_ids[] = (int) $rel->from_id;
-                                    }
-                                    $from_ids = array_unique( $from_ids );
-                                    $terms['id'] = ['IN' => $from_ids ];
+                            if (! isset( $op_map[ $val ] ) ) continue;
+                            $op = $op_map[ $val ];
+                            if ( $type == 'datetime' ) {
+                                $value = $obj->db2ts( $value );
+                                $value = $obj->ts2db( $value );
+                            } else if ( $op === 'LIKE' ) {
+                                if ( $val === 'bw' ) {
+                                    $value = $app->db->escape_like( $value, false, 1 );
+                                } elseif ( $val === 'ew' ) {
+                                    $value = $app->db->escape_like( $value, 1, false );
                                 } else {
-                                    $terms['id'] = 0; // No object found.
+                                    $value = $app->db->escape_like( $value, 1, 1 );
+                                }
+                            }
+                            $_values[] = $value;
+                            $i++;
+                        }
+                        $values = $_values;
+                        $list_type = isset( $list_props[ $key ] ) ? $list_props[ $key ] : '';
+                        if ( $type === 'relation' || strpos( $list_type, ':' ) !== false ) {
+                            $_cond = [];
+                            list( $rel_model, $rel_col ) = ['', ''];
+                            if (! $list_type ) {
+                                $col = $app->db->column( 'column' )->get_by_key(
+                                                        ['name' => $key,
+                                                         'table_id' => $table->id ] );
+                                if (! $col->id ) continue;
+                                $rel_model = $col->options;
+                                $_table = $app->db->column( 'table' )->get_by_key(
+                                                                ['name' => $rel_model ] );
+                                if (! $_table->id ) continue;
+                                $rel_col = $_table->primary;
+                            } else {
+                                $props = explode( ':', $list_type );
+                                if ( count( $props ) > 2 ) {
+                                    $rel_model = $props[1];
+                                    $rel_col = $props[2];
+                                }
+                            }
+                            if (! $rel_model || ! $rel_col ) continue;
+                            $rel_obj = $app->db->model( $rel_model )->new();
+                            foreach ( $conds as $val ) {
+                                $value = $values[ $i ];
+                                if ( count( $values ) > 2 ) {
+                                    $_cond[ $op ] = [ 'and' => $value ];
+                                } else {
+                                    $_cond[ $op ] = $value;
+                                }
+                                ++$i;
+                            }
+                            $rel_objs = $rel_obj->load( [ $rel_col => $_cond ] );
+                            if ( is_array( $rel_objs ) && !empty( $rel_objs ) ) {
+                                $rel_ids = [];
+                                foreach ( $rel_objs as $_obj ) {
+                                    $rel_ids[] = (int) $_obj->id;
+                                }
+                                if ( $type === 'relation' ) {
+                                    $rel_terms = ['to_id'    => ['IN' => $rel_ids ],
+                                                  'to_obj'   => $rel_model,
+                                                  'from_obj' => $model ];
+                                    $relations =
+                                        $app->db->model( 'relation' )->load( $rel_terms );
+                                    if ( is_array( $relations ) && !empty( $relations ) ) {
+                                        $from_ids = [];
+                                        foreach ( $relations as $rel ) {
+                                            $from_ids[] = (int) $rel->from_id;
+                                        }
+                                        $from_ids = array_unique( $from_ids );
+                                        $terms['id'] = ['IN' => $from_ids ];
+                                    } else {
+                                        $terms['id'] = 0; // No object found.
+                                    }
+                                } else {
+                                    $terms[ $key ] = ['IN' => $rel_ids ];
                                 }
                             } else {
-                                $terms[ $key ] = ['IN' => $rel_ids ];
+                                $terms['id'] = 0;  // No object found.
                             }
                         } else {
-                            $terms['id'] = 0;  // No object found.
-                        }
-                    } else {
-                        $cnt = 0;
-                        foreach ( $conds as $val ) {
-                            $value = $values[ $cnt ];
-                            $op = $op_map[ $val ];
-                            if ( $cnt ) {
-                                $orig = [];
-                                $orig[] = $cond;
-                                if (! is_array( $orig ) ) {
-                                    $orig = [ $orig ];
+                            $cnt = 0;
+                            foreach ( $conds as $val ) {
+                                $value = $values[ $cnt ];
+                                $op = $op_map[ $val ];
+                                if ( $cnt ) {
+                                    $orig = [];
+                                    $orig[] = $cond;
+                                    if (! is_array( $orig ) ) {
+                                        $orig = [ $orig ];
+                                    }
+                                    $orig[] = [ $op => [ 'and' => $value ] ];
+                                    $cond = $orig;
+                                } else {
+                                    $cond[ $op ] = $value;
                                 }
-                                $orig[] = [ $op => [ 'and' => $value ] ];
-                                $cond = $orig;
-                            } else {
-                                $cond[ $op ] = $value;
+                                ++$cnt;
                             }
-                            ++$cnt;
+                            $conditions[ $key ] = $cond;
                         }
-                        $conditions[ $key ] = $cond;
                     }
                 }
-            }
-            foreach ( $conditions as $col => $cond ) {
-                $terms[ $col ] = $cond;
-            }
-            if (! $_filter_id && $filter_name = $app->param( '_save_filter_name' ) ) {
-                $filter_terms = ['user_id' => $app->user()->id,
-                                 'workspace_id' => $workspace_id,
-                                 'key'   => $model,
-                                 'value' => $filter_name,
-                                 'kind'  => 'list_filter'];
-                $filter_terms['data'] = json_encode( $filter_params );
-                $filter = $app->db->model( 'option' )->get_by_key( $filter_terms );
-                $filter->save();
-                if ( $primary->object_id != $filter->id ) {
-                    $primary->object_id( $filter->id );
-                    $primary->data( $filter->data );
-                    $primary->save();
+                foreach ( $conditions as $col => $cond ) {
+                    $terms[ $col ] = $cond;
                 }
-                $app->ctx->vars['current_filter_id'] = $filter->id;
-                $app->ctx->vars['current_filter_name'] = $filter_name;
+                if ( $filter_name = $app->param( '_save_filter_name' ) ) {
+                    $filter_terms = ['user_id' => $app->user()->id,
+                                     'workspace_id' => $workspace_id,
+                                     'key'   => $model,
+                                     'value' => $filter_name,
+                                     'kind'  => 'list_filter'];
+                    $filter_terms['data'] = json_encode( $filter_params );
+                    $filter = $app->db->model( 'option' )->get_by_key( $filter_terms );
+                    $filter->save();
+                    if ( $primary->object_id != $filter->id ) {
+                        $primary->object_id( $filter->id );
+                        $primary->data( $filter->data );
+                        $primary->save();
+                    }
+                    $app->ctx->vars['current_filter_id'] = $filter->id;
+                    $app->ctx->vars['current_filter_name'] = $filter_name;
+                }
             }
         }
     }
@@ -3444,6 +3612,11 @@ class Prototype {
             $extra_path = $obj->extra_path;
             $obj->extra_path( $app->sanitize_dir( $extra_path ) );
         }
+        if ( $obj->has_column( 'status' ) && ! $obj->status ) {
+            if ( $table = $app->get_table( $obj->_model ) ) {
+                $obj->status( $table->default_status );
+            }
+        }
         if ( $workspace = $app->workspace() ) {
             if ( $obj->has_column( 'workspace_id' ) ) {
                 $obj->workspace_id( $workspace->id );
@@ -3454,6 +3627,7 @@ class Prototype {
     function translate ( $phrase, $params = '', $component = null, $lang = null ) {
         $component = $component ? $component : $this;
         $lang = $lang ? $lang : $this->language;
+        if (! $lang ) $lang = 'default';
         $dict = isset( $component->dictionary ) ? $component->dictionary : null;
         if ( $dict && isset( $dict[ $lang ] ) && isset( $dict[ $lang ][ $phrase ] ) )
              $phrase = $dict[ $lang ][ $phrase ];

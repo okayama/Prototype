@@ -836,13 +836,12 @@ class PADOBaseModel {
 /**
  * Getting the count of a number of objects.
  * 
- * @param  array  $terms : The hash should have keys matching column names and the values
- *                         are the values for that column.
- * @return int    $count : Number of objects.
+ * @param             : See load method.
+ * @return int $count : Number of objects.
  */
-    function count ( $terms = [], $args = [] ) {
+    function count ( $terms = [], $args = [], $cols = '', $extra = '' ) {
         $args['count'] = true;
-        return $this->load( $terms, $args );
+        return $this->load( $terms, $args, $cols, $extra );
     }
 
 /**

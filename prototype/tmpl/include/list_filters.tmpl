@@ -16,13 +16,44 @@
             <input type="hidden" name="_save_filter_name" id="_save_filter_name" value="">
             <input type="hidden" name="_detach_filter" id="_detach_filter" value="">
             <input type="hidden" name="magic_token" value="<mt:var name="magic_token">">
+            <input type="hidden" name="_system_filters_option" value="" id="_system_filters_option">
           <mt:if name="workspace_id">
             <input type="hidden" name="workspace_id" value="<mt:var name="workspace_id">">
           </mt:if>
+          <mt:if name="request.dialog_view">
+            <input type="hidden" name="dialog_view" value="1">
+          </mt:if>
+          <mt:if name="request.target">
+            <input type="hidden" name="target" value="<mt:var name="request.target" escape>">
+            <input type="hidden" name="get_col" value="<mt:var name="request.get_col" escape>">
+            <input type="hidden" name="selected_ids" value="<mt:var name="request.selected_ids" escape>">
+            <input type="hidden" name="from_obj" value="<mt:var name="request.from_obj" escape>">
+          <mt:if name="request.select_add">
+            <input type="hidden" name="select_add" value="1">
+          </mt:if>
+          </mt:if>
             <div class="modal-body">
               <div class="container-fluid">
+                <mt:if name="system_filters">
                 <div class="row form-group">
-                  <div class="col-md-3"><b><mt:trans phrase="Your Filter"></b></div>
+                  <div class="col-md-3"><b><mt:trans phrase="System Filters"></b></div>
+                  <div class="col-md-9 form-inline">
+                    <mt:loop name="system_filters">
+                      <mt:if name="__first__">
+                      <select class="form-control" name="select_system_filters" id="select_system_filters">
+                        <option value=""><mt:trans phrase="(None selected)"></option>
+                      </mt:if>
+                        <option data-option="<mt:var name="option">" <mt:if name="current_system_filter" eq="$name">selected</mt:if> value="<mt:var name="name" escape>"><mt:var name="label" escape></option>
+                      <mt:if name="__last__">
+                        </select>
+                      <button type="submit" class="btn btn-primary" id="system_filter-apply-button"><mt:trans phrase="Apply"></button>
+                      </mt:if>
+                    </mt:loop>
+                  </div>
+                </div>
+                </mt:if>
+                <div class="row form-group">
+                  <div class="col-md-3"><b><mt:trans phrase="Your Filters"></b></div>
                   <div class="col-md-9 form-inline">
                       <select class="form-control" name="select-user_filters" id="select-user_filters">
                         <option value=""><mt:trans phrase="(None selected)"></option>
@@ -148,6 +179,14 @@
       </div>
     </div>
 <script>
+$('#system_filter-apply-button').click(function(){
+    if (! $('[name=select_system_filters] option:selected').val() ) {
+        alert('<mt:trans phrase="Filter not specified.">');
+        return false;
+    }
+    var filter_option = $('[name=select_system_filters] option:selected').attr('data-option');
+    $('#_system_filters_option').val( filter_option );
+});
 $('#filter-select-delete-button').click(function(){
     var filter_id = $('#select-user_filters').val();
     if ( filter_id == 'add_new_filter' || filter_id == '' ) {

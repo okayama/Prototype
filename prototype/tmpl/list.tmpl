@@ -1,11 +1,3 @@
-<mt:if name="request.dialog_view">
-<mt:include file="include/dialog_header.tmpl">
-<mt:setvar name="sortable" value="">
-<mt:else>
-<mt:include file="include/header.tmpl">
-</mt:if>
-
-<mt:setvarblock name="this_url"><mt:var name="script_uri">?__mode=view&amp;_type=list&amp;_model=<mt:var name="model"></mt:setvarblock>
 <mt:var name="sort_cond" value="">
 <mt:if name="request.sort">
 <mt:if name="request.direction">
@@ -15,17 +7,30 @@
 <mt:if name="request.query">
 <mt:setvarblock name="query_cond">&amp;query[]=<mt:var name="query" escape></mt:setvarblock>
 </mt:if>
-<mt:setvar name="__single_select" value="0">
-<mt:setvar name="__get_col" value="">
+<mt:setvar name="_single_select" value="0">
+<mt:setvar name="_get_col" value="">
 <mt:if name="request.dialog_view">
 <mt:if name="request.get_col">
-<mt:var name="request.get_col" setvar="__get_col">
+<mt:var name="request.get_col" setvar="_get_col">
 </mt:if>
 <mt:setvarblock name="dialog_param">&amp;dialog_view=1</mt:setvarblock>
 <mt:if name="request.single_select">
-<mt:setvar name="__single_select" value="1">
+<mt:setvar name="_single_select" value="1">
 </mt:if>
 </mt:if>
+<mt:setvar name="selecter_param" value="">
+<mt:if name="request.target">
+<mt:setvarblock name="selecter_param">&amp;target=<mt:var name="request.target" escape>&amp;get_col=<mt:var name="request.get_col" escape>&amp;selected_ids=<mt:var name="request.selected_ids" escape>&amp;from_obj=<mt:var name="request.from_obj" escape></mt:setvarblock>
+</mt:if>
+
+<mt:if name="request.dialog_view">
+<mt:include file="include/dialog_header.tmpl">
+<mt:setvar name="sortable" value="">
+<mt:else>
+<mt:include file="include/header.tmpl">
+</mt:if>
+
+<mt:setvarblock name="this_url"><mt:var name="script_uri">?__mode=view&amp;_type=list&amp;_model=<mt:var name="model"></mt:setvarblock>
 <mt:setvarblock name="setup_search">
 $(".search-btn").click(function(){
   $("#__mode").prop('value','view');
@@ -40,11 +45,11 @@ $(".query-box").keypress(function(e){
 });
 </mt:setvarblock>
 <mt:setvarblock name="search_box">
-  <input class="query-box form-control mb-2 mr-sm-2 mb-sm-0 form-control-sm" name="query[]" type="text" value="<mt:var name="query" escape>" placeholder="<mt:trans phrase="Keyword">">
+  <input class="query-box form-control mb-2 mr-sm-2 mb-sm-0 form-control-sm" name="query" type="text" value="<mt:var name="query" escape>" placeholder="<mt:trans phrase="Keyword">">
   <button class="search-btn btn btn-secondary search-button btn-sm" type="submit"><mt:trans phrase="Search"></button>
 </mt:setvarblock>
 <mt:setvarblock name="current_filter">
-<mt:if name="current_filter_name"><span class="current-filter"> ( <mt:trans phrase="Current Filter"> : <a href="javascript:void(0);" data-toggle="modal" data-target="#filterOptions"><mt:var name="current_filter_name" escape></a> - <a href="<mt:var name="this_url">&amp;_detach_filter=1"><mt:trans phrase="Detach"></a> )</span></mt:if>
+<mt:if name="current_filter_name"><span class="current-filter"> ( <mt:trans phrase="Current Filter"> : <a href="javascript:void(0);" data-toggle="modal" data-target="#filterOptions"><mt:var name="current_filter_name" escape></a> - <a href="<mt:var name="this_url">&amp;_detach_filter=1<mt:var name="query_cond"><mt:var name="dialog_param"><mt:if name="workspace_id">&amp;workspace_id=<mt:var name="workspace_id"></mt:if><mt:var name="selecter_param">"><mt:trans phrase="Detach"></a> )</span></mt:if>
 </mt:setvarblock>
 
 <mt:var name="sortable" setvar="_sortable">
@@ -88,8 +93,8 @@ $(".query-box").keypress(function(e){
 <input type="hidden" name="workspace_id" value="<mt:var name="workspace_id">">
 </mt:if>
 
+<input type="hidden" name="filter_params" value="<mt:var name="filter_params" escape>">
 <input type="hidden" name="return_args" value="<mt:var name="return_args" escape>">
-
 <mt:if name="request.dialog_view">
 <input type="hidden" name="target" value="<mt:var name="request.target" escape>">
 <input type="hidden" name="single_select" value="<mt:var name="request.single_select" escape>">
@@ -102,7 +107,9 @@ $(".query-box").keypress(function(e){
   <div class="alert alert-success full">
     <mt:trans phrase="%s not found." params="$plural">
   </div>
-
+  <mt:if name="current_filter">
+    <mt:var name="current_filter">
+  </mt:if>
 <mt:if name="query">
   <div class="full">
   <mt:var name="search_box">
@@ -132,15 +139,18 @@ $('#dialog-cancel-btn').click(function(){
 <tr>
 <td>
 <mt:if name="can_action">
-  <button type="submit" class="__delete btn btn-secondary btn-sm"><mt:trans phrase="Delete"></button>
+  <button type="submit" class="__delete list-delete-btn btn btn-secondary btn-sm"><mt:trans phrase="Delete"></button>
+<mt:if name="list_actions">
+  <mt:include file="include/list_actions.tmpl">
+</mt:if>
 <mt:if name="_sortable">
-  <button type="submit" class="__save_order btn btn-secondary btn-sm"><mt:trans phrase="Save Order"></button>
+  <button type="submit" class="__save_order save-order-btn btn btn-secondary btn-sm"><mt:trans phrase="Save Order"></button>
 </mt:if>
 </mt:if>
 <mt:if name="_per_page">
   <mt:var name="search_box">
 </mt:if>
-<mt:var name="current_filter">
+  <mt:var name="current_filter">
 </td>
 <td class="pagination-col">
 <mt:if name="_per_page">
@@ -174,14 +184,15 @@ $('#dialog-cancel-btn').click(function(){
 <mt:setvarblock name="table_header">
 <tr>
 <th class="id">
-<mt:unless name="__single_select">
+<mt:unless name="_single_select">
 <label class="custom-control custom-checkbox">
-  <input type="checkbox" class="selector custom-control-input disp_option">
+  <input type="checkbox" class="selector custom-control-input">
   <span class="custom-control-indicator"></span>
   <span class="custom-control-description"></span>
 </label>
 </mt:unless>
 </th>
+<mt:setvar name="table_colspan" value="">
 <mt:objectcols>
 <mt:var name="name" setvar="column_name">
 <mt:if name="column_name" eq="workspace_id">
@@ -210,6 +221,26 @@ $('#dialog-cancel-btn').click(function(){
 </mt:if>
 </mt:objectcols>
 </tr>
+<mt:unless name="_single_select">
+  <mt:if name="list_from" ne="1">
+    <mt:setvar name="show_all_selected" value="1">
+  </mt:if>
+  <mt:if name="list_to" ne="$object_count">
+    <mt:setvar name="show_all_selected" value="1">
+  </mt:if>
+  <mt:if name="show_all_selected">
+  <tr>
+    <td colspan="4" class="all-selected-cell hidden">
+<label class="custom-control custom-checkbox" style="display:inline;">
+  <input type="checkbox" class="custom-control-input cb-all-selected" name="all_selected" value="1">
+  <span class="custom-control-indicator"></span>
+  <span class="custom-control-description"></span>
+    &nbsp; <mt:trans phrase="Select all %s items" params="$object_count">
+</label>
+    </td>
+  </tr>
+</mt:if>
+</mt:unless>
 </mt:setvarblock>
 
 <mt:var name="list_nav">
@@ -236,31 +267,31 @@ $('#dialog-cancel-btn').click(function(){
 <mt:objectvar name="$column_name" setvar="raw_value">
 <mt:if name="__first__">
 <td>
-  <mt:if name="__get_col">
+  <mt:if name="_get_col">
   <mt:objectcols>
 <mt:if name="__first__">
 <mt:setvar name="__status__" value="0">
 </mt:if>
     <mt:if name="list" eq="primary">
-        <mt:objectvar name="$__get_col" setvar="__primary_value">
+        <mt:objectvar name="$_get_col" setvar="__primary_value">
     </mt:if>
-    <mt:if name="name" eq="$__get_col">
-        <mt:objectvar name="$__get_col" setvar="__get_col_value">
+    <mt:if name="name" eq="$_get_col">
+        <mt:objectvar name="$_get_col" setvar="_get_col_value">
     </mt:if>
     <mt:if name="request.from_obj" eq="group">
       <mt:if name="name" eq="status">
         <mt:unless name="__status__">
         <mt:objectvar name="status" setvar="__status__">
-        <mt:setvarblock name="__get_col_value" append="1">
+        <mt:setvarblock name="_get_col_value" append="1">
           (<mt:statustext status="$__status__" options="$options" icon="1" text="1">)
         </mt:setvarblock>
         </mt:unless>
       </mt:if>
     </mt:if>
 </mt:objectcols>
-  <input type="hidden" id="__get_col_<mt:objectvar name="id">" value="<mt:var name="__get_col_value" escape>">
+  <input type="hidden" id="_get_col_<mt:objectvar name="id">" value="<mt:var name="_get_col_value" escape>">
   </mt:if>
-  <mt:unless name="__single_select">
+  <mt:unless name="_single_select">
     <label class="custom-control custom-checkbox">
       <input id="box_<mt:objectvar name="id">" type="checkbox" name="id[]" value="<mt:objectvar name="id">" class="custom-control-input">
       <span class="custom-control-indicator"></span>
@@ -315,8 +346,8 @@ $('#dialog-cancel-btn').click(function(){
         <mt:assetproperty property="class" name="$__file_col__" model="$model" id="$obj_id" setvar="obj_class">
         <mt:if name="thumbnail">
           <img src="<mt:var name="thumbnail">" width="32" width="height" alt="<mt:trans phrase="$obj_class">"> 
-          <mt:if name="__get_col">
-            <input type="hidden" id="__get_col_img_<mt:objectvar name="id">" value="<mt:var name="thumbnail">">
+          <mt:if name="_get_col">
+            <input type="hidden" id="_get_col_img_<mt:objectvar name="id">" value="<mt:var name="thumbnail">">
           </mt:if>
         <mt:else>
           <i class="list-small-icon btn fa <mt:if name="obj_class" eq="image">fa-file-image-o<mt:elseif name="obj_class" eq="pdf">fa-file-pdf-o<mt:else><mt:unless name="obj_class">fa-minus<mt:else>fa-file-o</mt:unless></mt:if>" aria-hidden="true"></i>
@@ -350,7 +381,7 @@ $('#dialog-cancel-btn').click(function(){
         <span class="sr-only"><mt:trans phrase="Checked"></span>
       </mt:if>
     <mt:elseif name="list_prop" eq="datetime">
-      <mt:var name="value" format_ts="Y-m-d h:i">
+      <mt:var name="value" format_ts="Y-m-d H:i">
     <mt:elseif name="list_prop" eq="date">
       <mt:var name="value" split=" " setvar="col_date">
       <mt:var name="col_date[0]">
@@ -455,7 +486,7 @@ $('a').click(function() {
 $('a').mouseout(function() {
     in_link = false;
 });
-<mt:if name="__single_select">
+<mt:if name="_single_select">
 $('input').click(function() {
     in_link = true;
 });
@@ -485,6 +516,7 @@ $('#list_body tr').mouseover(function() {
 });
 </mt:if>
 var in_search = false;
+var selected_ids = [];
 <mt:if name="request.dialog_view">
 var target_control;
 <mt:unless name="request.revision_select">
@@ -498,7 +530,6 @@ var target_control;
             }
       });
     <mt:else>
-        var selected_ids = [];
         window.parent.$("input[name='"+target_control+"[]']").each(function(){
             if ( $(this).val() ) {
               selected_ids.push($(this).val());
@@ -526,13 +557,13 @@ $('#dialog-selector-btn').click(function(){
         return false;
     }
   <mt:unless name="request.revision_select">
-    var col_value = $('#__get_col_' + selected ).val();
+    var col_value = $('#_get_col_' + selected ).val();
     col_value = $( '<span/>' ).text(col_value).html();
     window.parent.$('#'+target_control).val(selected);
     window.parent.$('#'+target_control+'-label').html(col_value);
     window.parent.$('#'+target_control+'-close').show();
-    if ( $('#__get_col_img_' + selected ) ) {
-        var col_img = $('#__get_col_img_' + selected ).val();
+    if ( $('#_get_col_img_' + selected ) ) {
+        var col_img = $('#_get_col_img_' + selected ).val();
         if ( col_img ) {
             col_img = $( '<span/>' ).text(col_img).html();
             window.parent.$('#'+target_control+'-img').prop('src',col_img);
@@ -562,15 +593,22 @@ $('#dialog-selector-btn').click(function(){
         }
     });
     var count = checked_ids.length;
+  <mt:unless name="request.select_add">
     window.parent.$('.'+target_control+'-child').each(function(){
-    $(this).remove();
+        $(this).remove();
     });
+  </mt:unless>
     for( var i = 0; i < count; i++ ) {
+        <mt:if name="request.select_add">
+        if( $.inArray(checked_ids[i], selected_ids ) != -1 ) {
+            continue;
+        }
+        </mt:if>
         window.parent.$('#'+target_control+'-none').hide();
         li = window.parent.$('#'+target_control+'-tmpl');
         newli = li.clone( true ).appendTo('#'+target_control );
         newli.removeClass('hidden');
-        var col_value = $('#__get_col_' + checked_ids[i] ).val();
+        var col_value = $('#_get_col_' + checked_ids[i] ).val();
         newli.children('span').html( col_value );
         newli.children('input').val( checked_ids[i] );
         newli.removeAttr('id');
@@ -602,6 +640,10 @@ function reorder(){
 }
 </mt:unless>
 </mt:if>
+
+$('.query-box').change(function(){
+    $('.query-box').val( $(this).val() );
+});
 $("input[name='id[]']").change(function(){
     is_all = true;
     $("input[name='id[]']").each(function(){
@@ -618,19 +660,60 @@ $('.selector').click(function(){
         $(this).prop('checked', checked);
     });
     $('.selector').prop('checked', checked);
+<mt:if name="show_all_selected">
+    if ( checked ) {
+        $('.all-selected-cell').show();
+    } else {
+        $('.all-selected-cell').hide();
+        $('.cb-all-selected').prop('checked', false);
+    }
+</mt:if>
 });
+<mt:if name="list_actions">
+$('.cb-all-selected').change(function(){
+    $('.cb-all-selected').prop('checked', $(this).prop('checked'));
+});
+</mt:if>
 $('.__delete').click(function(){
     if ( in_search ) {
         return true;
     }
-    if(item_checked()==false){
+    if( item_checked() == false ) {
         alert('<mt:trans phrase="You did not select any %s to delete." params="$label">');
         return false;
     }
-    if(! confirm('<mt:trans phrase="Are you sure you want to remove %s?" params="$plural">') ) {
+    var selected_items = item_checked( true );
+    var cfm_msg = '<mt:trans phrase="Are you sure you want to remove _1 %s?" params="$plural">';
+    cfm_msg = cfm_msg.replace( '_1', selected_items );
+    if(! confirm( cfm_msg ) ) {
         return false;
     }
-    $("#__mode").prop('value','delete');
+    $("#__mode").prop('value', 'delete');
+    return true;
+});
+$('.__action').click(function(){
+    // if ( in_search ) {
+    //     return true;
+    // }
+    if (! $('.select-action').val() ) {
+        alert('<mt:trans phrase="You did not select any action.">');
+        return false;
+    }
+    if( item_checked() == false ){
+        alert('<mt:trans phrase="You did not select any %s." params="$label">');
+        return false;
+    }
+    var cfm_msg = '<mt:trans phrase="Are you sure you want to process _1 _2?">';
+    var selected_items = item_checked( true );
+    cfm_msg = cfm_msg.replace( '_1', selected_items );
+    cfm_msg = cfm_msg.replace( '_2', '<mt:var name="plural">' );
+    if(! confirm(cfm_msg) ) {
+        return false;
+    }
+    if ( action_status_select ) {
+        $('.itemset-action-input').val( $('.action-status-select').val() );
+    }
+    $("#__mode").prop('value', 'list_action');
     return true;
 });
 <mt:if name="_sortable">
@@ -645,19 +728,30 @@ $('.__save_order').click(function(){
     if(! confirm('<mt:trans phrase="Are you sure you want to save order of selected %s?" params="$plural">') ) {
         return false;
     }
-    $('#__mode').prop('value','save_order');
+    $('#__mode').prop('value', 'save_order');
     return true;
     });
 </mt:if>
 <mt:var name="setup_search">
-function item_checked(){
+var selected_item_count;
+function item_checked( count ) {
+    if ( count && $('.cb-all-selected').prop('checked') ) {
+        return <mt:var name="object_count">;
+    }
+    selected_item_count = 0;
     var selected = false;
     $("input[name='id[]']").each(function(){
         if($(this).prop('checked') === true) {
             selected = true;
-            return false;
+            if (! count ) {
+                return false;
+            }
+            selected_item_count++;
         }
     });
+    if ( count ) {
+        return selected_item_count;
+    }
     return selected;
 }
 </script>

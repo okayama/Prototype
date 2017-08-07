@@ -94,6 +94,8 @@
     </ul>
       <button id="<mt:var name="__col_name__">-chooser" type="button" class="hidden btn btn-primary btn-sm dialog-chooser group-chooser" data-toggle="modal" data-target="#modal"
         data-href="<mt:var name="script_uri">?__mode=view&amp;_type=list&amp;_model=<mt:var name="rel_model" escape><mt:if name="workspace_id">&amp;workspace_id=<mt:var name="workspace_id"></mt:if>&amp;dialog_view=1&amp;target=<mt:var name="__col_name__">&amp;get_col=<mt:var name="rel_col" escape>&amp;selected_ids=<mt:var name="selected_ids" escape>&amp;from_obj=group"><mt:trans phrase="Select..."></button>
+      <button id="<mt:var name="__col_name__">-add-chooser" type="button" class="hidden btn btn-primary btn-sm dialog-chooser group-chooser" data-toggle="modal" data-target="#modal"
+        data-href="<mt:var name="script_uri">?__mode=view&amp;_type=list&amp;_model=<mt:var name="rel_model" escape><mt:if name="workspace_id">&amp;workspace_id=<mt:var name="workspace_id"></mt:if>&amp;dialog_view=1&amp;target=<mt:var name="__col_name__">&amp;get_col=<mt:var name="rel_col" escape>&amp;selected_ids=<mt:var name="selected_ids" escape>&amp;from_obj=group&amp;select_add=1"><mt:trans phrase="Add..."></button>
   </div>
 </div>
 <script>
@@ -102,9 +104,11 @@ var <mt:var name="__col_name__">_data_href ='<mt:var name="script_uri">?__mode=v
 $('#<mt:var name="__col_name__">-selector').change(function(){
     if ( $(this).val() == '' ) {
         $('#<mt:var name="__col_name__">-chooser').hide();
+        $('#<mt:var name="__col_name__">-add-chooser').hide();
         return;
     }
     $('#<mt:var name="__col_name__">-chooser').show();
+    $('#<mt:var name="__col_name__">-add-chooser').show();
     $('#_group_model').val( $('#<mt:var name="__col_name__">-selector option:selected').attr('data-model') );
     var primary_col = <mt:var name="__col_name__">_primary[$(this).val()];
     var tmp_url = <mt:var name="__col_name__">_data_href;
@@ -113,6 +117,8 @@ $('#<mt:var name="__col_name__">-selector').change(function(){
     tmp_url = tmp_url.replace( /&amp;/g, '&' );
     $('#<mt:var name="__col_name__">-chooser').attr( 'data-href', tmp_url );
     $('#<mt:var name="__col_name__">-chooser').data( 'href', tmp_url );
+    $('#<mt:var name="__col_name__">-add-chooser').attr( 'data-href', tmp_url + '&select_add=1' );
+    $('#<mt:var name="__col_name__">-add-chooser').data( 'href', tmp_url + '&select_add=1' );
 });
 $('#<mt:var name="__col_name__">-selector').trigger('change');
 $('#<mt:var name="__col_name__">').sortable ( {

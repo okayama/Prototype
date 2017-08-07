@@ -26,6 +26,8 @@
     "Models"             : "モデル",
     "Object"             : "オブジェクト",
     "Objects"            : "オブジェクト",
+    "Action..."          : "アクション...",
+    "Set Status"         : "ステータス変更",
     "View List"          : "リスト",
     "Phrase"             : "フレーズ",
     "Phrases"            : "フレーズ",
@@ -56,7 +58,9 @@
     "Close"              : "閉じる",
     "Select"             : "選択",
     "Select..."          : "選択...",
+    "Add..."             : "追加...",
     "(None selected)"    : "選択されていません",
+    "Select all %s items": "全%s件を選択する",
     "Config"             : "設定",
     "Settings"           : "設定",
     "%s Settings"        : "%sの設定",
@@ -305,6 +309,8 @@
     "Permission denied." : "権限がありません。",
     "Default Widget"     : "メインウィジェット",
     "Password Recovery"  : "パスワードの再設定",
+    "Add Tags"           : "タグを追加",
+    "Remove Tags"        : "タグを削除",
     "Reset"              : "リセット",
     "Back"               : "戻る",
     "System Email"       : "システムのメール",
@@ -332,7 +338,10 @@
     "Changed"            : "変更",
     "Change Note"        : "変更メモ",
     "Hierarchy"          : "階層",
-    "Your Filter"        : "自分のフィルタ",
+    "My %s"              : "自分の%s",
+    "Your Filters"       : "自分のフィルタ",
+    "System Filters"     : "システムフィルタ",
+    "Show only errors"   : "エラーだけを表示",
     "Manage Hierarchy"   : "階層の管理",
     "Manage %s Hierarchy": "%s階層の管理",
     "Drag"               : "ドラッグ",
@@ -349,6 +358,13 @@
     "Syetem's Role"      : "システムのロール",
     "Archive Date"       : "アーカイブ日付",
     "Archive Type"       : "アーカイブ種別",
+    "Draft %s"           : "下書きの%s",
+    "%s Under Review"    : "レビュー中の%s",
+    "Reserved %s"        : "公開予約中の%s",
+    "Published %s"       : "公開中の%s",
+    "Unpublished %s"     : "公開終了された%s",
+    "Disabled %s"        : "無効な%s",
+    "Enabled %s"         : "有効な%s",
     "New WorkSpace's Role"
         : "新しいスペースのロール",
     "List Revisions of %s"
@@ -376,6 +392,8 @@
         : "ビューまたはモデルが指定されていません。",
     "Forgot your password?"
         : "パスワードをお忘れですか?",
+    "The action '%1$s' was executed for %2$s %3$s by %4$s."
+        : "%4$s がアクション「%1$s」を %2$s個の%3$sに適用しました。",
     "An error occurred while uploading."
         : "ファイルのアップロード中にエラーが発生しました。",
     "Please enter the Name of this Filter."
@@ -438,8 +456,8 @@
         : "カラムを削除してもよろしいですか?",
     "Please enter comma-separated tags to add."
         :"追加するタグをカンマ区切りで入力してください。",
-    "Are you sure you want to remove %s?"
-        : "%sを削除してもよろしいですか?",
+    "Are you sure you want to remove _1 %s?"
+        : "_1件の%sを削除してもよろしいですか?",
     "Are you sure you want to export %s?"
         : "%sをエクスポートしてもよろしいですか?",
     "The file must be an %s."
@@ -486,6 +504,10 @@
         : "一覧表示と編集表示のモデル名が一致しません。",
     "Revision applied to master."
         : "リビジョンをマスタに適用しました。",
+    "Are you sure you want to process _1 _2?"
+        : "_1件の_2に適用してもよろしいですか?",
+    "You did not select any action."
+        : "アクションが選択されていません。",
     "Are you sure you want to apply this revision to master?"
         : "このリビジョンをマスタに適用してもよろしいですか?",
     "Disable,Enable"

@@ -25,7 +25,6 @@ class PTUtil {
         $source = explode( "\n", $source );
         $change = str_replace( ['\r\n', '\r', '\n'], '\n', $change );
         $change = explode( "\n", $change );
-        $diff = new Text_Diff( 'auto', [ $source, $change ] );
         if (! $renderer && !class_exists( 'Text_Diff_Renderer_unified' ) ) {
             $text_diff = LIB_DIR . 'Text' . DS . 'Diff';
             require_once ( $text_diff . '.php' );
@@ -36,6 +35,7 @@ class PTUtil {
         if (! $renderer ) {
             $renderer = new Text_Diff_Renderer_unified();
         }
+        $diff = new Text_Diff( 'auto', [ $source, $change ] );
         return $renderer->render( $diff );
     }
 

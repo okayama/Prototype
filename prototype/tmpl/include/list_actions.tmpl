@@ -1,0 +1,61 @@
+<mt:loop name="list_actions">
+<mt:if name="__first__">
+<select name="action_name" class="select-action form-control form-control-sm very-short">
+  <option value=""><mt:trans phrase="Action..."></option>
+</mt:if>
+  <option value="<mt:var name="name">" class="<mt:if name="input">with-input</mt:if>"><mt:var name="label"></option>
+<mt:if name="__last__">
+</select>
+<mt:if name="status_published" eq="4">
+<mt:trans phrase="Draft,Review,Reserved,Publish,Unpublished (End)" split="," setvar="status_loop">
+<mt:else>
+<mt:trans phrase="Disable,Enable" split="," setvar="status_loop">
+</mt:if>
+<mt:loop name="status_loop">
+<mt:if name="__first__">
+<select name="itemset_status_select" class="form-control form-control-sm very-short hidden action-status-select">
+</mt:if>
+<mt:if name="__counter__" le="$max_status">
+  <option value="<mt:var name="__counter__">" <mt:if name="_default_status" eq="$__counter__">selected</mt:if>><mt:var name="__value__"></option>
+</mt:if>
+<mt:if name="__last__">
+</select>
+<input <mt:unless name="disp_action_bar">id="action-input-box" </mt:unless>name="itemset_action_input" class="hidden itemset-action-input form-control form-control-sm very-short hidden" type="text">
+</mt:if>
+</mt:loop>
+<button class="__action list-action-btn btn btn-secondary action-button btn-sm" type="submit"><mt:trans phrase="Go"></button>
+</mt:if>
+</mt:loop>
+<script>
+var action_status_select = false;
+var need_action_input = false;
+$('.action-status-select').hide();
+$('.itemset-action-input').hide();
+$('.select-action').change(function(){
+    $('.select-action').val($(this).val());
+    if ( $(this).val() == 'set_status' ) {
+        $('.action-status-select').show();
+        action_status_select = true;
+    } else {
+        $('.action-status-select').hide();
+        action_status_select = false;
+    }
+    var opt_class = $('[name=action_name] option:selected').attr('class');
+    if ( opt_class == 'with-input' ) {
+        $('.itemset-action-input').val('');
+        $('.itemset-action-input').show();
+        $('#action-input-box').focus();
+        need_action_input = true;
+    } else {
+        $('.itemset-action-input').hide();
+        need_action_input = false;
+    }
+});
+$('.itemset-action-input').change(function(){
+    $('.itemset-action-input').val($(this).val());
+});
+$('.action-status-select').change(function(){
+    $('.action-status-select').val($(this).val());
+});
+</script>
+<mt:setvar name="disp_action_bar" value="1">

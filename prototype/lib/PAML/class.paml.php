@@ -17,6 +17,7 @@ if (! defined( 'PAMLDIR' ) ) {
 if (! defined( 'EP' ) ) {
     define( 'EP', '?>' . PHP_EOL );
 }
+
 /**
  * PAMLVSN = Compile format version.
  */
@@ -96,7 +97,7 @@ class PAML {
  */
     public    $cache_driver  = null;
     public    $plugin_order  = 0; // 0=asc, 1=desc
-    protected $components    = [];
+    public    $components    = [];
     protected $all_tags      = [];
     protected $ids           = [];
     protected $old_vars      = [];
@@ -122,6 +123,7 @@ class PAML {
       'function'    => ['getvar', 'trans', 'setvar', 'property', 'ldelim', 'include',
                         'rdelim', 'fetch', 'var', 'date', 'assign', 'count', 'vardump'],
       'include'     => ['include', 'includeblock', 'extends'] ];
+
 /**
  * $modifier_funcs: Mappings of modifier and PHP functions.
  */
@@ -129,6 +131,7 @@ class PAML {
       'lower_case'  => 'strtolower', 'upper_case' => 'strtoupper', 'trim' => 'trim',
       'ltrim'       => 'ltrim',  'remove_html' => 'strip_tags', 'rtrim' => 'rtrim',
       'nl2br'       => 'nl2br', 'base64_encode' => 'base64_encode' ];
+
 /**
  * $callbacks: Array of Callbacks.
  */
@@ -195,21 +198,20 @@ class PAML {
             foreach ( $items as $plugin ) {
                 if ( strpos( $plugin, '.' ) === 0 ) continue;
                 $plugin = $dir . DS . $plugin;
-                if ( is_dir( $plugin ) ) {
-                    $plugins = scandir( $plugin, $this->plugin_order );
-                    foreach ( $plugins as $f ) {
-                        if ( ( $_plugin = $plugin . DS . $f ) && ( is_file( $_plugin ) )
-                          && ( pathinfo( $_plugin )['extension'] === 'php' ) ) {
-                            if (!include( $_plugin ) )
-                                trigger_error( "Plugin '{$f}' load failed!" );
-                            if ( preg_match ("/^class\.(.*?)\.php$/", $f, $mts ) ) {
-                                if (!class_exists( $mts[1] ) ) continue;
-                                $obj = new $mts[1]();
-                                $registry = property_exists( $obj, 'registry' )
-                                          ? $obj->registry : [];
-                                $this->register_component(
-                                    $obj, dirname( $_plugin ), $registry );
-                            }
+                if (! is_dir( $plugin ) ) continue;
+                $plugins = scandir( $plugin, $this->plugin_order );
+                foreach ( $plugins as $f ) {
+                    if ( ( $_plugin = $plugin . DS . $f ) && ( is_file( $_plugin ) )
+                      && ( pathinfo( $_plugin )['extension'] === 'php' ) ) {
+                        if (!include( $_plugin ) )
+                            trigger_error( "Plugin '{$f}' load failed!" );
+                        if ( preg_match ("/^class\.(.*?)\.php$/", $f, $mts ) ) {
+                            if (!class_exists( $mts[1] ) ) continue;
+                            $obj = new $mts[1]();
+                            $registry = property_exists( $obj, 'registry' )
+                                      ? $obj->registry : [];
+                            $this->register_component(
+                                $obj, dirname( $_plugin ), $registry );
                         }
                     }
                 }
@@ -1291,14 +1293,14 @@ class PAML {
  * @param   array $params: Array or object for loop.
  */
     function set_loop_vars ( $cnt, $params ) {
-        $this->local_vars[ '__first__' ] = $cnt === 0;
-        $this->local_vars[ '__last__' ] = !isset( $params[ $cnt + 1 ] );
+        $this->local_vars[ '__first__' ]  = $cnt === 0;
+        $this->local_vars[ '__last__' ]   = !isset( $params[ $cnt + 1 ] );
         $even = $cnt % 2;
-        $this->local_vars[ '__even__' ] = $even;
-        $this->local_vars[ '__odd__' ] = !$even;
-        $this->local_vars[ '__index__' ] = $cnt;
-        $this->local_vars[ '__counter__' ] = $cnt + 1;
-        if ( $cnt===0 ) $this->local_vars[ '__total__' ] = count( $params );
+        $this->local_vars[ '__even__' ]   = $even;
+        $this->local_vars[ '__odd__' ]    = !$even;
+        $this->local_vars[ '__index__' ]  = $cnt;
+        $this->local_vars[ '__counter__' ]= $cnt + 1;
+        if ( $cnt === 0 ) $this->local_vars[ '__total__' ] = count( $params );
     }
 
     function parse_csv ( $s ) {

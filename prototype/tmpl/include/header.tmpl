@@ -279,9 +279,11 @@ $(function () {
           <h1<mt:if name="has_option"> class="title-with-opt"</mt:if>><span class="title"><mt:var name="page_title"></span>
       <mt:if name="this_mode" ne="login">
         <mt:if name="request._type" eq="list">
+          <mt:unless name="request.revision_select">
           <button type="button" class="btn btn-outline-primary btn-sm" data-toggle="modal" data-target="#filterOptions">
             <mt:trans phrase="Filters">
           </button>
+          </mt:unless>
         </mt:if>
         <mt:if name="can_create">
           <mt:if name="request._type" eq="list">

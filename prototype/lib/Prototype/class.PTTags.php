@@ -94,6 +94,22 @@ class PTTags {
         $ctx->stash( 'function_date', $function_date );
         $ctx->stash( 'workspace_tags', $workspace_tags );
         $ctx->stash( 'alias_functions', $alias );
+        $registry = $app->registry;
+        if ( isset( $registry['tags'] ) ) {
+            $tags = $registry['tags'];
+            foreach ( $tags as $tag ) {
+                $tag_kind = key( $tag );
+                $props = $tag[ $tag_kind ];
+                foreach ( $props as $name => $prop ) {
+                    $plugin = $prop['component'];
+                    if ( $component = $app->component( $plugin ) ) {
+                        $meth = $prop['method'];
+                        if ( method_exists( $component, $meth ) )
+                            $ctx->register_tag( $name, $tag_kind, $meth, $component );
+                    }
+                }
+            }
+        }
         $app->init_tags = true;
     }
 

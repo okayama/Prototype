@@ -48,31 +48,21 @@
       <mt:setvar name="can_create" value="0">
     </mt:unless>
     </mt:if>
-    
-    
+
     <mt:if name="request.dialog_view">
       <mt:setvar name="can_create" value="0">
       <mt:setvar name="can_action" value="0">
     </mt:if>
 
+      <mt:include file="include/list_filters.tmpl">
+
       <div class="row">
         <main class="col-md-12 pt-3">
           <h1<mt:if name="has_option"> class="title-with-opt"</mt:if>><span class="title"><mt:var name="page_title"></span>
       <mt:if name="this_mode" ne="login">
-      <mt:if name="can_create">
-        <mt:if name="request._type" eq="list">
-          <a class="btn btn-primary btn-sm" href="<mt:var name="script_uri">?__mode=view&amp;type=edit&amp;_model=<mt:var name="model" escape><mt:var name="workspace_param">">
-            <mt:trans phrase="New %s" params="$label">
-          </a>
-        </mt:if>
-        <mt:if name="request._type" eq="edit">
-          <mt:if name="request.saved">
-          <a class="btn btn-primary btn-sm" href="<mt:var name="script_uri">?__mode=view&amp;type=edit&amp;_model=<mt:var name="model" escape><mt:var name="workspace_param">">
-            <mt:trans phrase="New %s" params="$label">
-          </a>
-          </mt:if>
-        </mt:if>
-      </mt:if>
+          <button type="button" class="btn btn-outline-primary btn-sm" data-toggle="modal" data-target="#filterOptions">
+            <mt:trans phrase="Filters">
+          </button>
       </mt:if>
           </h1>
 

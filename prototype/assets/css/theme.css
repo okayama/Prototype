@@ -216,6 +216,13 @@ input.short {
   width: 380px !important;
 }
 
+.very-short {
+  width: 120px !important;
+  font-size: 88%;
+  margin-right: -4px !important;
+  margin-left: 1px !important;
+}
+
 select.short {
   width: 140px !important;
 }
@@ -399,6 +406,10 @@ th.id {
   padding-right: 40px !important;
 }
 
+.save-order-btn {
+  margin-left: 1px;
+}
+
 .preview-rev_diff th {
   white-space: nowrap;
 }
@@ -472,8 +483,16 @@ div.mce-fullscreen {
 }
 
 .query-box {
-  width: 165px !important;
-  margin-left: 7px;
+  width: 145px !important;
+  margin-left: 0px !important;
+}
+
+.list-action-btn {
+  margin-right: 4px;
+}
+
+.list-delete-btn {
+  margin-left: 0px !important;
 }
 
 .pagination-col {

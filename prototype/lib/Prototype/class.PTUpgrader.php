@@ -332,6 +332,11 @@ class PTUpgrader {
     function save_filter_table ( &$cb, $app, &$obj ) {
         if ( $app->param( '_preview' ) ) return true;
         $validation = $app->param( '__validation' );
+        if ( $validation ) {
+            $message = ['status' => 200];
+            echo json_encode( $message );
+            exit();
+        }
         if (! $obj->id ) {
             $name = strtolower( $app->param( 'name' ) );
             if (! $app->is_valid_property( $name, $msg, true ) ) {
@@ -383,7 +388,7 @@ class PTUpgrader {
             $col_names[] = $column->name;
             $id = $column->id;
             $order = $app->param( '_order_' . $id );
-            $order = (int) $order;
+            // $order = (int) $order;
             if ( $column->is_primary ) {
                 $list = $app->param( '_list_' . $id ) ? 'number' : '';
                 $column->order( $order );
@@ -446,6 +451,7 @@ class PTUpgrader {
             $column->label( $label );
             $column->options( $options );
             $column->order( $order );
+            //$app->log( $order );
             $column->not_null( $not_null );
             $column->index( $index );
             $column->disp_edit( $disp_edit );
@@ -791,6 +797,7 @@ class PTUpgrader {
         $col = $app->db->model( 'column' )->get_by_key
             ( ['table_id' => $obj->id, 'name' => $name ] );
         if (! $col->id || $force ) {
+            if ( $col->order ) unset( $values['order'] );
             $col->set_values( $values );
             $app->set_default( $col );
             return $col->save();
