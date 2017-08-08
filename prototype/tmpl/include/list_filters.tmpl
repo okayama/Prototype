@@ -40,13 +40,13 @@
                   <div class="col-md-9 form-inline">
                     <mt:loop name="system_filters">
                       <mt:if name="__first__">
-                      <select class="form-control" name="select_system_filters" id="select_system_filters">
+                      <select class="form-control form-control-sm" name="select_system_filters" id="select_system_filters">
                         <option value=""><mt:trans phrase="(None selected)"></option>
                       </mt:if>
                         <option data-option="<mt:var name="option">" <mt:if name="current_system_filter" eq="$name">selected</mt:if> value="<mt:var name="name" escape>"><mt:var name="label" escape></option>
                       <mt:if name="__last__">
                         </select>
-                      <button type="submit" class="btn btn-primary" id="system_filter-apply-button"><mt:trans phrase="Apply"></button>
+                      <button type="submit" class="btn btn-sm btn-primary" id="system_filter-apply-button"><mt:trans phrase="Apply"></button>
                       </mt:if>
                     </mt:loop>
                   </div>
@@ -55,7 +55,7 @@
                 <div class="row form-group">
                   <div class="col-md-3"><b><mt:trans phrase="Your Filters"></b></div>
                   <div class="col-md-9 form-inline">
-                      <select class="form-control" name="select-user_filters" id="select-user_filters">
+                      <select class="form-control form-control-sm" name="select-user_filters" id="select-user_filters">
                         <option value=""><mt:trans phrase="(None selected)"></option>
                         <mt:objectloop model="option" kind="list_filter" key="$model" user_id="$user_id" workspace_id="$workspace_id">
                         <mt:setvar name="has_filter" value="1">
@@ -64,7 +64,7 @@
                         <option value="add_new_filter"><mt:trans phrase="Add New Filter"></option>
                       </select>
                     <mt:if name="has_filter">
-                    <button type="submit" class="btn btn-primary" id="filter-select-apply-button"><mt:trans phrase="Apply"></button>
+                    <button type="submit" class="btn btn-sm btn-primary" id="filter-select-apply-button"><mt:trans phrase="Apply"></button>
                     <button type="button" class="delete-filter-elem hidden delete-bun-sm btn btn-secondary btn-sm" id="filter-select-delete-button" class="close" data-dismiss="modal">
                     <i class="fa fa-trash-o" aria-hidden="true"></i>
                     <span class="sr-only"><mt:trans phrase="Delete"></span>
@@ -75,7 +75,7 @@
                 <div class="row form-group new-filter-elem hidden">
                   <div class="col-md-3" style="float:left;"><b><mt:trans phrase="Columns"></b></div>
                   <div class="col-md-9 form-inline">
-                    <select name="filters-selector" class="form-control" id="filters-selector">
+                    <select name="filters-selector" class="form-control form-control-sm" id="filters-selector">
                     <mt:loop name="filter_options">
                     <mt:if name="__first__">
                         <option><mt:trans phrase="(None selected)"></option>
@@ -83,7 +83,7 @@
                       <option value="<mt:var name="name" escape>" class="coltype_<mt:var name="type" escape>"><mt:var name="label" escape></option>
                     </mt:loop>
                     </select>
-                   <button type="button" class="btn btn-secondary" id="filter-add-button"><mt:trans phrase="Add"></button>
+                   <button type="button" class="btn btn-sm btn-secondary" id="filter-add-button"><mt:trans phrase="Add"></button>
                   </div>
                 </div>
                 <div class="row form-group new-filter-elem">
@@ -149,7 +149,7 @@
                             <mt:else>
                             <mt:trans phrase="Disable,Enable" split="," setvar="status_label">
                             </mt:if>
-                            <select class="form-control short" name="">
+                            <select class="form-control form-control-sm short" name="">
                             <mt:for from="1" to="$max_status">
                               <mt:if name="__counter__" le="$max_status">
                                 <option value="<mt:var name="__counter__">"><mt:var name="$status_label[$__index__]"></option>
@@ -184,6 +184,7 @@ $('#system_filter-apply-button').click(function(){
         alert('<mt:trans phrase="Filter not specified.">');
         return false;
     }
+    $('#select-user_filters').val('');
     var filter_option = $('[name=select_system_filters] option:selected').attr('data-option');
     $('#_system_filters_option').val( filter_option );
 });
@@ -230,6 +231,7 @@ $('#filter-select-apply-button').click(function(){
         alert('<mt:trans phrase="Filter not specified.">');
         return false;
     }
+    $('#select_system_filters').val('');
     $('#_filter_id').val( filter_id );
     return true;
 });

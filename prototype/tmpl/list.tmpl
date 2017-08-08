@@ -101,15 +101,10 @@ $(".query-box").keypress(function(e){
 <input type="hidden" name="get_col" value="<mt:var name="request.get_col" escape>">
 <input type="hidden" name="dialog_view" value="1">
 </mt:if>
-
 <mt:unless name="objects">
-
   <div class="alert alert-success full">
     <mt:trans phrase="%s not found." params="$plural">
-  </div>
-  <mt:if name="current_filter">
-    <mt:var name="current_filter">
-  </mt:if>
+  </div>  
 <mt:if name="query">
   <div class="full">
   <mt:var name="search_box">
@@ -119,9 +114,12 @@ $(".query-box").keypress(function(e){
 var in_search = false;
 <mt:var name="setup_search">
 </script>
+<mt:else>
+  <mt:if name="current_filter">
+    <mt:var name="current_filter">
+  </mt:if>
 </mt:if>
 </form>
-
 <mt:if name="request.dialog_view">
   <button id="dialog-cancel-btn" class="btn btn-secondary" type="submit"><mt:trans phrase="Cancel"></button>
 <script>

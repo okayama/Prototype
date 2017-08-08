@@ -73,6 +73,7 @@ class PADO {
     public static $stash = [];
     public  $cache       = [];
     public  $app         = null;
+    public  $errors      = [];
 
     public  $callbacks   = [
           'pre_save'     => [], 'post_save'   => [],
@@ -117,6 +118,7 @@ class PADO {
             $this->driver = $driver;
         }
         if (! $driver ) return;
+        $sql = '';
         try {
             $pdo = new PDO( $dsn, $dbuser, $dbpasswd );
             $pdo->setAttribute( PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION );
@@ -143,7 +145,9 @@ class PADO {
                 $this->methods = $methods;
             }
         } catch ( PDOException $e ) {
-            trigger_error( 'Connection failed: ' . $e->getMessage() );
+            $message = 'Connection failed: ' . $e->getMessage() . ", {$sql}";
+            $this->errors[] = $message;
+            trigger_error( $message );
         }
         self::$pado = $this;
     }
@@ -321,7 +325,9 @@ class PADO {
             try {
                 return $sth->execute( $vals );
             } catch ( PDOException $e ) {
-                trigger_error( 'PDOException: ' . $e->getMessage() . ", {$sql}" );
+                $message = 'PDOException: ' . $e->getMessage() . ", {$sql}";
+                $this->errors[] = $message;
+                trigger_error( $message );
             }
         }
     }
@@ -531,10 +537,17 @@ class PADOBaseModel {
         $scheme = isset( $pado->scheme[ $model ] ) ?
             $pado->scheme[ $model ][ 'column_defs' ] : null;
         $id_column = $this->_id_column;
-        if ( is_array( $args ) && isset( $args['and_or'] ) )
-            $and_or = strtoupper( $args['and_or'] );
+        if ( is_array( $args ) && isset( $args['and_or'] ) ) $and_or = $args['and_or'];
+        $extra_and_or = 'AND';
+        if ( isset( $and_or ) ) {
+        if ( is_array( $and_or ) ) list( $and_or, $extra_and_or ) = $and_or;
+            $and_or = strtoupper( $and_or );
+            $extra_and_or = strtoupper( $extra_and_or );
+        }
         if (! isset( $and_or ) || ( $and_or !== 'AND' && $and_or !== 'OR' ) )
             $and_or = 'AND';
+        if (! isset( $extra_and_or ) || ( $extra_and_or !== 'AND' &&
+            $extra_and_or !== 'OR' ) ) $extra_and_or = 'AND';
         $illegals = PADOBaseModel::ILLEGALS;
         $model = str_replace( $illegals, '', $model );
         if (! $model ) return is_numeric( $terms ) ? null : [];
@@ -623,8 +636,10 @@ class PADOBaseModel {
                 $join_scheme = isset( $pado->scheme[ $join ] ) ?
                     $pado->scheme[ $join ][ 'column_defs' ] : null;
                 if ( $join_scheme && !isset( $join_scheme[ $col ] ) ) {
-                    trigger_error(
-                    "PADOBaseModelException: unknown column '{$col}' for model '{$join}'" );
+                    $message =
+                    "PADOBaseModelException: unknown column '{$col}' for model '{$join}'";
+                    $pado->errors[] = $message;
+                    trigger_error( $message );
                     return false;
                 }
                 if ( $cols !== '*' ) {
@@ -660,10 +675,14 @@ class PADOBaseModel {
         }
         $vals = [];
         $stms = [];
+        $extra_stms = [];
+        $extra_vals = [];
         $has_stmt = true;
+        $add_where = false;
         if ( is_array( $terms ) && empty( $terms ) ) {
             $sql .= "WHERE 1=?";
             $vals[] = 1;
+            $add_where = true;
         } elseif ( is_array( $terms ) && ! empty( $terms ) ) {
             $has_stmt = false;
             foreach ( $terms as $key => $cond ) {
@@ -676,35 +695,64 @@ class PADOBaseModel {
                 if ( $scheme && !isset( $scheme[ $orig_key ] ) )
                     continue;
                 $regex = '/(=|>|<|<=|>=|>|BETWEEN|NOT\sBETWEEN|LIKE|IN|NOT\sLIKE|'
-                       . 'IS\sNULL|IS\sNOT\sNULL|\!=)/i';
+                       . 'AND|OR|IS\sNULL|IS\sNOT\sNULL|\!=)/i';
                 list( $op, $v ) = ['=', $cond ];
                 if ( is_array( $cond ) ) {
                     $op = key( $cond );
                     $v  = $cond[ $op ];
                 }
                 if ( count( $cond ) === 1 
-                    || ( $op === 'BETWEEN' || $op === 'NOT BETWEEN' || $op === 'IN' )
-                ) {
+                    || ( stripos( $op, 'BETWEEN' ) !== false || $op === 'IN' ) ) {
                     if ( preg_match( $regex, $op, $matchs ) ) {
                         $op = strtoupper( $matchs[1] );
-                        if ( $op === 'IS NULL' || $op === 'IS NOT NULL' ) {
+                        if ( stripos( $op, 'NULL' ) !== false ) {
                             $stms[] = " {$key} {$op} ";
                         } elseif ( is_array( $v ) &&
-                            ( $op === 'BETWEEN' || $op === 'NOT BETWEEN' ) ) {
+                            stripos( $op, 'BETWEEN' ) !== false ) {
                             list( $start, $end ) = $v;
                             $stms[] = " {$key} {$op} ? AND ? ";
                             $vals[] = $start;
                             $vals[] = $end;
                         } else {
+                            $col_type = $scheme[ $orig_key ]['type'];
                             if ( $op === 'IN' && is_array( $v ) && ! empty( $v ) ) {
-                                array_walk( $v, function( &$val ) {
-                                    $val = $this->pado()->quote( $val );
-                                });
-                                $v = '('. join( ',', $v ) . ')';
-                                $stms[] = " {$key} {$op} {$v} ";
+                                $stms[] = $this->in_stmt( $key, $v, $col_type );
                             } else {
-                                $stms[] = " {$key} {$op} ? ";
-                                $vals[] = $v;
+                                if ( $op == 'AND' || $op == 'OR' && $and_or != $op ) {
+                                    if ( is_array( $v ) ) {
+                                        $op = key( $v );
+                                        $v = $v[ $op ];
+                                        if ( preg_match( $regex, $op, $matchs ) ) {
+                                            $op = strtoupper( $matchs[1] );
+                                            if ( $op == 'AND' || $op == 'OR' ) continue;
+                                        } else {
+                                            continue;
+                                        }
+                                    } else {
+                                        $op = '=';
+                                    }
+                                    if ( stripos( $op, 'NULL' ) !== false ) {
+                                        $extra_stms[] = " {$key} {$op} ";
+                                    } elseif ( is_array( $v ) &&
+                                        stripos( $op, 'BETWEEN' ) !== false ) {
+                                        list( $start, $end ) = $v;
+                                        $extra_stms[] = " {$key} {$op} ? AND ? ";
+                                        $extra_vals[] = $start;
+                                        $extra_vals[] = $end;
+                                    } else {
+                                        if ( $op === 'IN' && is_array( $v )
+                                                                    && ! empty( $v ) ) {
+                                            $extra_stms[] =
+                                                    $this->in_stmt( $key, $v, $col_type );
+                                        } else {
+                                            $extra_stms[] = " {$key} {$op} ? ";
+                                            $extra_vals[] = $v;
+                                        }
+                                    }
+                                } else {
+                                    $stms[] = " {$key} {$op} ? ";
+                                    $vals[] = $v;
+                                }
                             }
                         }
                     }
@@ -741,8 +789,19 @@ class PADOBaseModel {
                 }
             }
             if ( count( $stms ) ) {
-                if ( $in_join ) $sql .= 'AND';
+                if ( $in_join ) $sql .= ' AND ';
                 $sql .= 'WHERE (' . join( " {$and_or} ", $stms ) . ')';
+                $add_where = true;
+            }
+            if (! empty( $extra_stms ) ) {
+                $and_or = $and_or == 'AND' ? 'OR' : 'AND';
+                if ( $add_where ) {
+                    $sql .= " {$and_or} ";
+                } else {
+                    $sql .= 'WHERE';
+                }
+                $sql .= ' (' . join( " {$and_or} ", $extra_stms ) . ')';
+                $vals = array_merge( $vals, $extra_vals );
             }
             $sql .= $group_by;
         } elseif ( is_numeric( $terms ) ) {
@@ -814,8 +873,32 @@ class PADOBaseModel {
             }
             return $objects;
         } catch ( PDOException $e ) {
-            trigger_error( 'PDOException: ' . $e->getMessage() . ", {$sql}" );
+            $message =  'PDOException: ' . $e->getMessage() . ", {$sql}";
+            $pado->errors[] = $message;
+            trigger_error( $message );
         }
+    }
+
+/**
+ * Assemble the IN statement.
+ * 
+ * @param  string $key      : Key name for search.
+ * @param  array  $v        : An array of values.
+ * @param  string $col_type : Type of column.
+ * @return string $stmt     : SQL IN statement.
+ */
+    function in_stmt ( $key, $v, $col_type ) {
+        if ( strpos( $col_type, 'int' ) !== false ) {
+            array_walk( $v, function( &$val ) {
+                $val = (int) $val;
+            });
+        } else {
+            array_walk( $v, function( &$val ) {
+                $val = $this->pado()->quote( $val );
+            });
+        }
+        $v = '('. join( ',', $v ) . ')';
+        return " {$key} IN {$v} ";
     }
 
 /**
@@ -948,7 +1031,9 @@ class PADOBaseModel {
             $pado->run_callbacks( $callback, $model, $this );
             return $res;
         } catch ( PDOException $e ) {
-            trigger_error( 'PDOException: ' . $e->getMessage() );
+            $message = 'PDOException: ' . $e->getMessage() . ", {$sql}";
+            $pado->errors[] = $message;
+            trigger_error( $message );
         }
     }
 
@@ -989,7 +1074,9 @@ class PADOBaseModel {
             $pado->run_callbacks( $callback, $model, $this );
             return $res;
         } catch ( PDOException $e ) {
-            trigger_error( 'PDOException: ' . $e->getMessage() );
+            $message = 'PDOException: ' . $e->getMessage() . ", {$sql}";
+            $pado->errors[] = $message;
+            trigger_error( $message );
             return false;
         }
     }
@@ -1452,7 +1539,8 @@ class PADOMySQL extends PADOBaseModel {
                 if ( $default !== null ) $scheme[ $name ]['default'] = $default;
             }
             $scheme = ['column_defs' => $scheme ];
-            $sth = $pado->db->prepare( "SHOW INDEX FROM {$table}" );
+            $sql = "SHOW INDEX FROM {$table}";
+            $sth = $pado->db->prepare( $sql );
             try {
                 $sth->execute();
                 $fields = $sth->fetchAll();
@@ -1489,7 +1577,9 @@ class PADOMySQL extends PADOBaseModel {
                     $this->_id_column = $this->_colprefix . $id;
                 }
             } catch ( PDOException $e ) {
-                trigger_error( 'PDOException: ' . $e->getMessage() );
+                $message = 'PDOException: ' . $e->getMessage() . ", {$sql}";
+                $pado->errors[] = $message;
+                trigger_error( $message );
             }
             if ( $pado->json_model && $pado->save_json ) {
                 $json = PADODIR . 'models' . DS . $model . '.json';
@@ -1505,14 +1595,15 @@ class PADOMySQL extends PADOBaseModel {
             if ( strpos( $msg, 'not found' ) !== false ) {
                 if ( $pado->upgrader ) {
                     if ( isset( $pado->scheme[ $model ] ) ) {
-                        trigger_error( 'PDOException:' );
                         $this->create_table(
                             $model, $table, $colprefix, $pado->scheme[ $model ] );
                         return [];
                     }
                 }
             }
-            trigger_error( 'PDOException: ' . $msg );
+            $message = 'PDOException: ' . $msg . ", {$sql}";
+            $pado->errors[] = $message;
+            trigger_error( $message );
         }
     }
 
@@ -1567,8 +1658,10 @@ class PADOMySQL extends PADOBaseModel {
                     }
                     if (! $type ) {
                         if ( $pado->debug ) {
-                            trigger_error(
-                                'PADOBaseModelException: unknown type(' . $props['type'] . ')' );
+                            $message = 'PADOBaseModelException: unknown type('
+                                     . $props['type'] . ')';
+                            $pado->errors[] = $message;
+                            trigger_error( $message );
                         }
                         continue;
                     }
@@ -1592,7 +1685,9 @@ class PADOMySQL extends PADOBaseModel {
                         $res = $sth->execute( $vals );
                         $pado->stash( $sql, 1 );
                     } catch ( PDOException $e ) {
-                        trigger_error( 'PDOException: ' . $e->getMessage() );
+                        $message = 'PDOException: ' . $e->getMessage() . ", {$sql}";
+                        $pado->errors[] = $message;
+                        trigger_error( $message );
                         return false;
                     }
                 }
@@ -1609,7 +1704,9 @@ class PADOMySQL extends PADOBaseModel {
                             $res = $sth->execute();
                             $pado->stash( $sql, 1 );
                         } catch ( PDOException $e ) {
-                            trigger_error( 'PDOException: ' . $e->getMessage() );
+                            $message = 'PDOException: ' . $e->getMessage() . ", {$sql}";
+                            $pado->errors[] = $message;
+                            trigger_error( $message );
                         }
                     }
                 }
@@ -1621,8 +1718,9 @@ class PADOMySQL extends PADOBaseModel {
             if (! empty( $update ) ) {
                 foreach ( $update as $name => $props ) {
                     if ( $name === 'PRIMARY' ) {
-                        trigger_error(
-                            'PADOBaseModelException: PRIMARY KEY could not be changed.' );
+                        $message = 'PADOBaseModelException: PRIMARY KEY could not be changed.';
+                        $pado->errors[] = $message;
+                        trigger_error( $message );
                         continue;
                     }
                     if ( isset( $indexes['changed'][ $name ] ) || $this->pado()->can_drop ) {
@@ -1634,7 +1732,9 @@ class PADOMySQL extends PADOBaseModel {
                                 $res = $sth->execute();
                                 $pado->stash( $sql, 1 );
                             } catch ( PDOException $e ) {
-                                trigger_error( 'PDOException: ' . $e->getMessage() );
+                                $message = 'PDOException: ' . $e->getMessage() . ", {$sql}";
+                                $pado->errors[] = $message;
+                                trigger_error( $message );
                             }
                         }
                     }
@@ -1665,7 +1765,7 @@ class PADOMySQL extends PADOBaseModel {
                         $res = $sth->execute();
                         $pado->stash( $sql, 1 );
                     } catch ( PDOException $e ) {
-                        trigger_error( 'PDOException: ' . $e->getMessage() );
+                        trigger_error( 'PDOException: ' . $e->getMessage() . ", {$sql}" );
                         return false;
                     }
                 }
@@ -1711,7 +1811,9 @@ class PADOMySQL extends PADOBaseModel {
             }
             return $res;
         } catch ( PDOException $e ) {
-            trigger_error( 'PDOException: ' . $e->getMessage() );
+            $message = 'PDOException: ' . $e->getMessage() . ", {$sql}";
+            $pado->errors[] = $message;
+            trigger_error( $message );
         }
     }
 }

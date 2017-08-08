@@ -51,15 +51,15 @@ class PTSystemFilters {
     }
 
     function owned_objects ( $app, &$terms, $model, $col = 'user_id' ) {
-        $terms[ $col ] = $app->user()->id;
+        $terms[ $col ] = ['AND' => $app->user()->id ];
     }
 
     function show_only_errors ( $app, &$terms, $model ) {
-        $terms['level'] = 4;
+        $terms['level'] = ['AND' => 4];
     }
 
     function filter_status ( $app, &$terms, $model, $status ) {
-        $terms['status'] = (int) $status;
+        $terms['status'] = ['AND' => $status ];
     }
 
     function filter_draft ( $app, &$terms, $model ) {

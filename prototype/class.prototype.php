@@ -38,6 +38,7 @@ class Prototype {
     public    $stash         = [];
     public    $init_tags;
     protected $protocol;
+    protected $log_path;
     public    $use_plugin    = true;
     public    $plugin_paths  = [];
     public    $plugin_order  = 0; // 0=asc, 1=desc
@@ -90,8 +91,6 @@ class Prototype {
     }
 
     function __construct () {
-        //error_reporting( E_ALL );
-        set_error_handler( [ $this, 'errorHandler'] );
         $this->request_method = $_SERVER['REQUEST_METHOD'];
         $this->protocol  = $_SERVER['SERVER_PROTOCOL'];
         $this->remote_ip = $_SERVER['REMOTE_ADDR'];
@@ -241,8 +240,12 @@ class Prototype {
         if ( $this->mode !== 'upgrade' ) {
             $db->logging = true;
             $ctx->logging = true;
-            $ctx->log_path = __DIR__ . DS . 'log' . DS;
         }
+        if ( $this->debug ) {
+            error_reporting( E_ALL );
+        }
+        set_error_handler( [ $this, 'errorHandler'] );
+        $this->log_path = __DIR__ . DS . 'log' . DS;
         $this->components['Core'] = $this;
         if ( $this->use_plugin ) {
             if ( ( $plugin_d = __DIR__ . DS . 'plugins' ) && is_dir( $plugin_d ) )
@@ -2605,7 +2608,6 @@ class Prototype {
                             $params[ $filter ] = $values;
                         }
                     }
-                    $apply_filter = true;
                 }
             }
             if (! $apply_filter ) {
@@ -2626,6 +2628,7 @@ class Prototype {
                             $value = $values[ $i ];
                             if (! isset( $op_map[ $val ] ) ) continue;
                             $op = $op_map[ $val ];
+                            
                             if ( $type == 'datetime' ) {
                                 $value = $obj->db2ts( $value );
                                 $value = $obj->ts2db( $value );
@@ -2665,6 +2668,7 @@ class Prototype {
                             }
                             if (! $rel_model || ! $rel_col ) continue;
                             $rel_obj = $app->db->model( $rel_model )->new();
+                            $i = 0;
                             foreach ( $conds as $val ) {
                                 $value = $values[ $i ];
                                 if ( count( $values ) > 2 ) {
@@ -2692,7 +2696,7 @@ class Prototype {
                                             $from_ids[] = (int) $rel->from_id;
                                         }
                                         $from_ids = array_unique( $from_ids );
-                                        $terms['id'] = ['IN' => $from_ids ];
+                                        $terms['id'] = ['AND' => ['IN' => $from_ids ] ];
                                     } else {
                                         $terms['id'] = 0; // No object found.
                                     }
@@ -2713,7 +2717,7 @@ class Prototype {
                                     if (! is_array( $orig ) ) {
                                         $orig = [ $orig ];
                                     }
-                                    $orig[] = [ $op => [ 'and' => $value ] ];
+                                    $orig[] = [ $op => $value ];
                                     $cond = $orig;
                                 } else {
                                     $cond[ $op ] = $value;
@@ -2725,7 +2729,7 @@ class Prototype {
                     }
                 }
                 foreach ( $conditions as $col => $cond ) {
-                    $terms[ $col ] = $cond;
+                    $terms[ $col ] = ['AND' => $cond ];
                 }
                 if ( $filter_name = $app->param( '_save_filter_name' ) ) {
                     $filter_terms = ['user_id' => $app->user()->id,
@@ -2743,6 +2747,9 @@ class Prototype {
                     }
                     $app->ctx->vars['current_filter_id'] = $filter->id;
                     $app->ctx->vars['current_filter_name'] = $filter_name;
+                } else {
+                    if (! $app->ctx->vars['current_filter_name'] ) 
+                      $app->ctx->vars['current_filter_name'] = $app->translate( 'Custom' );
                 }
             }
         }
@@ -3889,10 +3896,9 @@ class Prototype {
     }
 
     function errorHandler ( $errno, $errmsg, $f, $line ) {
+        if ( $tmpl = $this->ctx->template_file ) $errmsg = " $errmsg( in {$tmpl} )";
         $msg = "{$errmsg} ({$errno}) occured( line {$line} of {$f} ).";
-        if ( $this->debug == 2 ) $this->debugPrint( $msg );
-        if ( $this->logging && !$this->log_path )
-            $this->log_path = __DIR__ . DS . 'log' . DS;
+        if ( $this->debug === 2 ) $this->debugPrint( $msg );
         if ( $this->logging ) error_log( date( 'Y-m-d H:i:s T', time() ) .
             "\t" . $msg . "\n", 3, $this->log_path . 'error.log' );
     }
