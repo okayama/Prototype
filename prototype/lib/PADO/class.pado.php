@@ -612,7 +612,7 @@ class PADOBaseModel {
                     $col = strpos( $col, $pfx ) !== 0 ? $pfx . $col : $col;
                 }, $colprefix );
                 $count_group_by = join( ',', $columns );
-                $group_by = "GROUP BY {$count_group_by}";
+                $group_by = " GROUP BY {$count_group_by} ";
                 $count_group_by .= ',';
             }
             if ( isset( $args['join'] ) ) {
@@ -803,11 +803,11 @@ class PADOBaseModel {
                 $sql .= ' (' . join( " {$and_or} ", $extra_stms ) . ')';
                 $vals = array_merge( $vals, $extra_vals );
             }
-            $sql .= $group_by;
         } elseif ( is_numeric( $terms ) ) {
             $sql .= "WHERE {$id_column}=?";
             $vals[] = $terms;
         }
+        $sql .= $group_by;
         if ( $extra ) $sql .= $extra . ' ';
         if (!$count ) {
             $opt = '';
@@ -1490,7 +1490,8 @@ class PADOMySQL extends PADOBaseModel {
             $this->_scheme = $scheme;
             return;
         }
-        $sth = $pado->db->prepare( "DESCRIBE {$table}" );
+        $sql = "DESCRIBE {$table}";
+        $sth = $pado->db->prepare( $sql );
         try {
             $sth->execute();
             $fields = $sth->fetchAll();

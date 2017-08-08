@@ -160,12 +160,6 @@
         "unpublished_on": "date"
     },
     "autoset": [
-        "file_ext",
-        "mime_type",
-        "size",
-        "image_width",
-        "image_height",
-        "class",
         "rev_diff",
         "workspace_id",
         "rev_type",

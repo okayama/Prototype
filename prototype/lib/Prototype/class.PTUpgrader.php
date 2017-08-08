@@ -30,6 +30,7 @@ class PTUpgrader {
                 $appname = $app->param( 'appname' );
                 $site_path = $app->param( 'site_path' );
                 $site_url = $app->param( 'site_url' );
+                $language = $app->param( 'sys_language' );
                 $extra_path = $app->param( 'extra_path' );
                 $asset_publish = $app->param( 'asset_publish' );
                 $copyright = $app->param( 'copyright' );
@@ -77,6 +78,7 @@ class PTUpgrader {
                          'site_path'  => $site_path,
                          'site_url'   => $site_url,
                          'extra_path' => $extra_path,
+                         'language'   => $language,
                          'copyright'  => $copyright,
                          'system_email' => $system_email,
                          'asset_publish' => $asset_publish,
@@ -103,6 +105,8 @@ class PTUpgrader {
             $ctx->vars['site_url'] = $app->base . '/prototype/site/';
             $ctx->vars['site_path'] = $app->document_root . DS . 'prototype' . DS . 'site';
             $ctx->vars['extra_path'] = 'assets/';
+            $ctx->vars['language'] = $app->language;
+            $ctx->vars['sys_language'] = $app->language;
         }
         echo $ctx->build_page( $tmpl );
         exit();

@@ -100,6 +100,25 @@
 
 <div class="row form-group">
   <div class="col-lg-2">
+    <label for="language">
+        <mt:trans phrase="Language">
+    </label>
+  </div>
+  <div class="col-lg-2">
+    <mt:loop name="languages">
+    <mt:if name="__first__">
+    <select class="form-control short" id="language" name="language">
+    </mt:if>
+      <option value="<mt:var name="__value__">" <mt:if name="language" eq="$__value__">selected</mt:if>><mt:var name="__value__"></option>
+    <mt:if name="__last__">
+    </select>
+    </mt:if>
+    </mt:loop>
+  </div>
+</div>
+
+<div class="row form-group">
+  <div class="col-lg-2">
     <label for="barcolor">
         <mt:trans phrase="Bar Color">
     </label>

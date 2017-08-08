@@ -4,6 +4,8 @@
 <input type="hidden" name="__mode" value="upgrade">
 <input type="hidden" name="type" value="install">
 
+<h2><mt:trans phrase="System Settings"></h2>
+
 <div class="row form-group">
   <div class="col-lg-2">
     <label for="appname">
@@ -77,10 +79,30 @@
         <mt:var name="label" escape><mt:trans phrase="Output the File"></span>
     </label>
   </div>
+</div>
 
+<div class="row form-group">
+  <div class="col-lg-2">
+    <label for="sys_language">
+        <mt:trans phrase="Language">
+    </label>
+  </div>
+  <div class="col-lg-10 col-2">
+    <mt:loop name="languages">
+    <mt:if name="__first__">
+    <select class="form-control short" id="sys_language" name="sys_language">
+    </mt:if>
+      <option value="<mt:var name="__value__">" <mt:if name="sys_language" eq="$__value__">selected</mt:if>><mt:var name="__value__"></option>
+    <mt:if name="__last__">
+    </select>
+    </mt:if>
+    </mt:loop>
+  </div>
 </div>
 
 <hr />
+
+<h2><mt:trans phrase="User Settings"></h2>
 
 <div class="row form-group">
   <div class="col-lg-2">
@@ -143,8 +165,16 @@
         <mt:trans phrase="Language">
     </label>
   </div>
-  <div class="col-lg-10 input-group col-2">
-    <input type="text" id="language" name="language" class="form-control short" value="<mt:var name="language" escape>">
+  <div class="col-lg-10 col-2">
+    <mt:loop name="languages">
+    <mt:if name="__first__">
+    <select class="form-control short" id="language" name="language">
+    </mt:if>
+      <option value="<mt:var name="__value__">" <mt:if name="language" eq="$__value__">selected</mt:if>><mt:var name="__value__"></option>
+    <mt:if name="__last__">
+    </select>
+    </mt:if>
+    </mt:loop>
   </div>
 </div>
 

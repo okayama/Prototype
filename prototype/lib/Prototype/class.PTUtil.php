@@ -93,6 +93,51 @@ class PTUtil {
         return $basename;
     }
 
+    public static function trim_image ( $file, $x, $y, $w, $h ) {
+        $extension = strtolower( pathinfo( $file )['extension'] );
+        $res = false;
+        switch ( $extension ) {
+            case 'jpg':
+            case 'jpeg':
+                $resource = imagecreatefromjpeg( $file );
+                self::crop_image( $resource, $x, $y, $w, $h );
+                rename( $file, "{$file}.bk" );
+                if ( imagejpeg( $resource, $file ) ) {
+                    unlink( "{$file}.bk" );
+                    $res = true;
+                }
+                break;
+            case 'png':
+                $resource = imagecreatefrompng( $file );
+                self::crop_image( $resource, $x, $y, $w, $h );
+                rename( $file, "{$file}.bk" );
+                if ( imagepng( $resource, $file ) ) {
+                    unlink( "{$file}.bk" );
+                    $res = true;
+                }
+                break;
+            case 'gif':
+                $resource = imagecreatefromgif( $file );
+                self::crop_image( $resource, $x, $y, $w, $h );
+                rename( $file, "{$file}.bk" );
+                if ( imagegif( $resource, $file ) ) {
+                    unlink( "{$file}.bk" );
+                    $res = true;
+                }
+                break;
+        }
+        return $res;
+    }
+
+    public static function crop_image ( &$resource, $x, $y, $w, $h ) {
+        $resource = imagecrop( $resource, array(
+            'x'      => $x,
+            'y'      => $y,
+            'width'  => $w,
+            'height' => $h,
+        ) );
+    }
+
     public static function send_mail ( $to, $subject, $body, $headers, &$error ) {
         $app = Prototype::get_instance();
         mb_internal_encoding( $app->encoding );

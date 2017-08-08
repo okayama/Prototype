@@ -234,9 +234,9 @@ $('#__view-permalink').click(function(){
     </div>
 
 <div id="drop-<mt:var name="__col_name__">">
-<i id="icon-<mt:var name="__col_name__">" class="btn fa <mt:if name="class" eq="image">fa-file-image-o<mt:elseif name="class" eq="pdf">fa-file-pdf-o<mt:else>fa-file-o</mt:if> fa-3x" aria-hidden="true"></i>
-
-    <img <mt:unless name="class" eq="image">class="hidden" </mt:unless>id="image_preview-<mt:var name="__col_name__">" src="<mt:var name="thumbnail">" width="<mt:var name="preview_width">" alt="<mt:trans phrase="Preview">">
+<i id="icon-<mt:var name="__col_name__">" class="btn fa <mt:if name="class" eq="image">fa-file-image-o<mt:elseif name="class" eq="pdf">fa-file-pdf-o<mt:elseif name="class" eq="video">fa-file-video-o<mt:elseif name="class" eq="audio">fa-file-audio-o<mt:else>fa-file-o</mt:if> fa-3x" aria-hidden="true"></i>
+    <img class="<mt:unless name="class" eq="image">hidden</mt:unless>
+    <mt:unless name="value"> hidden</mt:unless>" id="image_preview-<mt:var name="__col_name__">" src="<mt:var name="thumbnail">" width="<mt:var name="preview_width">" alt="<mt:trans phrase="Preview">">
     <a href="javascript:void(0);"
         id="popover-<mt:var name="__col_name__">"><i class="btn fa fa-info-circle fa-2x" aria-hidden="true" aria-label="<mt:trans phrase="Properties">"></i></a>
     <mt:objectvar name="$name" escape setvar="value">
@@ -244,6 +244,10 @@ $('#__view-permalink').click(function(){
       &nbsp; <a id="inline-<mt:var name="__col_name__">" target="_blank" class="btn btn-secondary <mt:unless name="value">hidden</mt:unless>" href="<mt:var name="script_uri">?__mode=view&amp;_type=edit&amp;_model=<mt:var name="model">&amp;id=<mt:var name="request.id" escape>&amp;view=<mt:var name="__col_name__">&amp;_screen_id=<mt:var name="screen_id"><mt:if name="workspace_id">&amp;workspace_id=<mt:var name="workspace_id"></mt:if>"><mt:trans phrase="View"></a>
       <a id="download-<mt:var name="__col_name__">" class="btn btn-secondary <mt:unless name="value">hidden</mt:unless>" href="<mt:var name="script_uri">?__mode=view&amp;_type=edit&amp;_model=<mt:var name="model">&amp;id=<mt:var name="request.id" escape>&amp;view=<mt:var name="__col_name__">&amp;download=1&amp;_screen_id=<mt:var name="screen_id"><mt:if name="workspace_id">&amp;workspace_id=<mt:var name="workspace_id"></mt:if>"><mt:trans phrase="Download"></a>
       <mt:setvarblock name="attach_key">request.<mt:var name="__col_name__">-magic</mt:setvarblock>
+
+      <button type="button" id="edit-<mt:var name="__col_name__">" class="btn btn-primary<mt:unless name="value"> hidden</mt:unless><mt:unless name="class" eq="image"> hidden</mt:unless>" data-toggle="modal" data-target="#modal"
+      data-href="<mt:var name="script_uri">?__mode=edit_image&amp;_model=<mt:var name="model">&amp;id=<mt:var name="request.id" escape>&amp;view=<mt:var name="__col_name__">&amp;_screen_id=<mt:var name="screen_id"><mt:if name="workspace_id">&amp;workspace_id=<mt:var name="workspace_id"></mt:if>"><mt:trans phrase="Edit..."></button>
+
     <input id="<mt:var name="__col_name__">-magic" type="hidden" value="<mt:var name="$attach_key" escape>" name="<mt:var name="__col_name__">-magic" class="watch-changed">
     <span class="btn btn-success fileinput-button">
         <i class="glyphicon glyphicon-plus"></i>
@@ -266,6 +270,8 @@ $('#__view-permalink').click(function(){
 </div>
 </div>
 <script>
+var file_meta_tmpl = '<mt:var name="file_meta_tmpl" strip_linefeeds="1">';
+var file_image_tmpl = '<mt:var name="file_image_tmpl" strip_linefeeds="1">';
 $('#view-<mt:var name="__col_name__">').click(function(){
     var viewlink = $('#clipboard-<mt:var name="__col_name__">').val();
     window.open( viewlink, '_blank');
@@ -280,6 +286,7 @@ $('#popover-<mt:var name="__col_name__">').popover({
 <mt:else>
     $('#popover-<mt:var name="__col_name__">').hide();
     $('#clipboard-<mt:var name="__col_name__">-wrapper').hide();
+    $('#image_preview-<mt:var name="__col_name__">').hide();
 </mt:if>
 var DropZone<mt:var name="__col_name__"> = document.getElementById('drop-<mt:var name="__col_name__">');
 DropZone<mt:var name="__col_name__">.addEventListener('dragover', function (event) {
@@ -313,6 +320,7 @@ $(function () {
                 $('#files-<mt:var name="__col_name__">').html('');
                 $('#download-<mt:var name="__col_name__">').show();
                 $('#inline-<mt:var name="__col_name__">').show();
+                $('#edit-<mt:var name="__col_name__">').show();
                 $('#<mt:var name="__col_name__">-magic').val(file.magic);
                 // alert(JSON.stringify(file));
                 $('<p/>').text(file.name).appendTo('#files-<mt:var name="__col_name__">');

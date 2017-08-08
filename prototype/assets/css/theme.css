@@ -26,9 +26,18 @@ h1 {
   width:70% !important;
 }
 
+.edit_image h1 {
+  color: #000;
+}
+
+.edit_image {
+  padding: 10px;
+}
+
 h2 {
   font-size: 140%;
   font-weight: bold !important;
+  margin-bottom: 20px;
 }
 
 .title {
@@ -664,6 +673,11 @@ i.required {
   font-size: 50% !important;
   color: #666;
   margin-left: 7px;
+}
+
+.figure-wrapper {
+  margin: auto;
+  text-align: center;
 }
 
 .asset-meta label {

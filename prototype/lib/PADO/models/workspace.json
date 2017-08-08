@@ -45,6 +45,11 @@
             "type": "int",
             "size": "11"
         },
+        "language": {
+            "type": "string",
+            "size": 255,
+            "default": null
+        },
         "barcolor": {
             "type": "string",
             "size": "255"
@@ -76,6 +81,7 @@
         "PRIMARY": "id",
         "name": "name",
         "order": "order",
+        "language": "language",
         "modified_on": "modified_on",
         "created_on": "created_on",
         "created_by": "created_by",
@@ -93,6 +99,7 @@
         "name": "primary",
         "description": "text",
         "order": "number",
+        "language": "text",
         "created_by": "reference:user:nickname",
         "created_on": "datetime"
     },
@@ -105,6 +112,7 @@
         "extra_path": "text_short",
         "asset_publish": "checkbox",
         "order": "number",
+        "language": "languages",
         "barcolor": "color",
         "bartextcolor": "color"
     }

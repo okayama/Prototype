@@ -73,7 +73,7 @@ class Prototype {
     protected $methods       = ['view', 'save', 'delete', 'upload', 'save_order',
                                 'list_action', 'display_options', 'get_columns_json',
                                 'export_scheme', 'recover_password', 'save_hierarchy',
-                                'delete_filter'];
+                                'delete_filter', 'edit_image'];
 
     public    $callbacks     = ['pre_save'     => [], 'post_save'   => [],
                                 'pre_delete'   => [], 'post_delete' => [],
@@ -1303,6 +1303,145 @@ class Prototype {
         exit();
     }
 
+    function edit_image ( $app ) {
+        $db = $app->db;
+        $user = $app->user();
+        $model = $app->param( '_model' );
+        $id = (int) $app->param( 'id' );
+        $obj = $db->model( $model )->new();
+        if ( $id ) {
+            $obj = $obj->load( $id );
+            if (! $obj ) {
+                return $app->error( 'Invalid request.' );
+            }
+            if (! $app->can_do( $model, 'edit', $obj ) ) {
+                $app->error( 'Permission denied.' );
+            }
+        } else {
+            if (! $app->can_do( $model, 'edit' ) ) {
+                $app->error( 'Permission denied.' );
+            }
+        }
+        $ctx = $app->ctx;
+        $screen_id = $app->param( '_screen_id' );
+        $tmpl = TMPL_DIR . 'edit_image.tmpl';
+        $key = $app->param( 'view' );
+        $key = htmlspecialchars( $key );
+        $model = htmlspecialchars( $model );
+        $screen_id = htmlspecialchars( $screen_id );
+        if ( $app->request_method === 'POST' ) {
+            $app->validate_magic();
+            $image_data = $app->param( 'image_data' );
+            if ( preg_match( '/^data:(.*?);base64,(.*$)/', $image_data, $matchs ) ) {
+                $mime_type = $matchs[1];
+                $image_data = base64_decode( $matchs[2] );
+                $size = strlen( bin2hex( $image_data ) ) / 2;
+                $max_scale= 256;
+                $meta = explode( '/', $mime_type );
+                $extension = $meta[1];
+                $upload_dir = $app->upload_dir();
+                $file = $upload_dir . DS . 'tmpimg.' . $extension;
+                file_put_contents( $file, $image_data );
+                list( $width, $height ) = getimagesize( $file );
+                // Darkroom's Bug?
+                require_once( 'class.PTUtil.php' );
+                $res = PTUtil::trim_image( $file, 0, 1, $width - 1, $height - 1 );
+                $image_data = file_get_contents( $file );
+                $size = filesize( $file );
+                list( $width, $height ) = getimagesize( $file );
+                $_FILES = [];
+                $_FILES['files'] = ['name' => basename( $file ), 'type' => $mime_type,
+                        'tmp_name' => $file, 'error' => 0, 'size' => filesize( $file ) ];
+                $image_versions = [
+                ''          => ['auto_orient' => true ],
+                'thumbnail' => ['max_width' => $max_scale, 'max_height' => $max_scale ] ];
+                $options = ['upload_dir' => $upload_dir . DS,
+                            'prototype' => $app, 'print_response' => false,
+                            'no_upload' => true, 'image_versions' => $image_versions ];
+                $upload_handler = new UploadHandler( $options );
+                $_SERVER['CONTENT_LENGTH'] = filesize( $file );
+                $upload_handler->post( false );
+                $thumbnail = $upload_dir . DS . 'thumbnail' . DS . basename( $file );
+                $image_data_thumb = file_get_contents( $thumbnail );
+                $max_scale = $max_scale / 2;
+                $file = preg_replace( "/\.$extension$/", "-square.{$extension}", $file );
+                file_put_contents( $file, $image_data );
+                $_FILES['files'] = ['name' => basename( $file ), 'type' => $mime_type,
+                        'tmp_name' => $file, 'error' => 0, 'size' => filesize( $file ) ];
+                $image_versions = [
+                ''          => ['auto_orient' => true ],
+                'thumbnail' => ['max_width' => $max_scale, 'max_height' => $max_scale ] ];
+                $image_versions['thumbnail']['crop'] = true;
+                $options = ['upload_dir' => $upload_dir . DS,
+                            'prototype' => $app, 'print_response' => false,
+                            'no_upload' => true, 'image_versions' => $image_versions ];
+                $upload_handler = new UploadHandler( $options );
+                $_SERVER['CONTENT_LENGTH'] = filesize( $file );
+                $upload_handler->post( false );
+                $thumbnail_square = $upload_dir . DS . 'thumbnail' . DS . basename( $file );
+                $image_data_square = file_get_contents( $thumbnail_square );
+                $screen_id .= '-' . $key;
+                $session = $db->model( 'session' )->get_by_key(
+                    ['name' => $screen_id, 'user_id' => $user->id, 'kind' => 'UP' ]
+                );
+                $assetproperty = json_decode( $session->text, 'true' );
+                $session->data( $image_data );
+                $session->metadata( $image_data_thumb );
+                $session->extradata( $image_data_square );
+                $thumb_dir = dirname( $thumbnail );
+                unlink( $thumbnail );
+                unlink( $thumbnail_square );
+                rmdir( $thumb_dir );
+                rmdir( $upload_dir );
+                $props = [];
+                if ( $session->id ) {
+                    $props = $session->text;
+                    if ( $props ) $props = json_decode( $props, true );
+                } else {
+                    if ( $obj->id ) {
+                        $meta = $db->model( 'meta' )->get_by_key(
+                                ['model' => $model, 'object_id' => $obj->id,
+                                 'key' => 'metadata', 'kind' => $key ] );
+                        if ( $meta->id ) {
+                            $props = $meta->text;
+                            $props = json_decode( $props, true );
+                        }
+                    }
+                }
+                if ( empty( $props ) ) {
+                    // todo error
+                }
+                $props['file_size'] = $size;
+                $props['image_width'] = $width;
+                $props['image_height'] = $height;
+                $ts = date( 'Y-m-d H:i:s' );
+                $props['uploaded'] = $ts;
+                $props['mime_type'] = $mime_type;
+                $session->text( json_encode( $props ) );
+                $session->save();
+                $data = "data:{$mime_type};base64," . base64_encode( $image_data_thumb );
+                $ctx->vars['thumbnail_image'] = $data;
+                $ctx->vars['has_thumbnail_image'] = 1;
+                $ctx->vars['file_name'] = $props['file_name'];
+                $ctx->vars['image_width'] = $props['image_width'];
+                $ctx->vars['image_height'] = $props['image_height'];
+                $ctx->vars['mime_type'] = $props['mime_type'];
+                $ctx->vars['file_size'] = $props['file_size'];
+            }
+        }
+        $param = "?__mode=view&amp;_type=edit&amp;_model={$model}&amp;id={$id}"
+               ."&amp;_screen_id={$screen_id}&amp;view=$key";
+        if ( $app->workspace() ) {
+            $workspace_id = $app->workspace()->id;
+            $param .= "&amp;workspace_id={$workspace_id}";
+        }
+        $ctx->vars['this_mode'] = $app->mode;
+        $ctx->vars['edit_url'] = $this->admin_url . $param;
+        $app->assign_params( $app, $ctx );
+        echo $ctx->build_page( $tmpl );
+        exit();
+    }
+
     function set_hierarchy ( $model, $children, $parent = 0, &$order = 1, &$error = null ) {
         $app = Prototype::get_instance();
         foreach ( $children as $value ) {
@@ -1437,6 +1576,7 @@ class Prototype {
         $app = Prototype::get_instance();
         $app->db->logging = false;
         $app->ctx->logging = false;
+        $app->logging = false;
         require_once( LIB_DIR . 'jQueryFileUpload' . DS . 'UploadHandler.php' );
         $upload_dir = $app->temp_dir;
         if ( $upload_dir ) {
@@ -1485,6 +1625,7 @@ class Prototype {
         $copyright = $app->param( 'copyright' );
         $system_email = $app->param( 'system_email' );
         $default_widget = $app->param( 'default_widget' );
+        $language = $app->param( 'language' );
         $barcolor = $app->param( 'barcolor' );
         $bartextcolor = $app->param( 'bartextcolor' );
         $errors = [];
@@ -1520,6 +1661,7 @@ class Prototype {
                  'site_path'  => $site_path,
                  'site_url'   => $site_url,
                  'extra_path' => $extra_path,
+                 'language'   => $language,
                  'barcolor'   => $barcolor,
                  'bartextcolor' => $bartextcolor,
                  'asset_publish' => $asset_publish,

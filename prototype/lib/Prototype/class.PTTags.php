@@ -453,7 +453,7 @@ class PTTags {
             $_FILES = [];
             $_FILES['files'] = ['name' => basename( $file ), 'type' => $mime_type,
                       'tmp_name' => $file, 'error' => 0, 'size' => filesize( $file ) ];
-            if ( (!$width &&!$height ) && $scale ) {
+            if ( (!$width && !$height ) && $scale ) {
                 list( $w, $h ) = getimagesize( $file );
                 $scale = $scale * 0.01;
                 $width = $w * $scale;

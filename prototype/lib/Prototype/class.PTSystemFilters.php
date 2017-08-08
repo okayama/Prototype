@@ -7,12 +7,24 @@ class PTSystemFilters {
         $registry = $app->registry;
         $table = $app->get_table( $model );
         $obj = $app->db->model( $model )->new();
+        $_colprefix = $obj->_colprefix;
+        $ws_terms = [];
+        if ( $obj->has_column( 'workspace_id' ) && $app->workspace() ) {
+            $ws_terms = [ 'workspace_id' => ['IN' => [0, $app->workspace()->id ] ] ];
+        }
         if ( $table->assign_user ) {
             $system_filters[] = ['name' => 'owned_objects',
                                  'label' => $app->translate( 'My %s', 
                                     $app->translate( $table->plural ) ),
                                  'component' => $this,
                                  'option' => 'user_id',
+                                 'method' => 'owned_objects'];
+        } else if ( $obj->has_column( 'created_by' ) ) {
+            $system_filters[] = ['name' => 'my_objects',
+                                 'label' => $app->translate( 'My %s', 
+                                    $app->translate( $table->plural ) ),
+                                 'component' => $this,
+                                 'option' => 'created_by',
                                  'method' => 'owned_objects'];
         }
         if ( $table->has_status ) {
@@ -41,17 +53,57 @@ class PTSystemFilters {
                 }
             }
         }
+        if ( $obj->has_column( 'class' ) ) {
+            $args  = [ 'group' => [ 'class' ] ];
+            $group = $obj->count_group_by( $ws_terms, $args );
+            foreach ( $group as $item ) {
+                $class_type = $item[ $_colprefix . 'class' ];
+                $class_name = $app->translate( $class_type, null, null, 'default' );
+                $class_name = $app->translate( $class_name );
+                $system_filters[] = ['name' => 'filter_class_' . $class_type,
+                                     'label' => $class_name,
+                                     'component' => $this,
+                                     'option' => $class_type,
+                                     'method' => 'filter_class'];
+            }
+        }
         if ( $model === 'log' ) {
             $system_filters[] = ['name' => 'show_only_errors',
                                  'label' => $app->translate( 'Show only errors' ),
                                  'component' => $this,
                                  'method' => 'show_only_errors'];
+            $args  = [ 'group' => [ 'category' ] ];
+            $group = $obj->count_group_by( $ws_terms, $args );
+            foreach ( $group as $item ) {
+                $log_category = $item[ $_colprefix . 'category' ];
+                $system_filters[] = ['name' => 'filter_log_category_' . $log_category,
+                                     'label' => $app->translate(
+                                        'Category is \'%s\'', $log_category ),
+                                     'component' => $this,
+                                     'option' => $log_category,
+                                     'method' => 'filter_log_category'];
+            }
+            $args  = [ 'group' => [ 'level' ] ];
+            $group = $obj->count_group_by( $ws_terms, $args );
+            $log_levels = [1 => 'info', 2 => 'warning', 4 => 'error',
+                           8 => 'security', 16 => 'debug'];
+            foreach ( $group as $item ) {
+                $log_level = $item[ $_colprefix . 'level' ];
+                if (! isset( $log_levels[ $log_level ] ) ) continue;
+                $log_level_label = $log_levels[ $log_level ];
+                $system_filters[] = ['name' => 'filter_log_level_' . $log_level,
+                                     'label' => $app->translate(
+                                        'Level is \'%s\'', $log_level_label ),
+                                     'component' => $this,
+                                     'option' => $log_level,
+                                     'method' => 'filter_log_level'];
+            }
         }
         return $app->get_registries( $model, 'system_filters', $system_filters );
     }
 
     function owned_objects ( $app, &$terms, $model, $col = 'user_id' ) {
-        $terms[ $col ] = ['AND' => $app->user()->id ];
+        $terms[ $col ] = ['AND' => (int) $app->user()->id ];
     }
 
     function show_only_errors ( $app, &$terms, $model ) {
@@ -80,6 +132,10 @@ class PTSystemFilters {
 
     function filter_unpublished ( $app, &$terms, $model, $status ) {
         return $this->filter_status( $app, $terms, $model, 5 );
+    }
+
+    function filter_class ( $app, &$terms, $model, $class ) {
+        $terms['class'] = $class;
     }
 
 }

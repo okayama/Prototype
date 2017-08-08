@@ -125,6 +125,7 @@ var in_search = false;
 <script>
 $('#dialog-cancel-btn').click(function(){
     window.parent.$('#modal').modal('hide');
+    window.location.href = '<mt:var name="script_uri">?__mode=loading';
     return false;
 });
 </script>
@@ -348,7 +349,7 @@ $('#dialog-cancel-btn').click(function(){
             <input type="hidden" id="_get_col_img_<mt:objectvar name="id">" value="<mt:var name="thumbnail">">
           </mt:if>
         <mt:else>
-          <i class="list-small-icon btn fa <mt:if name="obj_class" eq="image">fa-file-image-o<mt:elseif name="obj_class" eq="pdf">fa-file-pdf-o<mt:else><mt:unless name="obj_class">fa-minus<mt:else>fa-file-o</mt:unless></mt:if>" aria-hidden="true"></i>
+          <i class="list-small-icon btn fa <mt:if name="obj_class" eq="image">fa-file-image-o<mt:elseif name="obj_class" eq="pdf">fa-file-pdf-o<mt:elseif name="obj_class" eq="video">fa-file-video-o<mt:elseif name="obj_class" eq="audio">fa-file-audio-o<mt:else><mt:unless name="obj_class">fa-minus<mt:else>fa-file-o</mt:unless></mt:if>" aria-hidden="true"></i>
           <span class="sr-only"><mt:trans phrase="$obj_class"></span>
       </mt:if>
       </div>
