@@ -96,13 +96,14 @@ class PTUtil {
     public static function trim_image ( $file, $x, $y, $w, $h ) {
         $extension = strtolower( pathinfo( $file )['extension'] );
         $res = false;
+        // todo resize ?
         switch ( $extension ) {
             case 'jpg':
             case 'jpeg':
                 $resource = imagecreatefromjpeg( $file );
                 self::crop_image( $resource, $x, $y, $w, $h );
                 rename( $file, "{$file}.bk" );
-                if ( imagejpeg( $resource, $file ) ) {
+                if ( imagejpeg( $resource, $file, 100 ) ) {
                     unlink( "{$file}.bk" );
                     $res = true;
                 }
@@ -111,7 +112,7 @@ class PTUtil {
                 $resource = imagecreatefrompng( $file );
                 self::crop_image( $resource, $x, $y, $w, $h );
                 rename( $file, "{$file}.bk" );
-                if ( imagepng( $resource, $file ) ) {
+                if ( imagepng( $resource, $file, 9 ) ) {
                     unlink( "{$file}.bk" );
                     $res = true;
                 }

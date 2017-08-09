@@ -9,12 +9,9 @@
 
     <title><mt:if name="html_title"><mt:var name="html_title"><mt:else><mt:var name="page_title"></mt:if> | <mt:getoption key="appname" escape><mt:if name="workspace_id"> | <mt:var name="workspace_name" escape></mt:if></title>
 
-    <!-- Bootstrap core CSS -->
     <link href="assets/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="assets/darkroomjs/darkroom.css">
     <link rel="stylesheet" href="assets/darkroomjs/page.css?<mt:date format="YmdHis">">
-
-    <!-- Custom styles for this template -->
     <script src="assets/js/jquery-3.2.1.min.js"></script>
     <script src="assets/js/tether.min.js"></script>
     <script src="assets/js/bootstrap.min.js"></script>
@@ -24,6 +21,40 @@
   </head>
 
   <body class="dialog edit_image">
+<mt:if name="has_thumbnail_image">
+<script>
+window.parent.$('#modal').modal('hide');
+window.parent.$('#image_preview-<mt:var name="request.view" escape>').prop('src','<mt:var name="thumbnail_image">');
+window.parent.$('#image_preview-<mt:var name="request.view" escape>').prop('src','<mt:var name="thumbnail_image">');
+window.parent.$('#<mt:var name="request.view" escape>-magic').val('<mt:var name="request._screen_id" escape>-<mt:var name="request.view" escape>');
+var prop_tmpl = window.parent.file_meta_tmpl;
+prop_tmpl = prop_tmpl.replace('file_name', '<mt:var name="file_name">');
+prop_tmpl = prop_tmpl.replace('file_size', '<mt:var name="file_size" format_size="1">');
+prop_tmpl = prop_tmpl.replace('mime_type', '<mt:var name="mime_type">');
+var image_tmpl = window.parent.file_image_tmpl;
+image_tmpl = image_tmpl.replace('image_width', '<mt:var name="image_width">');
+image_tmpl = image_tmpl.replace('image_height', '<mt:var name="image_height">');
+prop_tmpl = prop_tmpl + image_tmpl;
+window.parent.$('#popover-<mt:var name="request.view" escape>').popover('dispose');
+window.parent.$('#popover-<mt:var name="request.view" escape>').popover({
+    title: "<mt:trans phrase="Properties">",
+    content: prop_tmpl,
+    placement: "right",
+    html: true
+});
+window.parent.editContentChanged = true;
+if ( '<mt:var name="request._model" escape>' == 'asset' ) {
+    window.parent.$('#_object_size').html('<mt:var name="file_size" format_size="1">');
+    window.parent.$('#size').val('<mt:var name="file_size">');
+    window.parent.$('#_object_width').html('<mt:var name="image_width">px');
+    window.parent.$('#_object_height').html('<mt:var name="image_height">px');
+    window.parent.$('#image_width').val('<mt:var name="image_width">');
+    window.parent.$('#image_height').val('<mt:var name="image_height">');
+}
+window.location.href = '<mt:var name="script_uri">?__mode=loading';
+</script>
+</mt:if>
+
 <form action="<mt:var name="script_uri">" method="POST" id="edit_image_form">
     <input type="hidden" name="__mode" value="edit_image">
     <input type="hidden" name="_model" value="<mt:var name="request._model" escape>">
@@ -51,7 +82,6 @@
       </div>
     </div>
 </form>
-<mt:var name="thumbnail_image">
 <script>
 $('#dialog-submit-btn').click(function(){
     var newImage = dkrm.sourceImage.toDataURL();
@@ -69,36 +99,6 @@ function evnt_keydown(e) {
         window.location.href = '<mt:var name="script_uri">?__mode=loading';
     }
 }
-<mt:if name="has_thumbnail_image">
-window.parent.$('#modal').modal('hide');
-window.parent.$('#image_preview-<mt:var name="request.view" escape>').prop('src','<mt:var name="thumbnail_image">');
-window.parent.$('#image_preview-<mt:var name="request.view" escape>').prop('src','<mt:var name="thumbnail_image">');
-window.parent.$('#<mt:var name="request.view" escape>-magic').val('<mt:var name="request._screen_id" escape>-<mt:var name="request.view" escape>');
-var prop_tmpl = window.parent.file_meta_tmpl;
-prop_tmpl = prop_tmpl.replace('file_name', '<mt:var name="file_name">');
-prop_tmpl = prop_tmpl.replace('file_size', '<mt:var name="file_size" format_size="1">');
-prop_tmpl = prop_tmpl.replace('mime_type', '<mt:var name="mime_type">');
-var image_tmpl = window.parent.file_image_tmpl;
-image_tmpl = image_tmpl.replace('image_width', '<mt:var name="image_width">');
-image_tmpl = image_tmpl.replace('image_height', '<mt:var name="image_height">');
-prop_tmpl = prop_tmpl + image_tmpl;
-window.parent.$('#popover-<mt:var name="request.view" escape>').popover('dispose');
-window.parent.$('#popover-<mt:var name="request.view" escape>').popover({
-    title: "<mt:trans phrase="Properties">",
-    content: prop_tmpl,
-    placement: "right",
-    html: true
-});
-if ( '<mt:var name="request._model" escape>' == 'asset' ) {
-    window.parent.$('#_object_size').html('<mt:var name="file_size" format_size="1">');
-    window.parent.$('#size').val('<mt:var name="file_size">');
-    window.parent.$('#_object_width').html('<mt:var name="image_width">px');
-    window.parent.$('#_object_height').html('<mt:var name="image_height">px');
-    window.parent.$('#image_width').val('<mt:var name="image_width">');
-    window.parent.$('#image_height').val('<mt:var name="image_height">');
-}
-window.location.href = '<mt:var name="script_uri">?__mode=loading';
-</mt:if>
 </script>
 
 <script src="assets/darkroomjs/vendor/fabric.js"></script>
@@ -111,8 +111,7 @@ var dkrm = new Darkroom('#target', {
     minHeight: 100,
     maxWidth: 600,
     maxHeight: 500,
-    ratio: 4/3,
-    backgroundColor: '#000',
+    backgroundColor: 'transparent',
     // Plugins options
     plugins: {
         crop: {

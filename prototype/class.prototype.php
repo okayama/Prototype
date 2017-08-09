@@ -1409,7 +1409,7 @@ class Prototype {
                     }
                 }
                 if ( empty( $props ) ) {
-                    // todo error
+                    return $app->error( 'Invalid request.' );
                 }
                 $props['file_size'] = $size;
                 $props['image_width'] = $width;
