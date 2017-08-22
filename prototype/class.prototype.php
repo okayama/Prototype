@@ -9,6 +9,9 @@ if (! defined( 'LIB_DIR' ) ) {
 if (! defined( 'TMPL_DIR' ) ) {
     define( 'TMPL_DIR', __DIR__ . DS . 'tmpl' . DS );
 }
+if (! defined( 'ALT_TMPL' ) ) {
+    define( 'ALT_TMPL', __DIR__ . DS . 'alt-tmpl' . DS );
+}
 ini_set( 'include_path', ini_get( 'include_path' ) . PATH_SEPARATOR
          . __DIR__ . DS . 'lib' . PATH_SEPARATOR . LIB_DIR . 'Prototype' );
 
@@ -23,7 +26,7 @@ class Prototype {
     protected $dbprefix      = 'mt_';
     protected $cookie_name   = 'pt-user';
     public    $encoding      = 'UTF-8';
-    protected $mode          = 'dashboard';
+    public    $mode          = 'dashboard';
     public    $timezone      = 'Asia/Tokyo';
     public    $list_limit    = 50;
     public    $passwd_min    = 8;
@@ -42,6 +45,7 @@ class Prototype {
     public    $use_plugin    = true;
     public    $plugin_paths  = [];
     public    $plugin_order  = 0; // 0=asc, 1=desc
+    public    $template_paths= [ ALT_TMPL, TMPL_DIR ];
     public    $class_paths   = [];
     public    $components    = [];
     public    $remote_ip;
@@ -73,7 +77,8 @@ class Prototype {
     protected $methods       = ['view', 'save', 'delete', 'upload', 'save_order',
                                 'list_action', 'display_options', 'get_columns_json',
                                 'export_scheme', 'recover_password', 'save_hierarchy',
-                                'delete_filter', 'edit_image'];
+                                'delete_filter', 'edit_image', 'insert_asset',
+                                'upload_multi', 'rebuild_phase'];
 
     public    $callbacks     = ['pre_save'     => [], 'post_save'   => [],
                                 'pre_delete'   => [], 'post_delete' => [],
@@ -83,7 +88,7 @@ class Prototype {
     public    $disp_option;
     public    $workspace_param;
     public    $return_args   = [];
-    protected $core_tags;
+    public    $core_tags;
     private   $encrypt_key   = 'prototype-default-encrypt-key';
 
     static function get_instance() {
@@ -93,7 +98,11 @@ class Prototype {
     function __construct () {
         $this->request_method = $_SERVER['REQUEST_METHOD'];
         $this->protocol  = $_SERVER['SERVER_PROTOCOL'];
-        $this->remote_ip = $_SERVER['REMOTE_ADDR'];
+        if ( isset( $_SERVER[ 'HTTP_X_FORWARDED_FOR' ] ) ) {
+            $this->remote_ip = $_SERVER[ 'HTTP_X_FORWARDED_FOR' ];
+        } else {
+            $this->remote_ip = $_SERVER[ 'REMOTE_ADDR' ];
+        }
         $secure = !empty( $_SERVER['HTTPS'] ) &&
             strtolower( $_SERVER['HTTPS'] ) !== 'off' ? 's' : '';
         $this->is_secure = $secure ? true : false;
@@ -154,6 +163,8 @@ class Prototype {
         $this->db = $db;
         require_once( LIB_DIR . 'PAML' . DS .'class.paml.php' );
         $ctx = new PAML();
+        $ctx->include_paths[ ALT_TMPL ] = true;
+        $ctx->include_paths[ TMPL_DIR ] = true;
         $ctx->prefix = 'mt';
         $ctx->app = $this;
         $ctx->default_component = $this;
@@ -166,8 +177,9 @@ class Prototype {
             'function'   => ['objectvar', 'include', 'includeparts', 'getobjectname',
                              'assetthumbnail', 'assetproperty', 'getoption', 'statustext',
                              'archivetitle', 'archivedate'],
-            'block'      => ['objectcols', 'objectloop', 'tables', 'nestableobjects'],
-            'conditional'=> ['objectcontext', 'tablehascolumn', 'isadmin'],
+            'block'      => ['objectcols', 'objectloop', 'tables', 'nestableobjects',
+                             'countgroupby'],
+            'conditional'=> ['objectcontext', 'tablehascolumn', 'isadmin', 'ifusercan'],
             'modifier'   => ['epoch2str'] ];
         foreach ( $tags as $kind => $arr ) {
             $tag_prefix = $kind === 'modifier' ? 'filter_' : 'hdlr_';
@@ -183,6 +195,9 @@ class Prototype {
         $ctx->vars['prototype_path'] = $this->path;
         $this->ctx = $ctx;
         self::$app = $this;
+        if ( $this->user() ) {
+            $this->language = $this->user()->language;
+        }
         if (!$this->language )
             $this->language = substr( $_SERVER['HTTP_ACCEPT_LANGUAGE'], 0, 2 );
         $locale_dir = __DIR__ . DS . 'locale';
@@ -196,13 +211,13 @@ class Prototype {
             $this->dictionary[ $lang ]
                 = json_decode( file_get_contents( $locale ), true );
         // if ( $this->param( 'setup_db' ) ) {
-            // require_once( 'class.PTUpgrader.php' );
-            // $upgrader = new PTUpgrader;
-            // $upgrader->setup_db( true );
+            /*
+            require_once( 'class.PTUpgrader.php' );
+            $upgrader = new PTUpgrader;
+            $upgrader->setup_db( true );
+            */
         // }
-        $sql = "SHOW TABLES LIKE '{$prefix}table'";
-        $sth = $db->db->prepare( $sql );
-        $sth->execute();
+        $sth = $db->show_tables( 'table' );
         $table = $sth->fetchColumn();
         if (! $table && $this->mode !== 'upgrade' ) 
             $this->redirect( $this->admin_url . '?__mode=upgrade&_type=install' );
@@ -275,13 +290,9 @@ class Prototype {
                     if ( $extension === 'json' ) {
                         $r = json_decode( file_get_contents( $_plugin ), true );
                         foreach ( $r as $key => $props ) {
-                            if ( $key === 'methods' ) {
-                                $methods = $r[ $key ];
-                                foreach ( $methods as $meth => $prop ) {
-                                    $this->registry['methods'][ $meth ] = $prop;
-                                }
-                            } else {
-                                $this->registry[ $key ][] = $props;
+                            $methods = $r[ $key ];
+                            foreach ( $methods as $meth => $prop ) {
+                                $this->registry[ $key ][ $meth ] = $prop;
                             }
                         }
                     } else if ( $extension === 'php' ) {
@@ -338,6 +349,7 @@ class Prototype {
         }
         $workspace_id = null;
         $workspace = $app->workspace();
+        $user = $app->user();
         if ( $workspace ) {
             $workspace_id = $workspace->id;
             $ctx->vars['workspace_scope'] = 1;
@@ -346,8 +358,45 @@ class Prototype {
             $ctx->vars['workspace_bartextcolor'] = $workspace->bartextcolor;
             $ctx->vars['workspace_extra_path'] = $workspace->extra_path;
             $ctx->vars['workspace_id'] = $workspace_id;
+            if (! $user->is_superuser ) {
+                $permissions = array_keys( $app->permissions() );
+                if (! in_array( $workspace_id, $permissions ) ) {
+                    $app->return_to_dashboard( ['permission' => 1], true );
+                }
+            }
         }
-        $user = $app->user();
+        if ( isset( $app->registry['menus'] ) ) {
+            $menus = $app->registry['menus'];
+            require_once( 'class.PTUtil.php' );
+            PTUtil::sort_by_order( $menus );
+            $system_menus = [];
+            $workspace_menus = [];
+            foreach ( $menus as $menu ) {
+                $component = $app->component( $menu['component'] );
+                $permission = isset( $menu['permission'] ) ? $menu['permission'] : null;
+                if ( isset( $permission ) ) {
+                    if ( isset( $menu['display_space'] ) ) {
+                        if (! $app->can_do( $permission, null, null, $workspace ) ) continue;
+                    }
+                    if ( isset( $menu['display_system'] ) ) {
+                        if (! $app->can_do( $permission ) ) continue;
+                    }
+                }
+                $label = $app->translate( $menu['label'], null, $component );
+                $item = ['menu_label' => $label, 'menu_mode' => $menu['mode'] ];
+                if ( isset( $menu['args'] ) ) {
+                    $item['menu_args'] = $menu['args'];
+                }
+                if ( isset( $menu['display_system'] ) ) {
+                    $system_menus[] = $item;
+                }
+                if ( isset( $menu['display_space'] ) ) {
+                    $workspace_menus[] = $item;
+                }
+            }
+            $ctx->vars['system_menus'] = $system_menus;
+            $ctx->vars['workspace_menus'] = $workspace_menus;
+        }
         if ( $user ) {
             $ctx->vars['user_name'] = $user->name;
             $ctx->vars['user_nickname'] = $user->nickname;
@@ -377,15 +426,20 @@ class Prototype {
             $meth = $registry['methods'][ $mode ];
             $plugin = $meth['component'];
             $components = $app->class_paths;
-            if ( isset( $components[ $component ] ) ) {
-                $_plugin = $components[ $component ];
-                if (!include( $_plugin ) )
-                    trigger_error( "Plugin '{$_plugin}' load failed!" );
+            if ( isset( $components[ $plugin ] ) ) {
+                $_plugin = $components[ $plugin ];
+                if (! class_exists( $plugin ) ) require_once( $_plugin );
                 if ( class_exists( $plugin ) ) {
                     $component = new $plugin();
                     $app->components[ $plugin ] = $component;
                     $method = $meth['method'];
                     if ( method_exists( $component, $method ) ) {
+                        if ( isset( $meth['permission'] ) && $meth['permission'] ) {
+                            if (! $app->can_do( $meth['permission'],
+                                                null, null, $workspace ) ) {
+                                $app->error( 'Permission denied.' );
+                            }
+                        }
                         return $component->$method( $app );
                     }
                 }
@@ -397,11 +451,10 @@ class Prototype {
     function component ( $component ) {
         $components = $this->components;
         if ( isset( $components[ $component ] ) ) return $components[ $component ];
-        $component_paths = $this->component_paths;
+        $component_paths = $this->class_paths;
         if ( isset( $component_paths[ $component ] ) ) {
             $_plugin = $component_paths[ $component ];
-            if (!include( $_plugin ) )
-                trigger_error( "Plugin '{$_plugin}' load failed!" );
+            if (! class_exists( $component ) ) require_once( $_plugin );
             if ( class_exists( $component ) ) {
                 $class = new $component();
                 $this->components[ $component ] = $class;
@@ -475,10 +528,9 @@ class Prototype {
     }
 
     function __mode ( $mode ) {
-        // check mode && check path => ../../
         $app = Prototype::get_instance();
         if ( $mode === 'logout' ) $app->logout();
-        $tmpl = TMPL_DIR . $mode . '.tmpl';
+        $tmpl = $mode . '.tmpl';
         $ctx = $app->ctx;
         $ctx->vars['this_mode'] = $mode;
         if ( $mode === 'login' ) $app->login();
@@ -503,8 +555,7 @@ class Prototype {
         }
         $app->assign_params( $app, $ctx );
         $ctx->params['this_mode'] = $mode;
-        echo $ctx->build_page( $tmpl );
-        exit();
+        return $app->build_page( $tmpl );
     }
 
     function user () {
@@ -591,8 +642,7 @@ class Prototype {
             }
         }
         if (! $table ) return $app->error( 'Invalid request.' );
-        $tmpl = TMPL_DIR . $type . '.tmpl';
-        if (! is_readable( $tmpl ) ) return $app->error( 'Invalid request.' );
+        $tmpl = $type . '.tmpl';
         $label = $app->translate( $table->label );
         $plural = $app->translate( $table->plural );
         $ctx = $app->ctx;
@@ -606,15 +656,15 @@ class Prototype {
         $user = $app->user();
         $screen_id = $app->param( '_screen_id' );
         $ctx->vars['has_status'] = $table->has_status;
-        $max_status = $app->max_status( $user, $model );
+        $max_status = $app->max_status( $user, $model, $workspace );
         $status_published = $app->status_published( $model );
         $ctx->vars['max_status'] = $max_status;
         $ctx->vars['status_published'] = $status_published;
         $ctx->vars['_default_status'] = $table->default_status;
         if ( $type === 'list' ) {
             if (! $app->param( 'dialog_view' ) ) {
-                if (! $app->can_do( $model, 'list' ) ) {
-                    $app->error( 'Permission denied.' );
+                if (! $app->can_do( $model, 'list', null, $workspace ) ) {
+                    $app->return_to_dashboard( ['permission' => 1], true );
                 }
             }
             $ctx->vars['page_title'] = $app->translate( 'List of %s', $plural );
@@ -816,7 +866,6 @@ class Prototype {
                     if ( $has_deadline ) $status_published--;
                 }
                 $extra_permission = [];
-                // $_colprefix = $obj->_colprefix;
                 if ( empty( $permissions ) ) {
                     $app->error( 'Permission denied.' );
                 }
@@ -866,16 +915,14 @@ class Prototype {
             }
             $app->register_callback( $model, 'pre_listing', 'pre_listing', 1, $app );
             $app->init_callbacks( $model, 'pre_listing' );
-            $callback = ['name' => 'pre_listing', 'extra' => $extra, 'args' => $args,
+            $callback = ['name' => 'pre_listing',
                          'scheme' => $scheme, 'table' => $table ];
-            $app->run_callbacks( $callback, $model, $terms, $extra );
-            $extra = $callback['extra'];
+            $app->run_callbacks( $callback, $model, $terms, $args, $extra );
             if ( $table->revisable ) {
                 if (! $app->param( 'rev_object_id' ) ) {
                     $extra .= " AND {$_colprefix}rev_type=0";
                 }
             }
-            $args = $callback['args'];
             $objects = $obj->load( $terms, $args, '*', $extra );
             unset( $args['limit'], $args['offset'] );
             $count = $obj->count( $terms, $args, '*', $extra );
@@ -940,6 +987,7 @@ class Prototype {
                 }
                 $id = (int) $id;
                 if (! $id ) return $app->error( 'Invalid request.' );
+                $obj = $db->model( $model )->new();
                 $obj = $db->model( $model )->load( $id );
                 if ( is_object( $obj ) ) {
                     if ( $primary = $table->primary ) {
@@ -1005,9 +1053,28 @@ class Prototype {
                     $app->translate( '%s hierarchy saved successfully.', $plural );
             }
         }
-        // todo http header
         $ctx->vars['return_args'] = http_build_query( $app->return_args );
-        echo $ctx->build_page( $tmpl );
+        return $app->build_page( $tmpl );
+    }
+
+    function build_page ( $tmpl, $param = [] ) {
+        $app = Prototype::get_instance();
+        if (! $app->debug ) {
+            header( 'Cache-Control: no-store, no-cache, must-revalidate' );
+            header( 'Cache-Control: post-check=0, pre-check=0', FALSE );
+            header( 'Content-type: text/html; charset=utf-8' );
+        }
+        $template_paths = $app->template_paths;
+        $tmpl = str_replace( '/', DS, $tmpl );
+        $sep = preg_quote( DS, '/' );
+        foreach ( $template_paths as $path ) {
+            $path = preg_replace( "/$sep$/", '', $path ) . DS;
+            if ( file_exists( $path . $tmpl ) ) {
+                $tmpl = $path . $tmpl;
+                break;
+            }
+        }
+        echo $app->ctx->build_page( $tmpl, $param );
         exit();
     }
 
@@ -1049,17 +1116,18 @@ class Prototype {
         return false;
     }
 
-    function max_status ( $user, $model ) {
+    function max_status ( $user, $model, $workspace = null ) {
         $app = Prototype::get_instance();
-        $workspace_id = $app->workspace() ? $app->workspace()->id : 0;
+        $workspace = $workspace ? $workspace : $app->workspace();
+        $workspace_id = $workspace ? $workspace->id : 0;
         $table = $app->get_table( $model );
+        $max_status = 1;
         if ( $user->is_superuser ) {
             $max_status = 5;
         } else {
             $permissions = $app->permissions();
             $perms = isset( $permissions[ $workspace_id ] )
                    ? $permissions[ $workspace_id ] : [];
-            $max_atstus = 1;
             if ( $table->has_status ) {
                 $status_published = $app->status_published( $model );
                 if ( $status_published === 4 ) {
@@ -1076,11 +1144,19 @@ class Prototype {
         return $max_status;
     }
 
-    function can_do ( $model, $action, $obj = null  ) {
+    function can_do ( $model, $action = null, $obj = null, $workspace = null  ) {
+        if (! $action && strpos( $model, '_' ) !== false )
+            list( $action, $model ) = explode( '_', $model );
+        if ( $model == 'rebuild' && is_object( $action ) ) {
+            if ( $action->_model == 'workspace' ) {
+                $workspace = $action;
+            }
+        }
         $app = Prototype::get_instance();
+        if ( $model === 'superuser' ) return $app->user()->is_superuser;
         $table = $app->get_table( $model );
         if ( $app->mode !== 'list_action' ) {
-            if (! $app->workspace() ) {
+            if (! $app->workspace() && ( $obj && ! $obj->workspace ) ) {
                 if ( $table->space_child && $action === 'edit' ) {
                     return false;
                 } else if ( $action === 'list' && !$table->display_system ) {
@@ -1093,18 +1169,30 @@ class Prototype {
             if ( $obj && $obj->id == $app->user()->id ) return true;
         }
         $permissions = $app->permissions();
-        $workspace = $app->workspace();
-        if ( $obj && $obj->has_column( 'workspace_id' ) ) {
-            $workspace = $obj->workspace;
+        if (! $workspace ) {
+            // $workspace = $app->workspace();
+            if ( $obj && $obj->has_column( 'workspace_id' ) ) {
+                $workspace = $obj->workspace;
+            }
         }
         $ws_perms = ( $workspace && isset( $permissions[ $workspace->id ] ) )
                   ? $permissions[ $workspace->id ] : [];
         if ( $workspace ) {
             $perms = $ws_perms;
+            if ( in_array( 'workspace_admin', $perms ) ) {
+                return true;
+            }
         } else {
             $perms = isset( $permissions[0] ) ? $permissions[0] : [];
         }
-        if ( $action == 'list' ) {
+        if ( $model == 'rebuild' ) {
+            if ( $workspace ) {
+                return in_array( 'can_rebuild', $perms );
+            } else {
+                return isset( $permissions[0] ) && isset( $permissions[0]['can_rebuild'] )
+                       ? true : false;
+            }
+        } else if ( $action == 'list' ) {
             $name = 'can_list_' . $model;
             if ( $workspace ) {
                 return in_array( $name, $perms );
@@ -1122,7 +1210,7 @@ class Prototype {
             } else {
                 $range = 'can_update_all_' . $model;
                 if ( $table->has_status ) {
-                    $max_status = $app->max_status( $app->user(), $model );
+                    $max_status = $app->max_status( $app->user(), $model, $workspace );
                     if ( $obj->status > $max_status ) {
                         return false;
                     }
@@ -1192,6 +1280,12 @@ class Prototype {
                         $ws_permission[] = $name;
                     }
                 }
+            }
+            if ( $role->workspace_admin ) {
+                $ws_permission[] = 'workspace_admin';
+            }
+            if ( $role->can_rebuild ) {
+                $ws_permission[] = 'can_rebuild';
             }
             $user_permissions[ $workspace_id ] = $ws_permission;
         }
@@ -1303,6 +1397,77 @@ class Prototype {
         exit();
     }
 
+    function insert_asset ( $app ) {
+        $ctx = $app->ctx;
+        if ( $app->param( 'insert_editor' ) ) {
+            $ids = $app->param( 'id' );
+            $assets = [];
+            $insert_assets = [];
+            foreach ( $ids as $id ) {
+                $id = (int) $id;
+                $asset = $app->db->model( 'asset' )->load( $id );
+                if ( $asset ) {
+                    $assets[] = $asset;
+                    $insert_assets[ $id ] = $asset;
+                }
+            }
+            $ctx->stash( 'loop_objects', $assets );
+            if ( $app->param( 'do_insert' ) ) {
+                $loop_vars = [];
+                foreach ( $ids as $id ) {
+                    $id = (int) $id;
+                    $obj = $insert_assets[ $id ];
+                    $urlinfo = $app->db->model( 'urlinfo' )->get_by_key( [
+                                                'object_id' => $id, 'model' => 'asset',
+                                                'key' => 'file' ] );
+                    $url = $urlinfo->url;
+                    $assetproperty = $app->get_assetproperty( $obj, 'file' );
+                    $label = $app->param( 'asset-label-' . $id );
+                    $save_label = $app->param( 'save-label' . $id );
+                    if ( $save_label ) {
+                        $obj->label( $label );
+                        $obj->save();
+                    }
+                    $class = $obj->class;
+                    if ( $class == 'image' ) {
+                        $width = (int) $app->param( 'thumb-width-' . $id );
+                        $height = $assetproperty['image_height'];
+                        if ( $assetproperty['image_width'] != $width ) {
+                            $orig_width = $assetproperty['image_width'];
+                            $scale = $width / $orig_width;
+                            $height = round( $height * $scale );
+                        }
+                        $height = (int) $height;
+                        $use_thumb = $app->param( 'use-thumb-' . $id );
+                        if ( $use_thumb ) {
+                            require_once( 'class.PTUtil.php' );
+                            $args = ['width' => $width ];
+                            $url = PTUtil::thumbnail_url( $obj, $args, $assetproperty );
+                        }
+                        $align = $app->param( 'insert-align-' . $id );
+                        $loop_vars[] = ['align' => $align, 'width' => $width,
+                                        'class' => $obj->class, 'height' => $height,
+                                        'url' => $url, 'label' => $label ];
+                    } else {
+                        $file_size = $assetproperty['file_size'];
+                        $loop_vars[] = ['url' => $url, 'label' => $label,
+                                        'file_size' => $file_size,
+                                        'class' => $obj->class ];
+                    }
+                }
+                $ctx->vars['insert_loop'] = $loop_vars;
+            }
+        }
+        $class = $app->param( '_system_filters_option' );
+        if (! $class ) $class = 'Asset';
+        $tmpl = 'insert_asset.tmpl';
+        $class = $app->translate( $app->translate( $class, '', $app, 'default' ) );
+        $ctx->vars['page_title'] = $app->translate( 'Insert %s', $class );
+        $ctx->vars['this_mode'] = $app->mode;
+        $app->assign_params( $app, $ctx );
+        return $app->build_page( $tmpl );
+    }
+
     function edit_image ( $app ) {
         $db = $app->db;
         $user = $app->user();
@@ -1324,8 +1489,24 @@ class Prototype {
         }
         $ctx = $app->ctx;
         $screen_id = $app->param( '_screen_id' );
-        $tmpl = TMPL_DIR . 'edit_image.tmpl';
+        $tmpl = 'edit_image.tmpl';
         $key = $app->param( 'view' );
+        $assetproperty = [];
+        $session_name = $screen_id . '-' . $key;
+        $session = $db->model( 'session' )->get_by_key(
+            ['name' => $session_name, 'user_id' => $user->id ]
+        );
+        if (! $session->id && $obj->id ) {
+            $assetproperty = $app->get_assetproperty( $obj, $key );
+        } else {
+            $json = $session->text;
+            $assetproperty = json_decode( $json, true );
+        }
+        if ( empty( $assetproperty  ) ) {
+            return $app->error( 'Invalid request.' );
+        }
+        $ctx->vars['image_width'] = $assetproperty['image_width'];
+        $ctx->vars['image_height'] = $assetproperty['image_height'];
         $key = htmlspecialchars( $key );
         $model = htmlspecialchars( $model );
         $screen_id = htmlspecialchars( $screen_id );
@@ -1335,7 +1516,7 @@ class Prototype {
             if ( preg_match( '/^data:(.*?);base64,(.*$)/', $image_data, $matchs ) ) {
                 $mime_type = $matchs[1];
                 $image_data = base64_decode( $matchs[2] );
-                $size = strlen( bin2hex( $image_data ) ) / 2;
+                // $size = strlen( bin2hex( $image_data ) ) / 2;
                 $max_scale= 256;
                 $meta = explode( '/', $mime_type );
                 $extension = $meta[1];
@@ -1343,9 +1524,18 @@ class Prototype {
                 $file = $upload_dir . DS . 'tmpimg.' . $extension;
                 file_put_contents( $file, $image_data );
                 list( $width, $height ) = getimagesize( $file );
+                $width--;
+                $height--;
+                $orig_width = $app->param( 'orig_width' );
+                $orig_height = $app->param( 'orig_height' );
                 // Darkroom's Bug?
                 require_once( 'class.PTUtil.php' );
-                $res = PTUtil::trim_image( $file, 0, 1, $width - 1, $height - 1 );
+                if ( ( $width == $orig_width && $height == $orig_height )
+                    || ( $width == $orig_height && $height == $orig_width ) ){
+                    $res = PTUtil::trim_image( $file, 0, 1, $width - 1, $height - 1 );
+                } else {
+                    $res = PTUtil::trim_image( $file, 1, 1, $width - 2, $height - 2 );
+                }
                 $image_data = file_get_contents( $file );
                 $size = filesize( $file );
                 list( $width, $height ) = getimagesize( $file );
@@ -1438,8 +1628,7 @@ class Prototype {
         $ctx->vars['this_mode'] = $app->mode;
         $ctx->vars['edit_url'] = $this->admin_url . $param;
         $app->assign_params( $app, $ctx );
-        echo $ctx->build_page( $tmpl );
-        exit();
+        return $app->build_page( $tmpl );
     }
 
     function set_hierarchy ( $model, $children, $parent = 0, &$order = 1, &$error = null ) {
@@ -1514,15 +1703,24 @@ class Prototype {
             echo json_encode( ['result' => $res ] );
             exit();
         }
-        $dialog_view = $app->param( 'dialog_view' ) ? '&dialog_view=1' : '';
-        $dialog_view .= $app->param( 'single_select' ) ? '&single_select=1' : '';
+        $options = $app->param( 'dialog_view' ) ? '&dialog_view=1' : '';
+        $options .= $app->param( 'single_select' ) ? '&single_select=1' : '';
+        $options .= $app->param( 'insert_editor' ) ? '&insert_editor=1' : '';
+        $options .= $app->param( 'insert' ) ?
+            '&insert_editor=' . $app->param( 'insert' ) : '';
+        $options .= $app->param( 'insert' ) ?
+            '&selected_ids=' . $app->param( 'selected_ids' ) : '';
+        $options .= $app->param( 'target' ) ?
+            '&target=' . $app->param( 'target' ) : '';
+        $options .= $app->param( 'get_col' ) ?
+            '&get_col=' . $app->param( 'get_col' ) : '';
         $app->redirect( $app->admin_url .
             "?__mode=view&_type={$type}&_model={$model}&saved_props=1"
-            . $app->workspace_param . $dialog_view );
+            . $app->workspace_param . $options );
     }
 
     function upload ( $app ) {
-        $app->validate_magic();
+        $app->validate_magic( true );
         $upload_dir = $app->upload_dir();
         $screen_id = $app->param( '_screen_id' );
         $name = $app->param( 'name' );
@@ -1572,6 +1770,230 @@ class Prototype {
         $upload_handler = new UploadHandler( $options );
     }
 
+    function rebuild_phase ( $app, $start = false, $counter = 0, $dependencies = false ) {
+        $ctx = $app->ctx;
+        $per_rebuild = 40;
+        $tmpl = 'rebuild_phase.tmpl';
+        $model = $app->param( '_model' );
+        if ( $app->param( '_type' ) && $app->param( '_type' ) == 'start_rebuild' ) {
+            $scope_name = $app->workspace() ? $app->workspace()->name : $app->appname;
+            $title = $app->translate( 'Publish %s', $scope_name );
+            $ctx->vars['page_title'] = $title;
+            return $app->build_page( $tmpl );
+        }
+        $app->validate_magic();
+        $next_model = '';
+        $next_models = [];
+        $rebuild_last = false;
+        if ( $app->param( '_type' ) && $app->param( '_type' ) == 'rebuild_archives' ) {
+            $model = $app->param( 'next_models' );
+            $models = explode( ',', $model );
+            if ( isset( $models[ $counter ] ) ) {
+                $model = $models[ $counter ];
+                $obj = $app->db->model( $model )->new();
+                $table = $app->get_table( $model );
+                if (! $table ) return $app->error( 'Invalid request.' );
+                $_colprefix = $obj->_colprefix;
+                $terms = [];
+                if ( $obj->has_column( 'workspace_id' ) && $app->workspace() ) {
+                    $terms['workspace_id'] = $app->workspace()->id;
+                }
+                if ( $obj->has_column( 'status' ) ) {
+                    $status_published = $app->status_published( $model );
+                    if ( $status_published ) {
+                        $terms['status'] = $status_published;
+                    }
+                }
+                $extra = '';
+                if ( $table->revisable ) {
+                    $extra .= " AND {$_colprefix}rev_type=0";
+                }
+                $objects = $obj = $app->db->model( $model )->load( $terms, [], '*', $extra );
+                $apply_actions = count( $objects );
+                if (! $apply_actions ) {
+                    if ( isset( $models[ $counter + 1] ) ) {
+                        return $app->rebuild_phase( $app, $start, $counter + 1 );
+                    } else {
+                        $ctx->vars['rebuild_end'] = 1;
+                        $ctx->vars['page_title'] = $app->translate( 'Done.' );
+                        return $app->build_page( $tmpl );
+                    }
+                } else {
+                    $next_models =
+                        array_slice( $models , $counter + 1, count( $models ) - 1);
+                    if ( empty( $next_models ) ) {
+                        $rebuild_last = true;
+                    } else {
+                        $next_model = $next_models[0];
+                    }
+                    $object_ids = [];
+                    foreach ( $objects as $obj ) {
+                        if ( $app->get_permalink( $obj, true ) ) {
+                            $object_ids[] = $obj->id;
+                        }
+                    }
+                    $apply_actions = count( $object_ids );
+                    if (! $apply_actions ) {
+                        if ( isset( $models[ $counter + 1] ) ) {
+                            return $app->rebuild_phase( $app, $start, $counter + 1 );
+                        } else {
+                            $ctx->vars['rebuild_end'] = 1;
+                            $ctx->vars['page_title'] = $app->translate( 'Done.' );
+                            return $app->build_page( $tmpl );
+                        }
+                    }
+                    $app->param( 'apply_actions', $apply_actions );
+                    $app->param( 'ids', join( ',', $object_ids ) );
+                }
+            } else {
+                return $app->error( 'Invalid request.' );
+            }
+        } else {
+            $table = $app->get_table( $model );
+        }
+        $plural = $app->translate( $table->plural );
+        $ids = $app->param( 'ids' );
+        $ids = explode( ',', $ids );
+        $apply_actions = (int) $app->param( 'apply_actions' );
+        array_walk( $ids, function( &$id ) { $id = (int) $id; } );
+        $rebuild_ids = array_slice( $ids , 0, $per_rebuild );
+        $next_ids = array_slice( $ids , $per_rebuild );
+        $rebuilt = $apply_actions - ( count( $ids ) - count( $rebuild_ids ) );
+        $objects = $app->db->model( $model )->load( ['id' => ['IN' => $rebuild_ids ] ] );
+        foreach ( $objects as $obj ) {
+            $cache_vars = $app->ctx->vars;
+            $cache_local_vars = $app->ctx->local_vars;
+            $app->publish_obj( $obj, null, false );
+            $app->ctx->vars = $cache_vars;
+            $app->ctx->local_vars = $cache_local_vars;
+        }
+        $_return_args = $app->param( '_return_args' );
+        if ( $dependencies ) {
+            $app->param( 'dependencies', 1 );
+        }
+        $ctx->vars['this_mode'] = $app->mode;
+        $app->assign_params( $app, $ctx );
+        $request_dependencies = [];
+        if ( $app->param( 'dependencies' ) ) {
+            $rebuild_dependencies = $app->param( 'rebuild_dependencies' );
+            $request_dependencies = $app->stash( 'rebuild_dependencies' )
+                                  ? $app->stash( 'rebuild_dependencies' ) : [];
+            if ( $rebuild_dependencies ) {
+                $rebuild_dependencies = json_decode( $rebuild_dependencies, true );
+                foreach ( $rebuild_dependencies as $key => $ids ) {
+                    $_ids = isset( $request_dependencies[ $key ] )
+                          ? $request_dependencies[ $key ] : [];
+                    $_ids = array_merge( $_ids, $ids );
+                    $_ids = array_unique( $_ids );
+                    $request_dependencies[ $key ] = $_ids;
+                }
+            }
+            $ctx->vars['rebuild_dependencies'] = json_encode( $request_dependencies );
+        }
+        if (! empty( $next_ids ) ) {
+            $percent = round( $rebuilt / $apply_actions * 100 );
+            if ( $start ) {
+                $_return_args = rawurlencode( $_return_args );
+            }
+            $ctx->vars['rebuilt_percent'] = $percent;
+            $ctx->vars['_return_args'] = $_return_args;
+            $ctx->vars['_model'] = $model;
+            $ctx->vars['rebuild_ids'] = join( ',', $next_ids );
+            $ctx->vars['apply_actions'] = $apply_actions;
+            $ctx->vars['icon_url'] = 'assets/img/loading.gif';
+            $title = $app->translate( 'Rebuilding %s...', $plural );
+            $ctx->vars['page_title'] = $title;
+            if ( empty( $next_models ) ) {
+                $next_models = $app->param( 'next_models' );
+            } else {
+                $next_models = join( ',', $next_models );
+            }
+            if ( $next_models ) {
+                $ctx->vars['next_models'] = $next_models;
+            }
+            return $app->build_page( $tmpl );
+        } else {
+            if ( $app->param( 'next_models' ) ) {
+                $ctx->vars['rebuild_next'] = 1;
+                if ( empty( $next_models ) &&! $rebuild_last ) {
+                    $next_models = $app->param( 'next_models' );
+                } else {
+                    $next_models = join( ',', $next_models );
+                }
+                $ctx->vars['next_models'] = $next_models;
+            }
+            if ( $app->param( '_return_args' ) ) {
+                $return_args = $app->param( '_return_args' );
+                if (! empty( $request_dependencies ) ) {
+                    $i = 0;
+                    $keys = count( $request_dependencies );
+                    foreach ( $request_dependencies as $key => $ids ) {
+                        $_return_args = '';
+                        if ( $return_args ) {
+                            $_return_args = '&_return_args=' . rawurlencode( $return_args );
+                            if ( strpos( $return_args, 'does_act' ) !== 0 ) {
+                                $_return_args .= rawurlencode(
+                                    '&magic_token=' . $app->current_magic );
+                            }
+                        }
+                        $counter = count( $ids );
+                        $return_args = '__mode=rebuild_phase&ids=' . join( ',', $ids )
+                        . '&_model=' . $key . '&apply_actions=' . $counter . $_return_args;
+                        $progress = round( ( ( $keys - $i + 1 ) / $keys ) * 100 );
+                        $i++;
+                        $return_args .= '&progress=' . $progress;
+                    }
+                    $return_args .= '&magic_token=' . $app->current_magic;
+                }
+                if (! empty( $request_dependencies ) ) {
+                    $progress = round( ( ( $keys - $i + 1 ) / $keys ) * 100 );
+                    $app->param( 'progress', $progress );
+                }
+                parse_str( $return_args, $params );
+                if ( isset( $params['__mode'] ) && $params['__mode'] === 'rebuild_phase' ) {
+                    $next_model = $params['_model'];
+                    $table = $app->get_table( $next_model );
+                    $plural = $app->translate( $table->plural );
+                    $ctx->vars['icon_url'] = 'assets/img/loading.gif';
+                    $title = $app->translate( 'Rebuilding %s...', $plural );
+                    $ctx->vars['page_title'] = $title;
+                    $ctx->vars['next_url'] = $app->admin_url . '?' . $return_args;
+                    return $app->build_page( $tmpl );
+                }
+                $return_args = rawurldecode( $return_args );
+                $app->redirect( $app->admin_url . '?' . $return_args );
+            }
+            if ( $rebuild_last ) {
+                $ctx->vars['rebuild_end'] = $rebuild_last;
+                $ctx->vars['page_title'] = $app->translate( 'Done.' );
+            } else {
+                if (! $next_model && $app->param( 'next_models' ) ) {
+                    $next_models = explode( ',', $app->param( 'next_models' ) );
+                    $next_model = $next_models[0];
+                }
+                $table = $app->get_table( $next_model );
+                $plural = $app->translate( $table->plural );
+                $ctx->vars['icon_url'] = 'assets/img/loading.gif';
+                $title = $app->translate( 'Rebuilding %s...', $plural );
+                $ctx->vars['page_title'] = $title;
+            }
+            return $app->build_page( $tmpl );
+        }
+    }
+
+    function upload_multi ( $app ) {
+        $app->validate_magic( true );
+        if (! $app->can_do( 'asset', 'create' ) ) {
+            $error = $app->translate( 'Permission denied.' );
+            header( 'Content-type: application/json' );
+            echo json_encode( ['message'=> $error ] );
+            exit();
+        }
+        $upload_dir = $app->upload_dir();
+        $options = ['upload_dir' => $upload_dir . DS, 'prototype' => $app ];
+        $upload_handler = new UploadHandler( $options );
+    }
+
     function upload_dir () {
         $app = Prototype::get_instance();
         $app->db->logging = false;
@@ -1591,11 +2013,15 @@ class Prototype {
     }
 
     function get_columns_json ( $app ) {
-        // todo permission
-        $app->validate_magic();
+        $app->validate_magic( true );
+        header( 'Content-type: application/json' );
+        if (! $app->can_do( 'table', 'edit' ) ) {
+            echo json_encode( ['status' => 403,
+                               'message' => $app->translate( 'Permission denied.' ) ] );
+            exit();
+        }
         $model = $app->param( '_model' );
         $scheme = $app->get_scheme_from_db( $model );
-        header( 'Content-type: application/json' );
         echo json_encode( $scheme );
     }
 
@@ -1652,9 +2078,8 @@ class Prototype {
             $ctx = $app->ctx;
             $ctx->vars['error'] = join( "\n", $errors );
             $app->assign_params( $app, $ctx );
-            $tmpl = TMPL_DIR . 'config.tmpl';
-            echo $ctx->build_page( $tmpl );
-            exit();
+            $tmpl = 'config.tmpl';
+            return $app->build_page( $tmpl );
         }
         $cfgs = ['appname'    => $appname,
                  'copyright'  => $copyright,
@@ -1888,8 +2313,8 @@ class Prototype {
         }
         $is_new = $obj->id ? false : true;
         $callback = ['name' => 'pre_save', 'error' => '', 'is_new' => $is_new,
-                     'original' => $original, 'changed_cols' => $changed_cols ];
-        $pre_save = $app->run_callbacks( $callback, $model, $obj );
+                     'changed_cols' => $changed_cols ];
+        $pre_save = $app->run_callbacks( $callback, $model, $obj, $original );
         if ( $msg = $callback['error'] ) {
             $errors[] = $msg;
         }
@@ -1901,7 +2326,7 @@ class Prototype {
         if ( $model === 'workspace' ) {
             $obj->last_update( time() );
         }
-        $app->set_default( $obj, $placements );
+        $app->set_default( $obj );
         if ( $app->param( '_preview' ) ) {
             return $app->preview( $obj, $properties );
         }
@@ -1982,8 +2407,8 @@ class Prototype {
             $app->publish_obj( $obj, $original );
         }
         $callback = ['name' => 'post_save', 'is_new' => $is_new,
-                     'original' => $original, 'changed_cols' => $changed_cols ];
-        $app->run_callbacks( $callback, $model, $obj, true );
+                     'changed_cols' => $changed_cols ];
+        $app->run_callbacks( $callback, $model, $obj, $original );
         if ( $as_revision ) {
             $is_changed = true;
             $original = $obj;
@@ -2050,7 +2475,7 @@ class Prototype {
             '&id=' . $id . '&saved=1' . $app->workspace_param . $add_return_args );
     }
 
-    function publish_obj ( $obj, $original ) {
+    function publish_obj ( $obj, $original = null, $dependencies = true ) {
         $app = Prototype::get_instance();
         $db = $app->db;
         $model = $obj->_model;
@@ -2117,7 +2542,7 @@ class Prototype {
                 }
                 if ( $mapping->link_status && $obj->has_column( 'status' ) ) {
                     $status_published = $app->status_published( $obj->_model );
-                    if ( $original->status != $status_published &&
+                    if ( $original && $original->status != $status_published &&
                         $obj->status != $status_published ) {
                         continue;
                     }
@@ -2126,8 +2551,11 @@ class Prototype {
                     $file_path = $app->build_path_with_map( $obj, $mapping, $table );
                     $app->publish( $file_path, $obj, $mapping );
                 } else if ( $mapping->model != $model && $mapping->container == $model ) {
-                    $app->publish_dependencies(
-                        $obj, $original, $mapping );
+                    if ( $dependencies ) {
+                        $app->publish_dependencies( $obj, $original, $mapping );
+                    } else {
+                        $app->publish_dependencies( $obj, $original, $mapping, false );
+                    }
                 }
             }
         }
@@ -2153,7 +2581,7 @@ class Prototype {
             return $app->error( 'View or Model not specified.' );
         }
         $app->init_tags();
-        $ctx = $app->ctx;
+        $ctx = clone $app->ctx;
         $db = $app->db;
         $template = $map->template;
         $table = $app->get_table( $map->model );
@@ -2334,6 +2762,7 @@ class Prototype {
         } elseif ( $archive_type == 'Fiscal-Yearly' ) {
             $y = substr( $ts, 0, 4 );
             $m = substr( $ts, 4, 2 );
+            $year = $y;
             $fiscal_start = $mapping->fiscal_start;
             $fy_end = $fiscal_start == 1 ? 12 : $fiscal_start - 1;
             $start_y = $y;
@@ -2389,7 +2818,7 @@ class Prototype {
         return $is_changed;
     }
 
-    function run_callbacks ( &$cb, $model, &$obj = null, $needle = true ) {
+    function run_callbacks ( &$cb, $model, &$obj = null, $orig = true, &$extra = null ) {
         $app = Prototype::get_instance();
         $cb_name = $cb['name'];
         $all_callbacks = isset( $app->callbacks[ $cb_name ][ $model ] ) ?
@@ -2401,11 +2830,11 @@ class Prototype {
                     list( $meth, $class ) = $callback;
                     $res = true;
                     if ( function_exists( $meth ) ) {
-                        $res = $meth( $cb, $app, $obj, $needle );
+                        $res = $meth( $cb, $app, $obj, $orig, $extra );
                     } else if ( $class && method_exists( $class, $meth ) ) {
-                        $res = $class->$meth( $cb, $app, $obj, $needle );
+                        $res = $class->$meth( $cb, $app, $obj, $orig, $extra );
                     }
-                    if ( $needle && !$res ) return false;
+                    if (! $res ) return false;
                 }
             }
         }
@@ -2443,8 +2872,8 @@ class Prototype {
         $i = 0;
         foreach( $objects as $obj ) {
             $original = clone $obj;
-            $callback = ['name' => 'pre_delete', 'error' => '', 'original' => $original ];
-            $pre_delete = $app->run_callbacks( $callback, $model );
+            $callback = ['name' => 'pre_delete', 'error' => '' ];
+            $pre_delete = $app->run_callbacks( $callback, $model, $obj, $original );
             if ( $msg = $callback['error'] ) {
                 $errors[] = $msg;
             }
@@ -2484,8 +2913,8 @@ class Prototype {
             }
             // $obj->remove();
             // todo touch 
-            $callback = ['name' => 'post_delete', 'original' => $original ];
-            $app->run_callbacks( $callback, $model, $obj, true );
+            $callback = ['name' => 'post_delete'];
+            $app->run_callbacks( $callback, $model, $obj, $original );
         }
         $app->redirect( $app->admin_url .
             "?__mode=view&_type=list&_model={$model}&deleted=1" . $app->workspace_param );
@@ -2575,11 +3004,11 @@ class Prototype {
         return $res;
     }
 
-    function return_to_dashboard ( $options = [] ) {
+    function return_to_dashboard ( $options = [], $system = false ) {
         $app = Prototype::get_instance();
         $workspace = $app->workspace();
         $url = $app->admin_url . "?__mode=dashboard";
-        if ( $workspace ) {
+        if ( $workspace && ! $system ) {
             $app->redirect( $url . '&workspace_id=' . $workspace->id );
         }
         if (! empty( $options ) ) $url .= '&' . http_build_query( $options );
@@ -2632,6 +3061,7 @@ class Prototype {
                 return $app->error( 'Invalid request.' );
             }
             $objects = $obj->load( $terms, $args, '*', $extra );
+            return $objects;
         } else {
             $id = $app->param( 'id' );
             if ( is_array( $id ) ) {
@@ -2650,7 +3080,7 @@ class Prototype {
             }
             return isset( $obj ) ? $obj : null;
         }
-        return null;
+        return [];
     }
 
     function forward ( $model, $error = '' ) {
@@ -2665,7 +3095,7 @@ class Prototype {
         return $app->view( $app, $model, 'list' );
     }
 
-    function pre_listing ( &$cb, $app, &$terms, &$extra ) {
+    function pre_listing ( &$cb, $app, &$terms, &$args, &$extra ) {
         $model = $app->param( '_model' );
         $workspace_id = $app->workspace() ? $app->workspace()->id : 0;
         $user_id = $app->user()->id;
@@ -2705,12 +3135,30 @@ class Prototype {
                 require_once( LIB_DIR . 'Prototype' . DS . 'class.PTSystemFilters.php' );
                 $filters_class = new PTSystemFilters();
                 $filters = $filters_class->get_system_filters( $model, $system_filters );
+                if (! isset( $filters[ $system_filter ] ) ) {
+                    if ( strpos( $system_filter, 'filter_class_' ) === 0 ) {
+                        $filter = [];
+                        $class_type = preg_replace(
+                                        '/^filter_class_/', '', $system_filter );
+                        $_label = $app->translate( $class_type, null, null, 'default' );
+                        $_label = $app->translate( $_label );
+                        $filter['name'] = $system_filter;
+                        $filter['label'] = $_label;
+                        $filter['option'] = $class_type;
+                        $filter['method'] = 'filter_class';
+                        $filter['component'] = $filters_class;
+                        $filters[ $system_filter ] = $filter;
+                    }
+                }
                 if ( isset( $filters[ $system_filter ] ) ) {
                     $filter = $filters[ $system_filter ];
                     $app->ctx->vars['current_filter_name'] = $filter['label'];
                     $app->ctx->vars['current_system_filter'] = $filter['name'];
                     $component = $filter['component'];
                     $meth = $filter['method'];
+                    if ( method_exists( $component, $system_filter ) ) {
+                        $meth = $system_filter;
+                    }
                     if ( method_exists( $component, $meth ) ) {
                         $option = isset( $filters_option ) ? $filters_option : '';
                         $component->$meth( $app, $terms, $model, $option );
@@ -2718,7 +3166,9 @@ class Prototype {
                         $primary->value( 'system_filter' );
                         $primary->extra( $filter['name'] );
                         $primary->data( $filters_option );
-                        $primary->save();
+                        if (! $app->param( 'dialog_view' ) ) {
+                            $primary->save();
+                        }
                         $apply_filter = true;
                     }
                 }
@@ -2754,6 +3204,7 @@ class Prototype {
             }
             if (! $apply_filter ) {
                 $filter_params = [];
+                $filter_and = false;
                 foreach ( $params as $key => $conds ) {
                     if ( strpos( $key, '_filter_cond_' ) === 0 ) {
                         $filter_params[ $key ] = $conds;
@@ -2770,7 +3221,6 @@ class Prototype {
                             $value = $values[ $i ];
                             if (! isset( $op_map[ $val ] ) ) continue;
                             $op = $op_map[ $val ];
-                            
                             if ( $type == 'datetime' ) {
                                 $value = $obj->db2ts( $value );
                                 $value = $obj->ts2db( $value );
@@ -2808,13 +3258,29 @@ class Prototype {
                                     $rel_col = $props[2];
                                 }
                             }
+                            if ( $rel_model == '__any__' ) {
+                                if ( isset( $params['_filter_value_model'] ) ) {
+                                    if ( count( $params['_filter_value_model'] ) == 1 ) {
+                                        $rel_model = $params['_filter_value_model'][0];
+                                        $filter_and = true;
+                                        $args['and_or'] = 'AND';
+                                    }
+                                }
+                            }
                             if (! $rel_model || ! $rel_col ) continue;
+                            $rel_table = $app->get_table( $rel_model );
+                            if (! $rel_table ) {
+                                continue;
+                            }
+                            if ( $rel_col == 'null' ) {
+                                $rel_col = $rel_table->primary;
+                            }
                             $rel_obj = $app->db->model( $rel_model )->new();
                             $i = 0;
                             foreach ( $conds as $val ) {
                                 $value = $values[ $i ];
                                 if ( count( $values ) > 2 ) {
-                                    $_cond[ $op ] = [ 'and' => $value ];
+                                    $_cond[ $op ] = [ 'AND' => $value ];
                                 } else {
                                     $_cond[ $op ] = $value;
                                 }
@@ -2843,7 +3309,11 @@ class Prototype {
                                         $terms['id'] = 0; // No object found.
                                     }
                                 } else {
-                                    $terms[ $key ] = ['IN' => $rel_ids ];
+                                    if ( $filter_and ) {
+                                        $terms[ $key ] = ['AND' => ['IN' => $rel_ids ] ];
+                                    } else {
+                                        $terms[ $key ] = ['IN' => $rel_ids ];
+                                    }
                                 }
                             } else {
                                 $terms['id'] = 0;  // No object found.
@@ -2890,11 +3360,12 @@ class Prototype {
                     $app->ctx->vars['current_filter_id'] = $filter->id;
                     $app->ctx->vars['current_filter_name'] = $filter_name;
                 } else {
-                    if (! $app->ctx->vars['current_filter_name'] ) 
+                    if (! isset( $app->ctx->vars['current_filter_name'] ) ) 
                       $app->ctx->vars['current_filter_name'] = $app->translate( 'Custom' );
                 }
             }
         }
+        return true;
     }
 
     function save_filter_tag ( &$cb, $app, &$obj ) {
@@ -2961,15 +3432,15 @@ class Prototype {
 
     function post_delete_table ( &$cb, $app, &$obj ) {
         $app->db->can_drop = true;
-        return $app->db->drop( $obj->_model );
+        return $app->db->drop( $obj->name );
     }
 
-    function post_save_workspace ( $cb, $app, $obj ) {
-        $original = $cb['original'];
+    function post_save_workspace ( $cb, $app, $obj, $original ) {
         if ( $original->site_url !== $obj->site_url ||
             $original->site_path !== $obj->site_path ) {
             $app->rebuild_urlinfo( $obj->site_url, $obj->site_path, $obj );
         }
+        return true;
     }
 
     function post_save_permission ( $cb, $app, $obj ) {
@@ -2979,6 +3450,7 @@ class Prototype {
         foreach ( $sessions as $sess ) {
             $sess->remove();
         }
+        return true;
     }
 
     function post_save_role ( $cb, $app, $obj ) {
@@ -2987,11 +3459,11 @@ class Prototype {
             'to_obj' => 'role', 'name' => 'roles', 'to_id' => $obj->id ] );
         $ids = [];
         foreach ( $relations as $rel ) {
-            $ids[] = $rel->id;
+            $ids[] = $rel->from_id;
         }
         if (! empty( $ids ) ) {
             $permissions = 
-                $app->db->model( 'permission' )->load( ['id' => ['IN', $ids ] ] );
+                $app->db->model( 'permission' )->load( ['id' => ['IN' => $ids ] ] );
             $user_ids = [];
             foreach ( $permissions as $perm ) {
                 $user_ids[] = $perm->user_id;
@@ -2999,13 +3471,14 @@ class Prototype {
             if (! empty( $user_ids ) ) {
                 $user_ids = array_unique( $user_ids );
                 $sessions =
-                    $app->db->model( 'session' )->load( ['user_id' => ['IN', $user_ids ],
+                    $app->db->model( 'session' )->load( ['user_id' => ['IN' => $user_ids ],
                         'name' => 'user_permissions', 'kind' => 'PM' ] );
                 foreach ( $sessions as $sess ) {
                     $sess->remove();
                 }
             }
         }
+        return true;
     }
 
     function rebuild_urlinfo ( $url, $path, $workspace = null ) {
@@ -3049,14 +3522,8 @@ class Prototype {
                 $fi->save();
             }
         }
-        if (! empty( $dirs ) ) {
-            $dirs = array_keys( $dirs );
-            foreach ( $dirs as $dir ) {
-                if ( is_dir( $dir ) && count( glob( $dir . "/*" ) ) == 0 ) {
-                    rmdir( $dir );
-                }
-            }
-        }
+        require_once( 'class.PTUtil.php' );
+        PTUtil::remove_empty_dirs( $dirs );
     }
 
     function post_save_table ( $cb, $app, $obj, $force = false ) {
@@ -3091,15 +3558,20 @@ class Prototype {
             $obj->file_name( basename( $rename ) );
             $obj->save();
         }
+        return true;
     }
 
     function publish ( $file_path, $obj, $key,
                         $mime_type = 'text/html', $type = 'file' ) {
+        require_once( 'class.PTUtil.php' );
         $app = Prototype::get_instance();
+        $cache_vars = $app->ctx->vars;
+        $cache_local_vars = $app->ctx->local_vars;
+        $remove_dirs = [];
         $table = $app->get_table( $obj->_model );
         if (! $table ) return;
         $db = $app->db;
-        $ctx = $app->ctx;
+        $ctx = clone $app->ctx;
         $fi = $db->model( 'urlinfo' )->get_by_key( ['file_path' => $file_path ] );
         if (! $mime_type ) {
             // TODO
@@ -3156,11 +3628,9 @@ class Prototype {
                     }
                     $i++;
                 }
-                if ( $mapping && $obj->has_column( 'basename' ) ) {
-                    if ( stripos( $mapping, 'basename' ) !== false ) {
-                        $obj->basename( basename( $file_path ) );
-                        $obj->save();
-                    }
+                if ( $unique && $obj->has_column( 'basename' ) ) {
+                    $obj->basename( basename( $file_path ) );
+                    $obj->save();
                 }
             }
         }
@@ -3210,12 +3680,14 @@ class Prototype {
                 if ( $old_path && $old_path !== $file_path && file_exists( $old_path ) ) {
                     rename( $old_path, "{$old_path}.bk" );
                 }
-                require_once( 'class.PTUtil.php' );
-                PTUtil::mkpath( dirname( $file_path ) );
+                if (! $unlink ) {
+                    PTUtil::mkpath( dirname( $file_path ) );
+                }
                 if ( $type === 'file' ) {
                     if ( $unlink ) {
                         if ( file_exists( $file_path ) ) {
                             unlink( $file_path );
+                            $remove_dirs[ dirname( $file_path ) ] = true;
                         }
                         $fi->is_published( 0 );
                     } else {
@@ -3229,6 +3701,7 @@ class Prototype {
                     if ( $unlink ) {
                         if ( file_exists( $file_path ) ) {
                             unlink( $file_path );
+                            $remove_dirs[ dirname( $file_path ) ] = true;
                         }
                         $fi->is_published( 0 );
                     } else {
@@ -3242,6 +3715,8 @@ class Prototype {
                             $ctx->stash( $obj->_model, '' );
                         }
                         $data = $ctx->build( $tmpl );
+                        $app->ctx->vars = $cache_vars;
+                        $app->ctx->local_vars = $cache_local_vars;
                         $updated = true;
                         if ( file_exists( $file_path ) ) {
                             $old = file_get_contents( $file_path );
@@ -3264,9 +3739,11 @@ class Prototype {
                 $fi->is_published( 0 );
                 if ( $old_path && $old_path !== $file_path && file_exists( $old_path ) ) {
                     unlink( $old_path );
+                    $remove_dirs[ dirname( $old_path ) ] = true;
                 }
                 if ( file_exists( $file_path ) ) {
                     unlink( $file_path );
+                    $remove_dirs[ dirname( $file_path ) ] = true;
                 }
             }
         }
@@ -3282,18 +3759,21 @@ class Prototype {
             $fi->archive_type( $ctx->stash( 'current_archive_type' ) );
             $fi->save();
         }
+        PTUtil::remove_empty_dirs( $remove_dirs );
         return $file_path;
     }
 
-    function publish_dependencies ( $obj, $original, $mapping ) {
+    function publish_dependencies ( $obj, $original = null, $mapping, $publish = true ) {
         $app = Prototype::get_instance();
         $relations = [];
         $to_obj = $mapping->model;
         if ( $mapping->model !== 'template' ) {
             $to_obj = $mapping->model;
             $relations = $app->get_relations( $obj, $to_obj );
-            $orig_relations = $app->get_relations( $original, $to_obj );
-            $relations = array_merge( $relations, $orig_relations );
+            if ( $original ) {
+                $orig_relations = $app->get_relations( $original, $to_obj );
+                $relations = array_merge( $relations, $orig_relations );
+            }
         } else {
             $template = $mapping->template;
             if ( $template && $template->id ) {
@@ -3303,6 +3783,7 @@ class Prototype {
                 $relations[] = $relation;
             }
         }
+        if (! $original ) $original = clone $obj;
         $to_obj = $mapping->model;
         $table = $app->get_table( $to_obj );
         $published_ids = [];
@@ -3338,9 +3819,21 @@ class Prototype {
                         continue;
                     }
                 }
-                $file_path = $app->build_path_with_map
+                if ( $publish ) {
+                    $file_path = $app->build_path_with_map
                                                 ( $dependencie, $mapping, $table, $ts );
-                $app->publish( $file_path, $dependencie, $mapping );
+                    $app->publish( $file_path, $dependencie, $mapping );
+                } else {
+                    $dependencies = $app->stash( 'rebuild_dependencies' ) ?
+                                    $app->stash( 'rebuild_dependencies' ) : [];
+                    $publish_ids  = isset( $dependencies[ $dependencie->_model ] ) ?
+                                    $dependencies[ $dependencie->_model ] : [];
+                    if (! in_array( $dependencie->id, $publish_ids ) ) {
+                        $publish_ids[] = (int) $dependencie->id;
+                    }
+                    $dependencies[ $dependencie->_model ] = $publish_ids;
+                    $app->stash( 'rebuild_dependencies', $dependencies );
+                }
                 $published_ids[] = $id;
             }
         }
@@ -3469,13 +3962,21 @@ class Prototype {
         return $scheme;
     }
 
-    function validate_magic () {
+    function validate_magic ( $json = false ) {
         $app = Prototype::get_instance();
         $is_valid = true;
         if (! $app->user() ) $is_valid = false;
         $token = $app->param( 'magic_token' );
         if (! $token || $token !== $app->current_magic ) $is_valid = false;
-        if (! $is_valid ) return $app->error( 'Invalid request.' );
+        if (! $is_valid ) {
+            if ( $json ) {
+                header( 'Content-type: application/json' );
+                echo json_encode( ['status' => 403,
+                                   'message'=> $app->translate( 'Invalid request.' ) ] );
+                exit();
+            }
+            return $app->error( 'Invalid request.' );
+        }
         return true;
     }
 
@@ -3526,10 +4027,10 @@ class Prototype {
                 $user = $app->db->model( 'user' )->load( ['email' => $email ] );
                 if ( count( $user ) ) {
                     $user = $user[0];
-                    $tmpl = TMPL_DIR . 'email' . DS . 'recover_password.tmpl';
+                    $tmpl = 'email' . DS . 'recover_password.tmpl';
                     $session_id = $app->magic();
                     $app->ctx->vars['token'] = $session_id;
-                    $body = $app->ctx->build_page( $tmpl );
+                    $body = $app->build_page( $tmpl );
                     $session = $app->db->model( 'session' )->get_by_key(
                         ['name' => $session_id, 'kind' => 'RP'] );
                     $session->start( time() );
@@ -3640,8 +4141,7 @@ class Prototype {
             $cache = $ctx->stash( $model . '_session_' . $screen_id . '_' . $obj_id );
             if (! $session ) {
                 $session = $cache ? $cache : $app->db->model( 'session' )->get_by_key(
-                ['name' => $screen_id, 'user_id' => $app->user()->id ]
-                );
+                ['name' => $screen_id, 'user_id' => $app->user()->id ] );
             }
             $ctx->stash( $model . '_session_' . $screen_id . '_' . $obj_id, $session );
             if ( $session->id ) {
@@ -3749,12 +4249,23 @@ class Prototype {
                 $obj->created_on( date( 'YmdHis' ) );
             }
         }
+        if ( $obj->has_column( 'published_on' ) ) {
+            $ts = $obj->published_on;
+            $ts = preg_replace( '/[^0-9]/', '', $ts );
+            $ts = (int) $ts;
+            if (! $ts ) {
+                $obj->published_on( date( 'YmdHis' ) );
+            }
+        }
         if ( $user = $app->user() ) {
             if ( $obj->has_column( 'modified_by' ) ) {
                 $obj->modified_by( $user->id );
             }
             if ( $obj->has_column( 'created_by' ) && !$obj->id ) {
                 $obj->created_by( $user->id );
+            }
+            if ( $obj->has_column( 'user_id' ) && !$obj->user_id ) {
+                $obj->user_id( $user->id );
             }
         }
         if ( $obj->has_column( 'extra_path' ) ) {
@@ -3765,6 +4276,9 @@ class Prototype {
             if ( $table = $app->get_table( $obj->_model ) ) {
                 $obj->status( $table->default_status );
             }
+        }
+        if ( $obj->has_column( 'remote_ip' ) && ! $obj->remote_ip ) {
+            $obj->remote_ip( $app->remote_ip );
         }
         if ( $workspace = $app->workspace() ) {
             if ( $obj->has_column( 'workspace_id' ) ) {
@@ -3837,13 +4351,11 @@ class Prototype {
     function log ( $message ) {
         $message = is_string( $message ) ? ['message' => $message ] : $message;
         $app = Prototype::get_instance();
-        $ip = '';
-        if ( isset( $_SERVER[ 'HTTP_X_FORWARDED_FOR' ] ) ) {
-            $ip = $_SERVER[ 'HTTP_X_FORWARDED_FOR' ];
-        } else {
-            $ip = $_SERVER[ 'REMOTE_ADDR' ];
+        if (! isset( $message['metadata'] ) ) {
+            if ( mb_strlen( $message['message'] ) >= 255 ) {
+                $message['metadata'] = $message['message'];
+            }
         }
-        $message['remote_ip'] = $ip;
         $log = $app->db->model( 'log' )->new( $message );
         if (! $log->level ) {
             $log->level(1);
@@ -3863,6 +4375,7 @@ class Prototype {
         if (! $log->category ) $log->category( 'system' );
         $app->set_default( $log );
         $log->save();
+        return $log;
     }
 
     function moved_permanently ( $url ) {
@@ -3910,6 +4423,30 @@ class Prototype {
             $qurey = $_REQUEST[ $param ];
         }
         return $qurey;
+    }
+
+    function query_string () {
+        if ( $query_string = $this->query_string ) {
+            return $query_string;
+        }
+        if ( $params = $this->param() ) {
+            $params_array = array();
+            if ( is_array( $params ) ) {
+                foreach ( $params as $key => $value ) {
+                    if ( is_array( $value ) ) {
+                        foreach( $value as $val ) {
+                            array_push( $params_array, "{$key}[]={$val}" );
+                        }
+                    } else {
+                        array_push( $params_array, "{$key}={$value}" );
+                    }
+                }
+                if ( $params_array ) {
+                    $this->query_string = join( '&', $params_array );
+                    return $this->query_string;
+                }
+            }
+        }
     }
 
     function param ( $param = null, $value = null ) {

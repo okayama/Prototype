@@ -10,6 +10,7 @@
     "entry"         : "Entry",
     "asset"         : "Asset",
     "category"      : "Category",
+    "folder"        : "Folder",
     "template"      : "View",
     "table"         : "Model",
     "tag"           : "Tag",
@@ -22,6 +23,7 @@
     "urlmapping"    : "URL Map",
     "relation"      : "Relation",
     "label_local"   : "Label(L10N)",
+    "system"        : "System",
     "image"         : "Image",
     "video"         : "Video",
     "pdf"           : "PDF",
@@ -34,6 +36,7 @@
     "body"          : "Body",
     "primary"       : "Primary",
     "plural"        : "Plural",
+    "workspace"     : "WorkSpace",
     "workspace_id"  : "WorkSpace",
     "template_id"   : "View",
     "user_id"       : "User",
@@ -117,6 +120,7 @@
     "path"          : "Path",
     "file_ext"      : "Extension",
     "directory"     : "Directory",
+    "meta_id"       : "Meta ID",
     "size"          : "Size",
     "image_width"   : "Width",
     "image_height"  : "Height",
@@ -129,6 +133,7 @@
     "start_end"     : "Expiration Date",
     "has_status"    : "Has Status",
     "has_basename"  : "Has Basename",
+    "text_format"   : "Text Format",
     "assign_user"   : "Assign User",
     "has_deadline"  : "Specify the Deadline",
     "published_on"  : "Publish Date",
@@ -138,6 +143,7 @@
     "can_update_all": "Can Update All",
     "can_review"    : "Can Review",
     "can_activate"  : "Can Activate",
-    "display_dashboard"
-                    : "Display in Dashboard"
+    "can_rebuild"   : "Can Rebuild",
+    "workspace_admin": "Workspace Administrator",
+    "display_dashboard": "Display in Dashboard"
 }

@@ -5,8 +5,29 @@
 </mt:if>
 </mt:if>
 <mt:if name="request.query">
-<mt:setvarblock name="query_cond">&amp;query[]=<mt:var name="query" escape></mt:setvarblock>
+<mt:setvarblock name="query_cond">&amp;query=<mt:var name="query" escape></mt:setvarblock>
 </mt:if>
+
+<mt:if name="request.select_system_filters">
+<mt:setvarblock name="filter_cond">
+&amp;select_system_filters=<mt:var name="request.select_system_filters" escape>
+&amp;_system_filters_option=<mt:var name="request._system_filters_option" escape>
+&amp;_filter=1
+<mt:if name="request._fix_filter">&amp;_fix_filter=1</mt:if>
+</mt:setvarblock>
+</mt:if>
+<mt:if name="request.insert_editor">
+<mt:setvarblock name="insert_cond">
+&amp;insert_editor=1
+&amp;insert=<mt:var name="request.insert" escape>
+</mt:setvarblock>
+</mt:if>
+<mt:if name="request.selected_ids">
+<mt:setvarblock name="selected_ids_cond">
+&amp;selected_ids=<mt:var name="request.selected_ids" escape>
+</mt:setvarblock>
+</mt:if>
+
 <mt:setvar name="_single_select" value="0">
 <mt:setvar name="_get_col" value="">
 <mt:if name="request.dialog_view">
@@ -49,7 +70,9 @@ $(".query-box").keypress(function(e){
   <button class="search-btn btn btn-secondary search-button btn-sm" type="submit"><mt:trans phrase="Search"></button>
 </mt:setvarblock>
 <mt:setvarblock name="current_filter">
-<mt:if name="current_filter_name"><span class="current-filter"> ( <mt:trans phrase="Current Filter"> : <a href="javascript:void(0);" data-toggle="modal" data-target="#filterOptions"><mt:var name="current_filter_name" escape></a> - <a href="<mt:var name="this_url">&amp;_detach_filter=1<mt:var name="query_cond"><mt:var name="dialog_param"><mt:if name="workspace_id">&amp;workspace_id=<mt:var name="workspace_id"></mt:if><mt:var name="selecter_param">"><mt:trans phrase="Detach"></a> )</span></mt:if>
+<mt:unless name="request._fix_filter">
+<mt:if name="current_filter_name"><span class="current-filter"> ( <mt:trans phrase="Current Filter"> : <a href="javascript:void(0);" data-toggle="modal" data-target="#filterOptions"><mt:var name="current_filter_name" escape></a> - <a href="<mt:var name="this_url">&amp;_detach_filter=1<mt:var name="query_cond"><mt:var name="dialog_param"><mt:if name="workspace_id">&amp;workspace_id=<mt:var name="workspace_id"></mt:if><mt:var name="selecter_param"><mt:var name="insert_cond" strip_linefeeds="1">"><mt:trans phrase="Detach"></a> )</span></mt:if>
+</mt:unless>
 </mt:setvarblock>
 
 <mt:var name="sortable" setvar="_sortable">
@@ -81,8 +104,7 @@ $(".query-box").keypress(function(e){
   </div>
     </mt:if>
 
-<form action="<mt:var name="script_uri">" method="POST" class="form-inline">
-
+<form action="<mt:var name="script_uri">" method="POST" class="form-inline" id="list-select-form">
 <input type="hidden" name="__mode" value="" id="__mode">
 <input type="hidden" name="_model" value="<mt:var name="model">">
 <input type="hidden" name="magic_token" value="<mt:var name="magic_token">">
@@ -92,7 +114,7 @@ $(".query-box").keypress(function(e){
 <mt:if name="workspace_id">
 <input type="hidden" name="workspace_id" value="<mt:var name="workspace_id">">
 </mt:if>
-
+<input type="hidden" name="" value="" id="select_ids_tmpl">
 <input type="hidden" name="filter_params" value="<mt:var name="filter_params" escape>">
 <input type="hidden" name="return_args" value="<mt:var name="return_args" escape>">
 <mt:if name="request.dialog_view">
@@ -100,7 +122,15 @@ $(".query-box").keypress(function(e){
 <input type="hidden" name="single_select" value="<mt:var name="request.single_select" escape>">
 <input type="hidden" name="get_col" value="<mt:var name="request.get_col" escape>">
 <input type="hidden" name="dialog_view" value="1">
+<mt:if name="request.insert_editor">
+<input type="hidden" name="select_system_filters" value="<mt:var name="request.select_system_filters" escape>">
+<input type="hidden" name="_system_filters_option" value="<mt:var name="request._system_filters_option" escape>">
+<input type="hidden" name="insert" value="<mt:var name="request.insert" escape>">
+<input type="hidden" name="insert_editor" value="<mt:var name="request.insert_editor" escape>">
+<input type="hidden" name="_filter" value="<mt:var name="request._filter" escape>">
 </mt:if>
+</mt:if>
+
 <mt:unless name="objects">
   <div class="alert alert-success full">
     <mt:trans phrase="%s not found." params="$plural">
@@ -114,10 +144,10 @@ $(".query-box").keypress(function(e){
 var in_search = false;
 <mt:var name="setup_search">
 </script>
-<mt:else>
-  <mt:if name="current_filter">
-    <mt:var name="current_filter">
-  </mt:if>
+  <mt:else>
+    <mt:if name="current_filter">
+      <mt:var name="current_filter">
+    </mt:if>
 </mt:if>
 </form>
 <mt:if name="request.dialog_view">
@@ -139,9 +169,11 @@ $('#dialog-cancel-btn').click(function(){
 <td>
 <mt:if name="can_action">
   <button type="submit" class="__delete list-delete-btn btn btn-secondary btn-sm"><mt:trans phrase="Delete"></button>
+<mt:unless name="request.dialog_view">
 <mt:if name="list_actions">
   <mt:include file="include/list_actions.tmpl">
 </mt:if>
+</mt:unless>
 <mt:if name="_sortable">
   <button type="submit" class="__save_order save-order-btn btn btn-secondary btn-sm"><mt:trans phrase="Save Order"></button>
 </mt:if>
@@ -156,13 +188,13 @@ $('#dialog-cancel-btn').click(function(){
 <nav aria-label="<mt:trans phrase="Page navigation">" class="pull-right">
   <ul class="pagination pagination-sm">
     <li class="page-item <mt:unless name="has_prev">disabled</mt:unless>">
-      <a class="page-link" href="<mt:if name="has_prev"><mt:var name="this_url">&amp;offset=<mt:var name="prev_offset"><mt:var name="sort_cond"><mt:var name="query_cond"><mt:var name="dialog_param"><mt:else>#</mt:if>" aria-label="<mt:trans phrase="Previous">">
+      <a class="page-link" href="<mt:if name="has_prev"><mt:var name="this_url">&amp;offset=<mt:var name="prev_offset"><mt:var name="sort_cond"><mt:var name="query_cond"><mt:var name="dialog_param"><mt:var name="filter_cond" strip_linefeeds="1"><mt:else>#</mt:if>" aria-label="<mt:trans phrase="Previous">">
         <span aria-hidden="true">&laquo;</span>
         <span class="sr-only"><mt:trans phrase="Previous"></span>
       </a>
     </li>
     <li class="page-item <mt:unless name="next_offset">disabled</mt:unless>">
-      <a class="page-link" href="<mt:if name="next_offset"><mt:var name="this_url">&amp;offset=<mt:var name="next_offset"><mt:var name="sort_cond"><mt:var name="query_cond"><mt:var name="dialog_param"><mt:else>#</mt:if>" aria-label="<mt:trans phrase="Next">">
+      <a class="page-link" href="<mt:if name="next_offset"><mt:var name="this_url">&amp;offset=<mt:var name="next_offset"><mt:var name="sort_cond"><mt:var name="query_cond"><mt:var name="dialog_param"><mt:var name="filter_cond" strip_linefeeds="1"><mt:else>#</mt:if>" aria-label="<mt:trans phrase="Next">">
         <span aria-hidden="true">&raquo;</span>
         <span class="sr-only"><mt:trans phrase="Next"></span>
       </a>
@@ -213,8 +245,8 @@ $('#dialog-cancel-btn').click(function(){
         <mt:setvar name="class_desc" value="1">
       </mt:if>
     </mt:if>
-    <a aria-label="<mt:trans phrase="Sort by %s in %s" params="'$label','$order_asc'" escape><mt:if name="class_asc">(<mt:trans phrase="Selected">)</mt:if>" class="<mt:if name="class_asc">current-cnd</mt:if>" href="<mt:var name="this_url">&amp;sort=<mt:var name="name">&amp;direction=asc<mt:var name="query_cond"><mt:var name="workspace_param"><mt:var name="dialog_param">">&#9650;</a>
-    <a aria-label="<mt:trans phrase="Sort by %s in %s" params="'$label','$order_desc'" escape><mt:if name="class_asc">(<mt:trans phrase="Selected">)</mt:if>" class="<mt:if name="class_desc">current-cnd</mt:if>" href="<mt:var name="this_url">&amp;sort=<mt:var name="name">&amp;direction=desc<mt:var name="query_cond"><mt:var name="workspace_param"><mt:var name="dialog_param">">&#9660;</a></span>
+    <a aria-label="<mt:trans phrase="Sort by %s in %s" params="'$label','$order_asc'" escape><mt:if name="class_asc">(<mt:trans phrase="Selected">)</mt:if>" class="<mt:if name="class_asc">current-cnd</mt:if>" href="<mt:var name="this_url">&amp;sort=<mt:var name="name">&amp;direction=asc<mt:var name="query_cond"><mt:var name="workspace_param"><mt:var name="dialog_param"><mt:var name="filter_cond" strip_linefeeds="1"><mt:var name="insert_cond" strip_linefeeds="1"><mt:var name="selected_ids_cond" strip_linefeeds="1">">&#9650;</a>
+    <a aria-label="<mt:trans phrase="Sort by %s in %s" params="'$label','$order_desc'" escape><mt:if name="class_asc">(<mt:trans phrase="Selected">)</mt:if>" class="<mt:if name="class_desc">current-cnd</mt:if>" href="<mt:var name="this_url">&amp;sort=<mt:var name="name">&amp;direction=desc<mt:var name="query_cond"><mt:var name="workspace_param"><mt:var name="dialog_param"><mt:var name="filter_cond" strip_linefeeds="1"><mt:var name="insert_cond" strip_linefeeds="1"><mt:var name="selected_ids_cond" strip_linefeeds="1">">&#9660;</a></span>
   </mt:if>
 </th>
 </mt:if>
@@ -324,20 +356,19 @@ $('#dialog-cancel-btn').click(function(){
 </mt:if>
 <mt:if name="__name__">
   <mt:objectvar name="id" setvar="_object_id">
-  
   <mt:setvarblock name="include_path">include/list/<mt:var name="model">/column_<mt:var name="column_name">.tmpl</mt:setvarblock>
   <mt:include file="$include_path" setvar="alt_value">
   <mt:unless name="alt_value">
     <mt:setvarblock name="include_path">include/list/column_<mt:var name="column_name">.tmpl</mt:setvarblock>
     <mt:include file="$include_path" setvar="alt_value">
   </mt:unless>
-  <td class="<mt:if name="__name__" eq="id">id </mt:if><mt:if name="list_prop" eq="number"><mt:unless name="sort_order"><mt:if name="column_name" ne="status">num</mt:if></mt:unless></mt:if> list-col<mt:if name="list" eq="primary">-primary</mt:if>">
+  <td <mt:if name="list_prop" eq="primary"><mt:if name="thumbnail">style="line-height:1.6em;"</mt:if></mt:if> class="<mt:if name="__name__" eq="id">id </mt:if><mt:if name="list_prop" eq="number"><mt:unless name="sort_order"><mt:if name="column_name" ne="status">num</mt:if></mt:unless></mt:if> list-col<mt:if name="list" eq="primary">-primary</mt:if>">
   <mt:if name="alt_value">
     <mt:var name="alt_value">
   <mt:else>
   <mt:if name="list_prop" like="object"><mt:getobjectname id="$value" type="$list_prop" escape trim_to="20+..." setvar="value"></mt:if>
     <mt:if name="list_prop" eq="primary">
-      <a <mt:if name="request.dialog_view">target="_blank"</mt:if> href="<mt:var name="script_uri">?__mode=view&amp;_type=edit&amp;_model=<mt:var name="model" escape>&amp;id=<mt:objectvar name="id" escape><mt:if name="_workspace_id">&amp;workspace_id=<mt:var name="_workspace_id"></mt:if><mt:if name="model" eq="workspace">&amp;workspace_id=<mt:objectvar name="id"></mt:if><mt:if name="request.revision_select">&amp;edit_revision=1</mt:if>">
+      <mt:if name="can_edit_object"><a <mt:if name="request.dialog_view">target="_blank"</mt:if> href="<mt:var name="script_uri">?__mode=view&amp;_type=edit&amp;_model=<mt:var name="model" escape>&amp;id=<mt:objectvar name="id" escape><mt:if name="_workspace_id">&amp;workspace_id=<mt:var name="_workspace_id"></mt:if><mt:if name="model" eq="workspace">&amp;workspace_id=<mt:objectvar name="id"></mt:if><mt:if name="request.revision_select">&amp;edit_revision=1</mt:if>"></mt:if>
       <mt:if name="__file_col__">
         <mt:objectvar name="id" setvar="obj_id">
         <div class="list-icon">
@@ -362,7 +393,7 @@ $('#dialog-cancel-btn').click(function(){
       <mt:else>
         <mt:var name="value" trim_to="80+...">
       </mt:if>
-      </a>
+      <mt:if name="can_edit_object"></a></mt:if>
       <mt:if name="_has_mapping">
         <mt:objectvar name="permalink" escape setvar="permalink">
         <mt:if name="permalink">
@@ -380,7 +411,7 @@ $('#dialog-cancel-btn').click(function(){
         <span class="sr-only"><mt:trans phrase="Checked"></span>
       </mt:if>
     <mt:elseif name="list_prop" eq="datetime">
-      <mt:var name="value" format_ts="Y-m-d H:i">
+      <mt:if name="value"><mt:var name="value" format_ts="Y-m-d H:i"></mt:if>
     <mt:elseif name="list_prop" eq="date">
       <mt:var name="value" split=" " setvar="col_date">
       <mt:var name="col_date[0]">
@@ -461,7 +492,7 @@ $('#popover-<mt:var name="column_name">-<mt:objectvar name="id">').popover({
 
 <mt:if name="request.dialog_view">
   <button id="dialog-cancel-btn" class="btn btn-secondary" type="submit"><mt:trans phrase="Cancel"></button>
-  <button id="dialog-selector-btn" class="btn btn-primary" type="submit"><mt:trans phrase="Select"></button>
+  <button id="dialog-selector-btn<mt:if name="request.insert_editor">-editor_insert</mt:if>" class="btn btn-primary" type="submit"><mt:trans phrase="Select"></button>
 </mt:if>
 </form>
 
@@ -523,25 +554,46 @@ var target_control;
         target_control = '<mt:var name="request.target" escape>';
     <mt:if name="request.single_select">
         var selected_id = window.parent.$('#'+target_control).val();
+        <mt:if name="request.selected_ids">
+        <mt:var name="request.selected_ids" split="," setvar="request_selected_ids">
+        <mt:loop name="request_selected_ids">
+            selected_id = '<mt:var name="__value__">';
+        </mt:loop>
+        </mt:if>
         $("input[name='id']").each(function(){
             if( $(this).val() == selected_id ) {
                 $(this).prop('checked', true);
             }
-      });
+        });
     <mt:else>
         window.parent.$("input[name='"+target_control+"[]']").each(function(){
             if ( $(this).val() ) {
-              selected_ids.push($(this).val());
+                selected_ids.push($(this).val());
             }
         });
+        <mt:if name="request.selected_ids">
+        <mt:var name="request.selected_ids" split="," setvar="request_selected_ids">
+        <mt:loop name="request_selected_ids">
+            if( $.inArray('<mt:var name="__value__">', selected_ids ) == -1 ) {
+                selected_ids.push('<mt:var name="__value__">');
+            }
+        </mt:loop>
+        </mt:if>
         $("input[name='id[]']").each(function(){
             if( $.inArray($(this).val(), selected_ids ) != -1 ) {
                 $(this).prop('checked', true );
             }
         });
     </mt:if>
-  });
+    });
 </mt:unless>
+$('#dialog-selector-btn-editor_insert').click(function(){
+    if ( item_checked() == false ) {
+        alert('<mt:trans phrase="You did not select any %s." params="$label">');
+        return false;
+    }
+    $("#__mode").prop('value', 'insert_asset');
+});
 $('#dialog-cancel-btn').click(function(){
     window.parent.$('#modal').modal('hide');
     window.location.href = '<mt:var name="script_uri">?__mode=loading';
@@ -648,6 +700,8 @@ $("input[name='id[]']").change(function(){
     $("input[name='id[]']").each(function(){
         if ( $(this).prop('checked') == false ) {
             is_all = false;
+            $('.cb-all-selected').prop('checked', false);
+            $('.all-selected-cell').hide();
             return false;
         }
     });
@@ -691,9 +745,6 @@ $('.__delete').click(function(){
     return true;
 });
 $('.__action').click(function(){
-    // if ( in_search ) {
-    //     return true;
-    // }
     if (! $('.select-action').val() ) {
         alert('<mt:trans phrase="You did not select any action.">');
         return false;

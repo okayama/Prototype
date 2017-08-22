@@ -197,6 +197,39 @@ class PADO {
     }
 
 /**
+ * SHOW TABLES.
+ * 
+ * @param  string $model  : Name of model.
+ * @param  bool   $create : Specify true, SHOW CREATE TABLE.
+ * @return object $sth    : PDOStatement.
+ */ 
+    function show_tables ( $model = null, $create = false ) {
+        $sql = 'SHOW TABLES';
+        if ( $model ) {
+            $illegals = PADOBaseModel::ILLEGALS;
+            $model = str_replace( $illegals, '', $model );
+            $model = $this->prefix . $model;
+        }
+        if ( $model && ! $create ) {
+            $sql = "SHOW TABLES LIKE :model";
+        } else if ( $model && $create ) {
+            $sql = "SHOW CREATE TABLE {$model}";
+        }
+        $sth = $this->db->prepare( $sql );
+        if ( $model && ! $create ) {
+            $sth->bindValue( ':model', $model, PDO::PARAM_STR );
+        }
+        try {
+            $sth->execute();
+        } catch ( PDOException $e ) {
+            $message = 'PDOException: ' . $e->getMessage() . ", {$sql}";
+            $this->errors[] = $message;
+            trigger_error( $message );
+        }
+        return $sth;
+    }
+
+/**
  * Register plugin callback.
  *
  * @param  string $model    : Name of model.
@@ -323,7 +356,7 @@ class PADO {
             $sql = "DROP TABLE {$table}";
             $sth = $this->db->prepare( $sql );
             try {
-                return $sth->execute( $vals );
+                return $sth->execute();
             } catch ( PDOException $e ) {
                 $message = 'PDOException: ' . $e->getMessage() . ", {$sql}";
                 $this->errors[] = $message;
@@ -761,8 +794,8 @@ class PADOBaseModel {
                         $conds = array_values( $cond );
                         $stm = '';
                         foreach ( $conds as $k => $v ) {
-                            $op = key( $v );
-                            $var = $v[ $op ];
+                            $op = is_array( $v ) ? key( $v ) : '=';
+                            $var = is_array( $v ) ? $v[ $op ] : $v;
                             if ( preg_match( $regex, $op, $matchs ) ) {
                                 $op = strtoupper( $matchs[ 1 ] );
                                 if ( is_array( $var ) ) {
@@ -794,13 +827,13 @@ class PADOBaseModel {
                 $add_where = true;
             }
             if (! empty( $extra_stms ) ) {
-                $and_or = $and_or == 'AND' ? 'OR' : 'AND';
+                // $and_or = $and_or == 'AND' ? 'OR' : 'AND';
                 if ( $add_where ) {
-                    $sql .= " {$and_or} ";
+                    $sql .= " {$extra_and_or} ";
                 } else {
                     $sql .= 'WHERE';
                 }
-                $sql .= ' (' . join( " {$and_or} ", $extra_stms ) . ')';
+                $sql .= ' (' . join( " {$extra_and_or} ", $extra_stms ) . ')';
                 $vals = array_merge( $vals, $extra_vals );
             }
         } elseif ( is_numeric( $terms ) ) {
@@ -809,7 +842,7 @@ class PADOBaseModel {
         }
         $sql .= $group_by;
         if ( $extra ) $sql .= $extra . ' ';
-        if (!$count ) {
+        if (!$count || ( isset( $args['count_group_by'] ) && $args['count_group_by'] ) ) {
             $opt = '';
             if ( is_array( $args ) && !empty( $args ) ) {
                 foreach ( $args as $key => $arg ) {
@@ -1143,7 +1176,33 @@ class PADOBaseModel {
  * @return array $key-values : Column names and values.
  */
     function column_values () {
-        return get_object_vars( $this );
+        $object_vars = get_object_vars( $this );
+        $colprefix = $this->_colprefix;
+        foreach ( $object_vars as $name => $value ) {
+            if ( strpos( $name, '_' ) !== 0 ) {
+                $col_name = preg_replace( "/^$colprefix/", '', $name );
+                $object_vars[ $col_name ] = $value;
+            }
+            unset( $object_vars[ $name ] );
+        }
+        return $object_vars;
+    }
+
+/**
+ * Returns a list of the names of columns.
+ * 
+ * @return array $names : The names of columns.
+ */
+    function column_names () {
+        $pado = $this->pado();
+        if ( isset( $pado->scheme[ $this->_model ] ) ) {
+            $scheme = $pado->scheme[ $this->_model ]['column_defs'];
+            return array_keys( $scheme );
+        }
+        $id_column = $pado->id_column;
+        if ( $this->$id_column ) {
+            return array_keys( $this->column_values() );
+        }
     }
 
 /**
@@ -1598,9 +1657,9 @@ class PADOMySQL extends PADOBaseModel {
                     if ( isset( $pado->scheme[ $model ] ) ) {
                         $this->create_table(
                             $model, $table, $colprefix, $pado->scheme[ $model ] );
-                        return [];
                     }
                 }
+                return [];
             }
             $message = 'PDOException: ' . $msg . ", {$sql}";
             $pado->errors[] = $message;

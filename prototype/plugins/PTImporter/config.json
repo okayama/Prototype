@@ -1,0 +1,41 @@
+{
+    "menus": {
+        "start_import": {
+            "display_space" : 1,
+            "component"  : "PTImporter",
+            "permission" : "create_entry",
+            "mode"       : "start_import",
+            "label"      : "Import Entries",
+            "order"      : 10
+        }
+    },
+    "methods": {
+        "start_import": {
+            "display_space" : 1,
+            "component"  : "PTImporter",
+            "permission" : "create_entry",
+            "method"     : "start_import"
+        },
+        "import_entry": {
+            "display_space" : 1,
+            "component"  : "PTImporter",
+            "permission" : "create_entry",
+            "method"     : "import_entry"
+        },
+        "upload_import_file": {
+            "display_space" : 1,
+            "component"  : "PTImporter",
+            "permission" : "create_entry",
+            "method"     : "upload_import_file"
+        }
+    },
+    "import_format": {
+        "movabletype": {
+            "component"  : "PTImporter",
+            "label"      : "Movable Type",
+            "method"     : "import_movabletype",
+            "order"      : 10,
+            "options"    : [ "author_setting", "new_author_password", "comment_status" ]
+        }
+    }
+}

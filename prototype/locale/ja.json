@@ -10,13 +10,28 @@
     "Key"                : "キー",
     "Value"              : "値",
     "More"               : "続き",
+    "Upload"             : "アップロード",
     "URLs"               : "URL",
     "Profile"            : "プロフィール",
     "Install"            : "インストール",
     "System Settings"    : "システムの設定",
+    "Communication"      : "コミュニケーション",
+    "Text Format"        : "フォーマット",
     "User Settings"      : "ユーザの設定",
     "Edit Image"         : "画像の編集",
     "Image for Edit"     : "編集対象の画像",
+    "Keep aspect ratio"  : "縦横比を維持",
+    "Save as Asset Label": "ラベルとして保存",
+    "Use Thumbnail"      : "サムネイルを利用",
+    "Insert"             : "挿入",
+    "Meta ID"            : "メタID",
+    "Insert Image"       : "画像の挿入",
+    "Insert File"        : "ファイルの挿入",
+    "Text Alternative"   : "代替テキスト",
+    "Alignment"          : "位置",
+    "Left"               : "左",
+    "Center"             : "中央",
+    "Right"              : "右",
     "Edit..."            : "編集...",
     "Tool"               : "ツール",
     "Tools"              : "ツール",
@@ -60,6 +75,12 @@
     "Update(All)"        : "更新 (すべて)",
     "Activate(Publish)"  : "有効化 (公開)",
     "Relative URL"       : "相対URL",
+    "Can Rebuild"        : "再構築",
+    "Publish %s"         : "%sの再構築",
+    "Rebuilding..."      : "再構築中...",
+    "Rebuilding %s..."   : "%sの再構築中...",
+    "Done."              : "完了",
+    "All"                : "すべて",
     "Close"              : "閉じる",
     "Select"             : "選択",
     "Select..."          : "選択...",
@@ -72,6 +93,7 @@
     "Photo"              : "写真",
     "Create"             : "作成",
     "Published"          : "パブリッシュ",
+    "Convert Line Breaks": "改行を変換",
     "Site Path"          : "サイト・パス",
     "Relative Path"      : "相対パス",
     "Site URL"           : "サイトURL",
@@ -128,6 +150,9 @@
     "Password(Hashed)"   : "パスワードハッシュ",
     "Textarea"           : "テキストエリア",
     "RichText"           : "リッチテキスト",
+    "Format"             : "フォーマット",
+    "Toggle Editor"      : "エディタ切替",
+    "Insert %s"          : "%sの挿入",
     "DateTime"           : "日付と時刻",
     "Date"               : "日付",
     "Languages"          : "言語設定",
@@ -372,8 +397,13 @@
     "Reserved %s"        : "公開予約中の%s",
     "Published %s"       : "公開中の%s",
     "Unpublished %s"     : "公開終了された%s",
+    "Publish Again"      : "再構築しなおす",
     "Disabled %s"        : "無効な%s",
     "Enabled %s"         : "有効な%s",
+    "Workspace Administrator"
+        : "スペース管理者",
+    "Rebuilding dependencies..."
+        : "依存関係を再構築中...",
     "New WorkSpace's Role"
         : "新しいスペースのロール",
     "List Revisions of %s"
@@ -381,6 +411,8 @@
     "To" : "〜",
     "You can not change the %s."
         : "%s は変更できません。",
+    "File and Label are required."
+        : "「ファイル」と「ラベル」は必須です。",
     "%1$s '%2$s(ID:%3$s)' created by %4$s."
         : "%4$s が %1$s 「%2$s(ID:%3$s)」を作成しました。",
     "%1$s '%2$s(ID:%3$s)' edited by %4$s."
@@ -403,6 +435,8 @@
         : "パスワードをお忘れですか?",
     "The action '%1$s' was executed for %2$s %3$s by %4$s."
         : "%4$s がアクション「%1$s」を %2$s個の%3$sに適用しました。",
+    "The files for %s have been published."
+        : "%sを再構築しました。",
     "An error occurred while uploading."
         : "ファイルのアップロード中にエラーが発生しました。",
     "Please enter the Name of this Filter."
@@ -529,6 +563,8 @@
         : "下書き,レビュー,公開予約,公開,非公開(公開終了)",
     "The file has successfully uploaded. The uploaded file will not be reflected until you save this page."
         : "ファイルをアップロードしました。アップロードしたファイルは、このページを保存するまで反映されません。",
+    "The file has successfully edited. The edited file will not be reflected until you save this page."
+        : "ファイルを編集しました。編集されたファイルは、このページを保存するまで反映されません。",
     "This view could not be deleted because it is being used for a URL map. To delete a view, delete the URL map first."
         : "ビューがURLマップに利用されているため、ビューを削除できませんでした。ビューを削除するためには先にURLマップを削除してください。",
     "Are you sure you want to move from this page? The changes you made are not reflected."

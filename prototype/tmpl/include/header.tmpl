@@ -7,7 +7,7 @@
     <meta name="author" content="">
     <link rel="icon" href="favicon.ico">
 
-    <title><mt:if name="html_title"><mt:var name="html_title"><mt:else><mt:var name="page_title"></mt:if> | <mt:getoption key="appname" escape><mt:if name="workspace_id"> | <mt:var name="workspace_name" escape></mt:if></title>
+    <title><mt:if name="html_title"><mt:var name="html_title"><mt:else><mt:var name="page_title"></mt:if><mt:if name="workspace_id"> | <mt:var name="workspace_name" escape></mt:if> | <mt:getoption key="appname" escape></title>
 
     <!-- Bootstrap core CSS -->
     <link href="assets/css/bootstrap.min.css" rel="stylesheet">
@@ -46,7 +46,7 @@ window.onload = function(){
 }
 </script>
 </mt:if>
-<div id="main-content">
+  <div id="main-content">
     <nav class="bar navbar navbar-toggleable-md navbar-inverse fixed-top bg-inverse nav-top">
       <mt:if name="this_mode" eq="upgrade">
         <mt:if name="request._type" eq="install">
@@ -68,7 +68,7 @@ window.onload = function(){
       <mt:if name="this_mode" ne="login">
       <div class="collapse navbar-collapse" id="navbars">
         <ul class="nav-pills navbar-nav mr-auto">
-            <mt:objectloop model="workspace" sort_by="order">
+            <mt:objectloop model="workspace" sort_by="order" can_access="1">
         <mt:if name="__first__">
           <li class="nav-item dropdown workspace-dd-wrapper active">
             <a aria-label="<mt:trans phrase="WorkSpaces">" class="nav-link dropdown-toggle" data-toggle="dropdown" href="#">
@@ -118,23 +118,47 @@ window.onload = function(){
                 </li>
               </mt:if>
             </mt:tables>
-            
-            <mt:ignore>
+            <mt:tables menu_type="4" permission="1">
+              <mt:if name="__first__">
+                <li class="nav-item dropdown">
+                <a aria-label="<mt:trans phrase="WorkSpaces">" class="nav-link dropdown-toggle" data-toggle="dropdown" href="#">
+                  <i data-toggle="tooltip" data-placement="right" title="<mt:trans phrase="Communication">" class="fa fa-comments" aria-hidden="true"></i>
+                  <span class="sr-only"><mt:trans phrase="Communication"></span>
+                </a>
+                <div class="dropdown-menu">
+              </mt:if>
+                <a class="dropdown-item btn-sm <mt:if name="name" eq="$model">active</mt:if>" href="<mt:var name="script_uri">?__mode=view&amp;_type=list&amp;_model=<mt:var name="name" escape><mt:if name="workspace_id">&amp;workspace_id=<mt:var name="workspace_id"></mt:if>"><mt:var name="label" escape></a>
+              <mt:if name="__last__">
+                </div>
+                </li>
+              </mt:if>
+            </mt:tables>
+            <mt:loop name="system_menus">
+              <mt:if name="__first__">
                 <li class="nav-item dropdown">
                 <a aria-label="<mt:trans phrase="Tools">" class="nav-link dropdown-toggle" data-toggle="dropdown" href="#">
-                  <i data-toggle="tooltip" data-placement="right" title="<mt:trans phrase="Tools">" class="fa fa-caret-square-o-down" aria-hidden="true"></i>
+                  <i data-toggle="tooltip" data-placement="right" title="<mt:trans phrase="Tools">" class="fa fa-plug" aria-hidden="true"></i>
                   <span class="sr-only"><mt:trans phrase="Tools"></span>
                 </a>
                 <div class="dropdown-menu">
-                <a class="dropdown-item btn-sm" href="<mt:var name="script_uri">"></a>
+              </mt:if>
+                <a class="dropdown-item btn-sm<mt:if name="this_mode" eq="$menu_mode"> active</mt:if>" href="<mt:var name="script_uri">?__mode=<mt:var name="menu_mode"><mt:loop name="menu_args">&amp;<mt:var name="__key__">=<mt:var name="__value__"></mt:loop>"><mt:var name="menu_label"></a>
+              <mt:if name="__last__">
                 </div>
                 </li>
-            </mt:ignore>
-
+            </mt:loop>
           </mt:if>
         </mt:tables>
         </ul>
         <div class="header-util">
+        <mt:ifusercan action="rebuild" workspace_id="0">
+        <mt:countgroupby model="urlmapping" group="'workspace_id','model'" workspace_id="0" limit="1">
+          <a href="<mt:var name="script_uri">?__mode=rebuild_phase&_type=start_rebuild" class="popup btn btn-sm btn-secondary my-2 my-sm-0" data-toggle="tooltip" data-placement="right" title="<mt:trans phrase="Rebuild">">
+            <i class="fa fa-refresh" aria-hidden="true"></i>
+            <span class="sr-only"><mt:trans phrase="Rebuild"></span>
+          </a>
+        </mt:countgroupby>
+        </mt:ifusercan>
           <a href="<mt:var name="script_uri">?__mode=logout" class="btn btn-sm btn-secondary my-2 my-sm-0" data-toggle="tooltip" data-placement="right" title="<mt:trans phrase="Logout">">
             <i class="fa fa-sign-out" aria-hidden="true"></i>
             <span class="sr-only"><mt:trans phrase="Logout"></span>
@@ -143,10 +167,12 @@ window.onload = function(){
             <i class="fa fa-user-circle" aria-hidden="true"></i>
             <span class="sr-only"><mt:trans phrase="Profile"></span>
           </a>
+          <mt:isadmin>
           <a href="<mt:var name="script_uri">?__mode=config" class="btn btn-sm btn-secondary my-2 my-sm-0" data-toggle="tooltip" data-placement="bottom" title="<mt:trans phrase="Config">">
             <i class="fa fa-wrench" aria-hidden="true"></i>
             <span class="sr-only"><mt:trans phrase="Config"></span>
           </a>
+          </mt:isadmin>
         </div>
       </div>
       </mt:if>
@@ -156,9 +182,7 @@ window.onload = function(){
   <mt:if name="this_mode" ne="upgrade">
     <mt:if name="this_mode" ne="login">
       <mt:if name="workspace_id">
-
     <nav class="bar navbar navbar-toggleable-md navbar-inverse bg-inverse workspace-bar" style="z-index:4">
-
       <mt:if name="this_mode" ne="login">
       <button class="navbar-toggler navbar-toggler-right btn-ws" type="button" data-toggle="collapse" data-target="#navbars-ws" aria-controls="navbars" aria-expanded="false" aria-label="<mt:trans phrase="Toggle Navigation">">
         <i class="fa fa-bars" aria-hidden="true" aria-label="<mt:trans phrase="Settings">"></i>
@@ -176,7 +200,6 @@ window.onload = function(){
           <li class="nav-item nav-item-ws <mt:if name="name" eq="$model">active</mt:if>">
             <a class="nav-link" href="<mt:var name="script_uri">?__mode=view&amp;_type=list&amp;_model=<mt:var name="name" escape><mt:if name="workspace_id">&amp;workspace_id=<mt:var name="workspace_id"></mt:if>"><mt:var name="label" escape></a>
           </li>
-
           <mt:if name="__last__">
             <mt:tables type="display_space" menu_type="2" permission="1">
               <mt:if name="__first__">
@@ -208,32 +231,57 @@ window.onload = function(){
                 </li>
               </mt:if>
             </mt:tables>
-
-            <mt:ignore>
+            <mt:tables type="display_space" menu_type="4" permission="1">
+              <mt:if name="__first__">
+                <li class="nav-item dropdown">
+                <a aria-label="<mt:trans phrase="WorkSpaces">" class="nav-link dropdown-toggle" data-toggle="dropdown" href="#">
+                  <i data-toggle="tooltip" data-placement="right" title="<mt:trans phrase="Communication">" class="fa fa-comments" aria-hidden="true"></i>
+                  <span class="sr-only"><mt:trans phrase="Communication"></span>
+                </a>
+                <div class="dropdown-menu">
+              </mt:if>
+                <a class="dropdown-item btn-sm <mt:if name="name" eq="$model">active</mt:if>" href="<mt:var name="script_uri">?__mode=view&amp;_type=list&amp;_model=<mt:var name="name" escape><mt:if name="workspace_id">&amp;workspace_id=<mt:var name="workspace_id"></mt:if>"><mt:var name="label" escape></a>
+              <mt:if name="__last__">
+                </div>
+                </li>
+              </mt:if>
+            </mt:tables>
+            <mt:loop name="workspace_menus">
+              <mt:if name="__first__">
                 <li class="nav-item dropdown">
                 <a aria-label="<mt:trans phrase="Tools">" class="nav-link dropdown-toggle" data-toggle="dropdown" href="#">
-                  <i data-toggle="tooltip" data-placement="right" title="<mt:trans phrase="Tools">" class="fa fa-caret-square-o-down" aria-hidden="true"></i>
+                  <i data-toggle="tooltip" data-placement="right" title="<mt:trans phrase="Tools">" class="fa fa-plug" aria-hidden="true"></i>
                   <span class="sr-only"><mt:trans phrase="Tools"></span>
                 </a>
                 <div class="dropdown-menu">
-                <a class="dropdown-item btn-sm" href="<mt:var name="script_uri">"></a>
+              </mt:if>
+                <a class="dropdown-item btn-sm<mt:if name="this_mode" eq="$menu_mode"> active</mt:if>" href="<mt:var name="script_uri">?__mode=<mt:var name="menu_mode">&amp;workspace_id=<mt:var name="workspace_id"><mt:loop name="menu_args">&amp;<mt:var name="__key__">=<mt:var name="__value__"></mt:loop>"><mt:var name="menu_label"></a>
+              <mt:if name="__last__">
                 </div>
                 </li>
-            </mt:ignore>
-
+            </mt:loop>
           </mt:if>
         </mt:tables>
         </ul>
         <div class="header-util">
+        <mt:ifusercan action="rebuild" workspace_id="$workspace_id">
+        <mt:countgroupby model="urlmapping" group="'workspace_id','model'" workspace_id="$workspace_id" limit="1">
+          <a href="<mt:var name="script_uri">?__mode=rebuild_phase&_type=start_rebuild&amp;workspace_id=<mt:var name="workspace_id">" class="popup btn btn-sm btn-secondary my-2 my-sm-0" data-toggle="tooltip" data-placement="bottom" title="<mt:trans phrase="Rebuild">">
+            <i class="fa fa-refresh" aria-hidden="true"></i>
+            <span class="sr-only"><mt:trans phrase="Rebuild"></span>
+          </a>
+        </mt:countgroupby>
+        </mt:ifusercan>
+        <mt:ifusercan action="edit" model="workspace" id="$workspace_id" workspace_id="$workspace_id">
           <a href="<mt:var name="script_uri">?__mode=view&amp;_type=edit&amp;_model=workspace&amp;id=<mt:var name="workspace_id">&amp;workspace_id=<mt:var name="workspace_id">" class="btn btn-sm btn-secondary my-2 my-sm-0" data-toggle="tooltip" data-placement="bottom" title="<mt:trans phrase="Settings">">
             <i class="fa fa-wrench" aria-hidden="true"></i>
             <span class="sr-only"><mt:trans phrase="WorkSpace Settings"></span>
           </a>
+        </mt:ifusercan>
         </div>
       </div>
     </nav>
       </mt:if>
-
     <mt:setvar name="output_container" value="1">
     <div class="container-fluid">
     <mt:setvar name="has_option" value="0">
@@ -243,13 +291,15 @@ window.onload = function(){
           <mt:include file="include/list_filters.tmpl">
           <mt:include file="include/list_options.tmpl">
           <mt:setvar name="has_option" value="1">
+            <mt:if name="model" eq="asset">
+              <mt:include file="include/start_upload.tmpl">
+            </mt:if>
         </mt:unless>
         <mt:elseif name="request._type" eq="edit">
           <mt:include file="include/edit_options.tmpl">
           <mt:setvar name="has_option" value="1">
         </mt:if>
     </mt:if>
-
     </mt:if>
   </mt:if>
 </mt:if>
@@ -272,6 +322,8 @@ $(function () {
         <mt:setvar name="can_create" value="0">
       </mt:if>
       <mt:if name="menu_type" eq="3">
+        <mt:setvar name="can_create" value="0">
+      <mt:elseif name="model" eq="comment">
         <mt:setvar name="can_create" value="0">
       </mt:if>
       <div class="row">
@@ -320,6 +372,15 @@ $(function () {
             <mt:trans phrase="Return to List">
           </a>
           </mt:if>
+          <mt:if name="request._type" eq="list">
+            <mt:if name="model" eq="asset">
+            <mt:if name="can_create">
+          <button type="button" class="btn btn-outline-primary btn-sm" data-toggle="modal" data-target="#startUpload">
+            <mt:trans phrase="Upload">
+          </button>
+            </mt:if>
+            </mt:if>
+          </mt:if>
         </mt:if>
       </mt:if>
           </h1>
@@ -339,9 +400,9 @@ $(function () {
 
     <mt:if name="header_alert_message">
     <div id="header-alert-message" class="alert alert-success" tabindex="0">
-        <mt:var name="alert_close">
-        <mt:var name="header_alert_message">
-      </div>
+      <mt:var name="alert_close">
+      <mt:var name="header_alert_message">
+    </div>
     <script>
     $('#header-alert-message').focus();
     </script>

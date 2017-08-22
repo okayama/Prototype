@@ -51,10 +51,13 @@ if ( '<mt:var name="request._model" escape>' == 'asset' ) {
     window.parent.$('#image_width').val('<mt:var name="image_width">');
     window.parent.$('#image_height').val('<mt:var name="image_height">');
 }
+window.parent.$('#<mt:var name="request.view" escape>-alert-message').html('<mt:trans phrase="The file has successfully edited. The edited file will not be reflected until you save this page.">');
+window.parent.$('#<mt:var name="request.view" escape>-alert').show();
+window.parent.$('#<mt:var name="request.view" escape>-alert').focus();
 window.location.href = '<mt:var name="script_uri">?__mode=loading';
 </script>
 </mt:if>
-
+<div id="main-content">
 <form action="<mt:var name="script_uri">" method="POST" id="edit_image_form">
     <input type="hidden" name="__mode" value="edit_image">
     <input type="hidden" name="_model" value="<mt:var name="request._model" escape>">
@@ -67,21 +70,37 @@ window.location.href = '<mt:var name="script_uri">?__mode=loading';
     <input type="hidden" name="_screen_id" value="<mt:var name="request._screen_id" escape>">
     <input type="hidden" name="id" value="<mt:var name="request.id" escape>">
     <input type="hidden" name="image_data" id="image_data" value="">
+    <input name="orig_width" type="hidden" value="<mt:var name="image_width">">
+    <input name="orig_height" type="hidden" value="<mt:var name="image_height">">
+      <mt:ignore>
+        <div class="row form-group form-inline" style="position: absolute; top: 20px; right: 35px; left: 35px; text-align: center !important">
+          <strong><mt:trans phrase="Resize"></strong> &nbsp; : &nbsp;
+          <mt:trans phrase="Width"> : <input name="image_width" type="number" class="form-control form-control-sm" value="<mt:var name="image_width">" style="width:80px; margin-left:5px; margin-right: 5px; text-align:center"> px &times;
+          <mt:trans phrase="Height"> : <input name="image_height" type="number" class="form-control form-control-sm" value="<mt:var name="image_height">" style="width:80px; margin-left:5px; margin-right: 5px; text-align:center"> px
+          <label class="custom-control custom-checkbox" style="margin-left: 12px; margin-right: 3px">
+            <input id="" class="custom-control-input" type="checkbox" name="" value="1">
+            <span class="custom-control-indicator"></span>
+            <span class="custom-control-description"><mt:trans phrase="Keep aspect ratio"></span>
+          </label>
+          <button id="resize-apply-button" class="btn btn-sm btn-secondary" type="button"><mt:trans phrase="Apply"></button>
+          <button id="resize-reset-button" class="btn btn-sm btn-secondary" type="button"><mt:trans phrase="Reset"></button>
+        </div>
+      </mt:ignore>
     <div class="container-fluid">
-      <div class="row">
-        <main class="col-md-12 pt-3">
+        <div class="row" style="margin-top:63px;">
           <div class="figure-wrapper">
           <figure class="image-container target">
             <img src="<mt:var name="edit_url">" alt="<mt:trans phrase="Image for Edit">" id="target">
           </figure>
           </div>
+        </div>
+        <div class="row form-group form-inline" style="text-align:right !important">
           <button id="dialog-cancel-btn" class="btn btn-secondary" type="button"><mt:trans phrase="Cancel"></button>
           <button id="dialog-submit-btn" class="btn btn-primary" type="submit"><mt:trans phrase="Save"></button>
-
-        </main>
-      </div>
+        </div>
     </div>
 </form>
+</div>
 <script>
 $('#dialog-submit-btn').click(function(){
     var newImage = dkrm.sourceImage.toDataURL();

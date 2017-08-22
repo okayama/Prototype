@@ -2,7 +2,7 @@
     "label"     : "User",
     "plural"    : "Users",
     "primary"   : "name",
-    "display"   : true,
+    "display"   : 1,
     "order"     : 130,
     "auditing"  : 1,
     "has_status": 1,

@@ -17,9 +17,14 @@
             "size": 255
         },
         "class": {
-            "type": "int",
-            "size": 11,
+            "type": "string",
+            "size": 80,
             "not_null": 1
+        },
+        "workspace_admin": {
+            "type": "tinyint",
+            "size": 4,
+            "default": null
         },
         "description": {
             "type": "text"
@@ -44,6 +49,10 @@
         },
         "can_delete": {
             "type": "relation"
+        },
+        "can_rebuild": {
+            "type": "tinyint",
+            "size": 4
         },
         "created_on": {
             "type": "datetime"
@@ -94,7 +103,8 @@
     "edit_properties": {
         "id": "hidden",
         "name": "primary",
-        "class": "number",
+        "class": "text",
+        "workspace_admin": "checkbox",
         "description": "textarea",
         "can_list": "relation:table:name:checkbox",
         "can_create": "relation:table:label:checkbox",
@@ -102,12 +112,14 @@
         "can_update_all": "relation:table:label:checkbox",
         "can_review": "relation:table:label:checkbox",
         "can_activate": "relation:table:label:checkbox",
-        "can_delete": "relation:table:label:checkbox"
+        "can_delete": "relation:table:label:checkbox",
+        "can_rebuild": "checkbox"
     },
     "list_properties": {
         "id": "number",
         "name": "primary",
         "class": "text",
+        "workspace_admin": "checkbox",
         "description": "text",
         "can_list": "reference:table:label",
         "can_create": "reference:table:label",
@@ -116,6 +128,7 @@
         "can_review": "reference:table:label",
         "can_activate": "reference:table:label",
         "can_delete": "reference:table:label",
+        "can_rebuild": "checkbox",
         "modified_on": "datetime",
         "modified_by": "reference:user:name"
     }

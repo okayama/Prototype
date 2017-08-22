@@ -26,12 +26,21 @@
 <button class="__action list-action-btn btn btn-secondary action-button btn-sm" type="submit"><mt:trans phrase="Go"></button>
 </mt:if>
 </mt:loop>
+
+<mt:unless name="disp_action_bar">
 <script>
 var action_status_select = false;
 var need_action_input = false;
 $('.action-status-select').hide();
 $('.itemset-action-input').hide();
 $('.select-action').change(function(){
+    if ( $(this).val() ) {
+      $('.__action').removeClass('btn-secondary');
+      $('.__action').addClass('btn-primary');
+    } else {
+      $('.__action').removeClass('btn-primary');
+      $('.__action').addClass('btn-secondary');
+    }
     $('.select-action').val($(this).val());
     if ( $(this).val() == 'set_status' ) {
         $('.action-status-select').show();
@@ -58,4 +67,5 @@ $('.action-status-select').change(function(){
     $('.action-status-select').val($(this).val());
 });
 </script>
+</mt:unless>
 <mt:setvar name="disp_action_bar" value="1">

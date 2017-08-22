@@ -1,0 +1,155 @@
+<mt:if name="request.do_insert">
+<mt:setvarblock name="html_tag">
+<mt:loop name="insert_loop">
+<mt:if name="class" eq="image">
+<img alt="<mt:var name="label" escape>"
+<mt:if name="align" eq="left">
+ style="float: right; margin: 0 0 20px 20px;"
+<mt:elseif name="align" eq="left">
+ style="float: left; margin: 0 20px 20px 0;"
+<mt:elseif name="align" eq="center">
+ style="text-align: center; display: block; margin: 0 auto 20px;"
+</mt:if>
+ src="<mt:var name="url" escape>"
+ width="<mt:var name="width" escape>"
+ height="<mt:var name="height" escape>">
+<mt:else>
+<a href="<mt:var name="url" escape>"><mt:var name="label" escape> (<mt:var name="file_size" escape format_size="1">)</a>
+</mt:if>
+</mt:loop>
+</mt:setvarblock>
+<script>
+    var html = "<mt:var name="html_tag" strip_linefeeds="1" encode_js="1">";
+    var editor = window.parent.tinyMCE.activeEditor;
+    if ( editor ) {
+        editor.insertContent(html);
+    }
+    window.parent.$('#modal').modal('hide');
+    window.location.href = '<mt:var name="script_uri">?__mode=loading';
+</script>
+<mt:else>
+<mt:include file="include/dialog_header.tmpl">
+
+<form action="<mt:var name="script_uri">" method="POST" class="form-inline">
+
+<input type="hidden" name="__mode" value="insert_asset">
+<input type="hidden" name="insert" value="<mt:var name="request.insert" escape>">
+<input type="hidden" name="magic_token" value="<mt:var name="magic_token">">
+<input type="hidden" name="_system_filters_option" value="<mt:var name="request._system_filters_option" escape>">
+<input type="hidden" name="insert_editor" value="1">
+<input type="hidden" name="do_insert" value="1">
+
+<mt:objectloop model="asset">
+<mt:if name="__first__"><table class="table">
+<thead>
+<tr><th><mt:trans phrase="Insert"></th><th><mt:trans phrase="Preview"></th><th colspan="2"><mt:trans phrase="Metadata"></th></tr>
+</thead>
+<tbody id="list_body">
+</mt:if>
+<tr>
+  <td class="insert-asset-selector">
+    <label class="custom-control custom-checkbox">
+      <input class="custom-control-input" type="checkbox" checked name="id[]" value="<mt:var name="id">">
+      <span class="custom-control-indicator"></span>
+      <span class="custom-control-description"></span>
+    </label>
+  </td>
+  <td>
+    <mt:if name="class" eq="image">
+      <img src="<mt:assetthumbnail name="file" data_uri="1" type="default" square="1">" alt="<mt:trans phrase="Preview">" width="140" height="140">
+    <mt:else>
+      <i class="fa-3x fa <mt:if name="class" eq="pdf">fa-file-pdf-o<mt:elseif name="class" eq="video">fa-file-video-o<mt:elseif name="class" eq="audio">fa-file-audio-o<mt:else>fa-file-o</mt:unless></mt:if>" aria-hidden="true"></i>
+      <span class="sr-only"><mt:trans phrase="$obj_class"></span>
+    </mt:if>
+  </td>
+  <td>
+  <table class="table-inner">
+<tr>
+  <th><mt:if name="class" eq="image"><mt:trans phrase="Text Alternative"><mt:else><mt:trans phrase="Label"></mt:if></th>
+  <td class="form-inline insert-asset-label">
+    <input type="text" class="form-control form-control-sm" value="<mt:var name="label" escape>" name="asset-label-<mt:var name="id">">
+    <label class="custom-control custom-checkbox">
+      <input class="custom-control-input" type="checkbox" value="1" name="save-label-<mt:var name="id">">
+      <span class="custom-control-indicator"></span>
+      <span class="custom-control-description">
+      <mt:trans phrase="Save as Asset Label">
+      </span>
+    </label>
+  </td>
+</tr>
+<mt:if name="class" eq="image">
+<tr>
+  <th><mt:trans phrase="Size"></th>
+  <td class="form-inline insert-image-size">
+    <label class="custom-control custom-checkbox">
+      <input class="custom-control-input" type="checkbox" value="1" name="use-thumb-<mt:var name="id">">
+      <span class="custom-control-indicator"></span>
+      <span class="custom-control-description">
+        <mt:trans phrase="Use Thumbnail"> ( <mt:trans phrase="Width"> : <input type="number" class="num form-control form-control-sm very-short" value="<mt:assetproperty property="image_width">" name="thumb-width-<mt:var name="id">"> px )
+      </span>
+    </label>
+  </td>
+</tr>
+<tr>
+  <th><mt:trans phrase="Alignment"></th>
+  <td class="form-inline insert-image-size">
+  <label class="custom-control custom-radio">
+    <input class="custom-control-input" type="radio" name="insert-align-<mt:var name="id">" value="">
+    <span class="custom-control-indicator"></span>
+    <span class="custom-control-description"><mt:trans phrase="None"></span>
+  </label>
+  <label class="custom-control custom-radio">
+    <input class="custom-control-input" type="radio" name="insert-align-<mt:var name="id">" value="left">
+    <span class="custom-control-indicator"></span>
+    <span class="custom-control-description"><mt:trans phrase="Left"></span>
+  </label>
+  <label class="custom-control custom-radio">
+    <input class="custom-control-input" type="radio" name="insert-align-<mt:var name="id">" value="center">
+    <span class="custom-control-indicator"></span>
+    <span class="custom-control-description"><mt:trans phrase="Center"></span>
+  </label>
+  <label class="custom-control custom-radio">
+    <input class="custom-control-input" type="radio" name="insert-align-<mt:var name="id">" value="right">
+    <span class="custom-control-indicator"></span>
+    <span class="custom-control-description"><mt:trans phrase="Right"></span>
+  </label>
+</td>
+</tr>
+</mt:if>
+</table>
+
+  </td>
+</tr>
+<mt:if name="__last__">
+</tbody>
+<table>
+</mt:if>
+</mt:objectloop>
+
+  <button id="dialog-cancel-btn" class="btn btn-secondary" type="button"><mt:trans phrase="Cancel"></button>
+  <button id="dialog-selector-btn" class="btn btn-primary" type="submit"><mt:trans phrase="Insert"></button>
+
+</form>
+<script>
+$('#list_body tr').mouseover(function() {
+    $(this).css('cursor','move');
+});
+$(document).keydown(evnt_keydown);
+function evnt_keydown(e) {
+    if ( e.keyCode == 27 ) {
+        close_dialog();
+    }
+}
+$('#dialog-cancel-btn').click(function() {
+    close_dialog();
+    return false;
+});
+function close_dialog () {
+    window.parent.$('#modal').modal('hide');
+    window.location.href = '<mt:var name="script_uri">?__mode=loading';
+}
+$('#list_body').sortable();
+</script>
+
+<mt:include file="include/dialog_footer.tmpl">
+</mt:if>

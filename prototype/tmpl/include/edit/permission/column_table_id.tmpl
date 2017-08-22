@@ -8,14 +8,11 @@
         <mt:var name="edit_props[2]" setvar="rel_col">
         <mt:var name="edit_props[3]" setvar="rel_type">
         <select class="form-control short" name="<mt:var name="__col_name__">">
-        
-        
         <mt:if name="workspace_id">
           <mt:setvarblock name="table_option">'display_space','1'</mt:setvarblock>
         <mt:else>
           <mt:setvarblock name="table_option">'display','1'</mt:setvarblock>
         </mt:if>
-
         <mt:objectloop model="table" sort_by="order" options="$table_option">
         <mt:if name="__first__">
           <option value="">

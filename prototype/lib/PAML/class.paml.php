@@ -473,6 +473,8 @@ class PAML {
             $this->template_file = $path;
             $compile_key = md5( $path );
         }
+        $old_vars = $this->vars;
+        $old_local_vars = $this->local_vars;
         $this->init();
         $this->re_compile = false;
         if (!$force_compile ) { // Compile cache.
@@ -496,6 +498,8 @@ class PAML {
                 }
             }
         }
+        $this->vars = $old_vars;
+        $this->local_vars = $old_local_vars;
         $this->literal_vars = [];
         $this->id = $this->magic();
         $this->compile_path = $compile_path;
@@ -577,6 +581,7 @@ class PAML {
         $incl_paths = array_keys( $this->include_paths );
         if (!file_exists( $path ) ) {
             foreach ( $tmpl_paths as $tmpl ) {
+                if (! $tmpl ) continue;
                 $f = dirname( $tmpl ) . DS . $path;
                 if ( file_exists( $f ) ) {
                     $path = $f;
@@ -586,8 +591,8 @@ class PAML {
             if (!$continue ) {
                 foreach ( $incl_paths as $tmpl ) {
                     if ( ( $f = $tmpl . DS . $path ) && file_exists( $f ) ) {
-                    $path = $f;
-                    $continue = true; break;
+                        $path = $f;
+                        $continue = true; break;
                     }
                 }
             }
@@ -796,21 +801,22 @@ class PAML {
 
     function block_loop ( $args, &$content, $ctx, &$repeat, $counter, $id ){
         if (!$counter ) {
-            if (!isset( $args[ 'name' ] ) && !isset( $args[ 'from' ] ) ) {
+            if (!isset( $args['name'] ) && !isset( $args['from'] ) ) {
                 $repeat = false;
                 return;
             }
-            $from = isset( $args[ 'name' ] ) ? $args[ 'name' ] : $args[ 'from' ];
+            $from = isset( $args['name'] ) ? $args['name'] : $args['from'];
             $params = is_array( $from ) ? $from : null;
             if (!$params ) $params = isset( $ctx->vars[ $from ] ) ? $ctx->vars[ $from ] : '';
-            if (!$params ) $params = isset( $ctx->local_vars[ $from ] ) ? $ctx->local_vars[ $from ] : '';
+            if (!$params ) $params = isset( $ctx->local_vars[ $from ] ) ?
+                                            $ctx->local_vars[ $from ] : '';
             if (!$params ) { $repeat = false; return; }
             if ( is_object( $params ) ) $params = (array) $params;
             if (!is_array( $params ) ) return;
-            $item = ( isset( $args[ 'item' ] ) ) ? $args[ 'item' ] : '__value__';
-            $key  = ( isset( $args[ 'key' ] ) ) ? $args[ 'key' ] : '__key__';
-            if ( isset( $params[ 0 ] ) ) {
-                if (!is_array( $params[ 0 ] ) ) {
+            $item = ( isset( $args['item'] ) ) ? $args['item'] : '__value__';
+            $key  = ( isset( $args['key'] ) ) ? $args['key'] : '__key__';
+            if ( isset( $params[0] ) ) {
+                if (!is_array( $params[0] ) ) {
                     $i = 0; foreach ( $params as $param )
                         $arr[] = array( $key => $i++, $item => $param );
                 }
@@ -1127,7 +1133,7 @@ class PAML {
     }
 
     function modifier_encode_js ( $str, $arg ) {
-        $str = json_encode( $str );
+        $str = json_encode( $str, JSON_UNESCAPED_UNICODE );
         if ( preg_match( '/^"(.*)"$/', $str, $matches ) ) return $matches[1];
     }
 
@@ -1568,7 +1574,10 @@ class PAML {
         $cond = "while(\${$_repeat}===true):";
         $sta .= "\${$bid}=-1;\${$_repeat}=true;${cond}\${$_repeat}=(\${$bid}!==-1)"
              .  "?false:true;echo $method(\${$_args},\${$_content},"
-             .  "\$this,\${$_repeat},++\${$bid},'{$bid}');ob_start();" . EP;;
+             .  "\$this,\${$_repeat},++\${$bid},'{$bid}');ob_start();" . EP;
+        // $sta .= "<?php if(isset(\$this->local_vars['__total__'])&&isset
+        // (\$this->local_vars['__index__'])&&\$this->local_vars['__total__']==
+        // \$this->local_vars['__index__'])break;" . EP;
         $end = "<?php \${$_content}=ob_get_clean();endwhile;{$last}{$restore}";
        }
       }
@@ -1889,7 +1898,12 @@ class PAML {
             $this->set_cache( $this->cache_id, $out, $this->cache_path, $require );
             $this->cache_includes = [];
         }
-        if ( $nocache ) $out = $this->_eval( $out );
+        if (! $this->force_compile ) {
+            $this->local_vars = [];
+            $this->vars = [];
+        } else {
+            if ( $nocache ) $out = $this->_eval( $out );
+        }
         $this->literal_vars = $lits;
         $this->template_paths = $tmpls;
         if (!$this->in_build ) unset( $this->out );

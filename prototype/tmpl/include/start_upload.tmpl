@@ -1,0 +1,113 @@
+      <div class="modal fade" id="startUpload" tabindex="-1" role="dialog" aria-labelledby="startUploadTitle" aria-hidden="true">
+        <div class="modal-dialog modal-lg" role="document">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title" id="startUploadTitle"><mt:trans phrase="Upload"></h5>
+              <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+              </button>
+            </div>
+            <div class="modal-body">
+              <div class="container-fluid" id="drop-zone">
+                <form>
+                <span id="file-chooser" class="btn btn-success fileinput-button">
+                    <span><mt:trans phrase="Select File..."></span>
+                    <!-- The file input field used as target for the file upload widget -->
+                    <input id="fileupload" type="file" name="files[]" multiple
+                        onfocus="$('#file-chooser').css('border','2px solid green');"
+                        onblur="$('#file-chooser').css('border','none');">
+                </span>
+                <div class="form-inline" style="margin: 10px 7px">
+                  <mt:trans phrase="Upload Path">
+                  <input id="extra_path" type="text" style="width:200px;" class="form-control" name="extra_path" value="<mt:var name="extra_path" escape>">
+                </div>
+                <!-- The global progress bar -->
+                <div id="progress" class="progress">
+                    <div class="progress-bar progress-bar-success"></div>
+                </div>
+                <!-- The container for the uploaded files -->
+                <div id="files" class="files"></div>
+                </form>
+              </div>
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-dismiss="modal"><mt:trans phrase="Cancel"></button>
+              <button type="submit" class="btn btn-primary new-filter-elem hidden" id="filter-apply"><mt:trans phrase="Next"></button>
+            </div>
+          </div>
+        </div>
+      </div>
+<!-- The jQuery UI widget factory, can be omitted if jQuery UI is already included -->
+<script src="assets/js/vendor/jquery.ui.widget.js"></script>
+<!-- The Iframe Transport is required for browsers without support for XHR file uploads -->
+<script src="assets/js/jquery.iframe-transport.js"></script>
+<!-- The basic File Upload plugin -->
+<script src="assets/js/jquery.fileupload.js"></script>
+<script>
+var this_url = '<mt:var name="script_uri">?<mt:if name="workspace_id">workspace_id=<mt:var name="workspace_id">&</mt:if><mt:var name="query_string" regex_replace="'/&selected_ids=.*$/',''">&sort=id&direction=desc';
+var selected_ids = [];
+var DropZone = document.getElementById('drop-zone');
+DropZone.addEventListener('dragover', function (event) {
+    $('#drop-zone').css('background-color','#ddf');
+});
+DropZone.addEventListener('dragleave', function (event) {
+    $('#drop-zone').css('background-color','#fff');
+});
+$('#drop-zone').css('border','3px dashed #ccc');
+$('#drop-zone').css('margin','1px');
+$('#drop-zone').css('padding','8px');
+$(function () {
+    'use strict';
+    var url = '<mt:var name="script_uri">?__mode=upload_multi&magic_token=<mt:var name="magic_token">&workspace_id=<mt:var name="workspace_id">';
+    $('#fileupload').fileupload({
+        url: url,
+        dataType: 'json',
+        dropZone: $("#drop-zone"),
+        formData: {extra_path: $('#extra_path').val()},
+        done: function (e, data) {
+            if (!data.result.files) {
+                var error = data.result.message;
+                $('#progress .progress-bar').css(
+                    'width', 0
+                );
+                alert("<mt:trans phrase="An error occurred while uploading.">"+' (' + error + ')');
+                return;
+            }
+            $("input[name='id[]']").each(function(){
+                if ( $(this).prop('checked') ) {
+                    if( $.inArray($(this).val(), selected_ids ) == -1 ) {
+                        selected_ids.push($(this).val());
+                    }
+                }
+            });
+            $.each(data.result.files, function (index, file) {
+                // $('<p/>').text(file.name).appendTo('#files');
+                var input_cb = $('#select_ids_tmpl');
+                var new_input = input_cb.clone( true ).appendTo('#list-select-form');
+                new_input.removeAttr('id');
+                new_input.attr('name','id[]');
+                new_input.val(file.asset_id);
+                selected_ids.push(file.asset_id);
+            });
+            <mt:if name="request.insert_editor">
+            $("#__mode").prop('value', 'insert_asset');
+            $("#list-select-form").submit();
+            </mt:if>
+        },
+        progressall: function (e, data) {
+            var progress = parseInt(data.loaded / data.total * 100, 10);
+            $('#progress .progress-bar').css(
+                'width',
+                progress + '%'
+            );
+            if ( progress == 100 ) {
+                setTimeout(uploaded_hdlr, 100);
+            }
+        }
+    }).prop('disabled', !$.support.fileInput)
+        .parent().addClass($.support.fileInput ? undefined : 'disabled');
+});
+function uploaded_hdlr () {
+    window.location.href = this_url + '&selected_ids=' + selected_ids.join(',');
+}
+</script>

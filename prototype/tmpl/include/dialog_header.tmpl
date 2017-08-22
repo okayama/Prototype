@@ -35,37 +35,47 @@
         <mt:include file="include/list_options.tmpl">
         <mt:setvar name="has_option" value="1">
       </mt:if>
-    <mt:elseif name="request._type" eq="edit">
-      <mt:include file="include/edit_options.tmpl">
-      <mt:setvar name="has_option" value="1">
     </mt:if>
-
+  <mt:if name="this_mode" eq="view">
     <mt:setvar name="can_create" value="1">
     <mt:setvar name="can_action" value="1">
-
     <mt:if name="child_model">
     <mt:unless name="workspace_id">
       <mt:setvar name="can_create" value="0">
     </mt:unless>
     </mt:if>
-
-    <mt:if name="request.dialog_view">
+    <mt:unless name="model" eq="asset">
       <mt:setvar name="can_create" value="0">
+    <mt:else>
       <mt:setvar name="can_action" value="0">
+    </mt:unless>
+    <mt:include file="include/list_filters.tmpl">
+    <mt:if name="request._type" eq="list">
+      <mt:if name="model" eq="asset">
+        <mt:include file="include/start_upload.tmpl">
+      </mt:if>
     </mt:if>
-
-      <mt:include file="include/list_filters.tmpl">
-
+  </mt:if>
       <div class="row">
         <main class="col-md-12 pt-3">
           <h1<mt:if name="has_option"> class="title-with-opt"</mt:if>><span class="title"><mt:var name="page_title"></span>
       <mt:if name="this_mode" ne="login">
+        <mt:if name="this_mode" eq="view">
           <button type="button" class="btn btn-outline-primary btn-sm" data-toggle="modal" data-target="#filterOptions">
             <mt:trans phrase="Filters">
           </button>
+        </mt:if>
+        <mt:if name="request._type" eq="list">
+          <mt:if name="model" eq="asset">
+          <mt:if name="can_create">
+          <button type="button" class="btn btn-outline-primary btn-sm" data-toggle="modal" data-target="#startUpload">
+            <mt:trans phrase="Upload">
+          </button>
+          </mt:if>
+          </mt:if>
+        </mt:if>
       </mt:if>
           </h1>
-
     <mt:setvarblock name="alert_close">
       <button type="button" class="close" data-dismiss="alert" aria-label="<mt:trans phrase="Close">">
         <span aria-hidden="true">&times;</span>

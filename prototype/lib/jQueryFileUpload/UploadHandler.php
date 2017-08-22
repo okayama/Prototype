@@ -25,6 +25,8 @@ class UploadHandler
     protected $thumb_square_data;
     public    $scaled_image;
 
+    public    $upload_files = [];
+
     // PHP File Upload error message codes:
     // http://php.net/manual/en/features.file-upload.errors.php
     protected $error_messages = array(
@@ -296,20 +298,8 @@ class UploadHandler
             $file->width = $width;
             $file->height = $height;
         }
+        $file->uploadDir = $this->options['upload_dir'];
         return;
-        /*
-        $file->deleteUrl = $this->options['script_url']
-            .$this->get_query_separator($this->options['script_url'])
-            .$this->get_singular_param_name()
-            .'='.rawurlencode($file->name);
-        $file->deleteType = $this->options['delete_type'];
-        if ($file->deleteType !== 'DELETE') {
-            $file->deleteUrl .= '&_method=DELETE';
-        }
-        if ($this->options['access_control_allow_credentials']) {
-            $file->deleteWithCredentials = true;
-        }
-        */
     }
 
     // Fix for overflowing signed 32 bit integers,
@@ -720,6 +710,7 @@ class UploadHandler
         list($file_path, $new_file_path) =
             $this->get_scaled_image_file_paths($file_name, $version);
         $type = strtolower(substr(strrchr($file_name, '.'), 1));
+        $app = $this->options['prototype'];
         switch ($type) {
             case 'jpg':
             case 'jpeg':
@@ -815,6 +806,14 @@ class UploadHandler
                 $basename = preg_quote(basename($new_file_path));
                 $new_file_path = preg_replace("/($basename$)/","square-$1", $new_file_path);
             }
+            $dir = basename(dirname( $new_file_path ));
+            if ( $app->param( '__mode' ) == 'upload_multi' ) {
+                if ( $square && $dir != 'thumbnail' ) {
+                    return true;
+                }
+            }
+            if ( $dir != 'thumbnail' )
+                $this->upload_files[] = $new_file_path;
             $success = imagecopyresampled(
                 $new_img,
                 $src_img,
@@ -834,7 +833,6 @@ class UploadHandler
                 $options['max_width'] = isset($options['max_width']) ? $options['max_width'] : 500;
                 $options['max_width'] = $options['max_width']/2;
                 $options['max_height'] = isset($options['max_height']) ? $options['max_height'] : 500;
-
                 $options['max_height'] = $options['max_height']/2;
                 $this->gd_create_scaled_image($file_name, $version, $options,true);
             }
@@ -1203,6 +1201,12 @@ class UploadHandler
             $basename = preg_replace( "/\.$extension$/", "", $filename );
             $ts = date( 'Y-m-d H:i:s' );
             $user_id = $app->user()->id;
+            $sess->user_id( $user_id );
+            $sess->start( time() );
+            $sess->expires( time() + $app->sess_timeout );
+            if ( $app->workspace() ) {
+                $sess->workspace_id( $app->workspace()->id );
+            }
             $props = [
                 'file_size'    => $file->size,
                 'image_width'  => $width,
@@ -1216,8 +1220,7 @@ class UploadHandler
                 'file_name'    => $filename
             ];
             $this->basename = $basename;
-            $sess->data(file_get_contents($file_path));  // TODO 
-            //file_put_contents( '22', $sess->data );
+            $sess->data(file_get_contents($file_path));
             $basename = quotemeta(basename($file_path));
             $thumbnail = preg_replace( "/($basename$)/", "thumbnail/$1", $file_path );
             $square = preg_replace( "/($basename$)/", "thumbnail/square-$1", $file_path );
@@ -1243,6 +1246,65 @@ class UploadHandler
             // $filename = preg_replace( "/\.$extension$/", "", $filename );
             $sess->text(json_encode($props));
             $sess->save();
+            $this->set_additional_file_properties($file);
+        }
+        return $file;
+    }
+
+    protected function __handle_file_upload($uploaded_file, $name, $size, $type, $error,
+            $index = null, $content_range = null) {
+        $file = new \stdClass();
+        $file->name = $this->get_file_name($uploaded_file, $name, $size, $type, $error,
+            $index, $content_range);
+        $file->size = $this->fix_integer_overflow((int)$size);
+        $file->type = $type;
+        if ($this->validate($uploaded_file, $file, $error, $index)) {
+            $this->handle_form_data($file, $index);
+            $upload_dir = $this->get_upload_path();
+            if (!is_dir($upload_dir)) {
+                mkdir($upload_dir, $this->options['mkdir_mode'], true);
+            }
+            $file_path = $this->get_upload_path($file->name);
+            $append_file = $content_range && is_file($file_path) &&
+                $file->size > $this->get_file_size($file_path);
+            if ($uploaded_file && is_uploaded_file($uploaded_file)) {
+                // multipart/formdata uploads (POST method uploads)
+                if ($append_file) {
+                    file_put_contents(
+                        $file_path,
+                        fopen($uploaded_file, 'r'),
+                        FILE_APPEND
+                    );
+                } else {
+                    move_uploaded_file($uploaded_file, $file_path);
+                }
+            } else {
+                // Non-multipart uploads (PUT method support)
+                file_put_contents(
+                    $file_path,
+                    fopen($this->options['input_stream'], 'r'),
+                    $append_file ? FILE_APPEND : 0
+                );
+            }
+            $file_size = $this->get_file_size($file_path, $append_file);
+            if ($file_size === $file->size) {
+                $file->url = $this->get_download_url($file->name);
+                if ($this->is_valid_image_file($file_path)) {
+                    $this->handle_image_file($file_path, $file);
+                }
+            } else {
+                $file->size = $file_size;
+                if (!$content_range && $this->options['discard_aborted_uploads']) {
+                    unlink($file_path);
+                    $file->error = $this->get_error_message('abort');
+                }
+            }
+            $this->upload_file = $file_path;
+            $this->extension = strtolower(pathinfo( $file_path )['extension']);
+            $extension = $this->extension;
+            $basename = basename( $file_path );
+            $basename = preg_replace( "/\.{$extension}$/", '', $basename );
+            $this->basename = $basename;
             $this->set_additional_file_properties($file);
         }
         return $file;
@@ -1426,7 +1488,77 @@ class UploadHandler
                     ));
                 }
             }
+            $app = $this->options['prototype'];
+            if ( $app->param( '__mode' ) == 'upload_multi' ) {
+                $file = (array) $content['files'][0];
+                $label = $file['name'];
+                $file_name = $file['name'];
+                $file_ext = $file['extension'];
+                $mime_type = $file['type'];
+                $size = $file['size'];
+                $class = $file['class'];
+                $image_width = ( $class == 'image' ) ? $file['width'] : '';
+                $image_height = ( $class == 'image' ) ? $file['height'] : '';
+                $upload_dir = $this->options['upload_dir'];
+                $upload_dir = rtrim( $upload_dir, DS );
+                $path = realpath( $upload_dir . DS . $label );
+                if ( $class == 'image' ) {
+                    $thumbnail = dirname( $path ) . DS . 'thumbnail' . DS . $label;
+                    $square = dirname( $path ) . DS . 'thumbnail' . DS . "square-{$label}";
+                }
+                $extra_path = $app->param( 'extra_path' );
+                $asset = $app->db->model( 'asset' )->new();
+                $asset->set_values(
+                    ['label' => $label, 'extra_path' => $extra_path,
+                     'image_width' => $image_width, 'image_height' => $image_height,
+                     'class' => $class, 'size' => $size, 'file_name' => $file_name,
+                     'file_ext' => $file_ext, 'mime_type' => $mime_type ] );
+                $asset->file( file_get_contents( $path ) );
+                $app->set_default( $asset );
+                $asset->save();
+                $basename = $file['basename'];
+                $meta = $app->db->model( 'meta' )->new( ['model' => 'asset',
+                     'object_id' => $asset->id, 'key' => 'metadata', 'kind' => 'file'] );
+                $metadata = ['file_size' => $size, 'image_width' => $image_width,
+                             'image_height' => $image_height, 'class' => $class,
+                             'extension' => $file_ext, 'basename' => $basename,
+                             'mime_type' => $mime_type, 'file_name' => $file_name ];
+                $metadata['uploaded'] = date( 'Y-m-d H:i:s' );
+                $metadata['user_id'] = $app->user()->id;
+                $meta->text( json_encode( $metadata ) );
+                if ( $class == 'image' ) {
+                    if ( file_exists( $thumbnail ) ) {
+                        $meta->data( file_get_contents( $thumbnail ) );
+                        unlink( $thumbnail );
+                    }
+                    if ( file_exists( $square ) ) {
+                        $meta->metadata( file_get_contents( $square ) );
+                        unlink( $square );
+                    }
+                    if ( is_dir( dirname( $thumbnail ) ) ) {
+                        rmdir( dirname( $thumbnail ) );
+                    }
+                }
+                $meta->save();
+                $original = clone $asset;
+                $callback = ['name' => 'post_save', 'error' => '', 'is_new' => true,
+                             'original' => $original ];
+                $app->post_save_asset( $callback, $app, $asset );
+                if ( file_exists( $path ) ) {
+                    unlink( $path );
+                }
+                if ( is_dir( dirname( $path ) ) ) {
+                    rmdir( dirname( $path ) );
+                }
+                $content['files'][0]->asset_id = $asset->id;
+                $this->response = $content;
+                $json = json_encode($content);
+            }
             $this->body($json);
+        }
+        $app = $this->options['prototype'];
+        if ( $app->param( '__mode' ) == 'upload_multi' ) {
+            return $content;
         }
         if (!isset($this->options['no_upload'])){
             $thumbnail_file = $this->thumbnail_file;
@@ -1502,12 +1634,15 @@ class UploadHandler
             preg_split('/[^0-9]+/', $content_range_header) : null;
         $size =  $content_range ? $content_range[3] : null;
         $files = array();
+        $app = $this->options['prototype'];
+        $meth = 'handle_file_upload';
+        if (! isset($this->options['magic'] ) ) $meth = '__handle_file_upload';
         if ($upload) {
             if (is_array($upload['tmp_name'])) {
                 // param_name is an array identifier like "files[]",
                 // $upload is a multi-dimensional array:
                 foreach ($upload['tmp_name'] as $index => $value) {
-                    $files[] = $this->handle_file_upload(
+                    $files[] = $this->$meth(
                         $upload['tmp_name'][$index],
                         $file_name ? $file_name : $upload['name'][$index],
                         $size ? $size : $upload['size'][$index],
@@ -1520,7 +1655,7 @@ class UploadHandler
             } else {
                 // param_name is a single object identifier like "file",
                 // $upload is a one-dimensional array:
-                $files[] = $this->handle_file_upload(
+                $files[] = $this->$meth(
                     isset($upload['tmp_name']) ? $upload['tmp_name'] : null,
                     $file_name ? $file_name : (isset($upload['name']) ?
                             $upload['name'] : null),
@@ -1535,30 +1670,6 @@ class UploadHandler
             }
         }
         $response = array($this->options['param_name'] => $files);
-        return $this->generate_response($response, $print_response);
-    }
-
-    public function delete($print_response = true) {
-        $file_names = $this->get_file_names_params();
-        if (empty($file_names)) {
-            $file_names = array($this->get_file_name_param());
-        }
-        $response = array();
-        foreach ($file_names as $file_name) {
-            $file_path = $this->get_upload_path($file_name);
-            $success = is_file($file_path) && $file_name[0] !== '.' && unlink($file_path);
-            if ($success) {
-                foreach ($this->options['image_versions'] as $version => $options) {
-                    if (!empty($version)) {
-                        $file = $this->get_upload_path($file_name, $version);
-                        if (is_file($file)) {
-                            unlink($file);
-                        }
-                    }
-                }
-            }
-            $response[$file_name] = $success;
-        }
         return $this->generate_response($response, $print_response);
     }
 

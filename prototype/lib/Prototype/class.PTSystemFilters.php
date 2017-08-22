@@ -135,7 +135,7 @@ class PTSystemFilters {
     }
 
     function filter_class ( $app, &$terms, $model, $class ) {
-        $terms['class'] = $class;
+        $terms['class'] = ['AND' => $class ];
     }
 
 }

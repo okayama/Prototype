@@ -222,11 +222,11 @@
 </mt:if>
 </mt:objectloop>
 
-<div class="modal fade" id="_col_options" tabindex="-1" role="dialog" aria-labelledby="exampleModalLongTitle" aria-hidden="true">
+<div class="modal fade" id="_col_options" tabindex="-1" role="dialog" aria-labelledby="ModalLongTitle" aria-hidden="true">
 <div class="modal-dialog modal-lg" role="document">
   <div class="modal-content">
     <div class="modal-header">
-      <h5 class="modal-title" id="exampleModalLongTitle"><mt:trans phrase="Column Detail"></h5>
+      <h5 class="modal-title" id="ModalLongTitle"><mt:trans phrase="Column Detail"></h5>
       <button type="button" class="close" data-dismiss="modal" aria-label="Close">
         <span aria-hidden="true">&times;</span>
       </button>
@@ -327,6 +327,7 @@
               <mt:objectloop model="table" sort_by="order">
               <mt:if name="__first__">
               <option value=""><mt:trans phrase="(None selected)"></option>
+              <option value="__any__"><mt:trans phrase="Any"></option>
               </mt:if>
               <mt:var name="label" setvar="table_label">
               <option value="<mt:var name="name" escape>"><mt:trans phrase="$table_label" escape></option>
@@ -569,9 +570,8 @@ $('#_detail_list').change( function(){
     if ( $(this).val() == 'reference') {
         $('#_detail_list_table_wrapper').show();
         var colmns = $('#_detail_list_column').children();
-        if ( colmns.length == 0 ) {
-            set_column_names( $('#_detail_edit_table').val(), 'list');
-        }
+        set_column_names( $('#_detail_edit_table').val(), 'list');
+        set_column_names( $('#_detail_edit_table').val(), 'edit');
     } else {
         $('#_detail_list_table_wrapper').hide();
     }
@@ -586,9 +586,8 @@ $('#_detail_edit').change( function(){
             $('._detail_edit_type_wrapper').hide();
         }
         var colmns = $('#_detail_edit_column').children();
-        if ( colmns.length == 0 ) {
-            set_column_names( $('#_detail_edit_table').val(), 'edit');
-        }
+        set_column_names( $('#_detail_edit_table').val(), 'edit');
+        set_column_names( $('#_detail_edit_table').val(), 'list');
     } else {
         $('#_detail_edit_table_wrapper').hide();
         $('._detail_edit_type_wrapper').hide();
@@ -596,10 +595,12 @@ $('#_detail_edit').change( function(){
 });
 $('#_detail_list_table').change( function(){
     set_column_names( $(this).val(), 'list');
+    set_column_names( $(this).val(), 'edit');
     $('#_detail_edit_table').val( $(this).val() );
 });
 $('#_detail_edit_table').change( function(){
     set_column_names( $(this).val(), 'edit');
+    set_column_names( $(this).val(), 'list');
     $('#_detail_list_table').val( $(this).val() );
 });
 $('#_save_detail_button').click( function(){
@@ -629,7 +630,7 @@ $('#_save_detail_button').click( function(){
         var model = $('#_detail_list_table').val();
         var column = $('#_detail_list_column').val();
         var list_value = list+ ':' + model + ':' + column;
-        if (! model || !column ) {
+        if ( ( model != '__any__' ) && (! model || !column ) ) {
             alert('<mt:trans phrase="Model and Column are required for the reference.">');
             return false;
         }
@@ -805,6 +806,7 @@ function reorder() {
 var addcounter = 0;
 var last_row = false;
 $('#add_col').click( function(){
+    editContentChanged = true;
     tr = $('#col_tmpl');
     newline = tr.clone( true ).appendTo('#cols_tbl');
     newline.removeAttr('id');

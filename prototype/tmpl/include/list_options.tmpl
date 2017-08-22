@@ -21,11 +21,15 @@
             <input type="hidden" name="workspace_id" value="<mt:var name="workspace_id">">
           </mt:if>
             <mt:if name="request.dialog_view">
-                <input type="hidden" name="dialog_view" value="1">
+              <input type="hidden" name="dialog_view" value="1">
               <mt:if name="request.single_select">
                 <input type="hidden" name="single_select" value="1">
               </mt:if>
+                <input type="hidden" name="target" value="<mt:var name="request.target" escape>">
+                <input type="hidden" name="get_col" value="<mt:var name="request.get_col" escape>">
             </mt:if>
+                <input type="hidden" name="return_args" value="<mt:var name="filter_cond" strip_linefeeds="1"><mt:var name="insert_cond" strip_linefeeds="1"><mt:var name="selected_ids_cond" strip_linefeeds="1">">
+
             <div class="modal-body">
               <div class="container-fluid">
                 <div class="row form-group">

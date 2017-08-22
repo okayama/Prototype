@@ -1,5 +1,4 @@
 <?php
-
 require_once( dirname( __DIR__ ) . DIRECTORY_SEPARATOR . 'class.Prototype.php' );
 $app = new Prototype();
 $app->debug = true;
@@ -11,7 +10,6 @@ if (! $url->id ) {
 $object_id = (int) $url->object_id;
 $model = $url->model;
 $table = $app->db->model( 'table' )->load(['name' => $model ] );
-
 if ( empty( $table ) ) {
     exit();
 }
@@ -19,6 +17,11 @@ $table = $table[0];
 $model = $table->name;
 $key = $url->key;
 if ( $object_id && $model ) {
+    if ( $key == 'thumbnail' && $url->meta_id ) {
+        $model = 'meta';
+        $object_id = (int) $url->meta_id;
+        $key = 'data';
+    }
     $obj = $app->db->model( $model )->load( $object_id );
 }
 $ts = $url->archive_date;

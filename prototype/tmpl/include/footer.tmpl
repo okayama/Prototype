@@ -1,31 +1,62 @@
-            </div>
-          </div>
         </main>
       </div>
+    </div>
   <mt:getoption key="copyright" setvar="copyright">
   <mt:if name="copyright">
     <footer class="footer bar">
       <span><mt:getoption key="copyright" escape></span>
     </footer>
   </mt:if>
-    <script>window.jQuery || document.write('<script src="assets/js/vendor/jquery.min.js"><\/script>')</script>
+<script>window.jQuery || document.write('<script src="assets/js/vendor/jquery.min.js"><\/script>')</script>
+<script>
+$(function() {
+    $(".popup").click(function(){
+        window.open(this.href,"WindowName","width=400,height=400,resizable=yes,scrollbars=yes");
+        return false;
+    });
+});
+</script>
 <mt:if name="request._type" eq="edit">
 <script src="assets/js/tinymce/tinymce.min.js"></script>
 <script>
+<mt:if name="object_text_format" eq="richtext">
+editorInit();
+</mt:if>
+function editorInit () {
     tinymce.init({
       language : 'ja',
       selector : 'textarea.richtext',
       relative_urls : false,
       image_advtab: true,
+      content_css: "assets/css/editor.css",
       onchange_callback : "editHtmlEditor",
       plugins  : 'advlist autolink lists link image charmap print preview anchor searchreplace visualblocks code fullscreen insertdatetime media table contextmenu paste code',
-      toolbar  : 'undo redo | insert | styleselect | bold italic | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | link image',
+      toolbar  : 'undo redo | insert | styleselect | bold italic | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | link image | pt-file pt-image',
       setup: function (ed) {
         ed.on('change', function(e) {
             editContentChanged = true;
         });
+        ed.addButton('pt-image', {
+            image: 'assets/img/insert_image.png',
+            tooltip: '<mt:trans phrase="Insert Image">',
+            icon: false,
+            onclick: function () {
+                url = '<mt:var name="script_uri">?__mode=view&_type=list&_model=asset<mt:if name="workspace_id">&workspace_id=<mt:var name="workspace_id"></mt:if>&dialog_view=1&select_system_filters=filter_class_image&_system_filters_option=image&_filter=1&insert_editor=1&insert=' + ed.id;
+                $('#modal').modal().find('iframe').attr( 'src', url );
+            }
+        });
+        ed.addButton('pt-file', {
+            image: 'assets/img/insert_file.png',
+            tooltip: '<mt:trans phrase="Insert File">',
+            icon: false,
+            onclick: function () {
+                url = '<mt:var name="script_uri">?__mode=view&_type=list&_model=asset<mt:if name="workspace_id">&workspace_id=<mt:var name="workspace_id"></mt:if>&dialog_view=1&insert_editor=1&insert=' + ed.id;
+                $('#modal').modal().find('iframe').attr( 'src', url );
+            }
+        });
       }
     });
+}
 </script>
 </mt:if>
 <script>
@@ -34,17 +65,17 @@
             var $this = $(this);
             var $modal = $('#modal');
             var url = '';
-            if(this.href){
+            if( this.href ){
                 url = this.href;
-            }else if($this.data('href')){
+            } else if( $this.data('href') ) {
                 url = $this.data('href');
             }
-            if(url){
-                $modal.find('iframe').attr('src',url);
+            if( url ) {
+                $modal.find('iframe').attr('src', url );
             }
         });
     });
 </script>
-</div>
+  </div>
   </body>
 </html>

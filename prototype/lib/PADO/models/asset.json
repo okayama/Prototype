@@ -29,7 +29,8 @@
             "size": 255
         },
         "file": {
-            "type": "blob"
+            "type": "blob",
+            "not_null": 1
         },
         "extra_path": {
             "type": "string",
@@ -153,6 +154,7 @@
         "class": "text",
         "created_on": "date",
         "status": "number",
+        "created_by": "reference:user:nickname",
         "modified_by": "reference:user:nickname",
         "workspace_id": "reference:workspace:name",
         "has_deadline": "checkbox",

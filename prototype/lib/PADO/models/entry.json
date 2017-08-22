@@ -30,6 +30,11 @@
         "text": {
             "type": "text"
         },
+        "text_format": {
+            "type": "string",
+            "size": 60,
+            "default": null
+        },
         "og_image": {
             "type": "blob"
         },

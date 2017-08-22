@@ -50,6 +50,7 @@ class PTListActions {
 
     function set_status ( $app, $objects, $action ) {
         $model = $app->param( '_model' );
+        $status_published = $app->status_published( $model );
         $table = $app->get_table( $model );
         if (! $table || ! $table->has_status ) {
             return $app->error( 'Invalid request.' );
@@ -60,15 +61,23 @@ class PTListActions {
             return $app->error( 'Invalid request.' );
         }
         $counter = 0;
+        $rebuild_ids = [];
         foreach ( $objects as $obj ) {
             if (! $obj->has_column( 'status' ) ) {
                 return $app->error( 'Invalid request.' );
             }
             $original = clone $obj;
             if ( $obj->status != $status ) {
+                if ( $obj->status == $status_published || $status == $status_published ) {
+                    if ( $app->get_permalink( $obj, true ) ) {
+                        $rebuild_ids[] = $obj->id;
+                    }
+                }
                 $obj->status( $status );
                 $obj->save();
-                $app->publish_obj( $obj, $original );
+                $original = clone $obj;
+                $callback = ['name' => 'post_save', 'error' => '', 'is_new' => false ];
+                $app->run_callbacks( $callback, $model, $obj, $original );
                 $counter++;
             }
         }
@@ -84,9 +93,18 @@ class PTListActions {
             $action = $action['label'] . " ({$status_text})";
             $this->log( $action, $model, $counter );
         }
-        $app->redirect( $app->admin_url .
-            "?__mode=view&_type=list&_model={$model}&apply_actions={$counter}"
-                                                . $app->workspace_param );
+        $return_args = "does_act=1&__mode=view&_type=list&_model={$model}&"
+                     . "apply_actions={$counter}" . $app->workspace_param;
+        if (! empty( $rebuild_ids ) ) {
+            $ids = join( ',', $rebuild_ids );
+            $app->mode = 'rebuild_phase';
+            $app->param( '__mode', 'rebuild_phase' );
+            $app->param( 'ids', $ids );
+            $app->param( 'apply_actions', $counter );
+            $app->param( '_return_args', $return_args );
+            return $app->rebuild_phase( $app, true, 0, true );
+        }
+        $app->redirect( $app->admin_url . '?' . $return_args );
     }
 
     function add_tags ( $app, $objects, $action, $add = true ) {
@@ -113,8 +131,8 @@ class PTListActions {
         $add_tags = preg_split( '/\s*,\s*/', $add_tags );
         $status_published = $app->status_published( $model );
         $tag_ids = [];
+        $tag_objs = [];
         if (! $add ) {
-            $tag_objs = [];
             foreach ( $add_tags as $tag ) {
                 $normalize = preg_replace( '/\s+/', '', trim( strtolower( $tag ) ) );
                 if (! $tag ) continue;
@@ -133,15 +151,23 @@ class PTListActions {
                 $tag_ids[] = $tag->id;
             }
         }
+        $rebuild_ids = [];
+        $rebuild_tag_ids = [];
         foreach ( $objects as $obj ) {
             $res = false;
             if ( $add ) {
-                $res = $this->add_tags_to_obj( $obj, $add_tags, $name );
+                $res = $this->add_tags_to_obj( $obj, $add_tags, $name, $tag_ids );
+                $rebuild_tag_ids = $tag_ids;
             } else {
                 $relations = $app->get_relations( $obj, 'tag', $name );
                 foreach ( $relations as $relation ) {
                     if ( in_array( $relation->to_id, $tag_ids ) ) {
                         $res = $relation->remove();
+                        if (! in_array( $relation->to_id, $rebuild_tag_ids ) ) {
+                            if ( $obj->status == $status_published ) {
+                                $rebuild_tag_ids[] = $relation->to_id;
+                            }
+                        }
                     }
                 }
             }
@@ -149,8 +175,9 @@ class PTListActions {
                 $counter++;
                 if ( $table->has_status && $obj->has_column( 'status' ) ) {
                     if ( $obj->status == $status_published ) {
-                        $original = clone $obj;
-                        $app->publish_obj( $obj, $original );
+                        if ( $app->get_permalink( $obj, true ) ) {
+                            $rebuild_ids[] = $obj->id;
+                        }
                     }
                 }
             }
@@ -160,16 +187,33 @@ class PTListActions {
             $action = $action['label'] . " ({$add_tags})";
             $this->log( $action, $model, $counter );
         }
-        $app->redirect( $app->admin_url .
-            "?__mode=view&_type=list&_model={$model}&apply_actions={$counter}"
-                                                . $app->workspace_param );
+        $return_args = "does_act=1&__mode=view&_type=list&_model={$model}&"
+                     ."apply_actions={$counter}" . $app->workspace_param;
+        if (! empty( $rebuild_ids ) ) {
+            $ids = join( ',', $rebuild_ids );
+            if (! empty( $rebuild_tag_ids ) ) {
+                $tag_counter = count( $rebuild_tag_ids );
+                $return_args .= '&publish_dependencies=' . $tag_counter;
+                $tag_ids = join( ',', $rebuild_tag_ids );
+                $return_args = '__mode=rebuild_phase&ids=' . $tag_ids
+                            . '&_model=tag&apply_actions=' . $tag_counter 
+                            . '&_return_args=' . rawurlencode( $return_args );
+            }
+            $app->mode = 'rebuild_phase';
+            $app->param( '__mode', 'rebuild_phase' );
+            $app->param( 'ids', $ids );
+            $app->param( 'apply_actions', $counter );
+            $app->param( '_return_args', $return_args );
+            return $app->rebuild_phase( $app, true );
+        }
+        $app->redirect( $app->admin_url . '?' . $return_args );
     }
 
     function remove_tags ( $app, $objects, $action ) {
         return $this->add_tags( $app, $objects, $action, false );
     }
 
-    function add_tags_to_obj ( $obj, $add_tags, $name = 'tags' ) {
+    function add_tags_to_obj ( $obj, $add_tags, $name = 'tags', &$tag_ids ) {
         $app = Prototype::get_instance();
         if (! empty( $add_tags ) ) {
             $db = $app->db;
@@ -193,6 +237,9 @@ class PTListActions {
                     $tag_obj->save();
                 }
                 $to_ids[] = $tag_obj->id;
+                if (! in_array( $tag_obj->id, $tag_ids ) ) {
+                    $tag_ids[] = $tag_obj->id;
+                }
             }
             $args = ['from_id' => $obj->id, 
                      'name' => $name,

@@ -22,6 +22,13 @@
           </mt:if>
           <mt:if name="request.dialog_view">
             <input type="hidden" name="dialog_view" value="1">
+          <mt:if name="request.select_system_filters">
+            <input type="hidden" name="select_system_filters" value="<mt:var name="request.select_system_filters" escape>">
+            <input type="hidden" name="_system_filters_option" value="<mt:var name="request._system_filters_option" escape>">
+            <input type="hidden" name="insert" value="<mt:var name="request.insert" escape>">
+            <input type="hidden" name="insert_editor" value="<mt:var name="request.insert_editor" escape>">
+            <input type="hidden" name="_filter" value="<mt:var name="request._filter" escape>">
+          </mt:if>
           </mt:if>
           <mt:if name="request.target">
             <input type="hidden" name="target" value="<mt:var name="request.target" escape>">
