@@ -4,9 +4,9 @@
     "primary"  : "name",
     "display"  : true,
     "sortable" : true,
-    "order"    : 80,
+    "order"    : 20,
     "auditing" : 1,
-    "menu_type": 1,
+    "menu_type": 5,
     "template_tags": 1,
     "column_defs": {
         "id": {

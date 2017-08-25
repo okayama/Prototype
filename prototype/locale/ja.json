@@ -385,6 +385,10 @@
     "Popover"            : "ポップオーバー",
     "Utility"            : "ユーティリティ",
     "Utilities"          : "ユーティリティ",
+    "Definition"         : "システム定義",
+    "User and Permission": "ユーザと権限",
+    "Queue"              : "キュー",
+    "Queues"             : "キュー",
     "Comment"            : "コメント",
     "Comments"           : "コメント",
     "Metadata"           : "メタデータ",
@@ -392,6 +396,8 @@
     "Syetem's Role"      : "システムのロール",
     "Archive Date"       : "アーカイブ日付",
     "Archive Type"       : "アーカイブ種別",
+    "Accept Comments"    : "コメントを許可",
+    "Comment Count"      : "コメント数",
     "Draft %s"           : "下書きの%s",
     "%s Under Review"    : "レビュー中の%s",
     "Reserved %s"        : "公開予約中の%s",
@@ -400,6 +406,12 @@
     "Publish Again"      : "再構築しなおす",
     "Disabled %s"        : "無効な%s",
     "Enabled %s"         : "有効な%s",
+    "Publish time: %s"   : "処理時間 : %s",
+    "seconds"            : "秒",
+    "%sseconds"          : "%s秒",
+    "%1$smin %2$sseconds": "%1$s分 %2$s秒",
+    "%1$sh %2$smin %3$sseconds"
+        : "%1$s時間 %2$s分 %3$s秒",
     "Workspace Administrator"
         : "スペース管理者",
     "Rebuilding dependencies..."

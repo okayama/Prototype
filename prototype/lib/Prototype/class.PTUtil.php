@@ -20,6 +20,13 @@ class PTUtil {
         return date( 'YmdHis' );
     }
 
+    public static function sec2hms ( $sec ) {
+        $hours = floor( $sec / 3600 );
+        $minutes = floor( ( $sec / 60 ) % 60 );
+        $seconds = $sec % 60;
+        return [ $hours, $minutes, $seconds ];
+    }
+
     public static function diff ( $source, $change, &$renderer = null ) {
         $source = str_replace( ['\r\n', '\r', '\n'], '\n', $source );
         $source = explode( "\n", $source );
@@ -37,6 +44,22 @@ class PTUtil {
         }
         $diff = new Text_Diff( 'auto', [ $source, $change ] );
         return $renderer->render( $diff );
+    }
+
+    public static function remove_dir ( $dir ) {
+        if ( $handle = opendir( $dir ) ) {
+            while ( false !== ( $item = readdir( $handle ) ) ) {
+                if ( $item != "." && $item != ".." ) {
+                    if ( is_dir( $dir . DS . $item ) ) {
+                        self::remove_dir( $dir . DS . $item );
+                    } else {
+                        unlink( $dir . DS . $item );
+                    }
+                }
+            }
+            closedir( $handle );
+            rmdir( $dir );
+        }
     }
 
     public static function remove_empty_dirs ( $dirs ) {
@@ -244,6 +267,67 @@ class PTUtil {
         }
         $info->save();
         return $asset_url;
+    }
+
+    public static function object_to_resource ( $obj, $relation = true ) {
+        $app = Prototype::get_instance();
+        $scheme = $app->get_scheme_from_db( $obj->_model );
+        $relations = isset( $scheme['relations'] ) ? $scheme['relations'] : [];
+        $column_defs = $scheme['column_defs'];
+        $vars = $obj->get_values( true );
+        foreach ( $vars as $key => $var ) {
+            if ( isset( $column_defs[ $key ] ) && isset( $column_defs[ $key ]['type'] ) ) {
+                if ( $column_defs[ $key ]['type'] == 'blob' ) {
+                    unset( $vars[ $key ] );
+                }
+            }
+        }
+        $edit_properties = $scheme['edit_properties'];
+        foreach ( $edit_properties as $col => $prop ) {
+            if ( $prop === 'file' ) {
+                $meta_vars = [];
+                $meta = $app->db->model( 'meta' )->get_by_key(
+                    ['model' => $obj->_model, 'object_id' => $obj->id,
+                     'key' => 'metadata', 'kind' => $col ] );
+                if ( $meta->id ) {
+                    $meta_vars = json_decode( $meta->text, 'true' );
+                    $url = $app->get_assetproperty( $obj, $col, 'url' );
+                    $meta_vars['url'] = $url;
+                }
+                $vars[ $col ] = $meta_vars;
+            }
+        }
+        foreach ( $relations as $name => $to_obj ) {
+            $rel_objs = $app->get_relations( $obj, $to_obj, $name );
+            $relation_vars = [];
+            if (! empty( $rel_objs ) ) {
+                $rel_table = $app->get_table( $to_obj );
+                if (! $rel_table ) continue;
+                $primary = $rel_table->primary;
+                $rel_ids = [];
+                foreach ( $rel_objs as $rel_obj ) {
+                    $rel_ids[] = (int) $rel_obj->to_id;
+                }
+                $load_relations = $app->db->model( $to_obj )->load(
+                    ['id' => ['IN' => $rel_ids ] ] );
+                foreach ( $rel_objs as $rel_obj ) {
+                    $to_id = (int) $rel_obj->to_id;
+                    $rel_obj = $app->db->model( $to_obj )->load( $to_id );
+                    if ( $rel_obj ) {
+                        if ( $relation ) {
+                            $relation_vars[] = self::object_to_resource( $rel_obj );
+                        } else {
+                            $relation_vars[] = $rel_obj->$primary;
+                        }
+                    }
+                }
+            }
+            $vars[ $name ] = $relation_vars;
+        }
+        if ( $permalink = $app->get_permalink( $obj ) ) {
+            $vars['permalink'] = $permalink;
+        }
+        return $vars;
     }
 
     public static function sort_by_order ( &$registries, $default = 50 ) {

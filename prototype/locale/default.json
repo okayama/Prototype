@@ -22,6 +22,8 @@
     "fileinfo"      : "File",
     "urlmapping"    : "URL Map",
     "relation"      : "Relation",
+    "allow_comment" : "Accept Comments",
+    "comment_count" : "Comment Count",
     "label_local"   : "Label(L10N)",
     "system"        : "System",
     "image"         : "Image",

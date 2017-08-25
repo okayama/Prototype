@@ -4,7 +4,7 @@
     "auditing" : 1,
     "display"  : 1,
     "sortable" : 1,
-    "order"    : 120,
+    "order"    : 20,
     "primary"  : "name",
     "menu_type": 2,
     "display_space": 1,

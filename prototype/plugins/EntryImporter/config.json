@@ -2,7 +2,7 @@
     "menus": {
         "start_import": {
             "display_space" : 1,
-            "component"  : "PTImporter",
+            "component"  : "EntryImporter",
             "permission" : "create_entry",
             "mode"       : "start_import",
             "label"      : "Import Entries",
@@ -12,26 +12,26 @@
     "methods": {
         "start_import": {
             "display_space" : 1,
-            "component"  : "PTImporter",
+            "component"  : "EntryImporter",
             "permission" : "create_entry",
             "method"     : "start_import"
         },
         "import_entry": {
             "display_space" : 1,
-            "component"  : "PTImporter",
+            "component"  : "EntryImporter",
             "permission" : "create_entry",
             "method"     : "import_entry"
         },
         "upload_import_file": {
             "display_space" : 1,
-            "component"  : "PTImporter",
+            "component"  : "EntryImporter",
             "permission" : "create_entry",
             "method"     : "upload_import_file"
         }
     },
     "import_format": {
         "movabletype": {
-            "component"  : "PTImporter",
+            "component"  : "EntryImporter",
             "label"      : "Movable Type",
             "method"     : "import_movabletype",
             "order"      : 10,

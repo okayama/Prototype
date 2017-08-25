@@ -20,12 +20,15 @@ setTimeout(function(){
 </script>
 
 <mt:elseif name="rebuild_end">
-
   <div id="header-alert-message" class="alert alert-success" tabindex="0">
     <button type="button" class="close" data-dismiss="alert" aria-label="<mt:trans phrase="Close">">
       <span aria-hidden="true">&times;</span>
     </button>
     <mt:trans phrase="The files for %s have been published." params="$scope_name">
+    <mt:if name="publish_time">
+      <mt:var name="publish_time" sec2hms="1" setvar="_publish_time">
+      <mt:trans phrase="Publish time: %s" params="$_publish_time">
+    </mt:if>
   </div>
 
 <main class="col-md-12 pt-3">
@@ -48,6 +51,7 @@ $('#header-alert-message').focus();
 <input type="hidden" name="magic_token" value="<mt:var name="magic_token">">
 <input type="hidden" name="_type" value="rebuild_archives">
 <input type="hidden" id="next_models" name="next_models" value="<mt:var name="next_models" escape>">
+<input type="hidden" name="start_time" value="<mt:var name="request.start_time" escape>">
 </fotm>
 <p>100%</p>
 <div class="pt-progress-bar">
@@ -76,6 +80,7 @@ if ( $('#next_models').val() ) {
 <input type="hidden" name="next_models" value="<mt:var name="next_models" escape>">
 <input type="hidden" name="dependencies" value="<mt:var name="request.dependencies" escape>">
 <input type="hidden" name="rebuild_dependencies" value="<mt:var name="rebuild_dependencies" escape>">
+<input type="hidden" name="start_time" value="<mt:var name="request.start_time" escape>">
 </fotm>
 
 <p><mt:var name="rebuilt_percent">%</p>
@@ -100,6 +105,7 @@ $('#rebuild_next').submit();
 <input type="hidden" name="workspace_id" value="<mt:var name="workspace_id">">
 <input type="hidden" name="magic_token" value="<mt:var name="magic_token">">
 <input type="hidden" name="_type" value="rebuild_archives">
+<input type="hidden" name="start_rebuild" value="1">
 <div class="row form-group" style="padding:7px;">
 <mt:countgroupby model="urlmapping" group="'workspace_id','model'" workspace_id="$workspace_id" sort_by="order" sort_order="ascend" glue="," setvar="all_models"><mt:var name="count_group_by_model"></mt:countgroupby>
 <mt:unless name="workspace_id">

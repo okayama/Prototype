@@ -25,7 +25,6 @@
 <script>
 window.parent.$('#modal').modal('hide');
 window.parent.$('#image_preview-<mt:var name="request.view" escape>').prop('src','<mt:var name="thumbnail_image">');
-window.parent.$('#image_preview-<mt:var name="request.view" escape>').prop('src','<mt:var name="thumbnail_image">');
 window.parent.$('#<mt:var name="request.view" escape>-magic').val('<mt:var name="request._screen_id" escape>-<mt:var name="request.view" escape>');
 var prop_tmpl = window.parent.file_meta_tmpl;
 prop_tmpl = prop_tmpl.replace('file_name', '<mt:var name="file_name">');

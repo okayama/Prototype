@@ -4,7 +4,7 @@
     "primary"  : "name",
     "display"  : true,
     "sortable" : true,
-    "order"    : 90,
+    "order"    : 10,
     "auditing" : 1,
     "menu_type": 2,
     "template_tags": 1,
@@ -48,6 +48,10 @@
             "type": "tinyint",
             "size": 4,
             "default": 0
+        },
+        "allow_comment": {
+            "type": "tinyint",
+            "size": 4
         },
         "display_space": {
             "type": "tinyint",

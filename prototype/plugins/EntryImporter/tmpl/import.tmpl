@@ -1,4 +1,4 @@
-<mt:trans phrase="Import Entries" component="PTImporter" setvar="page_title">
+<mt:trans phrase="Import Entries" component="EntryImporter" setvar="page_title">
 <mt:include file="include/header.tmpl">
 
 <mt:unless name="request.do_import">
@@ -70,7 +70,7 @@
   </div>
 </div>
 <hr>
-<button type="submit" id="save" class="btn btn-primary disabled" disabled><mt:trans phrase="Do Import" component="PTImporter"></button>
+<button type="submit" id="save" class="btn btn-primary disabled" disabled><mt:trans phrase="Do Import" component="EntryImporter"></button>
 </form>
 
 <!-- The jQuery UI widget factory, can be omitted if jQuery UI is already included -->
@@ -151,7 +151,7 @@ $('#import_format').change(function(){
     current_select = $(this).val();
 });
 $('#save').click(function(){
-    if(!confirm('<mt:trans phrase="Are you sure you want to import entries?" component="PTImporter">')){
+    if(!confirm('<mt:trans phrase="Are you sure you want to import entries?" component="EntryImporter">')){
         return false;
     }
     $(this).attr('disabled', true);
@@ -161,9 +161,15 @@ $('#save').click(function(){
 <mt:else>
 <div id="print-area">
 <div class="print-area-content">
-<iframe src="<mt:var name="script_uri">?__mode=import_entry&amp;workspace_id=<mt:var name="workspace_id">&amp;magic_token=<mt:var name="magic_token">&amp;magic=<mt:var name="magic">&amp;import_format=<mt:var name="import_format"><mt:if name="import_options">&amp;<mt:var name="import_options" escape></mt:if>">
+<iframe id="print-area-iframe" src="<mt:var name="script_uri">?__mode=import_entry&amp;workspace_id=<mt:var name="workspace_id">&amp;magic_token=<mt:var name="magic_token">&amp;magic=<mt:var name="magic">&amp;import_format=<mt:var name="import_format"><mt:if name="import_options">&amp;<mt:var name="import_options" escape></mt:if>">
 </iframe>
 </div>
 </div>
+<script>
+setInterval(function(){
+    var iframe_ele = document.getElementById('print-area-iframe').contentWindow.document.documentElement;
+    document.getElementById('print-area-iframe').contentWindow.scrollTo( 0, iframe_ele.scrollHeight );
+},100);
+</script>
 </mt:unless>
 <mt:include file="include/footer.tmpl">

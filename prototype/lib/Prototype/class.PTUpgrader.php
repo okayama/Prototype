@@ -7,7 +7,7 @@ class PTUpgrader {
                            'modified_by', 'published_on', 'unpublished_on', 'user_id',
                            'basename', 'delete', 'remove', 'save', 'has_deadline',
                            'rev_type', 'rev_object_id', 'rev_note', 'rev_changed',
-                           'rev_diff', 'workspace_id'];
+                           'rev_diff', 'workspace_id', 'allow_comment', 'comment_count'];
 
     function upgrade () {
         $app = Prototype::get_instance();
@@ -153,7 +153,7 @@ class PTUpgrader {
             $upgrade_cols = $model->get_diff( $column_defs, $comp_defs );
             $upgrade_idxs = $model->get_diff( $indexes, $comp_idxs );
             $upgrade = ['column_defs' => $upgrade_cols, 'indexes' => $upgrade_idxs ];
-            $db->drop = false; // 
+            $db->drop = false;
             return $model->upgrade( $model->_table, $upgrade, $model->_colprefix );
         }
     }
@@ -183,7 +183,8 @@ class PTUpgrader {
             if ( $item === 'column' || $item === 'option'
                 || $item === 'meta' || $item === 'session' ) continue;
             $table = $db->model( 'table' )->get_by_key( ['name' => $item ] );
-            $scheme = $db->scheme[ $item ];
+            // $scheme = $db->scheme[ $item ];
+            $scheme = json_decode( file_get_contents( $file ), true );
             if ( isset( $scheme['locale'] ) ) {
                 $locale = $scheme['locale'];
                 foreach ( $locale as $lang => $dict ) {
@@ -211,7 +212,8 @@ class PTUpgrader {
             $child_of = isset( $scheme['child_of'] ) ? $scheme['child_of'] : null;
             $options = ['label', 'plural', 'auditing', 'sort_by', 'order', 'sortable',
                 'menu_type', 'template_tags', 'taggable', 'display_space', 'start_end',
-                'has_basename', 'has_status', 'assign_user', 'revisable', 'hierarchy'];
+                'has_basename', 'has_status', 'assign_user', 'revisable', 'hierarchy',
+                'allow_comment'];
             foreach ( $options as $option ) {
                 $opt = isset( $scheme[ $option ] ) ? $scheme[ $option ] : '';
                 if (! $table->$option && $opt ) $table->$option( $opt );
@@ -387,12 +389,12 @@ class PTUpgrader {
         $db->can_drop = true;
         $columns = $db->model( 'column' )->load( ['table_id' => $obj->id ] );
         $col_names = [];
+        $primary_cols = [];
         foreach ( $columns as $column ) {
             $col_name = $column->name;
             $col_names[] = $column->name;
             $id = $column->id;
             $order = $app->param( '_order_' . $id );
-            // $order = (int) $order;
             if ( $column->is_primary ) {
                 $list = $app->param( '_list_' . $id ) ? 'number' : '';
                 $column->order( $order );
@@ -405,12 +407,8 @@ class PTUpgrader {
                     // TODO Cleanup relation( from and to )
                     if (! $validation ) {
                         $column->remove();
-                        //unset( $obj->$col_name );
-                        //$_col_name = $obj->_prefix . $col_name;
-                        //unset( $obj->$_col_name );
                         unset( $db->scheme['table']['column_defs'][ $col_name ] );
                     }
-                    //if (! $validation ) $column->remove();
                     continue;
                 }
             }
@@ -420,9 +418,6 @@ class PTUpgrader {
                 continue;
             }
             list( $type, $size ) = $types[ $type ];
-            // if ( $type === 'string' && $app->param( '_size_' . $id ) ) {
-            //     $size = $app->param( '_size_' . $id );
-            // }
             $size = (int) $size;
             $autoset = $app->param( '_autoset_' . $id );
             $autoset = (int) $autoset;
@@ -455,7 +450,6 @@ class PTUpgrader {
             $column->label( $label );
             $column->options( $options );
             $column->order( $order );
-            //$app->log( $order );
             $column->not_null( $not_null );
             $column->index( $index );
             $column->disp_edit( $disp_edit );
@@ -467,6 +461,9 @@ class PTUpgrader {
             if ( empty( $errors ) ) {
                 $app->set_default( $column );
                 if (! $validation ) $column->save();
+            }
+            if ( $column->list == 'primary' && $column->edit == 'primary' ) {
+                $primary_cols[] = $column->name;
             }
         }
         foreach ( $add_ids as $id ) {
@@ -542,6 +539,9 @@ class PTUpgrader {
                 ] );
                 $app->set_default( $column );
                 if (! $validation ) $column->save();
+                if ( $column->list == 'primary' && $column->edit == 'primary' ) {
+                    $primary_cols[] = $column->name;
+                }
             }
         }
         if ( $validation ) {
@@ -558,7 +558,10 @@ class PTUpgrader {
             $cb['error'] = join( "\n", $errors );
             return false;
         }
-        $this->upgrade_scheme( $obj->name );
+        if (!empty( $primary_cols ) && !in_array( $obj->primary, $primary_cols ) ) {
+            $obj->primary( $primary_cols[0] );
+            $obj->save();
+        }
         return true;
     }
 
@@ -574,7 +577,7 @@ class PTUpgrader {
         if( $is_child || $obj->sortable || $obj->auditing || $obj->taggable
             || $obj->has_status || $obj->start_end || $obj->has_basename
             || $obj->assign_user || $obj->revisable || $obj->display_space
-            || $obj->hierarchy ) {
+            || $obj->hierarchy || $obj->allow_comment ) {
             $last = $db->model( 'column' )->load
                     ( ['table_id' => $obj->id ],
                       ['sort' => 'order', 'direction' => 'descend', 'limit' => 1] );
@@ -582,7 +585,7 @@ class PTUpgrader {
             $last++;
             $upgrade = false;
             if ( $obj->sortable ) {
-                $values = ['type' => 'int', 'size' => 4,
+                $values = ['type' => 'int', 'size' => 11,
                            'label'=> 'Order',
                            'list' => 'number', 'edit' => 'number',
                            'index' => 1, 'order' => $last ];
@@ -598,6 +601,26 @@ class PTUpgrader {
                            'edit' => 'relation:user:nickname:dialog',
                            'index' => 1, 'order' => $last ];
                 if ( $this->make_column( $obj, 'user_id', $values, $force ) ) {
+                    $last++;
+                    $upgrade = true;
+                }
+            }
+            if ( $obj->allow_comment ) {
+                $values = ['type' => 'tinyint', 'size' => 4,
+                           'label'=> 'Accept Comments',
+                           'list' => 'checkbox',
+                           'edit' => 'checkbox',
+                           'order' => $last ];
+                if ( $this->make_column( $obj, 'allow_comment', $values, $force ) ) {
+                    $last++;
+                    $upgrade = true;
+                }
+                $values = ['type' => 'int', 'size' => 11,
+                           'label'=> 'Comment Count',
+                           'list' => 'number',
+                           'autoset' => 1,
+                           'index' => 1, 'order' => $last ];
+                if ( $this->make_column( $obj, 'comment_count', $values, $force ) ) {
                     $last++;
                     $upgrade = true;
                 }
@@ -644,7 +667,7 @@ class PTUpgrader {
                                                'list' => 'date', 'edit' => 'datetime',
                                                'order' => $last ] );
                         } else {
-                            $col->set_values( ['type' => 'boolean',
+                            $col->set_values( ['type' => 'tinyint', 'size' => 4,
                             'list' => 'checkbox', 'index' => 1, 'order' => $last ] );
                         }
                         $app->set_default( $col );
@@ -680,7 +703,7 @@ class PTUpgrader {
                 }
             }
             if ( $obj->space_child || $obj->display_space ) {
-                $values = ['type' => 'int', 'size' => 4,
+                $values = ['type' => 'int', 'size' => 11,
                            'label'=> 'WorkSpace',
                            'list' => 'reference:workspace:name', 'unchangeable' => 1,
                            'autoset' => 1, 'index' => 1, 'order' => $last ];
@@ -769,15 +792,14 @@ class PTUpgrader {
                     $last++;
                 }
             }
-            if ( $upgrade ) {
-                $this->upgrade_scheme( $obj->name );
-            }
         }
+        if (! $cb['is_new'] )
+            $this->upgrade_scheme( $obj->name );
         if (! $cb['is_new'] ) return;
-                $values = ['type' => 'int', 'size' => 11,
-                           'label'=> 'ID', 'is_primary' => 1,
-                           'list' => 'number', 'edit' => 'hidden',
-                           'index' => 1, 'order' => 1, 'not_null' => 1];
+        $values = ['type' => 'int', 'size' => 11,
+                   'label'=> 'ID', 'is_primary' => 1,
+                   'list' => 'number', 'edit' => 'hidden',
+                   'index' => 1, 'order' => 1, 'not_null' => 1];
         $this->make_column( $obj, 'id', $values, $force );
         $db->upgrader = false;
         $model = $obj->name;
@@ -822,4 +844,24 @@ class PTUpgrader {
         return $parent;
     }
 
+    function drop ( $table ) {
+        $app = Prototype::get_instance();
+        $tables = $app->db->model( 'table' )->load();
+        foreach ( $tables as $t ) {
+            if ( $table->id == $t->id ) continue;
+            $model = $app->db->model( $t->name )->new();
+            if ( $model->has_column( 'table_id' ) ) {
+                $rel_objs = $model->load( ['table_id' => $table->id ] );
+                foreach ( $rel_objs as $obj ) {
+                    $app->remove_object( $obj );
+                }
+            }
+            if ( $model->has_column( 'model' ) ) {
+                $rel_objs = $model->load( ['model' => $table->name ] );
+                foreach ( $rel_objs as $obj ) {
+                    $app->remove_object( $obj );
+                }
+            }
+        }
+    }
 }

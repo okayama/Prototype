@@ -5,7 +5,7 @@
     "version"  : "0.1",
     "display"  : true,
     "editable" : true,
-    "order"    : 3,
+    "order"    : 120,
     "auditing" : 1,
     "menu_type": 2,
     "column_defs": {

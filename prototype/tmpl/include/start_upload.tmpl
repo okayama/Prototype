@@ -42,9 +42,10 @@
 <!-- The Iframe Transport is required for browsers without support for XHR file uploads -->
 <script src="assets/js/jquery.iframe-transport.js"></script>
 <!-- The basic File Upload plugin -->
+<mt:var name="query_string" regex_replace="'/&offset=[0-9]{1,}/',''" setvar="_query_string">
 <script src="assets/js/jquery.fileupload.js"></script>
 <script>
-var this_url = '<mt:var name="script_uri">?<mt:if name="workspace_id">workspace_id=<mt:var name="workspace_id">&</mt:if><mt:var name="query_string" regex_replace="'/&selected_ids=.*$/',''">&sort=id&direction=desc';
+var this_url = '<mt:var name="script_uri">?<mt:if name="workspace_id">workspace_id=<mt:var name="workspace_id">&</mt:if><mt:var name="_query_string" regex_replace="'/&selected_ids=.*$/',''">&sort=id&direction=desc';
 var selected_ids = [];
 var DropZone = document.getElementById('drop-zone');
 DropZone.addEventListener('dragover', function (event) {

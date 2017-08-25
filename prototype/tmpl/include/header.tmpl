@@ -91,9 +91,9 @@ window.onload = function(){
             <mt:tables menu_type="2" permission="1">
               <mt:if name="__first__">
                 <li class="nav-item dropdown">
-                <a aria-label="<mt:trans phrase="Utilities">" class="nav-link dropdown-toggle" data-toggle="dropdown" href="#">
-                  <i data-toggle="tooltip" data-placement="right" title="<mt:trans phrase="Utilities">" class="fa fa-cog" aria-hidden="true"></i>
-                  <span class="sr-only"><mt:trans phrase="Utilities"></span>
+                <a aria-label="<mt:trans phrase="Definition">" class="nav-link dropdown-toggle" data-toggle="dropdown" href="#">
+                  <i data-toggle="tooltip" data-placement="right" title="<mt:trans phrase="Definition">" class="fa fa-cog" aria-hidden="true"></i>
+                  <span class="sr-only"><mt:trans phrase="Definition"></span>
                 </a>
                 <div class="dropdown-menu">
               </mt:if>
@@ -128,6 +128,21 @@ window.onload = function(){
                 <div class="dropdown-menu">
               </mt:if>
                 <a class="dropdown-item btn-sm <mt:if name="name" eq="$model">active</mt:if>" href="<mt:var name="script_uri">?__mode=view&amp;_type=list&amp;_model=<mt:var name="name" escape><mt:if name="workspace_id">&amp;workspace_id=<mt:var name="workspace_id"></mt:if>"><mt:var name="label" escape></a>
+              <mt:if name="__last__">
+                </div>
+                </li>
+              </mt:if>
+            </mt:tables>
+            <mt:tables menu_type="5" permission="1">
+              <mt:if name="__first__">
+                <li class="nav-item dropdown">
+                <a aria-label="<mt:trans phrase="User and Permission">" class="nav-link dropdown-toggle" data-toggle="dropdown" href="#">
+                  <i data-toggle="tooltip" data-placement="right" title="<mt:trans phrase="User and Permission">" class="fa fa-user-plus" aria-hidden="true"></i>
+                  <span class="sr-only"><mt:trans phrase="User and Permission"></span>
+                </a>
+                <div class="dropdown-menu">
+              </mt:if>
+                <a class="dropdown-item btn-sm <mt:if name="name" eq="$model">active</mt:if>" href="<mt:var name="script_uri">?__mode=view&amp;_type=list&amp;_model=<mt:var name="name" escape>"><mt:var name="label" escape></a>
               <mt:if name="__last__">
                 </div>
                 </li>
@@ -178,7 +193,7 @@ window.onload = function(){
       </mt:if>
       </mt:if>
     </nav>
-<mt:if name="this_mode" ne="error">
+
   <mt:if name="this_mode" ne="upgrade">
     <mt:if name="this_mode" ne="login">
       <mt:if name="workspace_id">
@@ -204,9 +219,9 @@ window.onload = function(){
             <mt:tables type="display_space" menu_type="2" permission="1">
               <mt:if name="__first__">
                 <li class="nav-item dropdown">
-                <a aria-label="<mt:trans phrase="WorkSpaces">" class="nav-link dropdown-toggle" data-toggle="dropdown" href="#">
-                  <i data-toggle="tooltip" data-placement="right" title="<mt:trans phrase="Utilities">" class="fa fa-cog" aria-hidden="true"></i>
-                  <span class="sr-only"><mt:trans phrase="Utilities"></span>
+                <a aria-label="<mt:trans phrase="Definition">" class="nav-link dropdown-toggle" data-toggle="dropdown" href="#">
+                  <i data-toggle="tooltip" data-placement="right" title="<mt:trans phrase="Definition">" class="fa fa-cog" aria-hidden="true"></i>
+                  <span class="sr-only"><mt:trans phrase="Definition"></span>
                 </a>
                 <div class="dropdown-menu">
               </mt:if>
@@ -241,6 +256,21 @@ window.onload = function(){
                 <div class="dropdown-menu">
               </mt:if>
                 <a class="dropdown-item btn-sm <mt:if name="name" eq="$model">active</mt:if>" href="<mt:var name="script_uri">?__mode=view&amp;_type=list&amp;_model=<mt:var name="name" escape><mt:if name="workspace_id">&amp;workspace_id=<mt:var name="workspace_id"></mt:if>"><mt:var name="label" escape></a>
+              <mt:if name="__last__">
+                </div>
+                </li>
+              </mt:if>
+            </mt:tables>
+            <mt:tables type="display_space" menu_type="5" permission="1">
+              <mt:if name="__first__">
+                <li class="nav-item dropdown">
+                <a aria-label="<mt:trans phrase="User and Permission">" class="nav-link dropdown-toggle" data-toggle="dropdown" href="#">
+                  <i data-toggle="tooltip" data-placement="right" title="<mt:trans phrase="User and Permission">" class="fa fa-user-plus" aria-hidden="true"></i>
+                  <span class="sr-only"><mt:trans phrase="User and Permission"></span>
+                </a>
+                <div class="dropdown-menu">
+              </mt:if>
+                <a class="dropdown-item btn-sm <mt:if name="name" eq="$model">active</mt:if>" href="<mt:var name="script_uri">?__mode=view&amp;_type=list&amp;_model=<mt:var name="name" escape>"><mt:var name="label" escape></a>
               <mt:if name="__last__">
                 </div>
                 </li>
@@ -302,7 +332,6 @@ window.onload = function(){
     </mt:if>
     </mt:if>
   </mt:if>
-</mt:if>
 
 <script>
 $(function () {

@@ -161,6 +161,16 @@
         "published_on": "date",
         "unpublished_on": "date"
     },
+    "default_list_items" : [
+        "id",
+        "label",
+        "file_name",
+        "class",
+        "status",
+        "created_by",
+        "published_on",
+        "workspace_id"
+    ],
     "autoset": [
         "rev_diff",
         "workspace_id",

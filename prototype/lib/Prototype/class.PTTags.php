@@ -193,7 +193,12 @@ class PTTags {
 
     function hdlr_objectcontext ( $args, $content, $ctx, $repeat, $counter ) {
         $app = $ctx->app;
-        $obj = $ctx->stash( 'object' );
+        if ( isset( $args['model'] ) && isset( $args['id'] ) ) {
+            $id = (int) $args['id'];
+            $obj = $app->db->model( $args['model'] )->load( $id );
+        } else {
+            $obj = $ctx->stash( 'object' );
+        }
         $vars = $obj->get_values();
         $colprefix = $obj->_colprefix;
         $ctx->stash( 'current_context', $obj->_model );
@@ -448,7 +453,7 @@ class PTTags {
              ? $ctx->stash( 'object' ) : $ctx->local_vars['__value__'];
         if ( $obj && $obj->has_column( $col ) ) {
             if ( $id = $obj->id ) {
-                $cache_key = 'cant_edit_' . $obj->_model . '_' . $id;
+                $cache_key = 'can_edit_' . $obj->_model . '_' . $id;
                 $perm = $app->stash( $cache_key );
                 if ( $perm === null ) {
                     $perm = $app->can_do( $obj->_model, 'edit', $obj );
@@ -571,10 +576,10 @@ class PTTags {
             $metadata = $cache ? $cache : $app->db->model( 'meta' )->get_by_key(
                      ['model' => $model, 'object_id' => $id,
                       'key' => 'metadata', 'kind' => $name ] );
+            $ctx->stash( $model . '_meta_' . $name . '_' . $id, $metadata );
             if (! $metadata->id ) {
                 return;
             }
-            $ctx->stash( $model . '_meta_' . $name . '_' . $id, $metadata );
             if ( $meta = $metadata->text ) {
                 $meta = json_decode( $meta, true );
                 $mime_type = $meta['mime_type'];
@@ -957,9 +962,13 @@ class PTTags {
                     $terms['name'] = ['IN' => $models ];
                 }
             }
-            $tables = $app->db->model( 'table' )->load(
-                $terms, ['sort' => 'order'] );
+            $args = ['sort' => 'order'];
+            $cache_key = $app->make_cache_key( $terms, $args, 'table' );
+            $tables = $app->stash( $cache_key ) ? $app->stash( $cache_key )
+                    : $app->db->model( 'table' )->load( $terms, $args );
+            $app->stash( $cache_key, $tables );
             if (! is_array( $tables ) || empty( $tables ) ) {
+                $app->stash( $cache_key, 1 );
                 $repeat = false;
                 return;
             }
@@ -1254,6 +1263,15 @@ class PTTags {
             $ctx->local_vars['label'] = $app->translate( $obj->label );
         }
         return $content;
+    }
+
+    function filter_sec2hms ( $ts, $arg, $ctx ) {
+        require_once( 'class.PTUtil.php' );
+        list( $h, $m, $s ) = PTUtil::sec2hms( $ts );
+        $app = $ctx->app;
+        if ( $h ) return $app->translate( '%1$sh %2$smin %3$sseconds', [ $h, $m, $s ] );
+        if ( $m ) return $app->translate( '%1$smin %2$sseconds', [ $m, $s ] );
+        return $app->translate( '%sseconds', $s );
     }
 
     function filter_epoch2str ( $ts, $arg, $ctx ) {

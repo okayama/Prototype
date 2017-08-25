@@ -18,5 +18,7 @@
     "Could not expand ZIP archive." : "ZIPアーカイブを解凍できませんでした。",
     "Unknown import format '%s'" : "対応していないインポートフォーマットです。'%s'",
     "Invalid File extension'%s'." : "許可されていないファイル拡張子です。'%s'",
-    "Are you sure you want to import entries?" : "記事をインポートしてもよろしいですか?"
+    "Are you sure you want to import entries?" : "記事をインポートしてもよろしいですか?",
+    "Import %s entries successfully." : "%s件の記事をインポートしました。",
+    "You do not have permission to create users. Import as me." : "ユーザーを作成する権限がないため、自分の記事としてインポートします。"
 }

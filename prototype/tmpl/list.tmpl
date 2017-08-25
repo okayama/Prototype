@@ -22,9 +22,12 @@
 &amp;insert=<mt:var name="request.insert" escape>
 </mt:setvarblock>
 </mt:if>
-<mt:if name="request.selected_ids">
+<mt:if name="request.target">
 <mt:setvarblock name="selected_ids_cond">
 &amp;selected_ids=<mt:var name="request.selected_ids" escape>
+&amp;target=<mt:var name="request.target" escape>
+&amp;get_col=<mt:var name="request.get_col" escape>
+<mt:if name="request.select_add">&amp;select_add=<mt:var name="request.select_add" escape></mt:if>
 </mt:setvarblock>
 </mt:if>
 
@@ -168,7 +171,9 @@ $('#dialog-cancel-btn').click(function(){
 <tr>
 <td>
 <mt:if name="can_action">
+<mt:unless name="request.dialog_view">
   <button type="submit" class="__delete list-delete-btn btn btn-secondary btn-sm"><mt:trans phrase="Delete"></button>
+</mt:unless>
 <mt:unless name="request.dialog_view">
 <mt:if name="list_actions">
   <mt:include file="include/list_actions.tmpl">
@@ -188,13 +193,13 @@ $('#dialog-cancel-btn').click(function(){
 <nav aria-label="<mt:trans phrase="Page navigation">" class="pull-right">
   <ul class="pagination pagination-sm">
     <li class="page-item <mt:unless name="has_prev">disabled</mt:unless>">
-      <a class="page-link" href="<mt:if name="has_prev"><mt:var name="this_url">&amp;offset=<mt:var name="prev_offset"><mt:var name="sort_cond"><mt:var name="query_cond"><mt:var name="dialog_param"><mt:var name="filter_cond" strip_linefeeds="1"><mt:else>#</mt:if>" aria-label="<mt:trans phrase="Previous">">
+      <a class="page-link" href="<mt:if name="has_prev"><mt:var name="this_url">&amp;offset=<mt:var name="prev_offset"><mt:var name="sort_cond"><mt:var name="query_cond"><mt:var name="dialog_param"><mt:var name="filter_cond" strip_linefeeds="1"><mt:var name="selected_ids_cond" strip_linefeeds="1"><mt:if name="workspace_id">&amp;workspace_id=<mt:var name="workspace_id"></mt:if><mt:else>#</mt:if>" aria-label="<mt:trans phrase="Previous">">
         <span aria-hidden="true">&laquo;</span>
         <span class="sr-only"><mt:trans phrase="Previous"></span>
       </a>
     </li>
     <li class="page-item <mt:unless name="next_offset">disabled</mt:unless>">
-      <a class="page-link" href="<mt:if name="next_offset"><mt:var name="this_url">&amp;offset=<mt:var name="next_offset"><mt:var name="sort_cond"><mt:var name="query_cond"><mt:var name="dialog_param"><mt:var name="filter_cond" strip_linefeeds="1"><mt:else>#</mt:if>" aria-label="<mt:trans phrase="Next">">
+      <a class="page-link" href="<mt:if name="next_offset"><mt:var name="this_url">&amp;offset=<mt:var name="next_offset"><mt:var name="sort_cond"><mt:var name="query_cond"><mt:var name="dialog_param"><mt:var name="filter_cond" strip_linefeeds="1"><mt:var name="selected_ids_cond" strip_linefeeds="1"><mt:if name="workspace_id">&amp;workspace_id=<mt:var name="workspace_id"></mt:if><mt:else>#</mt:if>" aria-label="<mt:trans phrase="Next">">
         <span aria-hidden="true">&raquo;</span>
         <span class="sr-only"><mt:trans phrase="Next"></span>
       </a>
@@ -245,8 +250,8 @@ $('#dialog-cancel-btn').click(function(){
         <mt:setvar name="class_desc" value="1">
       </mt:if>
     </mt:if>
-    <a aria-label="<mt:trans phrase="Sort by %s in %s" params="'$label','$order_asc'" escape><mt:if name="class_asc">(<mt:trans phrase="Selected">)</mt:if>" class="<mt:if name="class_asc">current-cnd</mt:if>" href="<mt:var name="this_url">&amp;sort=<mt:var name="name">&amp;direction=asc<mt:var name="query_cond"><mt:var name="workspace_param"><mt:var name="dialog_param"><mt:var name="filter_cond" strip_linefeeds="1"><mt:var name="insert_cond" strip_linefeeds="1"><mt:var name="selected_ids_cond" strip_linefeeds="1">">&#9650;</a>
-    <a aria-label="<mt:trans phrase="Sort by %s in %s" params="'$label','$order_desc'" escape><mt:if name="class_asc">(<mt:trans phrase="Selected">)</mt:if>" class="<mt:if name="class_desc">current-cnd</mt:if>" href="<mt:var name="this_url">&amp;sort=<mt:var name="name">&amp;direction=desc<mt:var name="query_cond"><mt:var name="workspace_param"><mt:var name="dialog_param"><mt:var name="filter_cond" strip_linefeeds="1"><mt:var name="insert_cond" strip_linefeeds="1"><mt:var name="selected_ids_cond" strip_linefeeds="1">">&#9660;</a></span>
+    <a aria-label="<mt:trans phrase="Sort by %s in %s" params="'$label','$order_asc'" escape><mt:if name="class_asc">(<mt:trans phrase="Selected">)</mt:if>" class="<mt:if name="class_asc">current-cnd</mt:if>" href="<mt:var name="this_url">&amp;sort=<mt:var name="name">&amp;direction=asc<mt:var name="query_cond"><mt:var name="workspace_param"><mt:var name="dialog_param"><mt:var name="filter_cond" strip_linefeeds="1"><mt:var name="insert_cond" strip_linefeeds="1"><mt:var name="selected_ids_cond" strip_linefeeds="1"><mt:if name="workspace_id">&amp;workspace_id=<mt:var name="workspace_id"></mt:if>">&#9650;</a>
+    <a aria-label="<mt:trans phrase="Sort by %s in %s" params="'$label','$order_desc'" escape><mt:if name="class_asc">(<mt:trans phrase="Selected">)</mt:if>" class="<mt:if name="class_desc">current-cnd</mt:if>" href="<mt:var name="this_url">&amp;sort=<mt:var name="name">&amp;direction=desc<mt:var name="query_cond"><mt:var name="workspace_param"><mt:var name="dialog_param"><mt:var name="filter_cond" strip_linefeeds="1"><mt:var name="insert_cond" strip_linefeeds="1"><mt:var name="selected_ids_cond" strip_linefeeds="1"><mt:if name="workspace_id">&amp;workspace_id=<mt:var name="workspace_id"></mt:if>">&#9660;</a></span>
   </mt:if>
 </th>
 </mt:if>
@@ -382,8 +387,8 @@ $('#dialog-cancel-btn').click(function(){
         <mt:else>
           <i class="list-small-icon btn fa <mt:if name="obj_class" eq="image">fa-file-image-o<mt:elseif name="obj_class" eq="pdf">fa-file-pdf-o<mt:elseif name="obj_class" eq="video">fa-file-video-o<mt:elseif name="obj_class" eq="audio">fa-file-audio-o<mt:else><mt:unless name="obj_class">fa-minus<mt:else>fa-file-o</mt:unless></mt:if>" aria-hidden="true"></i>
           <span class="sr-only"><mt:trans phrase="$obj_class"></span>
-      </mt:if>
-      </div>
+        </mt:if>
+        </div>
       </mt:if>
       <mt:unless name="value">
       <mt:setvarblock name="value">(<mt:trans phrase="null">)</mt:setvarblock>

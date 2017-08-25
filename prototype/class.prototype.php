@@ -28,7 +28,8 @@ class Prototype {
     public    $encoding      = 'UTF-8';
     public    $mode          = 'dashboard';
     public    $timezone      = 'Asia/Tokyo';
-    public    $list_limit    = 50;
+    public    $list_limit    = 25;
+    public    $per_rebuild   = 40;
     public    $passwd_min    = 8;
     public    $passwd_rule   = false;
     public    $sess_timeout  = 86400;
@@ -42,7 +43,6 @@ class Prototype {
     public    $init_tags;
     protected $protocol;
     protected $log_path;
-    public    $use_plugin    = true;
     public    $plugin_paths  = [];
     public    $plugin_order  = 0; // 0=asc, 1=desc
     public    $template_paths= [ ALT_TMPL, TMPL_DIR ];
@@ -53,16 +53,21 @@ class Prototype {
     public    $appname;
     public    $site_url;
     public    $site_path;
+    public    $use_plugin    = true;
     public    $base;
     public    $path;
     public    $is_secure;
     public    $document_root;
     public    $request_uri;
     public    $query_string;
+    public    $list_async    = false;
+    public    $start_time;
     public    $admin_url;
     public    $request_method;
     public    $current_magic;
     public    $temp_dir      = '/tmp';
+    protected $errors        = [];
+
     public    $registry      = [];
 
     public    $videos        = ['mov', 'avi', 'qt', 'mp4', 'wmv',
@@ -83,7 +88,8 @@ class Prototype {
     public    $callbacks     = ['pre_save'     => [], 'post_save'   => [],
                                 'pre_delete'   => [], 'post_delete' => [],
                                 'save_filter'  => [], 'delete_filter'=> [],
-                                'pre_listing'  => [] ];
+                                'pre_listing'  => [], 'template_source' => [],
+                                'template_output'];
 
     public    $disp_option;
     public    $workspace_param;
@@ -96,6 +102,7 @@ class Prototype {
     }
 
     function __construct () {
+        $this->start_time = microtime( true );
         $this->request_method = $_SERVER['REQUEST_METHOD'];
         $this->protocol  = $_SERVER['SERVER_PROTOCOL'];
         if ( isset( $_SERVER[ 'HTTP_X_FORWARDED_FOR' ] ) ) {
@@ -180,7 +187,7 @@ class Prototype {
             'block'      => ['objectcols', 'objectloop', 'tables', 'nestableobjects',
                              'countgroupby'],
             'conditional'=> ['objectcontext', 'tablehascolumn', 'isadmin', 'ifusercan'],
-            'modifier'   => ['epoch2str'] ];
+            'modifier'   => ['epoch2str', 'sec2hms'] ];
         foreach ( $tags as $kind => $arr ) {
             $tag_prefix = $kind === 'modifier' ? 'filter_' : 'hdlr_';
             foreach ( $arr as $tag ) {
@@ -318,9 +325,10 @@ class Prototype {
                 $callback = $callback[ key( $callback ) ];
                 if ( isset( $components[ $callback['component'] ] ) ) {
                     $_plugin = $components[ $callback['component'] ];
-                    if (!include( $_plugin ) )
-                        trigger_error( "Plugin '{$_plugin}' load failed!" );
                     $plugin = $callback['component'];
+                    if (!class_exists( $plugin ) ) 
+                        if (!include_once( $_plugin ) )
+                            trigger_error( "Plugin '{$_plugin}' load failed!" );
                     if ( class_exists( $plugin ) ) {
                         $component = new $plugin();
                         $app->components[ $plugin ] = $component;
@@ -415,6 +423,7 @@ class Prototype {
         unset( $params['workspace_id'], $params['permission'],
                $params['id'], $params['saved'] );
         $app->ctx->vars['query_string'] = http_build_query( $params );
+        $app->ctx->vars['raw_query_string'] = $app->query_string( true );
         if ( $return_args = $app->param( 'return_args' ) ) {
             parse_str( $return_args, $app->return_args );
         }
@@ -719,11 +728,36 @@ class Prototype {
                 $ctx->vars['_per_page'] = (int) $list_option->number;
             }
             $user_options = explode( ',', $list_option->value );
+            if (! $list_option->id ) {
+                if ( isset( $scheme['default_list_items'] ) ) {
+                    $user_options = $scheme['default_list_items'];
+                } else {
+                    $option_ws = in_array( 'workspace_id', $user_options ) ? true : false;
+                    $max_cols = $app->param( 'dialog_view' ) ? 4 : 7;
+                    $user_options = array_slice( $user_options, 0, $max_cols );
+                    if ( $option_ws && ! in_array( 'workspace_id', $user_options ) ) {
+                        $user_options[] = 'workspace_id';
+                    }
+                    if (! in_array( $table->primary, $user_options ) ) {
+                        array_unshift( $user_options, $table->primary );
+                    }
+                    if ( $table->has_status && ! in_array( 'status', $user_options ) ) {
+                        $user_options[] = 'status';
+                    }
+                }
+            }
+            $obj = $db->model( $model );
+            $_colprefix = $obj->_colprefix;
             $app->disp_option = $user_options;
             $sorted_props = [];
+            $select_cols  = [];
+            $relations = isset( $scheme['relations'] ) ? $scheme['relations'] : [];
             foreach ( $list_props as $col => $prop ) {
                 $user_opt = in_array( $col, $user_options ) ? 1 : 0;
                 $sorted_props[ $col ] = [ $labels[ $col ], $user_opt, $prop ];
+                if (! isset( $relations[ $col ] ) ) {
+                    $select_cols[] = $col;
+                }
             }
             $search_cols = explode( ',', $list_option->data );
             foreach ( $search_props as $col => $prop ) {
@@ -731,6 +765,11 @@ class Prototype {
                 $search_props[ $col ] = [ $labels[ $col ], $user_opt ];
             }
             $sort_option = explode( ',', $list_option->extra );
+            if (! $list_option->extra && isset( $scheme['sort_by'] ) ) {
+                $sort_option = [];
+                $sort_option[] = key( $scheme['sort_by'] );
+                $sort_option[] = $scheme['sort_by'][ key( $scheme['sort_by'] ) ];
+            }
             foreach ( $sort_props as $col => $prop ) {
                 $user_opt = ( $sort_option && $sort_option[0] === $col ) ? 1 : 0;
                 $sort_props[ $col ] = [ $labels[ $col ], $user_opt ];
@@ -771,9 +810,6 @@ class Prototype {
             if ( $limit ) $args['limit'] = $limit;
             $args['offset'] = $offset;
             $sort = $app->param( 'sort' );
-            $obj = $db->model( $model );
-            $_colprefix = $obj->_colprefix;
-            $relations = isset( $scheme['relations'] ) ? $scheme['relations'] : [];
             if ( $sort && !$obj->has_column( $sort ) ) $sort = null;
             if ( $sort && isset( $relations[ $sort ] ) ) {
                 $sort = null;
@@ -923,16 +959,35 @@ class Prototype {
                     $extra .= " AND {$_colprefix}rev_type=0";
                 }
             }
-            $objects = $obj->load( $terms, $args, '*', $extra );
+            $select_cols = join( ',', $select_cols );
+            if ( $app->list_async && !$app->param( 'to_json' ) ) {
+                $objects = [ $obj ];
+            } else {
+                $objects = $obj->load( $terms, $args, $select_cols, $extra );
+            }
             unset( $args['limit'], $args['offset'] );
-            $count = $obj->count( $terms, $args, '*', $extra );
+            $count = $app->param( 'totalResult' )
+                   ? $app->param( 'totalResult' )
+                   : $obj->count( $terms, $args, $select_cols, $extra );
+            if ( $app->param( 'to_json' ) ) {
+                $items = [];
+                require_once( 'class.PTUtil.php' );
+                foreach ( $objects as $_obj ) {
+                    $items[] = PTUtil::object_to_resource( $_obj, false );
+                }
+                header( 'Content-type: application/json' );
+                $json = ['totalResult' => (int) $count, 'items' => $items ];
+                echo json_encode( $json );
+                exit();
+            }
             $filter_params = ['terms' => $terms, 'args' => $args, 'extra' => $extra ];
             $filter_params = json_encode( $filter_params );
             $ctx->vars['filter_params'] = $app->encrypt( $filter_params );
             $ctx->vars['objects'] = $objects;
-            $ctx->vars['object_count'] = $count;
-            $ctx->vars['list_limit'] = $limit;
-            $ctx->vars['list_offset'] = $offset;
+            $ctx->vars['object_count']  = $count;
+            $ctx->vars['totalResult']   = $count;
+            $ctx->vars['list_limit']    = $limit;
+            $ctx->vars['list_offset']   = $offset;
             $ctx->vars['_has_deadline'] = $obj->has_column( 'has_deadline' );
             $maps = $db->model( 'urlmapping' )->count( ['model' => $model ] );
             if ( $maps ) {
@@ -1064,17 +1119,30 @@ class Prototype {
             header( 'Cache-Control: post-check=0, pre-check=0', FALSE );
             header( 'Content-type: text/html; charset=utf-8' );
         }
-        $template_paths = $app->template_paths;
-        $tmpl = str_replace( '/', DS, $tmpl );
-        $sep = preg_quote( DS, '/' );
-        foreach ( $template_paths as $path ) {
-            $path = preg_replace( "/$sep$/", '', $path ) . DS;
-            if ( file_exists( $path . $tmpl ) ) {
-                $tmpl = $path . $tmpl;
-                break;
-            }
+        $tmpl = $app->ctx->get_template_path( $tmpl );
+        $src = file_get_contents( $tmpl );
+        $cache_id = null;
+        $callback = ['name' => 'template_source', 'template' => $tmpl ];
+        $basename = pathinfo( $tmpl, PATHINFO_FILENAME );
+        $app->run_callbacks( $callback, $basename, $param, $src );
+        $out = $app->ctx->build_page( $tmpl, $param, $cache_id, false, $src );
+        $callback = ['name' => 'template_output', 'template' => $tmpl ];
+        $app->run_callbacks( $callback, $basename, $param, $src, $out );
+        if ( $app->debug ) {
+            $time = microtime( true );
+            $processing_time = $time - $this->start_time;
+            $debug_tmpl = TMPL_DIR . 'include' . DS . 'footer_debug.tmpl';
+            $param['processing_time'] = round( $processing_time, 2 );
+            $param['debug_mode'] = is_int( $app->debug ) ? $app->debug : 1;
+            $param['queries'] = $app->db->queries;
+            $param['query_count'] = count( $app->db->queries );
+            $param['db_errors'] = $app->db->errors;
+            $param['errors'] = $app->errors;
+            $app->ctx->force_compile = true;
+            $debug = $app->ctx->build_page( $debug_tmpl, $param );
+            $out = preg_replace( '!<\/body>!', $debug . '</body>', $out );
         }
-        echo $app->ctx->build_page( $tmpl, $param );
+        echo $out;
         exit();
     }
 
@@ -1102,18 +1170,34 @@ class Prototype {
             $terms['template_id'] = $obj->id;
             unset( $terms['model'] );
         }
-        $urlmapping = $app->db->model( 'urlmapping' )->load( $terms,
-            ['sort_by' => 'order', 'direction' => 'ascend', 'limit'=> 1] );
+        $args = ['sort_by' => 'order', 'direction' => 'ascend', 'limit'=> 1];
+        $cache_key = 'urlmapping_cache_' . $this->make_cache_key( $terms, $args );
+        $urlmapping = $app->stash( $cache_key ) ? $app->stash( $cache_key )
+                    : $app->db->model( 'urlmapping' )->load( $terms, $args );
+        $app->stash( $cache_key, $urlmapping );
         if (! empty( $urlmapping ) ) {
             $urlmapping = $urlmapping[0];
             if ( $has_map ) return $urlmapping;
-            if ( $ui = $app->db->model( 'urlinfo' )->get_by_key(
-                ['urlmapping' => $urlmapping->id, 'model' => $table->name,
-                 'class' => 'archive', 'object_id' => $obj->id ] ) ) {
+            $terms = ['urlmapping' => $urlmapping->id, 'model' => $table->name,
+                      'class' => 'archive', 'object_id' => $obj->id ];
+            $cache_key = 'urlmapping_cache_' . $this->make_cache_key( $terms );
+            $ui = $app->stash( $cache_key ) ? $app->stash( $cache_key )
+                : $app->db->model( 'urlinfo' )->get_by_key( $terms );
+            $app->stash( $cache_key, $ui );
+            if ( $ui ) {
                 return $ui->url;
             }
         }
         return false;
+    }
+
+    function make_cache_key ( $arr1, $arr2 = null, $prefix = '' ) {
+        ob_start();
+        print_r( $arr1 );
+        print_r( $arr2 );
+        $res = ob_get_clean();
+        $res = md5( $res );
+        return $prefix ? "{$prefix}_$res" : $res;
     }
 
     function max_status ( $user, $model, $workspace = null ) {
@@ -1533,8 +1617,8 @@ class Prototype {
                 if ( ( $width == $orig_width && $height == $orig_height )
                     || ( $width == $orig_height && $height == $orig_width ) ){
                     $res = PTUtil::trim_image( $file, 0, 1, $width - 1, $height - 1 );
-                } else {
-                    $res = PTUtil::trim_image( $file, 1, 1, $width - 2, $height - 2 );
+                // } else {
+                    // $res = PTUtil::trim_image( $file, 0, 0, $width - 1, $height - 1 );
                 }
                 $image_data = file_get_contents( $file );
                 $size = filesize( $file );
@@ -1772,7 +1856,7 @@ class Prototype {
 
     function rebuild_phase ( $app, $start = false, $counter = 0, $dependencies = false ) {
         $ctx = $app->ctx;
-        $per_rebuild = 40;
+        $per_rebuild = $app->per_rebuild;
         $tmpl = 'rebuild_phase.tmpl';
         $model = $app->param( '_model' );
         if ( $app->param( '_type' ) && $app->param( '_type' ) == 'start_rebuild' ) {
@@ -1798,12 +1882,14 @@ class Prototype {
                 if ( $obj->has_column( 'workspace_id' ) && $app->workspace() ) {
                     $terms['workspace_id'] = $app->workspace()->id;
                 }
+                /*
                 if ( $obj->has_column( 'status' ) ) {
                     $status_published = $app->status_published( $model );
                     if ( $status_published ) {
                         $terms['status'] = $status_published;
                     }
                 }
+                */
                 $extra = '';
                 if ( $table->revisable ) {
                     $extra .= " AND {$_colprefix}rev_type=0";
@@ -1870,6 +1956,9 @@ class Prototype {
         $_return_args = $app->param( '_return_args' );
         if ( $dependencies ) {
             $app->param( 'dependencies', 1 );
+        }
+        if ( $app->param( 'start_rebuild' ) ) {
+            $app->param( 'start_time', time() );
         }
         $ctx->vars['this_mode'] = $app->mode;
         $app->assign_params( $app, $ctx );
@@ -1964,7 +2053,9 @@ class Prototype {
                 $app->redirect( $app->admin_url . '?' . $return_args );
             }
             if ( $rebuild_last ) {
-                $ctx->vars['rebuild_end'] = $rebuild_last;
+                $ctx->vars['rebuild_end'] = 1;
+                $start_time = $app->param( 'start_time' );
+                $ctx->vars['publish_time'] = time() - $start_time;
                 $ctx->vars['page_title'] = $app->translate( 'Done.' );
             } else {
                 if (! $next_model && $app->param( 'next_models' ) ) {
@@ -2267,8 +2358,7 @@ class Prototype {
                             $value += 0;
                         } else {
                             $value = '';
-                            $errors[] = $app->translate(
-                                '%s is required.', $labels[ $col ] );
+                            $errors[] = $app->translate( '%s is required.', $labels[ $col ] );
                         }
                     }
                 }
@@ -2818,11 +2908,11 @@ class Prototype {
         return $is_changed;
     }
 
-    function run_callbacks ( &$cb, $model, &$obj = null, $orig = true, &$extra = null ) {
+    function run_callbacks ( &$cb, $key, &$params = null, &$args = true, &$extra = null ) {
         $app = Prototype::get_instance();
         $cb_name = $cb['name'];
-        $all_callbacks = isset( $app->callbacks[ $cb_name ][ $model ] ) ?
-            $app->callbacks[ $cb_name ][ $model ] : [];
+        $all_callbacks = isset( $app->callbacks[ $cb_name ][ $key ] ) ?
+            $app->callbacks[ $cb_name ][ $key ] : [];
         if (! empty( $all_callbacks ) ) {
             ksort( $all_callbacks );
             foreach ( $all_callbacks as $callbacks ) {
@@ -2830,9 +2920,9 @@ class Prototype {
                     list( $meth, $class ) = $callback;
                     $res = true;
                     if ( function_exists( $meth ) ) {
-                        $res = $meth( $cb, $app, $obj, $orig, $extra );
+                        $res = $meth( $cb, $app, $params, $args, $extra );
                     } else if ( $class && method_exists( $class, $meth ) ) {
-                        $res = $class->$meth( $cb, $app, $obj, $orig, $extra );
+                        $res = $class->$meth( $cb, $app, $params, $args, $extra );
                     }
                     if (! $res ) return false;
                 }
@@ -2884,15 +2974,6 @@ class Prototype {
                 $app->error( 'Permission denied.' );
             }
             // todo begin and finish work for remove child_classes
-            /*
-            foreach ( $children as $child ) {
-                $child_objs = $db->model( $child )->load(
-                    [ $model . '_id' => $obj->id ] );
-                foreach ( $child_objs as $child_obj ) {
-                    $child_obj->remove();
-                }
-            }
-            */
             $error = false;
             $app->remove_object( $obj, $table, $error );
             // todo error
@@ -2999,6 +3080,21 @@ class Prototype {
                 $rev->remove();
             }
         }
+        if ( $table->allow_comment || $obj->has_column( 'allow_comment' ) ) {
+            $comments = $db->model( 'comment' )->load(
+              ['object_id' => $obj->id, 'model' => $obj->_model ] );
+            foreach ( $comments as $comment ) {
+                $comment->remove();
+            }
+        }
+        if ( $table->hierarchy ) {
+            $children = $db->model( $obj->_model )->load(
+                ['parent_id' => $obj->id ] );
+            foreach ( $children as $child ) {
+                $child->parent_id( $obj->parent_id );
+                $child->save();
+            }
+        }
         $res = $obj->remove();
         if (! $res ) $error = true;
         return $res;
@@ -3030,7 +3126,9 @@ class Prototype {
 
     function get_table ( $model ) {
         $app = Prototype::get_instance();
-        if ( $app->stash( 'table_' . $model ) ) return $app->stash( 'table:' . $model );
+        if ( $app->stash( 'table:' . $model ) ) {
+            return $app->stash( 'table:' . $model );
+        }
         $table = $app->db->model( 'table' )->load( ['name' => $model ], ['limit' => 1] );
         if ( is_array( $table ) && !empty( $table ) ) {
             $table = $table[0];
@@ -3432,6 +3530,9 @@ class Prototype {
 
     function post_delete_table ( &$cb, $app, &$obj ) {
         $app->db->can_drop = true;
+        require_once( 'class.PTUpgrader.php' );
+        $upgrader = new PTUpgrader;
+        $upgrader->drop( $obj );
         return $app->db->drop( $obj->name );
     }
 
@@ -3936,7 +4037,8 @@ class Prototype {
         if ( $table->primary ) $scheme['primary'] = $table->primary;
         $options = ['auditing', 'order', 'sortable', 'hierarchy', 'start_end',
                     'menu_type', 'template_tags', 'taggable', 'display_space',
-                    'has_basename', 'has_status', 'assign_user', 'revisable'];
+                    'has_basename', 'has_status', 'assign_user', 'revisable',
+                    'allow_comment'];
         foreach ( $options as $option ) {
             if ( $table->$option ) $scheme[ $option ] = (int) $table->$option;
         }
@@ -4153,10 +4255,10 @@ class Prototype {
             $metadata = $cache ? $cache : $app->db->model( 'meta' )->get_by_key(
                      ['model' => $model, 'object_id' => $obj_id,
                       'key' => 'metadata', 'kind' => $name ] );
+            $ctx->stash( $model . '_meta_' . $name . '_' . $obj_id, $metadata );
             if (! $metadata->id ) {
                 return ( $property === 'all' ) ? [] : null;
             }
-            $ctx->stash( $model . '_meta_' . $name . '_' . $obj_id, $metadata );
             $data = $metadata->text;
         }
         $data = json_decode( $data, true );
@@ -4425,8 +4527,8 @@ class Prototype {
         return $qurey;
     }
 
-    function query_string () {
-        if ( $query_string = $this->query_string ) {
+    function query_string ( $force = false ) {
+        if (! $force && ( $query_string = $this->query_string ) ) {
             return $query_string;
         }
         if ( $params = $this->param() ) {
@@ -4577,6 +4679,7 @@ class Prototype {
     function errorHandler ( $errno, $errmsg, $f, $line ) {
         if ( $tmpl = $this->ctx->template_file ) $errmsg = " $errmsg( in {$tmpl} )";
         $msg = "{$errmsg} ({$errno}) occured( line {$line} of {$f} ).";
+        $this->errors[] = $msg;
         if ( $this->debug === 2 ) $this->debugPrint( $msg );
         if ( $this->logging ) error_log( date( 'Y-m-d H:i:s T', time() ) .
             "\t" . $msg . "\n", 3, $this->log_path . 'error.log' );

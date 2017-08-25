@@ -1,6 +1,6 @@
 <?php
 require_once( LIB_DIR . 'Prototype' . DS . 'class.PTPlugin.php' );
-class PTImporter extends PTPlugin {
+class EntryImporter extends PTPlugin {
 
     private $allowed = ['txt', 'xml', 'rss', 'rdf', 'csv', 'zip', 'gzip'];
 
@@ -148,6 +148,7 @@ class PTImporter extends PTPlugin {
         $tags = [];
         $context = '';
         $users = [];
+        $counter = 0;
         require_once( 'class.PTUtil.php' );
         foreach ( $import_files as $file ) {
             $handle = @fopen( $file, "r" );
@@ -166,6 +167,7 @@ class PTImporter extends PTPlugin {
                                 htmlspecialchars( $entry->title ) );
                         if ( $entry->save() ) {
                             echo $this->translate( 'ok (ID %s)', $entry->id );
+                            $counter++;
                         } else {
                             echo $this->translate( 'Saving entry failed.' );
                         }
@@ -236,6 +238,8 @@ class PTImporter extends PTPlugin {
                                 }
                                 echo "<br>\n";
                             }
+                            $entry->comment_count( count( $comments ) );
+                            $entry->save();
                         }
                         $context = '';
                         $entry = $app->db->model( 'entry' )->new();
@@ -271,37 +275,43 @@ class PTImporter extends PTPlugin {
                                     }
                                 }
                                 if (! $user ) {
-                                    $user = $app->db->model( 'user' )->get_by_key(
-                                                                ['name' => $author ] );
-                                    $user->nickname( $user );
-                                    $user->password( $password );
-                                    $user->status( 2 );
-                                    $user->language( $app->language );
-                                    $app->set_default( $user );
-                                    echo $this->translate( "Creating new user ('%s')...", 
-                                            htmlspecialchars( $author ) );
-                                    if ( $user->save() ) {
-                                        echo $this->translate( 'ok (ID %s)', $user->id );
-                                        $users[ $author ] = $user;
+                                    if ( $app->can_do( 'user', 'save' ) ) {
+                                        $user = $app->db->model( 'user' )->get_by_key(
+                                                                    ['name' => $author ] );
+                                        $user->nickname( $user );
+                                        $user->password( $password );
+                                        $user->status( 2 );
+                                        $user->language( $app->language );
+                                        $app->set_default( $user );
+                                        echo $this->translate( "Creating new user ('%s')...", 
+                                                htmlspecialchars( $author ) );
+                                        if ( $user->save() ) {
+                                            echo $this->translate( 'ok (ID %s)', $user->id );
+                                            $users[ $author ] = $user;
+                                        } else {
+                                            echo $this->translate( 'Saving user failed.' );
+                                        }
                                     } else {
-                                        echo $this->translate( 'Saving user failed.' );
+                                        echo $this->translate( 'You do not have permission to create users. Import as me.' );
+                                        $user = $app->user();
                                     }
                                     echo "<br>\n";
+                                    
                                 }
                                 $entry->user_id( $user->id );
                             }
                         } else if ( $context == 'comment' ) {
                             $comment->name( $author );
                         }
-                    } else if ( strpos( $buffer, 'TITLE:' ) === 0 ) {
+                    } else if (! $context && strpos( $buffer, 'TITLE:' ) === 0 ) {
                         $title = trim( substr( $buffer, strlen( 'TITLE:' ) ) );
                         if (! $context ) {
                             $entry->title( $title );
                         }
-                    } else if ( strpos( $buffer, 'BASENAME:' ) === 0 ) {
+                    } else if (! $context && strpos( $buffer, 'BASENAME:' ) === 0 ) {
                         $basename = trim( substr( $buffer, strlen( 'BASENAME:' ) ) );
                         $entry->basename( $basename );
-                    } else if ( strpos( $buffer, 'STATUS:' ) === 0 ) {
+                    } else if (! $context && strpos( $buffer, 'STATUS:' ) === 0 ) {
                         $status = trim( strtolower( substr( $buffer, strlen( 'STATUS:' ) ) ) );
                         if ( $status && isset( $status_map[ $status ] ) ) {
                             $status = $status_map[ $status ];
@@ -309,13 +319,12 @@ class PTImporter extends PTPlugin {
                             $status = $default_status;
                         }
                         $entry->status( $status );
-                    } else if ( strpos( $buffer, 'ALLOW COMMENTS:' ) === 0 ) {
-                        $allow = trim( substr( $buffer, strlen( 'ALLOW COMMENTS:' ) ) );
+                    } else if (! $context && strpos( $buffer, 'ALLOW COMMENTS:' ) === 0 ) {
+                        $allow = trim( preg_replace( "/^ALLOW COMMENTS:/", '', $buffer ) );
                         if ( $allow == 1 ) {
-                        } else {
+                            $entry->allow_comment( 1 );
                         }
-                    } else if ( strpos( $buffer, 'CONVERT BREAKS:' ) === 0 ) {
-                        //$text_format = trim( substr( $buffer, strlen( 'CONVERT BREAKS:' ) ) );
+                    } else if (! $context && strpos( $buffer, 'CONVERT BREAKS:' ) === 0 ) {
                         $text_format = trim( preg_replace( "/^CONVERT BREAKS:/", '', $buffer ) );
                         if (! $text_format ) {
                             $text_format = '';
@@ -328,46 +337,41 @@ class PTImporter extends PTPlugin {
                         }
                         $entry->text_format( $text_format );
                     } else if ( strpos( $buffer, 'ALLOW PINGS:' ) === 0 ) {
-                    } else if ( 0 === strpos( $buffer, 'CATEGORY:') ) {
-                        $category = trim( substr( $buffer, strlen( 'CATEGORY:' ) ) );
-                        if ( in_array( $category, $categories ) ) {
+                    } else if (! $context && strpos( $buffer, 'CATEGORY:') === 0 ) {
+                        $category = trim( preg_replace( "/^CATEGORY:/", '', $buffer ) );
+                        if (! in_array( $category, $categories ) ) {
                             $categories[] = $category;
                         }
-                    } else if ( strpos( $buffer, 'PRIMARY CATEGORY:' ) === 0 ) {
-                        $category = trim( substr( $buffer, strlen('PRIMARY CATEGORY:') ) );
+                    } else if (! $context && strpos( $buffer, 'PRIMARY CATEGORY:' ) === 0 ) {
+                        $category = trim( preg_replace( "/^PRIMARY CATEGORY:/", '', $buffer ) );
                         array_unshift( $categories, $category );
-                    } else if ( strpos( $buffer, 'TAGS:' ) === 0 ) {
-                        $tag = trim( substr( $buffer, strlen( 'TAGS:' ) ) );
+                    } else if (! $context && strpos( $buffer, 'TAGS:' ) === 0 ) {
+                        $tag = trim( preg_replace( "/^TAGS:/", '', $buffer ) );
                         $tags = str_getcsv( $tag, ',', '"' );
                     } else if ( strpos( $buffer, 'DATE:' ) === 0 ) {
-                        $date = trim( substr( $buffer, strlen('DATE:') ) );
+                        $date = trim( preg_replace( "/^DATE:/", '', $buffer ) );
                         $date = strtotime( $date );
                         $date = date('Y-m-d H:i:s', $date);
                         if (! $context ) {
                             $entry->published_on( $date );
                             $entry->created_on( $date );
                         } else if ( $context == 'comment' ) {
+                            $comment->created_on( $date );
                         } else if ( $context == 'ping' ) {
                         }
-                    } else if ( strpos( $buffer, 'EMAIL:' ) === 0 ) {
-                        $email = trim( substr( $buffer, strlen( 'EMAIL:' ) ) );
-                        if ( $context == 'comment' ) {
-                            $comment->email( $email );
-                        }
-                    } else if ( strpos( $buffer, 'IP:' ) === 0 ) {
-                        $ip = trim( substr( $buffer, strlen('IP:') ) );
-                        if ( $context == 'comment' ) {
-                            $comment->remote_ip( $ip );
-                        }
-                    } else if ( strpos( $buffer, 'URL:' ) === 0 ) {
-                        $url = trim( substr( $buffer, strlen( 'URL:' ) ) );
-                        if ( $context == 'comment' ) {
-                            $comment->url( $url );
-                        }
+                    } else if ( $context == 'comment' && strpos( $buffer, 'EMAIL:' ) === 0 ) {
+                        $email = trim( preg_replace( "/^EMAIL:/", '', $buffer ) );
+                        $comment->email( $email );
+                    } else if ( $context == 'comment' && strpos( $buffer, 'IP:' ) === 0 ) {
+                        $ip = trim( preg_replace( "/^IP:/", '', $buffer ) );
+                        $comment->remote_ip( $ip );
+                    } else if ( $context == 'comment' && strpos( $buffer, 'URL:' ) === 0 ) {
+                        $url = trim( preg_replace( "/^URL:/", '', $buffer ) );
+                        $comment->url( $url );
                     } else if ( strpos( $buffer, 'BLOG NAME:' ) === 0 ) {
                     } else {
                         if( !empty( $buffer ) )
-                            $buffer .= "<br>\n";
+                            $buffer .= "\n";
                         if ( $context == 'body' ) {
                             $entry->text .= $buffer;
                         } else if ( $context == 'extended' ) {
@@ -385,6 +389,12 @@ class PTImporter extends PTPlugin {
                 fclose( $handle );
             }
         }
+        $dir = $session->value;
+        PTUtil::remove_dir( $dir );
+        $session->remove();
+        echo '<br>';
+        echo $this->translate( 'Import %s entries successfully.', $counter );
+        $this->scrollBottom();
     }
 
 }

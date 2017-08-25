@@ -27,7 +27,7 @@ class PADO {
     public  $dbpasswd    = '';
     public  $dbport      =  3306;
     public  $dbcharset   = 'utf8';
-    public  $db          =  null;
+    public  $db;
     public  $dsn         = '';
     public  $max_packet  = 16777216;
     public  $charset     = 'utf-8';
@@ -60,8 +60,7 @@ class PADO {
  * If specified migrate db from $pado->scheme[$model].
  */
     public  $upgrader    = false;
-
-    public  $sandbox     = false;
+    public  $persistent  = true;
     public  $logging     = false;
     public  $log_path;
     public  $scheme      = [];
@@ -73,6 +72,7 @@ class PADO {
     public static $stash = [];
     public  $cache       = [];
     public  $app         = null;
+    public  $queries     = [];
     public  $errors      = [];
 
     public  $callbacks   = [
@@ -92,6 +92,12 @@ class PADO {
         if ( ( $cfg_json = PADODIR . 'config.json' ) 
             && file_exists( $cfg_json ) ) $this->configure_from_json( $cfg_json );
         foreach ( $config as $key => $value ) $this->$key = $value;
+    }
+
+    function __destruct() {
+        if (! $this->persistent ) {
+            $this->db = null;
+        }
     }
 
 /**
@@ -120,7 +126,9 @@ class PADO {
         if (! $driver ) return;
         $sql = '';
         try {
-            $pdo = new PDO( $dsn, $dbuser, $dbpasswd );
+            $this->db = null;
+            $persistent = $this->persistent ? [ PDO::ATTR_PERSISTENT => true ] : null;
+            $pdo = new PDO( $dsn, $dbuser, $dbpasswd, $persistent );
             $pdo->setAttribute( PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION );
             $this->db = $pdo;
             if ( class_exists( 'PADO' . $driver ) ) {
@@ -130,6 +138,7 @@ class PADO {
                         $sql = "set global max_allowed_packet = {$max_packet}";
                         $sth = $pdo->prepare( $sql );
                         $sth->execute();
+                        $this->queries[] = $sql;
                     }
                 }
                 $class = 'PADO' . $driver;
@@ -221,6 +230,7 @@ class PADO {
         }
         try {
             $sth->execute();
+            $this->queries[] = $sql;
         } catch ( PDOException $e ) {
             $message = 'PDOException: ' . $e->getMessage() . ", {$sql}";
             $this->errors[] = $message;
@@ -357,6 +367,7 @@ class PADO {
             $sth = $this->db->prepare( $sql );
             try {
                 return $sth->execute();
+                $this->queries[] = $sql;
             } catch ( PDOException $e ) {
                 $message = 'PDOException: ' . $e->getMessage() . ", {$sql}";
                 $this->errors[] = $message;
@@ -466,6 +477,9 @@ class PADOBaseModel {
                     ? $colprefix . $scheme[ 'indexes' ][ 'PRIMARY' ]
                     : $colprefix . $pado->id_column;
             $this->_id_column = $primary;
+        }
+        if ( $id_col = $pado->id_column ) {
+            $pado->cache[ $model ][ $this->$id_col ] = $this;
         }
     }
 
@@ -878,7 +892,7 @@ class PADOBaseModel {
         $callback = ['name' => 'pre_load', 'sql' => $sql,
                      'values' => $vals, 'method' => $method ];
         $pado->run_callbacks( $callback, $model, $this );
-        $sql = $callback[ 'sql' ];
+        $sql = $callback['sql'];
         $sth = $db->prepare( $sql );
         if (! $count_group_by ) {
             $class = class_exists( $model ) ? $model
@@ -893,6 +907,7 @@ class PADOBaseModel {
         }
         try {
             $sth->execute( $vals );
+            $pado->queries[] = $sql . ' / values = ' . join( ', ', $vals );
             if ( $count && !$count_group_by ) {
                 $count = (int) $sth->fetchColumn();
                 return $count;
@@ -1058,6 +1073,7 @@ class PADOBaseModel {
         $sth = $pdo->prepare( $sql );
         try {
             $res = $sth->execute( $vals );
+            $pado->queries[] = $sql;
             $this->$id_column = isset( $object_id )
                               ? $object_id : (int) $pdo->lastInsertId( $id_column );
             $callback['name'] = 'post_save';
@@ -1103,6 +1119,7 @@ class PADOBaseModel {
         $sth->bindValue( ':object_id', $id, PDO::PARAM_INT );
         try {
             $res = $sth->execute();
+            $pado->queries[] = $sql;
             $callback['name'] = 'post_delete';
             $pado->run_callbacks( $callback, $model, $this );
             return $res;
@@ -1217,11 +1234,20 @@ class PADOBaseModel {
 /**
  * Get column names and values except model properties.
  */
-    function get_values () {
+    function get_values ( $no_prefix = false ) {
         $arr = get_object_vars( $this );
         $reserved_vars = array_keys( PADOBaseModel::RESERVED );
         foreach ( $reserved_vars as $var ) {
             unset( $arr[ $var ] );
+        }
+        if ( $no_prefix ) {
+            $_colprefix = $this->_colprefix;
+            $values = [];
+            foreach ( $arr as $k => $v ) {
+                $values[ preg_replace( "/^$_colprefix/", '', $k ) ] = $v;
+            }
+            unset( $arr );
+            return $values;
         }
         return $arr;
     }
@@ -1553,6 +1579,7 @@ class PADOMySQL extends PADOBaseModel {
         $sth = $pado->db->prepare( $sql );
         try {
             $sth->execute();
+            $pado->queries[] = $sql;
             $fields = $sth->fetchAll();
             $scheme = [];
             foreach ( $fields as $field ) {
@@ -1603,6 +1630,7 @@ class PADOMySQL extends PADOBaseModel {
             $sth = $pado->db->prepare( $sql );
             try {
                 $sth->execute();
+                $pado->queries[] = $sql;
                 $fields = $sth->fetchAll();
                 $indexes = [];
                 $idxprefix = $pado->idxprefix;
@@ -1692,6 +1720,9 @@ class PADOMySQL extends PADOBaseModel {
                     case ( strpos( $type, 'int' ) !== false ):
                         $type = strtoupper( $type );
                         break;
+                    case ( strpos( $type, 'bool' ) === 0 ):
+                        list( $type, $size ) = ['tinyint', 4];
+                        break;
                     case ( $type === 'double' ):
                         $type = strtoupper( $type );
                         break;
@@ -1743,6 +1774,7 @@ class PADOMySQL extends PADOBaseModel {
                     $sth = $db->prepare( $sql );
                     try {
                         $res = $sth->execute( $vals );
+                        $pado->queries[] = $sql;
                         $pado->stash( $sql, 1 );
                     } catch ( PDOException $e ) {
                         $message = 'PDOException: ' . $e->getMessage() . ", {$sql}";
@@ -1762,6 +1794,7 @@ class PADOMySQL extends PADOBaseModel {
                         $sth = $db->prepare( $sql );
                         try {
                             $res = $sth->execute();
+                            $pado->queries[] = $sql;
                             $pado->stash( $sql, 1 );
                         } catch ( PDOException $e ) {
                             $message = 'PDOException: ' . $e->getMessage() . ", {$sql}";
@@ -1790,6 +1823,7 @@ class PADOMySQL extends PADOBaseModel {
                             $sth = $db->prepare( $sql );
                             try {
                                 $res = $sth->execute();
+                                $pado->queries[] = $sql;
                                 $pado->stash( $sql, 1 );
                             } catch ( PDOException $e ) {
                                 $message = 'PDOException: ' . $e->getMessage() . ", {$sql}";
@@ -1823,6 +1857,7 @@ class PADOMySQL extends PADOBaseModel {
                     $sth = $db->prepare( $sql );
                     try {
                         $res = $sth->execute();
+                        $pado->queries[] = $sql;
                         $pado->stash( $sql, 1 );
                     } catch ( PDOException $e ) {
                         trigger_error( 'PDOException: ' . $e->getMessage() . ", {$sql}" );
@@ -1864,6 +1899,7 @@ class PADOMySQL extends PADOBaseModel {
         $sth = $pado->db->prepare( $sql );
         try {
             $res = $sth->execute( $vals );
+            $pado->queries[] = $sql;
             if ( $pado->upgrader ) {
                 $upgrade = $this->check_upgrade( $model, $table, $colprefix );
                 if ( $upgrade !== false )

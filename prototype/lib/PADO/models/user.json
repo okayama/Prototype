@@ -3,10 +3,10 @@
     "plural"    : "Users",
     "primary"   : "name",
     "display"   : 1,
-    "order"     : 130,
+    "order"     : 80,
     "auditing"  : 1,
     "has_status": 1,
-    "menu_type" : 1,
+    "menu_type" : 5,
     "column_defs": {
         "id": {
             "type": "int",

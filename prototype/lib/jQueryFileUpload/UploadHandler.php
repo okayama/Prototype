@@ -1286,6 +1286,7 @@ class UploadHandler
                     $append_file ? FILE_APPEND : 0
                 );
             }
+            
             $file_size = $this->get_file_size($file_path, $append_file);
             if ($file_size === $file->size) {
                 $file->url = $this->get_download_url($file->name);
@@ -1636,7 +1637,9 @@ class UploadHandler
         $files = array();
         $app = $this->options['prototype'];
         $meth = 'handle_file_upload';
-        if (! isset($this->options['magic'] ) ) $meth = '__handle_file_upload';
+        if ( $app->param( '__mode' ) != 'edit_image' ) {
+            if (! isset($this->options['magic'] ) ) $meth = '__handle_file_upload';
+        }
         if ($upload) {
             if (is_array($upload['tmp_name'])) {
                 // param_name is an array identifier like "files[]",

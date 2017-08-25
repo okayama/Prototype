@@ -14,6 +14,19 @@ body {
   font-size: 95%;
 }
 
+@media ( max-width: 991px ) {
+  .dropdown {
+    margin-left:-4px;
+    padding-right: 12px;
+  }
+  .dropdown a {
+    padding-left: 8px !important;
+  }
+  .header-util {
+    margin-top: 1em;
+  }
+}
+
 body.dialog {
   padding-top: 0px !important;
   margin-top: 0px !important;
@@ -571,6 +584,7 @@ div.mce-fullscreen {
 
 #print-area .print-area-content {
   height: 100%;
+  border: 1px solid gray;
 }
 
 #print-area .print-area-content iframe {

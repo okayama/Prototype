@@ -2,8 +2,8 @@
     "label"    : "Permission",
     "plural"   : "Permissions",
     "display"  : 1,
-    "order"    : 80,
-    "menu_type": 2,
+    "order"    : 130,
+    "menu_type": 5,
     "display_space": 1,
     "column_defs": {
         "id": {
