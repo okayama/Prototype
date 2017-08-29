@@ -797,7 +797,6 @@ $(function () {
   </div>
 </div>
 <script>
-//field-entrylang-wrapper
 $('#_field_chooser').click(function(){
     var field_id = $('#_field_selector').val();
     var wrapper_id;
@@ -1059,7 +1058,7 @@ $(function () {
     var clipboard = new Clipboard('.copy-clipboard');
     $('[data-toggle="tooltip"]').tooltip();
 });
-$('.close-sm').click(function(){
+$(document).on('click','.close-sm', function() {
     if ( $(this).hasClass('detach-field') ) {
         if(!confirm('<mt:trans phrase="Are you sure you want to remove this field?">')){
             return false;
@@ -1071,6 +1070,7 @@ $('.close-sm').click(function(){
         $('#field-' + basename + '-wrapper .row:first').removeClass('multiple-field');
         if ( $('#field-' + basename + '-wrapper .row').length == 0 ) {
             $('#field-' + basename + '-wrapper').remove();
+            $('#_field_selector .' + basename ).removeAttr('hidden');
         }
     } else {
         if(!confirm('<mt:trans phrase="Are you sure you want to detach this relation?">')){
