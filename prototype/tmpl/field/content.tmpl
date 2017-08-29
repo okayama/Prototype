@@ -1,0 +1,31 @@
+<div class="col-lg-10 input-group-lg">
+<div id="field-wrapper-<mt:var name="field_uniqueid">">
+<mt:var name="field_content_html">
+<script>
+var values_<mt:var name="field_uniqueid"> = {};
+$('#edit-form-main').submit(function(){
+    $('#field-wrapper-<mt:var name="field_uniqueid">').find(':input').each(function () {
+        if ($(this).prop('name')) {
+            var input_key = $(this).prop('name');
+            var type = $(this).attr('type');
+            var input = $('#field-wrapper-<mt:var name="field_uniqueid"> [name=' + input_key + ']');
+            if (type && (type == 'radio' || type == 'checkbox')) {
+                input = $('#field-wrapper-<mt:var name="field_uniqueid"> [name=' + input_key + ']:checked');
+            }
+            if ( input.val() ) {
+                values_<mt:var name="field_uniqueid">[ input_key ] = input.val();
+            }
+            $(this).removeAttr('name');
+        }
+    });
+    json = JSON.stringify( values_<mt:var name="field_uniqueid"> );
+    $('#values_<mt:var name="field_uniqueid">').val(json);
+    return true;
+});
+</script>
+<button type="button" class="close close-sm btn btn-sm btn-secondary detach-field" data-basename="<mt:var name="field_basename">" aria-label="<mt:trans phrase="Delete">">
+<span aria-hidden="true">&times;</span>
+</button>
+</div>
+<input type="hidden" value="" id="values_<mt:var name="field_uniqueid">" name="<mt:var name="field_basename">__c<mt:if name="field__multiple">[]</mt:if>">
+</div>

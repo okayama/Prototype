@@ -46,7 +46,7 @@
                       <mt:var name="__value__[1]" setvar="_checked">
                       <mt:var name="__value__[2]" setvar="_type">
                       <mt:if name="_type" eq="primary"><input type="hidden" name="_d_<mt:var name="__key__" escape>" value="1"></mt:if>
-                      <input<mt:if name="_type" eq="primary"> disabled</mt:if><mt:if name="_checked"> checked</mt:if> type="checkbox" class="custom-control-input" name="_d_<mt:var name="__key__" escape>" value="1">
+                      <input<mt:if name="_type" eq="primary"> disabled</mt:if><mt:if name="_no_primary"><mt:if name="__counter__" eq="1"> disabled</mt:if></mt:if><mt:if name="_checked"> checked</mt:if> type="checkbox" class="custom-control-input" name="_d_<mt:var name="__key__" escape>" value="1">
                       <span class="custom-control-indicator"></span>
                       <span class="custom-control-description"> <mt:var name="__value__[0]"></span>
                     </label>

@@ -1,64 +1,66 @@
-      <div class="text-right disp-option">
-        <button type="button" class="btn btn-outline-primary btn-sm" data-toggle="modal" data-target="#dispOptions">
-          <mt:trans phrase="Display Options">
-        </button>
-      </div>
-      <div class="modal fade" id="dispOptions" tabindex="-1" role="dialog" aria-labelledby="LongTitle" aria-hidden="true">
-        <div class="modal-dialog modal-lg" role="document">
-          <div class="modal-content">
-            <div class="modal-header">
-            <mt:trans phrase="Display Options" setvar="options_title">
-              <h5 class="modal-title" id="LongTitle"><mt:var name="options_title"></h5>
-              <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                <span aria-hidden="true">&times;</span>
-              </button>
-            </div>
-          <form action="<mt:var name="script_uri">" method="POST" id="disp_options_form">
-            <input type="hidden" name="__mode" value="display_options">
-            <input type="hidden" name="_model" value="<mt:var name="model">">
-            <input type="hidden" name="_type" value="edit">
-            <input type="hidden" name="magic_token" value="<mt:var name="magic_token">">
-            <mt:if name="workspace_id">
-            <input type="hidden" name="workspace_id" value="<mt:var name="workspace_id">">
-            </mt:if>
+<mt:unless trim_space="3">
+  <div class="text-right disp-option">
+    <button type="button" class="btn btn-outline-primary btn-sm" data-toggle="modal" data-target="#dispOptions">
+      <mt:trans phrase="Display Options">
+    </button>
+  </div>
+  <div class="modal fade" id="dispOptions" tabindex="-1" role="dialog" aria-labelledby="LongTitle" aria-hidden="true">
+    <div class="modal-dialog modal-lg" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+        <mt:trans phrase="Display Options" setvar="options_title">
+          <h5 class="modal-title" id="LongTitle"><mt:var name="options_title"></h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+      <form action="<mt:var name="script_uri">" method="POST" id="disp_options_form">
+        <input type="hidden" name="__mode" value="display_options">
+        <input type="hidden" name="_model" value="<mt:var name="model">">
+        <input type="hidden" name="_type" value="edit">
+        <input type="hidden" name="magic_token" value="<mt:var name="magic_token">">
+        <mt:if name="workspace_id">
+        <input type="hidden" name="workspace_id" value="<mt:var name="workspace_id">">
+        </mt:if>
 
-            <div class="modal-body">
-              <div class="container-fluid">
-                <div class="row form-group">
-                  <div class="col-md-2"><b><mt:trans phrase="Columns"></b></div>
-                  <div class="col-md-10">
+        <div class="modal-body">
+          <div class="container-fluid">
+            <div class="row form-group">
+              <div class="col-md-2"><b><mt:trans phrase="Columns"></b></div>
+              <div class="col-md-10">
 
-              <mt:objectcontext>
-                <mt:objectcols type="edit">
-                  <mt:if name="name" ne="id">
-                    <mt:setvar name="_checked" value="0">
-                    <mt:if name="edit" eq="primary"><mt:setvar name="_checked" value="1"></mt:if>
-                        <mt:ifinarray array="$display_options" value="$name">
-                        <mt:setvar name="_checked" value="1">
-                        </mt:ifinarray>
-                        <label class="custom-control custom-checkbox">
-                            <mt:if name="edit" eq="primary"><input type="hidden" id="" name="_d_<mt:var name="__key__" escape>" value="1"></mt:if>
-                            <input<mt:if name="edit" eq="primary"> disabled</mt:if><mt:if name="_checked"> checked</mt:if> type="checkbox" class="custom-control-input disp_option" id="<mt:var name="name" escape>-" name="_d_<mt:var name="name" escape>" value="1">
-                            <span class="custom-control-indicator"></span>
-                            <span class="custom-control-description"> 
-                            <mt:var name="label" escape></span>
-                        </label>
-                    </mt:if>
-                </mt:objectcols>
-              </mt:objectcontext>
+          <mt:objectcontext>
+            <mt:objectcols type="edit">
+              <mt:if name="name" ne="id">
+                <mt:setvar name="_checked" value="0">
+                <mt:if name="edit" eq="primary"><mt:setvar name="_checked" value="1"></mt:if>
+                    <mt:ifinarray array="$display_options" value="$name">
+                    <mt:setvar name="_checked" value="1">
+                    </mt:ifinarray>
+                    <label class="custom-control custom-checkbox">
+                        <mt:if name="edit" eq="primary"><input type="hidden" id="" name="_d_<mt:var name="__key__" escape>" value="1"></mt:if>
+                        <input<mt:if name="edit" eq="primary"> disabled</mt:if><mt:if name="_checked"> checked</mt:if> type="checkbox" class="custom-control-input disp_option" id="<mt:var name="name" escape>-" name="_d_<mt:var name="name" escape>" value="1">
+                        <span class="custom-control-indicator"></span>
+                        <span class="custom-control-description"> 
+                        <mt:var name="label" escape></span>
+                    </label>
+                </mt:if>
+            </mt:objectcols>
+          </mt:objectcontext>
 
-                  </div>
-                </div>
               </div>
             </div>
-            <div class="modal-footer">
-              <button type="button" class="btn btn-secondary" data-dismiss="modal"><mt:trans phrase="Cancel"></button>
-              <button type="button" id="disp_options_save" class="btn btn-primary" data-dismiss="modal"><mt:trans phrase="Save Changes"></button>
-            </div>
-          </form>
           </div>
         </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-dismiss="modal"><mt:trans phrase="Cancel"></button>
+          <button type="button" id="disp_options_save" class="btn btn-primary" data-dismiss="modal"><mt:trans phrase="Save Changes"></button>
+        </div>
+      </form>
       </div>
+    </div>
+  </div>
+</mt:unless>
 <script>
 $("#disp_options_save").click(function(){
     var str = $("#disp_options_form").serialize();

@@ -29,7 +29,7 @@ class Prototype {
     public    $mode          = 'dashboard';
     public    $timezone      = 'Asia/Tokyo';
     public    $list_limit    = 25;
-    public    $per_rebuild   = 40;
+    public    $per_rebuild   = 80;
     public    $passwd_min    = 8;
     public    $passwd_rule   = false;
     public    $sess_timeout  = 86400;
@@ -83,7 +83,8 @@ class Prototype {
                                 'list_action', 'display_options', 'get_columns_json',
                                 'export_scheme', 'recover_password', 'save_hierarchy',
                                 'delete_filter', 'edit_image', 'insert_asset',
-                                'upload_multi', 'rebuild_phase'];
+                                'upload_multi', 'rebuild_phase', 'get_thumbnail',
+                                'get_field_html', 'debug'];
 
     public    $callbacks     = ['pre_save'     => [], 'post_save'   => [],
                                 'pre_delete'   => [], 'post_delete' => [],
@@ -185,7 +186,7 @@ class Prototype {
                              'assetthumbnail', 'assetproperty', 'getoption', 'statustext',
                              'archivetitle', 'archivedate'],
             'block'      => ['objectcols', 'objectloop', 'tables', 'nestableobjects',
-                             'countgroupby'],
+                             'countgroupby', 'fieldloop'],
             'conditional'=> ['objectcontext', 'tablehascolumn', 'isadmin', 'ifusercan'],
             'modifier'   => ['epoch2str', 'sec2hms'] ];
         foreach ( $tags as $kind => $arr ) {
@@ -240,10 +241,13 @@ class Prototype {
         }
         $cfgs = $db->model( 'option' )->load( ['kind' => 'config'] );
         list( $site_url, $site_path ) = ['', ''];
+        $this->stash( 'configs', [] );
+        $configs = [];
         foreach ( $cfgs as $cfg ) {
             $colprefix = $cfg->_colprefix;
             $values = $cfg->get_values();
             $key = $cfg->key;
+            $configs[ $key ] = $cfg;
             if ( $colprefix ) $key = preg_replace( "/^$colprefix/", '', $key );
             $ctx->vars[ $key ] = $cfg->value ? $cfg->value : $cfg->data;
             $this->$key = $cfg->value;
@@ -259,6 +263,7 @@ class Prototype {
             $ctx->vars['site_url'] = $this->site_url;
             $ctx->vars['site_path'] = $this->site_path;
         }
+        $this->stash( 'configs', $configs );
         if ( $this->mode !== 'upgrade' ) {
             $db->logging = true;
             $ctx->logging = true;
@@ -738,11 +743,8 @@ class Prototype {
                     if ( $option_ws && ! in_array( 'workspace_id', $user_options ) ) {
                         $user_options[] = 'workspace_id';
                     }
-                    if (! in_array( $table->primary, $user_options ) ) {
+                    if ( $table->primary && ! in_array( $table->primary, $user_options ) ) {
                         array_unshift( $user_options, $table->primary );
-                    }
-                    if ( $table->has_status && ! in_array( 'status', $user_options ) ) {
-                        $user_options[] = 'status';
                     }
                 }
             }
@@ -770,6 +772,7 @@ class Prototype {
                 $sort_option[] = key( $scheme['sort_by'] );
                 $sort_option[] = $scheme['sort_by'][ key( $scheme['sort_by'] ) ];
             }
+            $has_primary = false;
             foreach ( $sort_props as $col => $prop ) {
                 $user_opt = ( $sort_option && $sort_option[0] === $col ) ? 1 : 0;
                 $sort_props[ $col ] = [ $labels[ $col ], $user_opt ];
@@ -959,7 +962,17 @@ class Prototype {
                     $extra .= " AND {$_colprefix}rev_type=0";
                 }
             }
-            $select_cols = join( ',', $select_cols );
+            $orig_user_options = $user_options;
+            if (! in_array( 'id', $user_options ) ) {
+                array_unshift( $user_options, 'id' );
+            }
+            if ( $table->has_status ) {
+                if (! in_array( 'status', $user_options ) ) $user_options[] = 'status';
+                if ( isset( $scheme['options'] ) && isset( $scheme['options']['status'] ) ) {
+                    $ctx->vars['_status_options'] = $scheme['options']['status'];
+                }
+            }
+            $select_cols = join( ',', $user_options );
             if ( $app->list_async && !$app->param( 'to_json' ) ) {
                 $objects = [ $obj ];
             } else {
@@ -969,21 +982,41 @@ class Prototype {
             $count = $app->param( 'totalResult' )
                    ? $app->param( 'totalResult' )
                    : $obj->count( $terms, $args, $select_cols, $extra );
+            $items = [];
+            require_once( 'class.PTUtil.php' );
+            foreach ( $objects as $_obj ) {
+                $items[] = PTUtil::object_to_resource( $_obj, 'list', $user_options );
+            }
             if ( $app->param( 'to_json' ) ) {
-                $items = [];
-                require_once( 'class.PTUtil.php' );
-                foreach ( $objects as $_obj ) {
-                    $items[] = PTUtil::object_to_resource( $_obj, false );
-                }
                 header( 'Content-type: application/json' );
                 $json = ['totalResult' => (int) $count, 'items' => $items ];
                 echo json_encode( $json );
                 exit();
             }
+            $list_cols = [];
+            $has_primary = false;
+            foreach ( $orig_user_options as $option ) {
+                if (! isset( $list_props[ $option ] ) ) continue;
+                if ( $list_props[ $option ] == 'primary' ) $has_primary = true;
+                $col_props = ['_name' => $option, '_label' => $labels[ $option ],
+                              '_list' => $list_props[ $option ],
+                              '_type' => $column_defs[ $option ]['type'] ];
+                if ( isset( $scheme['options'] ) && isset( $scheme['options'][ $option ] ) ) {
+                    $col_props['_options'] = $scheme['options'][ $option ];
+                }
+                $list_cols[] = $col_props;
+            }
+            if (! $has_primary && isset( $list_cols[1] ) ) {
+                $list_cols[1]['_list'] = 'primary';
+            } else if (! $has_primary ) {
+                $ctx->vars['_no_primary'] = 1;
+            }
+            $ctx->vars['list_cols'] = $list_cols;
+            $ctx->vars['list_colspan'] = count( $list_cols ) + 1;
             $filter_params = ['terms' => $terms, 'args' => $args, 'extra' => $extra ];
             $filter_params = json_encode( $filter_params );
             $ctx->vars['filter_params'] = $app->encrypt( $filter_params );
-            $ctx->vars['objects'] = $objects;
+            $ctx->vars['list_items'] = $items;
             $ctx->vars['object_count']  = $count;
             $ctx->vars['totalResult']   = $count;
             $ctx->vars['list_limit']    = $limit;
@@ -1015,6 +1048,7 @@ class Prototype {
             $ctx->vars['display_options'] = $display_options;
             $ctx->vars['_auditing'] = $table->auditing;
             $ctx->vars['_revisable'] = $table->revisable;
+            $ctx->vars['_assign_user'] = $table->assign_user;
             if ( $key = $app->param( 'view' ) ) {
                 if ( $db->model( $model )->has_column( $key ) ) {
                     if ( $screen_id ) {
@@ -1042,7 +1076,6 @@ class Prototype {
                 }
                 $id = (int) $id;
                 if (! $id ) return $app->error( 'Invalid request.' );
-                $obj = $db->model( $model )->new();
                 $obj = $db->model( $model )->load( $id );
                 if ( is_object( $obj ) ) {
                     if ( $primary = $table->primary ) {
@@ -1112,9 +1145,9 @@ class Prototype {
         return $app->build_page( $tmpl );
     }
 
-    function build_page ( $tmpl, $param = [] ) {
+    function build_page ( $tmpl, $param = [], $output = true ) {
         $app = Prototype::get_instance();
-        if (! $app->debug ) {
+        if (! $app->debug && $output ) {
             header( 'Cache-Control: no-store, no-cache, must-revalidate' );
             header( 'Cache-Control: post-check=0, pre-check=0', FALSE );
             header( 'Content-type: text/html; charset=utf-8' );
@@ -1128,6 +1161,7 @@ class Prototype {
         $out = $app->ctx->build_page( $tmpl, $param, $cache_id, false, $src );
         $callback = ['name' => 'template_output', 'template' => $tmpl ];
         $app->run_callbacks( $callback, $basename, $param, $src, $out );
+        if (! $output ) return $out;
         if ( $app->debug ) {
             $time = microtime( true );
             $processing_time = $time - $this->start_time;
@@ -1142,6 +1176,7 @@ class Prototype {
             $debug = $app->ctx->build_page( $debug_tmpl, $param );
             $out = preg_replace( '!<\/body>!', $debug . '</body>', $out );
         }
+        // $out = $app->ctx->modifier_trim_space( $out, 3 );
         echo $out;
         exit();
     }
@@ -1239,7 +1274,7 @@ class Prototype {
         $app = Prototype::get_instance();
         if ( $model === 'superuser' ) return $app->user()->is_superuser;
         $table = $app->get_table( $model );
-        if ( $app->mode !== 'list_action' ) {
+        if ( $app->mode !== 'list_action' && $app->mode !== 'get_thumbnail' ) {
             if (! $app->workspace() && ( $obj && ! $obj->workspace ) ) {
                 if ( $table->space_child && $action === 'edit' ) {
                     return false;
@@ -1675,7 +1710,7 @@ class Prototype {
                     if ( $obj->id ) {
                         $meta = $db->model( 'meta' )->get_by_key(
                                 ['model' => $model, 'object_id' => $obj->id,
-                                 'key' => 'metadata', 'kind' => $key ] );
+                                 'kind' => 'metadata', 'key' => $key ] );
                         if ( $meta->id ) {
                             $props = $meta->text;
                             $props = json_decode( $props, true );
@@ -1852,6 +1887,100 @@ class Prototype {
         $sess->expires( time() + $app->sess_timeout );
         $sess->save();
         $upload_handler = new UploadHandler( $options );
+    }
+
+    function get_thumbnail ( $app ) {
+        $id = (int) $app->param( 'id' );
+        if (! $id ) return;
+        $meta = $app->db->model( 'meta' )->load( $id );
+        if (! $meta ) return;
+        $model = $meta->model;
+        if (! $app->can_do( $model, 'list' ) ) {
+            return;
+        }
+        $matadata = json_decode( $meta->text, true );
+        $mime_type = $matadata['mime_type'];
+        header( "Content-Type: {$mime_type}" );
+        $column = $app->param( 'square' ) ? 'metadata' : 'data';
+        $data = $meta->$column;
+        $file_size = strlen( bin2hex( $data ) ) / 2;
+        header( "Content-Length: {$file_size}" );
+        echo $data;
+        unset( $data );
+    }
+
+    function get_field_html ( $app ) {
+        $app->validate_magic( true );
+        $id = (int) $app->param( 'id' );
+        $model = $app->param( 'model' );
+        $workspace_id = $app->param( 'workspace_id' );
+        $field = $app->db->model( 'field' )->load( $id );
+        header( 'Content-type: application/json' );
+        if (! $field ) {
+            echo json_encode( ['status' => 404,
+                               'message' => $app->translate( 'Field not found.' ) ] );
+            exit();
+        }
+        $field_label = $field->label;
+        $field_content = $field->content;
+        if (!$field_label || !$field_content ) {
+            $field_type = 
+                $app->db->model( 'fieldtype' )->load( (int) $field->fieldtype_id );
+            if ( $field_type ) {
+                if (! $field_label ) $field_label = $field_type->label;
+                if (! $field_content ) $field_content = $field_type->content;
+            }
+        }
+        if (! $field_label && ! $field_content ) {
+            echo json_encode( ['status' => 404,
+                     'message' => $app->translate( 'Field HTML not specified.' ) ] );
+            exit();
+        }
+        $ctx = $app->ctx;
+        $param = [];
+        $ctx->local_vars['field_name'] = $field->name;
+        $ctx->local_vars['field_required'] = $field->required;
+        $basename = $field->basename;
+        $ctx->local_vars['field_basename'] = $basename;
+        $prefix = $field->_colprefix;
+        $values = $field->get_values();
+        foreach ( $values as $key => $value ) {
+            $key = preg_replace( "/^$prefix/", '', $key );
+            $ctx->local_vars[ 'field__' . $key ] = $value;
+        }
+        $options = $field->options;
+        if ( $options ) {
+            $labels = $field->options_labels;
+            $options = preg_split( '/\s*,\s*/', $options );
+            $labels = $labels ? preg_split( '/\s*,\s*/', $labels ) : $options;
+            $i = 0;
+            $field_options = [];
+            foreach ( $options as $option ) {
+                $label = isset( $labels[ $i ] ) ? $labels[ $i ] : $option;
+                $field_options[] = ['field_label' => $label, 'field_option' => $option ];
+                $i++;
+            }
+            $ctx->local_vars['field_options'] = $field_options;
+        }
+        if ( $app->param( 'field__out' ) ) {
+            $ctx->local_vars['field__out'] = 1;
+        }
+        $ctx->local_vars['field_uniqueid'] = $app->magic();
+        $field_label = $ctx->build( $field_label );
+        $ctx->local_vars['field_label_html'] = $field_label;
+        $field_label = $app->build_page( 'field' . DS . 'label.tmpl', $param, false );
+        $field_content = $ctx->build( $field_content );
+        $ctx->local_vars['field_content_html'] = $field_content;
+        $field_content = $app->build_page( 'field' . DS . 'content.tmpl', $param, false );
+        $ctx->local_vars['field_label_html'] = $field_label;
+        $ctx->local_vars['field_content_html'] = $field_content;
+        $html = $app->build_page( 'field' . DS . 'wrapper.tmpl', $param, false );
+        if (! $app->param( 'field__out' ) ) {
+            $html = "<div id=\"field-{$basename}-wrapper\">{$html}</div>";
+        }
+        echo json_encode( ['html' => $html, 'status' => 200,
+                           'basename' => $basename ] );
+        exit();
     }
 
     function rebuild_phase ( $app, $start = false, $counter = 0, $dependencies = false ) {
@@ -2077,7 +2206,7 @@ class Prototype {
         if (! $app->can_do( 'asset', 'create' ) ) {
             $error = $app->translate( 'Permission denied.' );
             header( 'Content-type: application/json' );
-            echo json_encode( ['message'=> $error ] );
+            echo json_encode( ['message' => $error ] );
             exit();
         }
         $upload_dir = $app->upload_dir();
@@ -2193,12 +2322,20 @@ class Prototype {
                          . $app->workspace_param );
     }
 
+    function debug ( $app ) {
+        //
+        require_once( 'class.PTUtil.php' );
+        $fields = PTUtil::get_fields( 'entry', 'requireds' );
+        var_dump($fields);
+    }
+
     function save ( $app ) {
         require_once( 'class.PTUtil.php' );
         $db = $app->db;
         $callbacks = $app->callbacks;
         $model = $app->param( '_model' );
         $app->validate_magic();
+        if (! $model ) return $app->error( 'Invalid request.' );
         $table = $app->get_table( $model );
         if (! $table ) return $app->error( 'Invalid request.' );
         $action = $app->param( 'id' ) ? 'edit' : 'create';
@@ -2315,10 +2452,17 @@ class Prototype {
                 if ( in_array( $col, $unique ) ) {
                     $terms = [ $col => $value ];
                     if ( $obj->id ) {
-                        $terms[ $primary ] = ['!=' => $obj->id ];
+                        $terms['id'] = ['!=' => $obj->id ];
                     }
                     if ( $table->revisable ) {
                         $terms['rev_type'] = 0;
+                    }
+                    if ( $obj->has_column( 'workspace_id' ) ) {
+                        $workspace_ids = [0];
+                        if ( $obj->workspace_id ) {
+                            $workspace_ids[] = (int) $obj->workspace_id;
+                        }
+                        $terms['workspace_id'] = ['IN' => $workspace_ids];
                     }
                     $compare = $db->model( $model )->load( $terms );
                     if ( is_array( $compare ) && !empty( $compare ) ) {
@@ -2365,7 +2509,7 @@ class Prototype {
             }
             if (! isset( $relations[ $col ] ) ) {
                 if ( $col === 'model' || $col === 'count' ) {
-                    // Collision $obj->model( $model )->
+                    // Collision $obj->model( $model )->...
                     $obj->$col = $value;
                 } else {
                     $obj->$col( $value );
@@ -2408,6 +2552,18 @@ class Prototype {
         if ( $msg = $callback['error'] ) {
             $errors[] = $msg;
         }
+        $required_fields = PTUtil::get_fields( $obj, 'requireds' );
+        $required_basenames = array_keys( $required_fields );
+        foreach ( $required_basenames as $fld ) {
+            $fld_value = $app->param( "{$fld}__c" );
+            if ( $fld_value !== null ) {
+                $fld_values = json_decode( $fld_value, true );
+                if ( empty( $fld_values ) ) {
+                    $errors[] =
+                        $app->translate( '%s is required.', $required_fields[ $fld ] );
+                }
+            }
+        }
         if (!empty( $errors ) || !$save_filter || !$pre_save ) {
             $error = join( "\n", $errors );
             if ( $app->param( '_preview' ) ) return $app->error( $error );
@@ -2421,7 +2577,6 @@ class Prototype {
             return $app->preview( $obj, $properties );
         }
         if (! $as_revision ) $obj->save();
-        // for Revision
         if (! empty( $add_tags ) ) {
             $workspace_id = (int) $app->param( 'workspace_id' );
             $props = $placements['tags']['tag'];
@@ -2469,7 +2624,7 @@ class Prototype {
             if ( $val === 'file' ) {
                 $metadata = $db->model( 'meta' )->get_by_key(
                          ['model' => $model, 'object_id' => $obj->id,
-                          'key' => 'metadata', 'kind' => $key ] );
+                          'kind' => 'metadata', 'key' => $key ] );
                 $magic = $app->param( "{$key}-magic" );
                 if ( $magic ) {
                     $sess = $db->model( 'session' )
@@ -2493,6 +2648,40 @@ class Prototype {
         }
         if ( $has_file && ! $as_revision ) $obj->save();
         $id = $obj->id;
+        $field_basenames = PTUtil::get_fields( $obj, 'basenames' );
+        $custom_fields = $app->get_meta( $obj, 'customfield' );
+        $field_ids = [];
+        foreach ( $field_basenames as $fld ) {
+            $fld_value = $app->param( "{$fld}__c" );
+            if ( $fld_value !== null ) {
+                if (! is_array( $fld_value ) ) $fld_value = [ $fld_value ];
+                $i = 1;
+                foreach ( $fld_value as $value ) {
+                    $fld_values = json_decode( $value, true );
+                    $meta = $db->model( 'meta' )->get_by_key(
+                        ['object_id' => $id, 'model' => $obj->_model,
+                         'kind' => 'customfield', 'key' => $fld, 'number' => $i ] );
+                    $meta->text( $value );
+                    if ( count( $fld_values ) == 1 ) {
+                        $meta_key = key( $fld_values );
+                        $meta->name( $meta_key );
+                        $meta->value( $fld_values[ $meta_key ] );
+                    } else {
+                        $meta->value( '' );
+                    }
+                    $meta->save();
+                    $field_ids[] = $meta->id;
+                    $i++;
+                }
+            }
+        }
+        if (! empty( $custom_fields ) ) {
+            foreach ( $custom_fields as $custom_field ) {
+                if (! in_array( $custom_field->id, $field_ids ) ) {
+                    $custom_field->remove();
+                }
+            }
+        }
         if (! $as_revision ) {
             $app->publish_obj( $obj, $original );
         }
@@ -2577,7 +2766,7 @@ class Prototype {
             if ( $val === 'file' ) {
                 $metadata = $db->model( 'meta' )->get_by_key(
                          ['model' => $model, 'object_id' => $obj->id,
-                          'key' => 'metadata', 'kind' => $key ] );
+                          'kind' => 'metadata', 'key' => $key ] );
                 if (! $metadata->id ) continue;
                 $file_meta = json_decode( $metadata->text, true );
                 $mime_type = $file_meta['mime_type'];
@@ -3080,7 +3269,7 @@ class Prototype {
                 $rev->remove();
             }
         }
-        if ( $table->allow_comment || $obj->has_column( 'allow_comment' ) ) {
+        if ( $table->allow_comment ) {
             $comments = $db->model( 'comment' )->load(
               ['object_id' => $obj->id, 'model' => $obj->_model ] );
             foreach ( $comments as $comment ) {
@@ -3138,15 +3327,37 @@ class Prototype {
         return null;
     }
 
-    function get_object ( $model ) {
+    function get_object ( $model, $required = [] ) {
         $app = Prototype::get_instance();
         if (! $model ) $model = $app->param( '_model' );
         $db = $app->db;
         $obj = $db->model( $model )->new();
         $scheme = $app->get_scheme_from_db( $model );
+        $table = $app->get_table( $model );
         if (! $scheme ) return null;
         $primary = $scheme['indexes']['PRIMARY'];
         $objects = [];
+        if ( empty( $required ) ) {
+            $required = [];
+            $required[] = 'id';
+            if ( $model === 'urlinfo' ) {
+                $required[] = 'is_published';
+                $required[] = 'file_path';
+            }
+            if ( $table && $table->hierarchy ) {
+                $required[] = 'parent_id';
+            }
+            if ( $table && $table->revisable ) {
+                $required[] = 'rev_type';
+            }
+            if ( $table && $table->has_status ) {
+                $required[] = 'status';
+            }
+            if ( $table && $table->sortable ) {
+                $required[] = 'order';
+            }
+        }
+        $required = join( ',', $required );
         if ( $app->param( 'all_selected' ) ) {
             $filter_params = json_decode(
                 $app->decrypt( $app->param( 'filter_params' ) ), true );
@@ -3158,7 +3369,7 @@ class Prototype {
             if ( $original != $quoted ) {
                 return $app->error( 'Invalid request.' );
             }
-            $objects = $obj->load( $terms, $args, '*', $extra );
+            $objects = $obj->load( $terms, $args, $required, $extra );
             return $objects;
         } else {
             $id = $app->param( 'id' );
@@ -3166,7 +3377,7 @@ class Prototype {
                 array_walk( $id, function( &$id ) {
                     $id = (int) $id;
                 });
-                $objects = $obj->load( ['id' => ['IN' => $id ] ] );
+                $objects = $obj->load( ['id' => ['IN' => $id ] ], null, $required );
                 return $objects;
             } else if ( $id ) {
                 if ( $app->stash( $model . ':' . $id ) ) 
@@ -3637,7 +3848,7 @@ class Prototype {
         $db = $app->db;
         $metadata = $app->db->model( 'meta' )->get_by_key(
                  ['model' => 'asset', 'object_id' => $obj->id,
-                  'key' => 'metadata', 'kind' => 'file'] );
+                  'kind' => 'metadata', 'key' => 'file'] );
         if ( $metadata->id && $metadata->text ) {
             $meta = json_decode( $metadata->text, true );
             if ( $meta['file_name'] != $obj->file_name ) {
@@ -4007,6 +4218,7 @@ class Prototype {
         $locale[ $lang ][ $table->plural ] = $app->translate( $table->plural );
         $relations = [];
         $col_options = [];
+        $language = $app->language;
         foreach ( $columns as $column ) {
             $col_name = $column->name;
             $props = [];
@@ -4029,6 +4241,7 @@ class Prototype {
             if ( $column->unchangeable ) $unchangeable[] = $col_name;
             if ( $column->autoset ) $autoset[] = $col_name;
             $label = $column->label;
+            $app->dictionary['default'][ $col_name ] = $label;
             $locale['default'][ $col_name ] = $label;
             $trans_label = $app->translate( $label );
             $locale[ $lang ][ $label ] = $trans_label;
@@ -4184,6 +4397,8 @@ class Prototype {
     function get_config ( $key = null ) {
         $app = Prototype::get_instance();
         if (! $key ) return $app->db->model( 'option' )->load( ['kind' => 'config'] );
+        $configs = $app->stash( 'configs' );
+        if ( isset( $configs[ $key ] ) ) return $configs[ $key ];
         $cfg = $app->db->model( 'option' )->get_by_key(
             ['kind' => 'config', 'key' => $key ] );
         return $cfg->id ? $cfg : null;
@@ -4254,7 +4469,7 @@ class Prototype {
             $cache = $ctx->stash( $model . '_meta_' . $name . '_' . $obj_id );
             $metadata = $cache ? $cache : $app->db->model( 'meta' )->get_by_key(
                      ['model' => $model, 'object_id' => $obj_id,
-                      'key' => 'metadata', 'kind' => $name ] );
+                      'kind' => 'metadata', 'key' => $name ] );
             $ctx->stash( $model . '_meta_' . $name . '_' . $obj_id, $metadata );
             if (! $metadata->id ) {
                 return ( $property === 'all' ) ? [] : null;
@@ -4327,13 +4542,14 @@ class Prototype {
         return $relations;
     }
 
-    function get_meta ( $obj, $key = null, $type = null, $kind = null ) {
+    function get_meta ( $obj, $kind = null, $key = null, $name = null ) {
         $app = Prototype::get_instance();
         $terms = ['object_id'  => $obj->id, 
                   'model' => $obj->_model ];
-        if ( $key )  $terms['key']  = $key;
-        if ( $type ) $terms['type'] = $type;
         if ( $kind ) $terms['kind'] = $kind;
+        if ( $key )  $terms['key']  = $key;
+        if ( $name ) $terms['name'] = $name;
+        $args = ['sort' => 'number', 'direction' => 'ascend'];
         $meta = $app->db->model( 'meta' )->load( $terms );
         return $meta;
     }

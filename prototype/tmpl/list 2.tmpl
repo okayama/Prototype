@@ -1,4 +1,3 @@
-<mt:var name="model" setvar="this_model">
 <mt:var name="sort_cond" value="">
 <mt:if name="request.sort">
 <mt:if name="request.direction">
@@ -8,6 +7,7 @@
 <mt:if name="request.query">
 <mt:setvarblock name="query_cond">&amp;query=<mt:var name="query" escape></mt:setvarblock>
 </mt:if>
+
 <mt:if name="request.select_system_filters">
 <mt:setvarblock name="filter_cond">
 &amp;select_system_filters=<mt:var name="request.select_system_filters" escape>
@@ -80,7 +80,7 @@ $(".query-box").keypress(function(e){
 <mt:setvarblock name="search_box">
   <input class="query-box form-control mb-2 mr-sm-2 mb-sm-0 form-control-sm" name="query" type="text" value="<mt:var name="query" escape>" placeholder="<mt:trans phrase="Keyword">">
   <button class="search-btn btn btn-secondary search-button btn-sm" type="submit"><i class="fa fa-search" aria-hidden="true"></i><span class="sr-only"><mt:trans phrase="Search"></span></button>
-  <button class="hidden btn btn-secondary alt-search-button btn-sm" type="submit"><i class="fa fa-search" aria-hidden="true"></i><span class="sr-only"><mt:trans phrase="Search"></span></button>
+  <button class="btn btn-secondary alt-search-button btn-sm" type="submit"><i class="fa fa-search" aria-hidden="true"></i><span class="sr-only"><mt:trans phrase="Search"></span></button>
 </mt:setvarblock>
 <mt:setvarblock name="current_filter">
 <mt:unless name="request._fix_filter">
@@ -144,7 +144,7 @@ $(".query-box").keypress(function(e){
 </mt:if>
 </mt:if>
 
-<mt:unless name="list_items">
+<mt:unless name="objects">
   <div class="alert alert-success full">
     <mt:trans phrase="%s not found." params="$plural">
   </div>  
@@ -240,25 +240,34 @@ $('#dialog-cancel-btn').click(function(){
 </label>
 </mt:unless>
 </th>
-<mt:loop name="list_cols">
-<th class="<mt:if name="_name" eq="id">id </mt:if><mt:if name="_list" eq="primary"> primary <mt:elseif name="_list" like="num"> num </mt:if><mt:if name="_list" ne="primary"> not-primary</mt:if>">
-  <mt:var name="_label" escape trim_to="10+...">
-  <mt:if name="_type" ne="relation">
+<mt:setvar name="table_colspan" value="">
+<mt:objectcols>
+<mt:var name="name" setvar="column_name">
+<mt:if name="column_name" eq="workspace_id">
+    <mt:if name="workspace_id">
+        <mt:setvar name="column_name" value="">
+    </mt:if>
+</mt:if>
+<mt:if name="column_name">
+    <th class="<mt:if name="name" eq="id">id </mt:if><mt:if name="list" eq="primary"> primary <mt:elseif name="list" like="num"> num </mt:if><mt:if name="list" ne="primary"> not-primary</mt:if>">
+    <mt:var name="label" escape trim_to="10+...">
+  <mt:if name="type" ne="relation">
     <span class="text-sm toggle">
     <mt:setvar name="class_asc" value="">
     <mt:setvar name="class_desc" value="">
-    <mt:if name="request.sort" eq="$_name">
+    <mt:if name="request.sort" eq="$name">
       <mt:if name="request.direction" eq="asc">
         <mt:setvar name="class_asc" value="1">
       <mt:elseif name="request.direction" eq="desc">
         <mt:setvar name="class_desc" value="1">
       </mt:if>
     </mt:if>
-    <a aria-label="<mt:trans phrase="Sort by %s in %s" params="'$_label','$order_asc'" escape><mt:if name="class_asc">(<mt:trans phrase="Selected">)</mt:if>" class="<mt:if name="class_asc">current-cnd</mt:if>" href="<mt:var name="this_url">&amp;sort=<mt:var name="_name">&amp;direction=asc<mt:var name="query_cond"><mt:var name="workspace_param"><mt:var name="dialog_param"><mt:var name="filter_cond" strip_linefeeds="1"><mt:var name="insert_cond" strip_linefeeds="1"><mt:var name="selected_ids_cond" strip_linefeeds="1"><mt:if name="workspace_id">&amp;workspace_id=<mt:var name="workspace_id"></mt:if>">&#9650;</a>
-    <a aria-label="<mt:trans phrase="Sort by %s in %s" params="'$_label','$order_desc'" escape><mt:if name="class_asc">(<mt:trans phrase="Selected">)</mt:if>" class="<mt:if name="class_desc">current-cnd</mt:if>" href="<mt:var name="this_url">&amp;sort=<mt:var name="_name">&amp;direction=desc<mt:var name="query_cond"><mt:var name="workspace_param"><mt:var name="dialog_param"><mt:var name="filter_cond" strip_linefeeds="1"><mt:var name="insert_cond" strip_linefeeds="1"><mt:var name="selected_ids_cond" strip_linefeeds="1"><mt:if name="workspace_id">&amp;workspace_id=<mt:var name="workspace_id"></mt:if>">&#9660;</a></span>
+    <a aria-label="<mt:trans phrase="Sort by %s in %s" params="'$label','$order_asc'" escape><mt:if name="class_asc">(<mt:trans phrase="Selected">)</mt:if>" class="<mt:if name="class_asc">current-cnd</mt:if>" href="<mt:var name="this_url">&amp;sort=<mt:var name="name">&amp;direction=asc<mt:var name="query_cond"><mt:var name="workspace_param"><mt:var name="dialog_param"><mt:var name="filter_cond" strip_linefeeds="1"><mt:var name="insert_cond" strip_linefeeds="1"><mt:var name="selected_ids_cond" strip_linefeeds="1"><mt:if name="workspace_id">&amp;workspace_id=<mt:var name="workspace_id"></mt:if>">&#9650;</a>
+    <a aria-label="<mt:trans phrase="Sort by %s in %s" params="'$label','$order_desc'" escape><mt:if name="class_asc">(<mt:trans phrase="Selected">)</mt:if>" class="<mt:if name="class_desc">current-cnd</mt:if>" href="<mt:var name="this_url">&amp;sort=<mt:var name="name">&amp;direction=desc<mt:var name="query_cond"><mt:var name="workspace_param"><mt:var name="dialog_param"><mt:var name="filter_cond" strip_linefeeds="1"><mt:var name="insert_cond" strip_linefeeds="1"><mt:var name="selected_ids_cond" strip_linefeeds="1"><mt:if name="workspace_id">&amp;workspace_id=<mt:var name="workspace_id"></mt:if>">&#9660;</a></span>
   </mt:if>
 </th>
-</mt:loop>
+</mt:if>
+</mt:objectcols>
 </tr>
 <mt:unless name="_single_select">
   <mt:if name="list_from" ne="1">
@@ -269,7 +278,7 @@ $('#dialog-cancel-btn').click(function(){
   </mt:if>
   <mt:if name="show_all_selected">
   <tr>
-    <td colspan="<mt:var name="list_colspan">" class="all-selected-cell hidden">
+    <td colspan="4" class="all-selected-cell hidden">
 <label class="custom-control custom-checkbox" style="display:inline;">
   <input type="checkbox" class="custom-control-input cb-all-selected" name="all_selected" value="1">
   <span class="custom-control-indicator"></span>
@@ -283,164 +292,240 @@ $('#dialog-cancel-btn').click(function(){
 </mt:setvarblock>
 
 <mt:var name="list_nav">
-<mt:loop name="list_items">
+
+<mt:loop name="objects">
 <mt:if name="__first__">
 <table class="table table-striped table-sm listing-table table-hover">
+</mt:if>
+<mt:if name="__first__">
 <thead>
 <mt:var name="table_header">
 </thead>
 <tbody id="list_body">
 </mt:if>
-<tr id="line_<mt:var name="id">">
+<mt:setvarblock name="table_row">
+<tr id="line_<mt:objectvar name="id">">
 <mt:setvar name="column_vars" value="">
-<mt:loop name="list_cols">
+<mt:objectcols>
+<mt:var name="name" setvar="column_name">
+<mt:if name="column_name" eq="workspace_id">
+    <mt:if name="workspace_id">
+        <mt:setvar name="column_name" value="">
+    </mt:if>
+</mt:if>
+<mt:var name="list" setvar="list_prop">
+<mt:objectvar name="$column_name" escape setvar="value">
+<mt:objectvar name="$column_name" setvar="raw_value">
 <mt:if name="__first__">
 <td>
+  <mt:if name="_get_col">
+  <mt:objectcols>
+<mt:if name="__first__">
+<mt:setvar name="__status__" value="0">
+</mt:if>
+    <mt:if name="list" eq="primary">
+        <mt:objectvar name="$_get_col" setvar="__primary_value">
+    </mt:if>
+    <mt:if name="name" eq="$_get_col">
+        <mt:objectvar name="$_get_col" setvar="_get_col_value">
+    </mt:if>
+    <mt:if name="request.from_obj" eq="group">
+      <mt:if name="name" eq="status">
+        <mt:unless name="__status__">
+        <mt:objectvar name="status" setvar="__status__">
+        <mt:setvarblock name="_get_col_value" append="1">
+          (<mt:statustext status="$__status__" options="$options" icon="1" text="1">)
+        </mt:setvarblock>
+        </mt:unless>
+      </mt:if>
+    </mt:if>
+</mt:objectcols>
+  <input type="hidden" id="_get_col_<mt:objectvar name="id">" value="<mt:var name="_get_col_value" escape>">
+  </mt:if>
   <mt:unless name="_single_select">
     <label class="custom-control custom-checkbox">
-      <input id="box_<mt:var name="id">" type="checkbox" name="id[]" value="<mt:var name="id">" class="custom-control-input">
+      <input id="box_<mt:objectvar name="id">" type="checkbox" name="id[]" value="<mt:objectvar name="id">" class="custom-control-input">
       <span class="custom-control-indicator"></span>
       <span class="custom-control-description"></span>
     </label>
   <mt:else>
     <label class="custom-control custom-radio">
-      <input type="radio" id="box_<mt:var name="id">" name="id" value="<mt:var name="id">" class="custom-control-input">
+      <input type="radio" id="box_<mt:objectvar name="id">" name="id" value="<mt:objectvar name="id">" class="custom-control-input">
       <span class="custom-control-indicator"></span>
       <span class="custom-control-description"></span>
     </label>
-  </mt:unless>
-</td>
-</mt:if>
-<td <mt:if name="_list" eq="primary"><mt:if name="_icon">style="line-height:1.6em;"</mt:if></mt:if> class="<mt:if name="_name" eq="id">id </mt:if><mt:if name="_list" eq="number"><mt:unless name="sort_order"><mt:if name="_name" ne="status">num</mt:if></mt:unless></mt:if> list-col<mt:if name="_list" eq="primary">-primary primary<mt:else> not-primary</mt:if>">
-  <mt:if name="_list" eq="primary">
-  <mt:if name="_get_col">
-    <mt:var name="$_get_col" setvar="_get_col_value">
-    <mt:if name="request.from_obj" eq="group">
-        <mt:setvarblock name="_get_col_value" append="1">
-          (<mt:var name="_status_text">)
-        </mt:setvarblock>
+  </mt:if>
+  <mt:setvar name="sort_order" value="0">
+  <mt:if name="name" eq="order">
+    <mt:if name="_sortable">
+      <mt:if name="can_action">
+        <mt:setvar name="sort_order" value="1">
       </mt:if>
     </mt:if>
-    <input type="hidden" id="_get_col_<mt:var name="id">" value="<mt:var name="_get_col_value" escape>">
   </mt:if>
+</td>
+</mt:if>
+<mt:if name="model" ne="workspace">
+<mt:objectvar name="workspace_id" setvar="_workspace_id">
+</mt:if>
+<mt:var name="name" setvar="__name__">
+<mt:if name="workspace_id">
+  <mt:if name="name" eq="workspace_id">
+    <mt:setvar name="__name__" value="">
   </mt:if>
-<mt:setvarblock name="col_content">
-  <mt:setvarblock name="include_path">include/list/<mt:var name="this_model">/column_<mt:var name="_name">.tmpl</mt:setvarblock>
+</mt:if>
+<mt:if name="__name__">
+  <mt:objectvar name="id" setvar="_object_id">
+  <mt:setvarblock name="include_path">include/list/<mt:var name="model">/column_<mt:var name="column_name">.tmpl</mt:setvarblock>
   <mt:include file="$include_path" setvar="alt_value">
   <mt:unless name="alt_value">
-    <mt:setvarblock name="include_path">include/list/column_<mt:var name="_name">.tmpl</mt:setvarblock>
+    <mt:setvarblock name="include_path">include/list/column_<mt:var name="column_name">.tmpl</mt:setvarblock>
     <mt:include file="$include_path" setvar="alt_value">
   </mt:unless>
+<td <mt:if name="list_prop" eq="primary"><mt:if name="thumbnail">style="line-height:1.6em;"</mt:if></mt:if> class="<mt:if name="__name__" eq="id">id </mt:if><mt:if name="list_prop" eq="number"><mt:unless name="sort_order"><mt:if name="column_name" ne="status">num</mt:if></mt:unless></mt:if> list-col<mt:if name="list" eq="primary">-primary primary<mt:else> not-primary</mt:if>">
+<mt:setvarblock name="col_content">
   <mt:if name="alt_value">
     <mt:var name="alt_value">
   <mt:else>
-    <mt:isarray name="$_name">
-      <mt:var name="$_name" join=", " escape>
-    <mt:else>
-      <mt:setvar name="_can_sort" value="0">
-      <mt:if name="_name" eq="order">
-      <mt:if name="_sortable">
-        <mt:setvar name="_can_sort" value="1">
-      </mt:if>
-      </mt:if>
-      <mt:if name="_list" eq="primary">
-        <mt:ifusercan action="edit" model="$this_model" id="$id" workspace_id="$workspace_id"><a <mt:if name="request.dialog_view">target="_blank"</mt:if> href="<mt:var name="script_uri">?__mode=view&amp;_type=edit&amp;_model=<mt:var name="this_model" escape>&amp;id=<mt:var name="id" escape><mt:if name="workspace_id">&amp;workspace_id=<mt:var name="workspace_id"></mt:if><mt:if name="model" eq="workspace">&amp;workspace_id=<mt:objectvar name="id"></mt:if><mt:if name="request.revision_select">&amp;edit_revision=1</mt:if>"></mt:ifusercan>
-          <mt:if name="_has_file">
-            <mt:if name="_icon">
-            <div class="list-icon">
-              <img src="<mt:var name="_icon">" width="32" alt="<mt:trans phrase="$_icon_class">"> 
-              <mt:if name="_get_col">
-              <input type="hidden" id="_get_col_img_<mt:var name="id">" value="<mt:var name="_icon">">
-              </mt:if>
-            </div>
-            <mt:else>
-              <i class="list-small-icon btn fa <mt:if name="_icon_class" eq="image">fa-file-image-o<mt:elseif name="_icon_class" eq="pdf">fa-file-pdf-o<mt:elseif name="_icon_class" eq="video">fa-file-video-o<mt:elseif name="_icon_class" eq="audio">fa-file-audio-o<mt:else><mt:unless name="_icon_class">fa-minus<mt:else>fa-file-o</mt:unless></mt:if>" aria-hidden="true"></i>
-              <span class="sr-only"><mt:trans phrase="$_icon_class"></span>
-            </mt:if>
+  <mt:if name="list_prop" like="object"><mt:getobjectname id="$value" type="$list_prop" escape trim_to="20+..." setvar="value"></mt:if>
+    <mt:if name="list_prop" eq="primary">
+      <mt:if name="can_edit_object"><a <mt:if name="request.dialog_view">target="_blank"</mt:if> href="<mt:var name="script_uri">?__mode=view&amp;_type=edit&amp;_model=<mt:var name="model" escape>&amp;id=<mt:objectvar name="id" escape><mt:if name="_workspace_id">&amp;workspace_id=<mt:var name="_workspace_id"></mt:if><mt:if name="model" eq="workspace">&amp;workspace_id=<mt:objectvar name="id"></mt:if><mt:if name="request.revision_select">&amp;edit_revision=1</mt:if>"></mt:if>
+      <mt:if name="__file_col__">
+        <mt:objectvar name="id" setvar="obj_id">
+        <div class="list-icon">
+        <mt:assetthumbnail id="$obj_id" type="default" square="1" name="$__file_col__" model="$model" data_uri="1" setvar="thumbnail">
+        <mt:assetproperty property="class" name="$__file_col__" model="$model" id="$obj_id" setvar="obj_class">
+        <mt:if name="thumbnail">
+          <img src="<mt:var name="thumbnail">" width="32" width="height" alt="<mt:trans phrase="$obj_class">"> 
+          <mt:if name="_get_col">
+            <input type="hidden" id="_get_col_img_<mt:objectvar name="id">" value="<mt:var name="thumbnail">">
           </mt:if>
-          <mt:unless name="$_name">
-          <mt:setvarblock name="$_name">(<mt:trans phrase="null">)</mt:setvarblock>
-          </mt:unless>
-          <mt:var name="$_name" escape>
-        <mt:ifusercan action="edit" model="$this_model" id="$id" workspace_id="$workspace_id"></a></mt:ifusercan>
-        <mt:if name="_has_mapping">
-          <mt:if name="_permalink">
-          &nbsp; 
-          <a href="<mt:var name="_permalink">" target="_blank">
-          <i class="fa fa-external-link" aria-hidden="true"></i>
-          <span class="sr-only"><mt:trans phrase="View"></span>
-          </a>
-          </mt:if>
-        </mt:if>
-          <a class="btn toggle-infobox hidden"
-            id="toggle_<mt:var name="id">" href="javascript:void(0);">
-            <i id="toggle_icn_<mt:var name="id">" class="fa fa-caret-down toggle-icn" aria-hidden="true"></i>
-            <span class="sr-only"><mt:trans phrase="Toggle"></span>
-          </a>
-          <div id="infobox_<mt:var name="id">" class="hidden info-box"></div>
-      <mt:elseif name="_list" eq="checkbox">
-        <mt:if name="$_name">
-          <i class="fa fa-check-square-o" aria-hidden="true"></i>
-          <span class="sr-only"><mt:trans phrase="Checked"></span>
-        </mt:if>
-      <mt:elseif name="_list" like=":">
-        <mt:if name="_name" eq="workspace_id">
-          <mt:unless name="workspace_scope">
-            <a href="<mt:var name="this_url"><mt:var name="sort_cond"><mt:var name="query_cond">&amp;workspace_id=<mt:var name="workspace_id"><mt:var name="dialog_param">"><mt:var name="workspace_name" escape></a>
-          </mt:unless>
         <mt:else>
-          <mt:var name="$_name" escape>
+          <i class="list-small-icon btn fa <mt:if name="obj_class" eq="image">fa-file-image-o<mt:elseif name="obj_class" eq="pdf">fa-file-pdf-o<mt:elseif name="obj_class" eq="video">fa-file-video-o<mt:elseif name="obj_class" eq="audio">fa-file-audio-o<mt:else><mt:unless name="obj_class">fa-minus<mt:else>fa-file-o</mt:unless></mt:if>" aria-hidden="true"></i>
+          <span class="sr-only"><mt:trans phrase="$obj_class"></span>
         </mt:if>
-      <mt:elseif name="_name" eq="status">
-        <mt:var name="$_name" setvar="status">
-        <mt:var name="_status_text">
-      <mt:elseif name="_list" eq="popover">
-        <button id="popover-<mt:var name="_name">-<mt:var name="id">" type="button" class="btn btn-secondary btn-sm" data-container="body" data-toggle="popover" data-placement="left">
-        <i class="fa fa-commenting-o" aria-hidden="true"></i>
+        </div>
+      </mt:if>
+      <mt:unless name="value">
+      <mt:setvarblock name="value">(<mt:trans phrase="null">)</mt:setvarblock>
+      </mt:unless>
+      <mt:if name="column_name" eq="message">
+        <mt:var name="value" trim_to="120+..."> 
+      <mt:else>
+        <mt:var name="value" trim_to="80+...">
+      </mt:if>
+      <mt:if name="can_edit_object"></a></mt:if>
+      <mt:if name="_has_mapping">
+        <mt:objectvar name="permalink" escape setvar="permalink">
+        <mt:if name="permalink">
+        &nbsp; 
+        <a href="<mt:var name="permalink">" target="_blank">
+        <i class="fa fa-external-link" aria-hidden="true"></i>
+        <span class="sr-only"><mt:trans phrase="View"></span>
+        </a>
+        </mt:if>
+      </mt:if>
+      <a class="btn toggle-infobox hidden"
+        id="toggle_<mt:objectvar name="id">" href="javascript:void(0);">
+        <i id="toggle_icn_<mt:objectvar name="id">" class="fa fa-caret-down toggle-icn" aria-hidden="true"></i>
         <span class="sr-only"><mt:trans phrase="Toggle"></span>
-        </button>
+      </a>
+      <div id="infobox_<mt:objectvar name="id">" class="hidden info-box"></div>
+      
+    <mt:elseif name="list_prop" eq="checkbox">
+      <mt:if name="value">
+        <i class="fa fa-check-square-o" aria-hidden="true"></i>
+        <span class="sr-only"><mt:trans phrase="Checked"></span>
+      </mt:if>
+    <mt:elseif name="list_prop" eq="datetime">
+      <mt:if name="value"><mt:var name="value" format_ts="Y-m-d H:i"></mt:if>
+    <mt:elseif name="list_prop" eq="date">
+      <mt:var name="value" split=" " setvar="col_date">
+      <mt:var name="col_date[0]">
+    <mt:elseif name="list_prop" eq="password">
+    <mt:if name="value">
+      *********...
+    </mt:if>
+    <mt:elseif name="list_prop" eq="text_short">
+      <mt:var name="value" trim_to="12+...">
+    <mt:elseif name="list_prop" like=":">
+      <mt:if name="column_name" eq="workspace_id">
+        <mt:unless name="workspace_scope">
+          <a href="<mt:var name="this_url"><mt:var name="sort_cond"><mt:var name="query_cond">&amp;workspace_id=<mt:var name="value"><mt:var name="dialog_param">">
+        </mt:unless>
+      </mt:if>
+      <mt:objectvar name="id" setvar="from_id">
+      <mt:getobjectname id="$value" from_id="$from_id" type="$list_prop" name="$name" model="$model" trim_to="40+..." escape>
+      <mt:if name="column_name" eq="workspace_id">
+        <mt:unless name="workspace_scope">
+          </a>
+        </mt:unless>
+      </mt:if>
+    <mt:elseif name="list_prop" eq="popover">
+<button id="popover-<mt:var name="column_name">-<mt:objectvar name="id">" type="button" class="btn btn-secondary btn-sm" data-container="body" data-toggle="popover" data-placement="left">
+<i class="fa fa-commenting-o" aria-hidden="true"></i>
+<span class="sr-only"><mt:trans phrase="Toggle"></span>
+</button>
 <script>
-$('#popover-<mt:var name="_name">-<mt:var name="id">').popover({
-    title: '<mt:var name="_label" escape trim_to="10+...">',
-    content: '<mt:var name="$_name" encode_js="1" trim_to="600+...">',
+$('#popover-<mt:var name="column_name">-<mt:objectvar name="id">').popover({
+    title: '<mt:var name="label" escape trim_to="10+...">',
+    content: '<mt:var name="value" encode_js="1" trim_to="600+...">',
     placement: "bottom",
     html: true
 });
 </script>
-      <mt:elseif name="_can_sort">
-        <input name="order_<mt:var name="id">" type="number" class="form-control order_col form-control-sm" value="<mt:var name="$_name">">
+    <mt:else>
+      <mt:if name="sort_order">
+        <input name="order_<mt:objectvar name="id">" type="number" class="form-control order_col form-control-sm" value="<mt:var name="value">">
       <mt:else>
-        <mt:var name="$_name" escape>
+        <mt:if name="list_prop" eq="number">
+          <mt:if name="column_name" eq="status">
+            <mt:statustext status="$value" options="$options" icon="1" text="1">
+          <mt:else>
+            <mt:var name="value">
+          </mt:if>
+        <mt:else>
+          <mt:objectvar name="id" setvar="_object_id">
+            <mt:if name="column_name" eq="modified_on">
+              <mt:var name="value" format_ts="Y-m-d H:i">
+            <mt:else>
+              <mt:var name="value" trim_to="40+...">
+            </mt:if>
+        </mt:if>
       </mt:if>
     </mt:if>
-  </mt:isarray>
+  <mt:if name="__counter__" eq="2">
+    <mt:unless name="table_primary">
+      <a <mt:if name="request.dialog_view">target="_blank"</mt:if> href="<mt:var name="script_uri">?__mode=view&amp;_type=edit&amp;_model=<mt:var name="model" escape>&amp;id=<mt:objectvar name="id" escape><mt:if name="_workspace_id">&amp;workspace_id=<mt:var name="_workspace_id"></mt:if>">
+      (<mt:trans phrase="Edit">)
+      </a>
+    </mt:unless>
+  </mt:if>
+  </mt:if>
 </mt:setvarblock>
 <mt:var name="col_content">
-<mt:if name="_list" ne="primary">
-<mt:unless name="_can_sort">
-  <mt:if name="_name" ne="$__last_col__">
-    <mt:setvarblock name="column_vars" append="1">
-      <tr><th><mt:var name="_label"></th><td><mt:var name="col_content"></td></tr>
-    </mt:setvarblock>
+  <mt:if name="list_prop" ne="primary">
+    <mt:if name="column_name" ne="$__last_col__">
+      <mt:trans phrase="$column_name" language="default" setvar="col_label">
+      <mt:trans phrase="$col_label" setvar="col_label">
+      <mt:setvarblock name="column_vars" append="1">
+        <tr><th><mt:var name="col_label"></th><td><mt:var name="col_content"></td></tr>
+      </mt:setvarblock>
+    </mt:if>
   </mt:if>
-</mt:unless>
-</mt:if>
-<mt:setvar name="__last_col__" value="$_name">
-<mt:if name="__counter__" eq="1">
-  <mt:if name="_no_primary">
-    <a <mt:if name="request.dialog_view">target="_blank"</mt:if> href="<mt:var name="script_uri">?__mode=view&amp;_type=edit&amp;_model=<mt:var name="model" escape>&amp;id=<mt:var name="id" escape><mt:if name="workspace_id">&amp;workspace_id=<mt:var name="workspace_id"></mt:if>">
-    (<mt:trans phrase="Edit">)
-    </a>
-  </mt:if>
-</mt:if>
+  <mt:setvar name="__last_col__" value="$column_name">
 </td>
-</mt:loop>
-<td class="hidden" id="detail_<mt:var name="id">">
+</mt:if>
+</mt:objectcols>
+</td>
+<td class="hidden" id="detail_<mt:objectvar name="id">">
   <table class="cell-detail table-sm">
     <mt:var name="column_vars">
   </table>
 </td>
 </tr>
+</mt:setvarblock>
+<mt:var name="table_row">
 <mt:if name="__last__">
 </tbody>
 <tfoot>
@@ -611,7 +696,7 @@ $('#dialog-selector-btn').click(function(){
     if ( $('#_get_col_img_' + selected ) ) {
         var col_img = $('#_get_col_img_' + selected ).val();
         if ( col_img ) {
-            // col_img = $( '<span/>' ).text(col_img).html();
+            col_img = $( '<span/>' ).text(col_img).html();
             window.parent.$('#'+target_control+'-img').prop('src',col_img);
             window.parent.$('#'+target_control+'-img').show();
         } else {
@@ -681,7 +766,7 @@ function reorder(){
     var i = 0;
     $('.order_col').each(function(){
         i++;
-        $(this).prop('value',i<mt:if name="this_model" eq="table">*10</mt:if>);
+        $(this).prop('value',i<mt:if name="model" eq="table">*10</mt:if>);
     });
 }
 </mt:unless>

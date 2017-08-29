@@ -189,7 +189,7 @@ class PTUtil {
         $asset_path .= DS . 'thumbnails' . DS . $thumbnail_name;
         $metadata = $app->db->model( 'meta' )->get_by_key( [
             'object_id' => $id, 'model' => 'asset',
-            'key' => 'thumbnail', 'kind' => 'file', 'value' => $thumbnail_basename ] );
+            'kind' => 'thumbnail', 'key' => 'file', 'value' => $thumbnail_basename ] );
         $uploaded = 0;
         if ( $metadata->text ) {
             $thumb_props = json_decode( $metadata->text, true );
@@ -269,35 +269,183 @@ class PTUtil {
         return $asset_url;
     }
 
-    public static function object_to_resource ( $obj, $relation = true ) {
+    public static function get_fields ( $obj, $args = [], $type = 'objects' ) {
+        $app = Prototype::get_instance();
+        if ( is_string( $obj ) ) $obj = $app->db->model( $obj )->new();
+        if ( is_string( $args ) ) {
+            $type = $args;
+            $args = [];
+        }
+        $table = $app->get_table( $obj->_model );
+        $terms = [];
+        $terms = ['name' => 'models', 'from_obj' => 'field', 'to_obj' => 'table',
+                  'to_id' => $table->id ];
+        $relations = $app->db->model( 'relation' )->load(
+                                       $terms, ['sort' => 'order'] );
+        if ( empty( $relations ) ) {
+            return [];
+        }
+        $ids = [];
+        foreach ( $relations as $rel ) {
+            $ids[] = (int) $rel->from_id;
+        }
+        $workspace_ids = [0];
+        if ( $obj->has_column( 'workspace_id' ) ) {
+            if ( $obj->workspace_id ) {
+                $workspace_ids[] = (int) $obj->workspace_id;
+            }
+        }
+        if ( isset( $args['workspace_id'] ) && $args['workspace_id'] ) {
+            $workspace_ids[] = (int) $args['workspace_id'];
+        }
+        $workspace_ids = array_unique( $workspace_ids );
+        $fields = $app->db->model( 'field' )->load(
+            ['id' => ['IN' => $ids ], 'workspace_id' => ['IN' => $workspace_ids ] ] );
+        if ( empty( $fields ) ) {
+            return [];
+        }
+        $_fields = [];
+        foreach ( $ids as $id ) {
+            $field = $app->db->model( 'field' )->load( $id );
+            $_fields[] = $field;
+        }
+        if ( $type === 'objects' ) {
+            return $_fields;
+        } else if ( $type === 'basenames' ) {
+            $basenames = [];
+            foreach ( $_fields as $field ) {
+                $basenames[] = $field->basename;
+            }
+            return $basenames;
+        } else if ( $type === 'requireds' ) {
+            $meta_fields = [];
+            foreach ( $_fields as $field ) {
+                if ( $field->required )
+                    $meta_fields[ $field->basename ] = $field->name;
+            }
+            return $meta_fields;
+        }
+    }
+
+    public static function object_to_resource ( $obj, $type = 'api', $required = null ) {
         $app = Prototype::get_instance();
         $scheme = $app->get_scheme_from_db( $obj->_model );
         $relations = isset( $scheme['relations'] ) ? $scheme['relations'] : [];
+        $options = isset( $scheme['options'] ) ? $scheme['options'] : [];
         $column_defs = $scheme['column_defs'];
+        $list_properties = $scheme['list_properties'];
         $vars = $obj->get_values( true );
+        $object_keys = array_keys( $vars );
         foreach ( $vars as $key => $var ) {
+            if ( $key != 'status' && $required && ! in_array( $key, $required ) ) continue;
             if ( isset( $column_defs[ $key ] ) && isset( $column_defs[ $key ]['type'] ) ) {
                 if ( $column_defs[ $key ]['type'] == 'blob' ) {
                     unset( $vars[ $key ] );
                 }
             }
+            if ( isset( $list_properties[ $key ] ) ) {
+                if (! in_array( $key, $relations ) ) {
+                    $prop = $list_properties[ $key ];
+                    if ( strpos( $prop, 'reference:' ) === 0 ) {
+                        $props = explode( ':', $prop );
+                        $rel_model = $props[1];
+                        if ( ctype_digit( $vars[ $key ] ) ) {
+                            $ref_id = (int) $vars[ $key ];
+                            $rel_obj = null;
+                            if ( $ref_id ) {
+                                $rel_obj = $app->db->model( $rel_model )->load( $ref_id );
+                            }
+                            if ( $rel_obj ) {
+                                if ( $type === 'api' ) {
+                                    $vars[ $key ] = self::object_to_resource( $rel_obj );
+                                } else {
+                                    $rel_col = $props[2];
+                                    if ( $rel_col == 'primary' ) {
+                                        $rel_table = $app->get_table( $rel_model );
+                                        $rel_col = $rel_table->primary;
+                                    }
+                                    if ( $key == 'workspace_id' ) {
+                                        $vars['workspace_name'] = $rel_obj->$rel_col;
+                                    } else {
+                                        $vars[ $key ] = $rel_obj->$rel_col;
+                                    }
+                                }
+                            } else {
+                                $vars[ $key ] = null;
+                            }
+                        }
+                    }
+                    if ( $type === 'list' ) {
+                        switch ( true ) {
+                            case $prop === 'primary':
+                                $vars[ $key ] = self::trim_to( $vars[ $key ], 60 );
+                                break;
+                            case $prop === 'datetime':
+                                if ( $vars[ $key ] ) $vars[ $key ] = 
+                                date( 'Y-m-d H:i', strtotime( $obj->db2ts( $vars[ $key ] ) ) );
+                                break;
+                            case $prop === 'date':
+                                if ( $vars[ $key ] ) $vars[ $key ] = 
+                                date( 'Y-m-d', strtotime( $obj->db2ts( $vars[ $key ] ) ) );
+                                break;
+                            case $key === 'status':
+                                if (! empty( $options ) ) {
+                                    $status_opt = $options['status'];
+                                    $args = ['options' => $status_opt,
+                                             'status' => $vars[ $key ],
+                                             'icon' => 1, 'text' => 1];
+                                    $vars['_status_text'] =
+                                        $app->core_tags->hdlr_statustext( $args, $app->ctx );
+                                }
+                                break;
+                            case $prop === 'text':
+                                $vars[ $key ] = self::trim_to( $vars[ $key ], 40 );
+                                break;
+                            case $prop === 'text_short':
+                                $vars[ $key ] = self::trim_to( $vars[ $key ], 12 );
+                                break;
+                            case $prop === 'password':
+                                $vars[ $key ] = $vars[ $key ] ? '**********...' : '';
+                                break;
+                        }
+                    }
+                }
+            }
         }
+        if (! isset( $vars['workspace_name'] ) ) $vars['workspace_name'] = '';
+        if (! isset( $vars['_status_text'] ) ) $vars['_status_text'] = '';
         $edit_properties = $scheme['edit_properties'];
+        $thumbnail = false;
+        $vars['_icon'] = '';
+        $vars['_icon_class'] = '';
+        $vars['_has_file'] = '';
         foreach ( $edit_properties as $col => $prop ) {
+            if ( $thumbnail && $required && ! in_array( $col, $required ) ) continue;
             if ( $prop === 'file' ) {
+                $vars['_has_file'] = 1;
                 $meta_vars = [];
                 $meta = $app->db->model( 'meta' )->get_by_key(
                     ['model' => $obj->_model, 'object_id' => $obj->id,
-                     'key' => 'metadata', 'kind' => $col ] );
+                     'kind' => 'metadata', 'key' => $col ] );
                 if ( $meta->id ) {
                     $meta_vars = json_decode( $meta->text, 'true' );
                     $url = $app->get_assetproperty( $obj, $col, 'url' );
                     $meta_vars['url'] = $url;
+                    $vars['_icon_class'] = isset( $meta_vars['class'] )
+                                         ? $meta_vars['class'] : '';
+                    if (! $thumbnail && $vars['_icon_class'] == 'image' ) {
+                        $icon = $app->admin_url
+                              . '?__mode=get_thumbnail&square=1&id=' . $meta->id;
+                        $vars['_icon'] = $icon;
+                    }
                 }
-                $vars[ $col ] = $meta_vars;
+                if ( in_array( $col, $object_keys ) ) {
+                    $vars[ $col ] = $meta_vars;
+                }
             }
         }
         foreach ( $relations as $name => $to_obj ) {
+            if ( $required && ! in_array( $name, $required ) ) continue;
             $rel_objs = $app->get_relations( $obj, $to_obj, $name );
             $relation_vars = [];
             if (! empty( $rel_objs ) ) {
@@ -314,20 +462,29 @@ class PTUtil {
                     $to_id = (int) $rel_obj->to_id;
                     $rel_obj = $app->db->model( $to_obj )->load( $to_id );
                     if ( $rel_obj ) {
-                        if ( $relation ) {
+                        if ( $type === 'api' ) {
                             $relation_vars[] = self::object_to_resource( $rel_obj );
                         } else {
-                            $relation_vars[] = $rel_obj->$primary;
+                            $relation_vars[] = $type === 'list' 
+                                             ? self::trim_to( $rel_obj->$primary, 8 )
+                                             : $rel_obj->$primary;
                         }
                     }
                 }
             }
             $vars[ $name ] = $relation_vars;
         }
+        $vars['_permalink'] = '';
         if ( $permalink = $app->get_permalink( $obj ) ) {
-            $vars['permalink'] = $permalink;
+            $vars['_permalink'] = $permalink;
         }
         return $vars;
+    }
+
+    public static function trim_to ( $str, $num ) {
+        $app = Prototype::get_instance();
+        $ctx = $app->ctx;
+        return $ctx->modifier_truncate( $str, "{$num}+...", $ctx );
     }
 
     public static function sort_by_order ( &$registries, $default = 50 ) {

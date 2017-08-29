@@ -33,6 +33,7 @@
         "id": "ascend"
     },
     "list_properties": {
+        "id": "number",
         "user_id": "reference:user:nickname",
         "roles": "reference:role:name",
         "workspace_id": "reference:workspace:name"

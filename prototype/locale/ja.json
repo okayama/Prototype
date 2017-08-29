@@ -24,6 +24,10 @@
     "Save as Asset Label": "ラベルとして保存",
     "Use Thumbnail"      : "サムネイルを利用",
     "Insert"             : "挿入",
+    "Field"              : "フィールド",
+    "Fields"             : "フィールド",
+    "Field Type"         : "フィールド型",
+    "Field Types"        : "フィールド型",
     "Meta ID"            : "メタID",
     "Insert Image"       : "画像の挿入",
     "Insert File"        : "ファイルの挿入",
@@ -110,8 +114,11 @@
     "Options"            : "オプション",
     "Editor Height"      : "エディタの高さ",
     "Unspecified"        : "指定なし",
+    "Multiple"           : "複数",
     "Title"              : "タイトル",
     "Text"               : "本文",
+    "Content"            : "コンテンツ",
+    "Option's Labels"    : "オプションのラベル",
     "Keyword"            : "キーワード",
     "Keywords"           : "キーワード",
     "Tag"                : "タグ",
@@ -135,6 +142,7 @@
     "Size"               : "サイズ",
     "Default"            : "既定値",
     "Label"              : "ラベル",
+    "Labels"             : "ラベル",
     "Plural"             : "複数形",
     "Display"            : "表示",
     "List"               : "一覧",
@@ -452,7 +460,7 @@
     "An error occurred while uploading."
         : "ファイルのアップロード中にエラーが発生しました。",
     "Please enter the Name of this Filter."
-        : "フィルタ名を入力して下さい。",
+        : "フィルタ名を入力してください。",
     "The Filter Name is required."
         : "フィルタ名は必須です。",
     "The name %s is reserved."
@@ -503,6 +511,8 @@
         : "関連付けを解除してもよろしいですか?",
     "Are you sure you want to remove selected filter?"
         : "選択されたフィルタを削除してもよろしいですか?",
+    "Are you sure you want to remove this field?"
+        : "フィールドを削除してもよろしいですか?",
     "Are you sure you want to remove this filter condition?"
         : "フィルタ条件を削除してもよろしいですか?",
     "Model can not be set child of workspace."
@@ -573,6 +583,8 @@
         : "フィルタの削除中にエラーが発生しました。",
     "Draft,Review,Reserved,Publish,Unpublished (End)"
         : "下書き,レビュー,公開予約,公開,非公開(公開終了)",
+    "Please enter keyword for search."
+        : "検索するキーワードを入力してください。",
     "The file has successfully uploaded. The uploaded file will not be reflected until you save this page."
         : "ファイルをアップロードしました。アップロードしたファイルは、このページを保存するまで反映されません。",
     "The file has successfully edited. The edited file will not be reflected until you save this page."

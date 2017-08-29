@@ -250,8 +250,10 @@ class PTTags {
                     // todo load join
                     foreach( $relations as $relation ) {
                         $model = $relation->to_obj;
+                        if (! $model ) continue;
                         $ctx->local_vars['object_' . $name . '_model'] = $model;
-                        $rel_obj = $app->db->model( $model )->load( $relation->to_id );
+                        $to_id = (int) $relation->to_id;
+                        $rel_obj = $app->db->model( $model )->load( $to_id );
                         if ( $rel_obj ) $ids[] = $relation->to_id;
                     }
                     $ctx->local_vars['object_' . $name ] = $ids;
@@ -283,10 +285,11 @@ class PTTags {
             if ( $model ) {
                 $obj = $id ? $app->db->model( $model )->load( $id )
                            : $app->db->model( $model )->new();
+                if (! $obj ) $obj = $app->db->model( $model )->new();
                 if (! $obj->id && $workspace_id && $obj->has_column( 'workspace_id' ) ) {
                     $obj->workspace_id( $workspace_id );
                 }
-                if ( $obj->has_column( 'workspace_id' ) ) {
+                if ( $obj->has_column( 'workspace_id' ) && $obj->workspace_id ) {
                     $workspace = $obj->workspace;
                 }
             }
@@ -313,29 +316,29 @@ class PTTags {
 
     function hdlr_statustext ( $args, $ctx ) {
         $app = $ctx->app;
-        $s = isset( $args['status'] ) ? (int) $args['status'] : 0;
-        $o = isset( $args['options'] ) ? $args['options'] : '';
-        $i = isset( $args['icon'] ) ? $args['icon'] : false;
-        $t = isset( $args['text'] ) ? $args['text'] : false;
+        $int = isset( $args['status'] ) ? (int) $args['status'] : 0;
+        $options = isset( $args['options'] ) ? $args['options'] : '';
+        $icon = isset( $args['icon'] ) ? $args['icon'] : false;
+        $text = isset( $args['text'] ) ? $args['text'] : false;
         $model = isset( $args['model'] ) ? $args['model'] : '';
-        if (! $o && $model ) {
+        if (! $options && $model ) {
             $table = $app->get_table( $model );
             if ( $table ) {
                 $col = $app->db->model( 'column' )->get_by_key(
                 ['table_id' => $table->id, 'name' => 'status']);
-                $o = $col->options;
+                $options = $col->options;
             }
         }
-        if (! $s || ! $o ) return;
-        $options = explode( ',', $o );
-        $status = $options[ $s - 1 ];
+        if (! $int || ! $options ) return;
+        $options = explode( ',', $options );
+        $status = $options[ $int - 1 ];
         if ( strpos( $status, ':' ) !== false ) {
             list( $status, $option ) = explode( ':', $status );
         }
         $status = $app->translate( $status );
-        if ( $i ) {
+        if ( $icon ) {
             $tmpl = '<i class="fa fa-__" aria-hidden="true"></i>&nbsp;';
-            $tmpl .= $t ? $status : "<span class=\"sr-only\">$status</span>";
+            $tmpl .= $text ? $status : "<span class=\"sr-only\">$status</span>";
             if ( count( $options ) === 5 ) {
                 $icons = ['pencil', 'pencil-square',
                     'calendar', 'check-square-o', 'calendar-times-o'];
@@ -343,7 +346,7 @@ class PTTags {
                 $icons = ['pencil-square-o', 'check-square-o'];
             }
             if ( isset( $icons ) ) {
-                return str_replace( '__', $icons[ $s - 1 ], $tmpl );
+                return str_replace( '__', $icons[ $int - 1 ], $tmpl );
             }
         }
         return $status;
@@ -474,11 +477,14 @@ class PTTags {
         $app = $ctx->app;
         $key  = $args['key'];
         $kind = isset( $args['kind'] ) ? $args['kind'] : 'config';
-        $obj = $app->db->model( 'option' )->load( ['kind' => $kind, 'key' => $key ] );
+        $obj = ( $kind === 'config' )
+             ? $app->get_config( $key )
+             : $app->db->model( 'option' )->load( ['kind' => $kind, 'key' => $key ] );
         if ( is_array( $obj ) && !empty( $obj ) ) {
             $obj = $obj[0];
-            return $obj->value;
         }
+        if (! $obj ) return;
+        return $obj->value;
     }
 
     function hdlr_assetproperty ( $args, $ctx ) {
@@ -547,7 +553,7 @@ class PTTags {
         if (! $id && ! isset( $ctx->vars['forward_params'] ) && ! $session) return;
         $data = '';
         if ( isset( $ctx->vars['forward_params'] ) || $session ) {
-            $id = $obj ? $obj->id : 0;
+            $id = isset( $obj ) ? $obj->id : 0;
             $screen_id = $ctx->vars['screen_id'];
             $screen_id .= '-' . $name;
             $cache = $ctx->stash( $model . '_session_' . $screen_id . '_' . $id );
@@ -575,7 +581,7 @@ class PTTags {
             $cache = $ctx->stash( $model . '_meta_' . $name . '_' . $id );
             $metadata = $cache ? $cache : $app->db->model( 'meta' )->get_by_key(
                      ['model' => $model, 'object_id' => $id,
-                      'key' => 'metadata', 'kind' => $name ] );
+                      'kind' => 'metadata', 'key' => $name ] );
             $ctx->stash( $model . '_meta_' . $name . '_' . $id, $metadata );
             if (! $metadata->id ) {
                 return;
@@ -718,6 +724,150 @@ class PTTags {
         if ( is_object( $obj ) ) {
             return $obj->$col;
         }
+    }
+
+    function hdlr_fieldloop ( $args, $content, $ctx, &$repeat, $counter ) {
+        $app = $ctx->app;
+        if (! $counter ) {
+            $model = $ctx->params['context_model'] ? $ctx->params['context_model'] : '';
+            if (! $model ) $model = isset( $args['model'] ) ? $args['model'] : '';
+            if (! $model ) {
+                $repeat = false;
+                return;
+            }
+            $id = isset( $args['id'] ) ? (int) $args['id'] : '';
+            $object_fields = [];
+            if ( $id ) {
+                $obj = $app->db->model( $model )->load( $id );
+                if ( $obj ) {
+                    $meta = $app->get_meta( $obj, 'customfield' );
+                    foreach ( $meta as $cf ) {
+                        $basename = $cf->key;
+                        $custom_fields = isset( $object_fields[ $basename ] )
+                                       ? $object_fields[ $basename ] : [];
+                        $custom_fields[] = $cf;
+                        $object_fields[ $basename ] = $custom_fields;
+                    }
+                }
+            }
+            require_once( 'class.PTUtil.php' );
+            $fields = PTUtil::get_fields( $model, $args );
+            if ( empty( $fields ) ) {
+                $repeat = false;
+                return;
+            }
+            $ctx->local_params = $fields;
+            $ctx->stash( 'object_fields', $object_fields );
+        }
+        $params = $ctx->local_params;
+        $object_fields = $ctx->stash( 'object_fields' );
+        if ( empty( $params ) ) {
+            $repeat = false;
+            return;
+        }
+        $ctx->set_loop_vars( $counter, $params );
+        if ( isset( $params[ $counter ] ) ) {
+            $field = $params[ $counter ];
+            $prefix = $field->_colprefix;
+            $values = $field->get_values();
+            $field_label = $field->label;
+            $field_content = $field->content;
+            if (! $field_content ) {
+                $field_type = 
+                    $app->db->model( 'fieldtype' )->load( (int) $field->fieldtype_id );
+                if ( $field_type ) {
+                    if (! $field_label ) $field_label = $field_type->label;
+                    if (! $field_content ) $field_content = $field_type->content;
+                }
+            }
+            unset( $ctx->local_vars['field__display'] );
+            unset( $ctx->local_vars['field__html'] );
+            $restore_vars = ['field_name', 'field_required', 'field_basename',
+                             'field_options', 'field_uniqueid', 'field_label_html',
+                             'field_content_html'];
+            $param = [];
+            $ctx->local_vars['field_name'] = $field->name;
+            $ctx->local_vars['field_required'] = $field->required;
+            $basename = $field->basename;
+            $ctx->local_vars['field_basename'] = $basename;
+            $options = $field->options;
+            $display = $field->display;
+            if ( $options ) {
+                $labels = $field->options_labels;
+                $options = preg_split( '/\s*,\s*/', $options );
+                $labels = $labels ? preg_split( '/\s*,\s*/', $labels ) : $options;
+                $i = 0;
+                $field_options = [];
+                foreach ( $options as $option ) {
+                    $label = isset( $labels[ $i ] ) ? $labels[ $i ] : $option;
+                    $field_options[] = ['field_label' => $label, 'field_option' => $option ];
+                    $i++;
+                }
+                $ctx->vars['field_options'] = $field_options;
+            }
+            $field_out = false;
+            $field_contents = '';
+            if (! empty( $object_fields ) ) {
+                $basename = $field->basename;
+                if ( isset( $object_fields[ $basename ] ) ) {
+                    $fields = $object_fields[ $basename ];
+                    foreach ( $fields as $custom_field ) {
+                        $set_keys = [];
+                        $vars = json_decode( $custom_field->text, true );
+                        foreach ( $vars as $key => $value ) {
+                            $ctx->local_vars['field.' . $key ] = $value;
+                            $set_keys[] = 'field.' . $key;
+                        }
+                        $ctx->local_vars['field__out'] = $field_out;
+                        $ctx->local_vars['field_uniqueid'] = $app->magic();
+                        $_fld_content = $ctx->build( $field_content );
+                        $ctx->local_vars['field_content_html'] = $_fld_content;
+                        $_fld_content = $app->build_page( 'field' . DS . 'content.tmpl', $param, false );
+                        $_field_label = $ctx->build( $field_label );
+                        $ctx->local_vars['field_label_html'] = $_field_label;
+                        $_field_label = $app->build_page( 'field' . DS . 'label.tmpl', $param, false );
+                        $ctx->local_vars['field_label_html'] = $_field_label;
+                        $ctx->local_vars['field_content_html'] = $_fld_content;
+                        $_fld_content = $app->build_page( 'field' . DS . 'wrapper.tmpl', $param, false );
+                        $field_contents .= $_fld_content;
+                        foreach ( $set_keys as $key ) {
+                            unset( $ctx->local_vars[ $key ] );
+                        }
+                        $field_out = true;
+                        $display = true;
+                    }
+                }
+            }
+            if (! $field_out ) {
+                $field_label = $ctx->build( $field_label );
+                $ctx->local_vars['field_label_html'] = $field_label;
+                $field_label = $app->build_page( 'field' . DS . 'label.tmpl', $param, false );
+                $ctx->local_vars['field_uniqueid'] = $app->magic();
+                $_fld_content = $ctx->build( $field_content );
+                $ctx->local_vars['field_content_html'] = $_fld_content;
+                $field_contents = $app->build_page( 'field' . DS . 'content.tmpl', $param, false );
+                $ctx->local_vars['field_label_html'] = $field_label;
+                $ctx->local_vars['field_content_html'] = $field_contents;
+                $field_contents = $app->build_page( 'field' . DS . 'wrapper.tmpl', $param, false );
+            }
+            $field_contents = "<div id=\"field-{$basename}-wrapper\">{$field_contents}</div>";
+            $ctx->local_vars[ 'field__html' ] = $field_contents;
+            foreach ( $values as $key => $value ) {
+                $key = preg_replace( "/^$prefix/", '', $key );
+                $ctx->local_vars[ 'field__' . $key ] = $value;
+            }
+            foreach ( $restore_vars as $key ) {
+                unset( $ctx->local_vars[ $key ] );
+            }
+            $ctx->local_vars['field__display'] = $display;
+            if ( $display && ! $field->multiple ) {
+                unset( $ctx->local_vars['field__menu'] );
+            } else {
+                $ctx->local_vars['field__menu'] = true;
+            }
+        }
+        return ( $counter > 1 && isset( $args['glue'] ) )
+            ? $args['glue'] . $content : $content;
     }
 
     function hdlr_get_relatedobjs ( $args, $content, $ctx, &$repeat, $counter ) {

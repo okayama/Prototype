@@ -1519,7 +1519,7 @@ class UploadHandler
                 $asset->save();
                 $basename = $file['basename'];
                 $meta = $app->db->model( 'meta' )->new( ['model' => 'asset',
-                     'object_id' => $asset->id, 'key' => 'metadata', 'kind' => 'file'] );
+                     'object_id' => $asset->id, 'kind' => 'metadata', 'key' => 'file'] );
                 $metadata = ['file_size' => $size, 'image_width' => $image_width,
                              'image_height' => $image_height, 'class' => $class,
                              'extension' => $file_ext, 'basename' => $basename,

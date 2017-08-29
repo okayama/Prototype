@@ -1,5 +1,4 @@
 <mt:include file="include/header.tmpl">
-
 <mt:var name="model" setvar="_model">
 <mt:setvar name="_primary" value="">
 
@@ -38,10 +37,8 @@ $('#alert-saved').focus();
 </mt:setvarblock>
 
 <form action="<mt:var name="script_uri">" method="POST" id="edit-form-main">
-
 <mt:setvarblock name="include_path">include/edit/<mt:var name="model">/form_header.tmpl</mt:setvarblock>
 <mt:include file="$include_path">
-
 <input type="hidden" name="__mode" value="save" id="__mode">
 <input type="hidden" name="_model" value="<mt:var name="model">">
 <input type="hidden" name="magic_token" value="<mt:var name="magic_token">">
@@ -513,7 +510,7 @@ $(function () {
                 </li>
                 <li class="hidden badge badge-default badge-relation badge-draggable" id="<mt:var name="__col_name__">-tmpl">
                 <span><mt:trans phrase="Default"></span>
-                <button type="button" class="btn btn-secondary btn-sm close-sm" aria-label="<mt:trans phrase="Detach">" data-name="<mt:var name="__col_name__">">
+                <button type="button" class="btn btn-secondary btn-sm close-sm detach-relation" aria-label="<mt:trans phrase="Detach">" data-name="<mt:var name="__col_name__">">
                   <span aria-hidden="true">&times;</span>
                 </button>
                 <input type="hidden" name="<mt:var name="__col_name__">[]" value="">
@@ -522,7 +519,7 @@ $(function () {
               <mt:loop name="$__rel_name__">
                 <li class="<mt:var name="__col_name__">-child badge badge-default badge-relation badge-draggable">
                 <span><mt:getobjectname id="$__value__" type="$edit" escape></span>
-                <button type="button" class="btn btn-secondary btn-sm close-sm" aria-label="<mt:trans phrase="Detach">" data-name="<mt:var name="__col_name__">">
+                <button type="button" class="btn btn-secondary btn-sm close-sm detach-relation" aria-label="<mt:trans phrase="Detach">" data-name="<mt:var name="__col_name__">">
                   <span aria-hidden="true">&times;</span>
                 </button>
                 <input type="hidden" name="<mt:var name="__col_name__">[]" value="<mt:var name="__value__" escape>"></li>
@@ -574,7 +571,7 @@ $(function () {
                 <mt:trans phrase="(None selected)">
               </mt:if>
               </span>
-                <button id="<mt:var name="__col_name__">-close" type="button" class="btn btn-secondary btn-sm close-sm<mt:unless name="__col_value__"> hidden</mt:unless>" aria-label="<mt:trans phrase="Detach">" data-name="<mt:var name="__col_name__">">
+                <button id="<mt:var name="__col_name__">-close" type="button" class="btn btn-secondary btn-sm close-sm detach-relation <mt:unless name="__col_value__"> hidden</mt:unless>" aria-label="<mt:trans phrase="Detach">" data-name="<mt:var name="__col_name__">">
                   <span aria-hidden="true">&times;</span>
                 </button>
               </span>
@@ -773,12 +770,70 @@ $(function () {
 
 <mt:else>
 </mt:if>
-
 <mt:if name="__col_name__" ne="id">
 </div>
 </mt:if>
-
 <mt:if name="__last__">
+<mt:fieldloop workspace_id="$workspace_id" model="$model" id="$object_id">
+<mt:if name="__first__">
+<mt:fieldloop workspace_id="$workspace_id" model="$model" id="$object_id" build_field="1">
+<mt:if name="field__display"><mt:var name="field__html"></mt:if>
+</mt:fieldloop>
+<div id="_field_html_area"></div>
+<div class="row form-group">
+  <div class="col-lg-2">
+    <label for="_field_selector">
+      <mt:trans phrase="Fields">
+    </label>
+  </div>
+  <div class="col-lg-10 form-inline">
+    <select id="_field_selector" class="form-control">
+      <option value=""><mt:trans phrase="(None selected)"></option>
+</mt:if>
+      <mt:if name="field__menu"><option id="_selector-field-<mt:var name="field__id" escape>" data-multiple="<mt:var name="field__multiple" escape>" class="<mt:var name="field__basename" escape>" value="<mt:var name="field__id" escape>"><mt:var name="field__name" escape></option></mt:if>
+<mt:if name="__last__">
+    </select>
+    <button type="button" id="_field_chooser" class="btn btn-primary btn-sm"><mt:trans phrase="Add"></button>
+  </div>
+</div>
+<script>
+//field-entrylang-wrapper
+$('#_field_chooser').click(function(){
+    var field_id = $('#_field_selector').val();
+    var wrapper_id;
+    if ( field_id ) {
+        var basename = $('#_field_selector option:selected').prop('class');
+        var str = '__mode=get_field_html<mt:if name="workspace_id">&workspace_id=<mt:var name="workspace_id"></mt:if>&_model=<mt:var name="model">';
+        str += '&magic_token=<mt:var name="magic_token">&id=' + field_id;
+        wrapper_id = '#field-' + basename + '-wrapper';
+        if ( $(wrapper_id).length ) {
+            str += '&field__out=1';
+        }
+        $.post('<mt:var name="script_uri">', str,
+            function ( data ) {
+                if ( data.status != 200 ) {
+                    return;
+                }
+                var dom_obj = $(data.html);
+                if ( $(wrapper_id).length ) {
+                    $(wrapper_id).append(dom_obj);
+                } else {
+                    var html = $('#_field_html_area').html();
+                    $('#_field_html_area').append(dom_obj);
+                }
+                var multiple = $('#_field_selector option:selected').attr('data-multiple');
+                if (! multiple ) {
+                    $('#_selector-field-' + field_id ).attr('hidden','hidden');
+                    $('#_field_selector').val('');
+                }
+            },
+            'json'
+        );
+    }
+});
+</script>
+</mt:if>
+</mt:fieldloop>
 
 <mt:if name="_revisable">
 <mt:var name="object_rev_object_id" setvar="object_rev_object_id">
@@ -796,14 +851,15 @@ $(function () {
   <div class="col-lg-8">
        <mt:var name="object_modified_on">
 <mt:if name="_revision_count">
-&nbsp; <i class="fa fa-code-fork" aria-hidden="true"></i> <mt:trans phrase="%s revision(s)" params="$_revision_count">
-          <button type="button" class="btn btn-primary btn-sm dialog-chooser" data-toggle="modal" data-target="#modal"
-            data-href="<mt:var name="script_uri">?__mode=view&amp;_type=list&amp;_model=<mt:var name="model"><mt:if name="workspace_id">&amp;workspace_id=<mt:var name="workspace_id"></mt:if>&amp;dialog_view=1&amp;single_select=1&amp;revision_select=1&amp;rev_object_id=<mt:var name="object_id" escape>"><mt:trans phrase="Select..."></button>
-          <a target="_blank" class="btn btn-secondary btn-sm dialog-chooser"
-            href="<mt:var name="script_uri">?__mode=view&amp;_type=list&amp;_model=<mt:var name="model"><mt:if name="workspace_id">&amp;workspace_id=<mt:var name="workspace_id"></mt:if>&amp;revision_select=1&amp;rev_object_id=<mt:var name="object_id" escape>">
-            <i class="fa fa-external-link-square" aria-hidden="true"></i>
-            <span class="sr-only"><mt:trans phrase="Manage"></span>
-          </a>
+&nbsp;
+  <i class="fa fa-code-fork" aria-hidden="true"></i> <mt:trans phrase="%s revision(s)" params="$_revision_count">
+  <button type="button" class="btn btn-primary btn-sm dialog-chooser" data-toggle="modal" data-target="#modal"
+    data-href="<mt:var name="script_uri">?__mode=view&amp;_type=list&amp;_model=<mt:var name="model"><mt:if name="workspace_id">&amp;workspace_id=<mt:var name="workspace_id"></mt:if>&amp;dialog_view=1&amp;single_select=1&amp;revision_select=1&amp;rev_object_id=<mt:var name="object_id" escape>"><mt:trans phrase="Select..."></button>
+  <a target="_blank" class="btn btn-secondary btn-sm dialog-chooser"
+    href="<mt:var name="script_uri">?__mode=view&amp;_type=list&amp;_model=<mt:var name="model"><mt:if name="workspace_id">&amp;workspace_id=<mt:var name="workspace_id"></mt:if>&amp;revision_select=1&amp;rev_object_id=<mt:var name="object_id" escape>">
+    <i class="fa fa-external-link-square" aria-hidden="true"></i>
+    <span class="sr-only"><mt:trans phrase="Manage"></span>
+  </a>
 </mt:if>
   </div>
 </mt:setvarblock>
@@ -1004,29 +1060,43 @@ $(function () {
     $('[data-toggle="tooltip"]').tooltip();
 });
 $('.close-sm').click(function(){
-    if(!confirm('<mt:trans phrase="Are you sure you want to detach this relation?">')){
-        return false;
-    }
-    id = $(this).prop('id');
-    if ( id ) {
-        var spl = id.split('-');
-        $('#' + spl[0] + '-label').html('<mt:trans phrase="(None selected)">');
-        $('#' + spl[0] + '-img').hide();
-        $('#' + spl[0]).val('');
-        $(this).hide();
-        return false;
-    }
-    name = $(this).attr('data-name');
-    counter = 0;
-    $('#'+name).children('li').each(function(){
-        if (! $(this).prop('id') ) {
-            counter++;
+    if ( $(this).hasClass('detach-field') ) {
+        if(!confirm('<mt:trans phrase="Are you sure you want to remove this field?">')){
+            return false;
         }
-    });
-    if ( counter == 1 ) {
-        $('#'+name+'-none').show();
+        var basename = $(this).attr('data-basename');
+        var fieldLabel = $('#field-' + basename + '-wrapper .row .col-label:first').html();
+        $(this).parent().parent().parent().remove();
+        $('#field-' + basename + '-wrapper .row .col-label:first').html(fieldLabel);
+        $('#field-' + basename + '-wrapper .row:first').removeClass('multiple-field');
+        if ( $('#field-' + basename + '-wrapper .row').length == 0 ) {
+            $('#field-' + basename + '-wrapper').remove();
+        }
+    } else {
+        if(!confirm('<mt:trans phrase="Are you sure you want to detach this relation?">')){
+            return false;
+        }
+        id = $(this).prop('id');
+        if ( id ) {
+            var spl = id.split('-');
+            $('#' + spl[0] + '-label').html('<mt:trans phrase="(None selected)">');
+            $('#' + spl[0] + '-img').hide();
+            $('#' + spl[0]).val('');
+            $(this).hide();
+            return false;
+        }
+        name = $(this).attr('data-name');
+        counter = 0;
+        $('#'+name).children('li').each(function(){
+            if (! $(this).prop('id') ) {
+                counter++;
+            }
+        });
+        if ( counter == 1 ) {
+            $('#'+name+'-none').show();
+        }
+        $(this).parent().remove();
     }
-    $(this).parent().remove();
 });
 $('#__delete').click(function(){
     if(! confirm('<mt:trans phrase="Are you sure you want to remove %s?" params="$label">')){

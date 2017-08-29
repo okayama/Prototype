@@ -115,7 +115,7 @@ class PAML {
       'block_once'  => ['ignore', 'setvars', 'capture', 'setvarblock',
                         'assignvars', 'setvartemplate', 'nocache', 'isinchild'],
       'conditional' => ['else', 'elseif', 'if', 'unless', 'ifgetvar', 'elseifgetvar',
-                        'ifinarray'],
+                        'ifinarray', 'isarray'],
       'modifier'    => ['escape' ,'setvar', 'format_ts', 'zero_pad', 'trim_to', 'eval',
                         'strip_linefeeds', 'sprintf', 'encode_js', 'truncate', 'wrap',
                         'trim_space', 'regex_replace', 'setvartemplate', 'replace',
@@ -504,11 +504,12 @@ class PAML {
         $this->id = $this->magic();
         $this->compile_path = $compile_path;
         $this->compile_key = $compile_key;
-        $content = ( $src ) ? $src : $path &&
-            is_readable( $path ) ? file_get_contents( $path ) : '';
+        if (! $src && $path && is_readable( $path ) ) {
+            $src = file_get_contents( $path );
+        }
         if ( $this->use_plugin && !$this->functions ) $this->init_functions();
         $this->cache_includes = [];
-        return $this->compile( $content, $disp, null, null, $params );
+        return $this->compile( $src, $disp, null, null, $params );
     }
 
 /**
@@ -980,6 +981,12 @@ class PAML {
         if ( is_string( $array ) ) $array = $ctx->get_any( $array );
         if (! is_array( $array ) ) return false;
         return in_array( $value, $array ) ? true : false;
+    }
+
+    function conditional_isarray ( $args, $content, $ctx, $repeat, $counter ) {
+        $array = isset( $args['array'] ) ? $args['array'] : $args['name'];
+        if ( is_string( $array ) ) $array = $ctx->get_any( $array );
+        return is_array( $array ) ? true : false;
     }
 
     function function_var ( $args, $ctx ) {

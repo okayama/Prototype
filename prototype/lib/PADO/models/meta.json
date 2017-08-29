@@ -14,6 +14,14 @@
             "type": "string",
             "size": 60
         },
+        "kind": {
+            "type": "string",
+            "size": 60
+        },
+        "name": {
+            "type": "string",
+            "size": 60
+        },
         "key": {
             "type": "string",
             "size": 60
@@ -34,14 +42,6 @@
         "number": {
             "type": "int",
             "size": 11
-        },
-        "type": {
-            "type": "string",
-            "size": 60
-        },
-        "kind": {
-            "type": "string",
-            "size": 60
         }
     },
     "indexes": {
@@ -49,8 +49,8 @@
         "object_id": "object_id",
         "model": "model",
         "key": "key",
+        "name": "name",
         "value": "value",
-        "type": "type",
         "kind": "kind"
     }
 }

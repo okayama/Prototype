@@ -113,6 +113,7 @@ $('#<mt:var name="__col_name__">-chooser').click(function(){
     var primary_col = <mt:var name="__col_name__">_primary[curr_model];
     new_dialog_url_<mt:var name="__col_name__"> = new_dialog_url_<mt:var name="__col_name__">.replace( /_model=__any__/, '_model=' + curr_model );
     new_dialog_url_<mt:var name="__col_name__"> = new_dialog_url_<mt:var name="__col_name__">.replace( /get_col=__primary__/, 'get_col=' + primary_col );
+    new_dialog_url_<mt:var name="__col_name__"> += '&from_obj=group';
     $(this).data('href',new_dialog_url_<mt:var name="__col_name__">);
 });
 $('#<mt:var name="__col_name__">-add-chooser').click(function(){
@@ -127,6 +128,7 @@ $('#<mt:var name="__col_name__">-add-chooser').click(function(){
     var primary_col = <mt:var name="__col_name__">_primary[curr_model];
     new_dialog_url_<mt:var name="__col_name__"> = new_dialog_url_<mt:var name="__col_name__">.replace( /_model=__any__/, '_model=' + curr_model );
     new_dialog_url_<mt:var name="__col_name__"> = new_dialog_url_<mt:var name="__col_name__">.replace( /get_col=__primary__/, 'get_col=' + primary_col );
+    new_dialog_url_<mt:var name="__col_name__"> += '&from_obj=group';
     $(this).data('href',new_dialog_url_<mt:var name="__col_name__">);
 });
 var <mt:var name="__col_name__">_data_href ='<mt:var name="script_uri">?__mode=view&amp;_type=list&amp;_model=<mt:var name="rel_model" escape><mt:if name="workspace_id">&amp;workspace_id=<mt:var name="workspace_id"></mt:if>&amp;dialog_view=1&amp;target=<mt:var name="__col_name__">&amp;get_col=<mt:var name="rel_col" escape>&amp;selected_ids=<mt:var name="selected_ids" escape>&amp;from_obj=group';

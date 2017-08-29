@@ -62,6 +62,7 @@ class PADO {
     public  $upgrader    = false;
     public  $persistent  = true;
     public  $logging     = false;
+    public  $caching     = true;
     public  $log_path;
     public  $scheme      = [];
     public  $methods     = [];
@@ -340,6 +341,25 @@ class PADO {
     }
 
 /**
+ * Create a unique cache key.
+ * 
+ * @param              : See load method.
+ * @return string $res : Unique cache key.
+ */
+    function make_cache_key ( $model, $terms = [], $args = [], $cols = '', $extra = '' ) {
+        if ( is_array( $terms ) ) ksort( $terms );
+        if ( is_array( $args ) ) ksort( $args );
+        ob_start();
+            print_r( $model );
+            print_r( $terms );
+            print_r( $args );
+            print_r( $cols );
+            print_r( $extra );
+        $res = ob_get_clean();
+        return md5( $res );
+    }
+
+/**
  * Clear cached objects or valiable. If model is omitted, all caches are cleared.
  * 
  * @param  string $model : Name of model.
@@ -472,14 +492,15 @@ class PADOBaseModel {
         $scheme = isset( $pado->scheme[ $model ] ) ? $pado->scheme[ $model ] : null;
         $this->_scheme = $scheme;
         if (! $this->_id_column ) {
-            $primary = ( $scheme && isset( $scheme[ 'indexes' ] )
-                && isset( $scheme[ 'indexes' ][ 'PRIMARY' ] ) )
-                    ? $colprefix . $scheme[ 'indexes' ][ 'PRIMARY' ]
+            $primary = ( $scheme && isset( $scheme['indexes'] )
+                && isset( $scheme['indexes']['PRIMARY'] ) )
+                    ? $colprefix . $scheme['indexes']['PRIMARY']
                     : $colprefix . $pado->id_column;
             $this->_id_column = $primary;
         }
-        if ( $id_col = $pado->id_column ) {
-            $pado->cache[ $model ][ $this->$id_col ] = $this;
+        if ( $pado->caching ) {
+            if ( $id_col = $pado->id_column )
+                $pado->cache[ $model ][ $this->$id_col ] = $this;
         }
     }
 
@@ -569,13 +590,18 @@ class PADOBaseModel {
         if ( isset( $pado->methods['load'] ) )
             return $this->_driver->load( $terms, $args, $cols );
         $model = $this->_model;
-        if (! isset( $pado->cache[ $model ] ) ) $pado->cache[ $model ] = [];
-        if ( is_numeric( $terms ) ) {
-            if ( isset( $pado->cache[ $model ][ $terms ] ) ) {
-                return $pado->cache[ $model ][ $terms ];
+        if ( $pado->caching ) {
+            if (! isset( $pado->cache[ $model ] ) ) $pado->cache[ $model ] = [];
+            if ( is_numeric( $terms ) ) {
+                if ( isset( $pado->cache[ $model ][ $terms ] ) ) {
+                    return $pado->cache[ $model ][ $terms ];
+                }
+            }
+            $cache_key = $pado->make_cache_key( $model, $terms, $args, $cols, $extra );
+            if ( isset( $pado->cache[ $model ][ $cache_key ] ) ) {
+                return $pado->cache[ $model ][ $cache_key ];
             }
         }
-        $pado->cache[ $model ];
         $table = $this->_table;
         $colprefix = $this->_colprefix;
         if (! $pado->upgrader ) {
@@ -607,6 +633,7 @@ class PADOBaseModel {
         if (! $cols ) return is_numeric( $terms ) ? null : [];
         if ( $cols !== '*' ) {
             $columns = explode( ',', $cols );
+            $columns = array_unique( $columns );
             array_walk( $columns, function( &$col, $num, $params ) {
                 list( $pfx, $scheme ) = $params;
                 $orig_col = $col;
@@ -841,7 +868,6 @@ class PADOBaseModel {
                 $add_where = true;
             }
             if (! empty( $extra_stms ) ) {
-                // $and_or = $and_or == 'AND' ? 'OR' : 'AND';
                 if ( $add_where ) {
                     $sql .= " {$extra_and_or} ";
                 } else {
@@ -907,17 +933,32 @@ class PADOBaseModel {
         }
         try {
             $sth->execute( $vals );
-            $pado->queries[] = $sql . ' / values = ' . join( ', ', $vals );
+            $pado->queries[] = !empty( $vals )
+                             ? $sql . ' / values = ' . join( ', ', $vals )
+                             : $sql;
             if ( $count && !$count_group_by ) {
                 $count = (int) $sth->fetchColumn();
+                if ( $pado->caching ) {
+                    $pado->cache[ $model ][ $cache_key ] = $count;
+                }
                 return $count;
             }
-            if ( $load_iter ) return $sth;
+            if ( $load_iter ) {
+                if ( $pado->caching ) {
+                    $pado->cache[ $model ][ $cache_key ] = $sth;
+                }
+                return $sth;
+            }
             $objects = $sth->fetchAll();
             if ( is_numeric( $terms ) ) {
                 $obj = isset( $objects[0] ) ? $objects[0] : null;
-                if ( $obj ) $pado->cache[ $model ][ $obj->id ] = $obj;
+                if ( $pado->caching ) {
+                    if ( $obj ) $pado->cache[ $model ][ $obj->id ] = $obj;
+                }
                 return $obj;
+            }
+            if ( $pado->caching ) {
+                $pado->cache[ $model ][ $cache_key ] = $objects;
             }
             return $objects;
         } catch ( PDOException $e ) {
@@ -1702,6 +1743,10 @@ class PADOMySQL extends PADOBaseModel {
         $pado = $this->pado();
         $db = $pado->db;
         $column_defs = $upgrade['column_defs'];
+        $prefix = $pado->prefix ? $pado->prefix : '';
+        $model = $prefix ? preg_replace( "/^$prefix/", '', $table ) : $table;
+        $scheme = $pado->scheme[ $model ] ? $pado->scheme[ $model ] : [];
+        $indexes = ( $scheme && isset( $scheme['indexes'] ) ) ? $scheme['indexes'] : [];
         $res = false;
         if ( is_array( $column_defs ) ) {
             $update = array_merge( $column_defs['new'], $column_defs['changed'] );
@@ -1766,6 +1811,26 @@ class PADOMySQL extends PADOBaseModel {
                         $vals[] = $props['default'];
                         $type .= ' DEFAULT ?';
                     }
+                    if ( isset( $upgrade['indexes'] ) &&
+                        isset( $upgrade['indexes']['delete'] ) ) {
+                        if ( in_array( $name, array_keys($upgrade['indexes']['delete'] ) ) ) {
+                            if (! empty( $indexes ) && isset( $indexes[ $name ] ) ) {
+                                $sql = "ALTER TABLE {$table} DROP INDEX {$prefix}{$col_name}";
+                                if ( $pado->debug === 3 ) $pado->debugPrint( $sql );
+                                $sth = $db->prepare( $sql );
+                                try {
+                                    $res = $sth->execute();
+                                    $pado->queries[] = $sql;
+                                    $pado->stash( $sql, 1 );
+                                } catch ( PDOException $e ) {
+                                    $message = 'PDOException: ' . $e->getMessage() . ", {$sql}";
+                                    $pado->errors[] = $message;
+                                    trigger_error( $message );
+                                    return false;
+                                }
+                            } 
+                        }
+                    }
                     $statement = isset( $column_defs['new'][ $name ] ) ? 'ADD' : 'CHANGE';
                     $col_name = $statement === 'CHANGE' ? $col_name . ' ' . $col_name : $col_name;
                     $sql = "ALTER TABLE {$table} {$statement} {$col_name} {$type}";
@@ -1774,7 +1839,9 @@ class PADOMySQL extends PADOBaseModel {
                     $sth = $db->prepare( $sql );
                     try {
                         $res = $sth->execute( $vals );
-                        $pado->queries[] = $sql;
+                        $pado->queries[] = !empty( $vals )
+                                         ? $sql . ' / values = ' . join( ', ', $vals )
+                                         : $sql;
                         $pado->stash( $sql, 1 );
                     } catch ( PDOException $e ) {
                         $message = 'PDOException: ' . $e->getMessage() . ", {$sql}";

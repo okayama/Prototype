@@ -1,28 +1,26 @@
-      <a style="" <mt:if name="request.dialog_view">target="_blank"</mt:if> href="<mt:var name="script_uri">?__mode=view&amp;_type=edit&amp;_model=<mt:var name="model" escape>&amp;id=<mt:objectvar name="id" escape><mt:if name="_workspace_id">&amp;workspace_id=<mt:var name="_workspace_id"></mt:if><mt:if name="model" eq="workspace">&amp;workspace_id=<mt:objectvar name="id"></mt:if><mt:if name="request.revision_select">&amp;edit_revision=1</mt:if>">
-      <mt:if name="__file_col__">
-        <mt:objectvar name="id" setvar="obj_id">
-        <div class="list-icon">
-        <mt:assetthumbnail id="$obj_id" type="default" square="1" name="$__file_col__" model="$model" data_uri="1" setvar="thumbnail">
-        <mt:assetproperty property="class" name="$__file_col__" model="$model" id="$obj_id" setvar="obj_class">
-        <mt:if name="thumbnail">
-          <img src="<mt:var name="thumbnail">" width="32" width="height" alt="<mt:trans phrase="$obj_class">"> 
-          <mt:if name="__get_col">
-            <input type="hidden" id="__get_col_img_<mt:objectvar name="id">" value="<mt:var name="thumbnail">">
+        <mt:ifusercan action="edit" model="$this_model" id="$id"><a <mt:if name="request.dialog_view">target="_blank"</mt:if> href="<mt:var name="script_uri">?__mode=view&amp;_type=edit&amp;_model=<mt:var name="this_model" escape>&amp;id=<mt:var name="id" escape><mt:if name="workspace_id">&amp;workspace_id=<mt:var name="workspace_id"></mt:if><mt:if name="model" eq="workspace">&amp;workspace_id=<mt:objectvar name="id"></mt:if><mt:if name="request.revision_select">&amp;edit_revision=1</mt:if>"></mt:ifusercan>
+          <mt:unless name="$_name">
+          <mt:setvarblock name="$_name">(<mt:trans phrase="null">)</mt:setvarblock>
+          </mt:unless>
+          <mt:var name="$_name" escape>
+        <mt:ifusercan action="edit" model="$this_model" id="$id"></a></mt:ifusercan>
+        <mt:if name="_has_mapping">
+          <mt:if name="permalink">
+          &nbsp; 
+          <a href="<mt:var name="permalink">" target="_blank">
+          <i class="fa fa-external-link" aria-hidden="true"></i>
+          <span class="sr-only"><mt:trans phrase="View"></span>
+          </a>
           </mt:if>
-        <mt:else>
-          <i class="list-small-icon btn fa <mt:if name="obj_class" eq="image">fa-file-image-o<mt:elseif name="obj_class" eq="pdf">fa-file-pdf-o<mt:else><mt:unless name="obj_class">fa-minus<mt:else>fa-file-o</mt:unless></mt:if>" aria-hidden="true"></i>
-          <span class="sr-only"><mt:trans phrase="$obj_class"></span>
-      </mt:if>
-      </div>
-      </mt:if>
-      <mt:unless name="value">
-      <mt:setvarblock name="value">(<mt:trans phrase="null">)</mt:setvarblock>
-      </mt:unless>
-        <mt:var name="value">
-      </mt:if>
-      </a>
+        </mt:if>
+          <a class="btn toggle-infobox hidden"
+            id="toggle_<mt:var name="id">" href="javascript:void(0);">
+            <i id="toggle_icn_<mt:var name="id">" class="fa fa-caret-down toggle-icn" aria-hidden="true"></i>
+            <span class="sr-only"><mt:trans phrase="Toggle"></span>
+          </a>
+          <div id="infobox_<mt:var name="id">" class="hidden info-box"></div>
       &nbsp;
-      <a href="<mt:var name="value">" target="_blank">
+      <a href="<mt:var name="$_name">" target="_blank">
         <i class="fa fa-external-link" aria-hidden="true"></i>
         <span class="sr-only"><mt:trans phrase="View"></span>
       </a>

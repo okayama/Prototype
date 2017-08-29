@@ -71,7 +71,7 @@ window.onload = function(){
             <mt:objectloop model="workspace" sort_by="order" can_access="1">
         <mt:if name="__first__">
           <li class="nav-item dropdown workspace-dd-wrapper active">
-            <a aria-label="<mt:trans phrase="WorkSpaces">" class="nav-link dropdown-toggle" data-toggle="dropdown" href="#">
+            <a aria-label="<mt:trans phrase="WorkSpaces">" class="nav-link dropdown-toggle " data-toggle="dropdown" href="#">
             <i data-toggle="tooltip" data-placement="right" title="<mt:trans phrase="Select a WorkSpace">" class="fa fa-cube workspace-dd" aria-hidden="true"></i>
             <span class="sr-only"><mt:trans phrase="WorkSpaces"></span>
             </a>
@@ -97,7 +97,7 @@ window.onload = function(){
                 </a>
                 <div class="dropdown-menu">
               </mt:if>
-                <a class="dropdown-item btn-sm <mt:if name="name" eq="$model">active</mt:if>" href="<mt:var name="script_uri">?__mode=view&amp;_type=list&amp;_model=<mt:var name="name" escape>"><mt:var name="label" escape></a>
+                <a class="dropdown-item dropdown-sub btn-sm <mt:if name="name" eq="$model">active</mt:if>" href="<mt:var name="script_uri">?__mode=view&amp;_type=list&amp;_model=<mt:var name="name" escape>"><mt:var name="label" escape></a>
               <mt:if name="__last__">
                 </div>
                 </li>
@@ -112,7 +112,7 @@ window.onload = function(){
                 </a>
                 <div class="dropdown-menu">
               </mt:if>
-                <a class="dropdown-item btn-sm <mt:if name="name" eq="$model">active</mt:if>" href="<mt:var name="script_uri">?__mode=view&amp;_type=list&amp;_model=<mt:var name="name" escape>"><mt:var name="label" escape></a>
+                <a class="dropdown-item dropdown-sub btn-sm <mt:if name="name" eq="$model">active</mt:if>" href="<mt:var name="script_uri">?__mode=view&amp;_type=list&amp;_model=<mt:var name="name" escape>"><mt:var name="label" escape></a>
               <mt:if name="__last__">
                 </div>
                 </li>
@@ -127,7 +127,7 @@ window.onload = function(){
                 </a>
                 <div class="dropdown-menu">
               </mt:if>
-                <a class="dropdown-item btn-sm <mt:if name="name" eq="$model">active</mt:if>" href="<mt:var name="script_uri">?__mode=view&amp;_type=list&amp;_model=<mt:var name="name" escape><mt:if name="workspace_id">&amp;workspace_id=<mt:var name="workspace_id"></mt:if>"><mt:var name="label" escape></a>
+                <a class="dropdown-item dropdown-sub btn-sm <mt:if name="name" eq="$model">active</mt:if>" href="<mt:var name="script_uri">?__mode=view&amp;_type=list&amp;_model=<mt:var name="name" escape><mt:if name="workspace_id">&amp;workspace_id=<mt:var name="workspace_id"></mt:if>"><mt:var name="label" escape></a>
               <mt:if name="__last__">
                 </div>
                 </li>
@@ -142,7 +142,7 @@ window.onload = function(){
                 </a>
                 <div class="dropdown-menu">
               </mt:if>
-                <a class="dropdown-item btn-sm <mt:if name="name" eq="$model">active</mt:if>" href="<mt:var name="script_uri">?__mode=view&amp;_type=list&amp;_model=<mt:var name="name" escape>"><mt:var name="label" escape></a>
+                <a class="dropdown-item dropdown-sub btn-sm <mt:if name="name" eq="$model">active</mt:if>" href="<mt:var name="script_uri">?__mode=view&amp;_type=list&amp;_model=<mt:var name="name" escape>"><mt:var name="label" escape></a>
               <mt:if name="__last__">
                 </div>
                 </li>
@@ -157,7 +157,7 @@ window.onload = function(){
                 </a>
                 <div class="dropdown-menu">
               </mt:if>
-                <a class="dropdown-item btn-sm<mt:if name="this_mode" eq="$menu_mode"> active</mt:if>" href="<mt:var name="script_uri">?__mode=<mt:var name="menu_mode"><mt:loop name="menu_args">&amp;<mt:var name="__key__">=<mt:var name="__value__"></mt:loop>"><mt:var name="menu_label"></a>
+                <a class="dropdown-item dropdown-sub btn-sm<mt:if name="this_mode" eq="$menu_mode"> active</mt:if>" href="<mt:var name="script_uri">?__mode=<mt:var name="menu_mode"><mt:loop name="menu_args">&amp;<mt:var name="__key__">=<mt:var name="__value__"></mt:loop>"><mt:var name="menu_label"></a>
               <mt:if name="__last__">
                 </div>
                 </li>
@@ -225,7 +225,7 @@ window.onload = function(){
                 </a>
                 <div class="dropdown-menu">
               </mt:if>
-                <a class="dropdown-item btn-sm <mt:if name="name" eq="$model">active</mt:if>" href="<mt:var name="script_uri">?__mode=view&amp;_type=list&amp;_model=<mt:var name="name" escape><mt:if name="workspace_id">&amp;workspace_id=<mt:var name="workspace_id"></mt:if>"><mt:var name="label" escape></a>
+                <a class="dropdown-item dropdown-sub btn-sm <mt:if name="name" eq="$model">active</mt:if>" href="<mt:var name="script_uri">?__mode=view&amp;_type=list&amp;_model=<mt:var name="name" escape><mt:if name="workspace_id">&amp;workspace_id=<mt:var name="workspace_id"></mt:if>"><mt:var name="label" escape></a>
               <mt:if name="__last__">
                 </div>
                 </li>
@@ -234,13 +234,13 @@ window.onload = function(){
             <mt:tables type="display_space" menu_type="3" permission="1">
               <mt:if name="__first__">
                 <li class="nav-item dropdown">
-                <a aria-label="<mt:trans phrase="WorkSpaces">" class="nav-link dropdown-toggle" data-toggle="dropdown" href="#">
+                <a aria-label="<mt:trans phrase="System Objects">" class="nav-link dropdown-toggle" data-toggle="dropdown" href="#">
                   <i data-toggle="tooltip" data-placement="right" title="<mt:trans phrase="System Objects">" class="fa fa-database" aria-hidden="true"></i>
                   <span class="sr-only"><mt:trans phrase="System Objects"></span>
                 </a>
                 <div class="dropdown-menu">
               </mt:if>
-                <a class="dropdown-item btn-sm <mt:if name="name" eq="$model">active</mt:if>" href="<mt:var name="script_uri">?__mode=view&amp;_type=list&amp;_model=<mt:var name="name" escape><mt:if name="workspace_id">&amp;workspace_id=<mt:var name="workspace_id"></mt:if>"><mt:var name="label" escape></a>
+                <a class="dropdown-item dropdown-sub btn-sm <mt:if name="name" eq="$model">active</mt:if>" href="<mt:var name="script_uri">?__mode=view&amp;_type=list&amp;_model=<mt:var name="name" escape><mt:if name="workspace_id">&amp;workspace_id=<mt:var name="workspace_id"></mt:if>"><mt:var name="label" escape></a>
               <mt:if name="__last__">
                 </div>
                 </li>
@@ -249,13 +249,13 @@ window.onload = function(){
             <mt:tables type="display_space" menu_type="4" permission="1">
               <mt:if name="__first__">
                 <li class="nav-item dropdown">
-                <a aria-label="<mt:trans phrase="WorkSpaces">" class="nav-link dropdown-toggle" data-toggle="dropdown" href="#">
+                <a aria-label="<mt:trans phrase="Communication">" class="nav-link dropdown-toggle" data-toggle="dropdown" href="#">
                   <i data-toggle="tooltip" data-placement="right" title="<mt:trans phrase="Communication">" class="fa fa-comments" aria-hidden="true"></i>
                   <span class="sr-only"><mt:trans phrase="Communication"></span>
                 </a>
                 <div class="dropdown-menu">
               </mt:if>
-                <a class="dropdown-item btn-sm <mt:if name="name" eq="$model">active</mt:if>" href="<mt:var name="script_uri">?__mode=view&amp;_type=list&amp;_model=<mt:var name="name" escape><mt:if name="workspace_id">&amp;workspace_id=<mt:var name="workspace_id"></mt:if>"><mt:var name="label" escape></a>
+                <a class="dropdown-item dropdown-sub btn-sm <mt:if name="name" eq="$model">active</mt:if>" href="<mt:var name="script_uri">?__mode=view&amp;_type=list&amp;_model=<mt:var name="name" escape><mt:if name="workspace_id">&amp;workspace_id=<mt:var name="workspace_id"></mt:if>"><mt:var name="label" escape></a>
               <mt:if name="__last__">
                 </div>
                 </li>
@@ -270,7 +270,7 @@ window.onload = function(){
                 </a>
                 <div class="dropdown-menu">
               </mt:if>
-                <a class="dropdown-item btn-sm <mt:if name="name" eq="$model">active</mt:if>" href="<mt:var name="script_uri">?__mode=view&amp;_type=list&amp;_model=<mt:var name="name" escape>"><mt:var name="label" escape></a>
+                <a class="dropdown-item dropdown-sub btn-sm <mt:if name="name" eq="$model">active</mt:if>" href="<mt:var name="script_uri">?__mode=view&amp;_type=list&amp;_model=<mt:var name="name" escape>"><mt:var name="label" escape></a>
               <mt:if name="__last__">
                 </div>
                 </li>
@@ -285,7 +285,7 @@ window.onload = function(){
                 </a>
                 <div class="dropdown-menu">
               </mt:if>
-                <a class="dropdown-item btn-sm<mt:if name="this_mode" eq="$menu_mode"> active</mt:if>" href="<mt:var name="script_uri">?__mode=<mt:var name="menu_mode">&amp;workspace_id=<mt:var name="workspace_id"><mt:loop name="menu_args">&amp;<mt:var name="__key__">=<mt:var name="__value__"></mt:loop>"><mt:var name="menu_label"></a>
+                <a class="dropdown-item dropdown-sub btn-sm<mt:if name="this_mode" eq="$menu_mode"> active</mt:if>" href="<mt:var name="script_uri">?__mode=<mt:var name="menu_mode">&amp;workspace_id=<mt:var name="workspace_id"><mt:loop name="menu_args">&amp;<mt:var name="__key__">=<mt:var name="__value__"></mt:loop>"><mt:var name="menu_label"></a>
               <mt:if name="__last__">
                 </div>
                 </li>
@@ -335,7 +335,12 @@ window.onload = function(){
 
 <script>
 $(function () {
-  $('[data-toggle="tooltip"]').tooltip();
+    $('[data-toggle="tooltip"]').tooltip();
+})
+$('.dropdown-sub').each(function(){
+    if ( $(this).hasClass( 'active' ) ) {
+        $(this).parent().parent().css('background-color','#444');
+    }
 })
 </script>
 <mt:unless name="output_container">
@@ -372,12 +377,14 @@ $(function () {
             <mt:if name="model" eq="role">
               <mt:trans phrase="Syetem's Role" setvar="label">
             </mt:if>
-          <a class="btn btn-primary btn-sm" href="<mt:var name="script_uri">?__mode=view&amp;_type=edit&amp;_model=<mt:var name="model" escape><mt:var name="workspace_param">">
-            <mt:trans phrase="New %s" params="$label">
+          <a class="btn btn-primary btn-sm create-new-link" href="<mt:var name="script_uri">?__mode=view&amp;_type=edit&amp;_model=<mt:var name="model" escape><mt:var name="workspace_param">">
+            <i class="hidden fa create-new-button-icon" data-toggle="tooltip" data-placement="right" title="<mt:trans phrase="New %s" params="$label">" aria-label="<mt:trans phrase="New %s" params="$label">"></i>
+            <span class="create-new-button"><mt:trans phrase="New %s" params="$label"></span>
           </a>
             <mt:if name="model" eq="role">
-          <a class="btn btn-primary btn-sm" href="<mt:var name="script_uri">?__mode=view&amp;_type=edit&amp;_model=<mt:var name="model" escape>&amp;workspace_role=1">
-            <mt:trans phrase="New WorkSpace's Role">
+          <a class="btn btn-primary btn-sm create-new-link" href="<mt:var name="script_uri">?__mode=view&amp;_type=edit&amp;_model=<mt:var name="model" escape>&amp;workspace_role=1">
+            <i class="hidden fa create-new-button-icon" data-toggle="tooltip" data-placement="right" title="<mt:trans phrase="New WorkSpace's Role">" aria-label="<mt:trans phrase="New WorkSpace's Role">"></i>
+            <span class="create-new-button"><mt:trans phrase="New WorkSpace's Role"></span>
           </a>
             </mt:if>
             <mt:if name="has_hierarchy">
@@ -394,12 +401,12 @@ $(function () {
             <mt:trans phrase="New %s" params="$label">
           </a>
             </mt:unless>
-            </mt:if>
-          </mt:if>
-          <mt:if name="request._type" eq="hierarchy">
+            <mt:if name="request._type" ne="hierarchy">
           <a class="btn btn-primary btn-sm" href="<mt:var name="script_uri">?__mode=view&amp;_type=list&amp;_model=<mt:var name="model" escape><mt:var name="workspace_param">">
             <mt:trans phrase="Return to List">
           </a>
+            </mt:if>
+            </mt:if>
           </mt:if>
           <mt:if name="request._type" eq="list">
             <mt:if name="model" eq="asset">
@@ -411,6 +418,11 @@ $(function () {
             </mt:if>
           </mt:if>
         </mt:if>
+          <mt:if name="request._type" eq="hierarchy">
+          <a class="btn btn-primary btn-sm" href="<mt:var name="script_uri">?__mode=view&amp;_type=list&amp;_model=<mt:var name="model" escape><mt:var name="workspace_param">">
+            <mt:trans phrase="Return to List">
+          </a>
+          </mt:if>
       </mt:if>
           </h1>
 
