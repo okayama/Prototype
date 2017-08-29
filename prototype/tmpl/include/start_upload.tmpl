@@ -102,13 +102,14 @@ $(function () {
                 progress + '%'
             );
             if ( progress == 100 ) {
-                setTimeout(uploaded_hdlr, 100);
+                setTimeout(uploaded_hdlr, 1200);
             }
         }
     }).prop('disabled', !$.support.fileInput)
         .parent().addClass($.support.fileInput ? undefined : 'disabled');
 });
 function uploaded_hdlr () {
-    window.location.href = this_url + '&selected_ids=' + selected_ids.join(',');
+    this_url += '&selected_ids=' + selected_ids.join(',');
+    window.location.href = this_url;
 }
 </script>
