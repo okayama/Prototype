@@ -851,6 +851,7 @@ class PTTags {
                 $field_contents = $app->build_page( 'field' . DS . 'wrapper.tmpl', $param, false );
             }
             $field_contents = "<div id=\"field-{$basename}-wrapper\">{$field_contents}</div>";
+            $field_contents .= $app->build_page( 'field' . DS . 'footer.tmpl', $param, false );
             $ctx->local_vars[ 'field__html' ] = $field_contents;
             foreach ( $values as $key => $value ) {
                 $key = preg_replace( "/^$prefix/", '', $key );

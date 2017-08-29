@@ -1977,6 +1977,7 @@ class Prototype {
         $html = $app->build_page( 'field' . DS . 'wrapper.tmpl', $param, false );
         if (! $app->param( 'field__out' ) ) {
             $html = "<div id=\"field-{$basename}-wrapper\">{$html}</div>";
+            $html .= $app->build_page( 'field' . DS . 'footer.tmpl', $param, false );
         }
         echo json_encode( ['html' => $html, 'status' => 200,
                            'basename' => $basename ] );
