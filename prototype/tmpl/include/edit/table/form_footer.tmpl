@@ -97,6 +97,9 @@
 </mt:if>
 </select>
 
+<input type="hidden" id="_trans_<mt:var name="id">" name="_trans_<mt:var name="id">" value="<mt:var name="translate" escape>">
+<input type="hidden" id="_hint_<mt:var name="id">" name="_hint_<mt:var name="id">" value="<mt:var name="hint" escape>">
+
 <mt:else><input type="checkbox" name="_list_<mt:var name="id">" value="1" <mt:if name="list">checked</mt:if>></mt:unless></td>
 
 <td><mt:unless name="is_primary">
@@ -164,6 +167,8 @@
 <input id="_new_options_" name="_new_options_" type="hidden" value="">
 <input id="_new_disp_edit_" name="_new_disp_edit_" type="hidden" value="">
 <input id="_new_autoset_" name="_new_autoset_" type="hidden" value="">
+<input id="_new_trans_" name="_new_trans_" type="hidden" value="">
+<input id="_new_hint_" name="_new_hint_" type="hidden" value="">
 
 <input name="_new_not_null_" type="checkbox" class="form-control" value="1"></td>
 <td><input name="_new_index_" type="checkbox" class="form-control" value="1"></td>
@@ -268,7 +273,7 @@
           <input id="_detail_order" type="number" class="form-control" value="">
           </div>
         </div>
-        <div class="row form-group">
+        <div class="row form-group column-detail-conpact">
           <div class="col-md-2"><label for="_detail_not_null"><b><mt:trans phrase="NOT NULL"></b></label></div>
           <div class="col-md-4">
             <label class="custom-control custom-checkbox">
@@ -286,7 +291,7 @@
             </label>
           </div>
         </div>
-        <div class="row form-group">
+        <div class="row form-group column-detail-conpact">
           <div class="col-md-2"><label for="_detail_unique"><b><mt:trans phrase="Unique"></b></label></div>
           <div class="col-md-4">
             <label class="custom-control custom-checkbox">
@@ -304,6 +309,17 @@
             </label>
           </div>
         </div>
+        <div class="row form-group column-detail-conpact">
+          <div class="col-md-2"><label for="_detail_trans"><b><mt:trans phrase="Display"></b></label></div>
+          <div class="col-md-4">
+            <label class="custom-control custom-checkbox">
+              <input id="_detail_trans" type="checkbox" class="custom-control-input" name="" value="1">
+              <span class="custom-control-indicator"></span>
+              <span class="custom-control-description"><mt:trans phrase="Translate"></span>
+            </label>
+          </div>
+        </div>
+        <hr>
         <div class="row form-group">
           <div class="col-md-2"><label for="_detail_list"><b><mt:trans phrase="List Type"></b></label></div>
           <div class="col-md-10">
@@ -434,6 +450,12 @@
                 </label>
             </div>
           </div>
+          </div>
+        </div>
+        <div class="row form-group column-detail-hint">
+          <div class="col-md-2"><label for="_detail_hint"><b><mt:trans phrase="Hint"></b></label></div>
+          <div class="col-md-10">
+          <input id="_detail_hint" type="text" class="form-control col-input" value="">
           </div>
         </div>
       </div>
@@ -612,7 +634,7 @@ $('#_save_detail_button').click( function(){
     if ( term[0] != '_detail') {
         prefix = '_new_';
     }
-    var items = ['name','label','type','order','options','disp_edit'];
+    var items = ['name','label','type','order','options','disp_edit', 'hint'];
     $.each( items, function( index, name ) {
         $('#' + prefix + name + postfix + number ).val( $('#_detail_' + name ).val() );
     });
@@ -625,6 +647,11 @@ $('#_save_detail_button').click( function(){
     $.each( items, function( index, name ) {
         $('#' + prefix + name + postfix + number).prop('checked', $('#_detail_' + name).prop('checked') );
     });
+    if ( $('#_detail_trans' ).prop('checked') ) {
+        $('#' + prefix + 'trans' + postfix + number).val( 1 );
+    } else {
+        $('#' + prefix + 'trans' + postfix + number).val( 0 );
+    }
     var list = $('#_detail_list').val();
     if ( list == 'reference') {
         var model = $('#_detail_list_table').val();
@@ -733,7 +760,7 @@ $('.detail-btn').click( function(){
     if ( term[0]!= '_detail') {
         prefix = '_new_';
     }
-    var items = ['name','label','type','order','options','disp_edit'];
+    var items = ['name','label','type','order','options','disp_edit','hint'];
     $.each( items, function( index, name ) {
         $('#_detail_' + name ).val($('#' + prefix + name + postfix + number ).val() );
     });
@@ -746,6 +773,11 @@ $('.detail-btn').click( function(){
     $.each( items, function( index, name ) {
         $('#_detail_' + name ).prop('checked', $('#' + prefix + name + postfix + number).prop('checked') );
     });
+    if ( $('#' + prefix + 'trans' + postfix + number).val() == 1 ) {
+        $('#_detail_trans' ).prop('checked', true );
+    } else {
+        $('#_detail_trans' ).prop('checked', false );
+    }
     var prop_list = $('#' + prefix + 'list' + postfix + number ).val();
     var prop_edit = $('#' + prefix + 'edit' + postfix + number ).val();
     if ( prop_list.indexOf(':') == -1 ) {

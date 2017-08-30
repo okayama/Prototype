@@ -324,13 +324,55 @@ class PTUtil {
                     $meta_fields[ $field->basename ] = $field->name;
             }
             return $meta_fields;
+        } else if ( $type === 'displays' ) {
+            $basenames = [];
+            foreach ( $_fields as $field ) {
+                if ( $field->display )
+                    $basenames[] = $field->basename;
+            }
+            return $basenames;
         }
+    }
+
+    public static function add_id_to_field ( &$content, $uniqueid, $basename ) {
+        if (! $content ) return $content;
+        $app = Prototype::get_instance();
+        $ctx = $app->ctx;
+        $dom = $ctx->dom;
+        if (!$dom->loadHTML( mb_convert_encoding( $content,
+                'HTML-ENTITIES','utf-8' ),
+            LIBXML_HTML_NOIMPLIED|LIBXML_HTML_NODEFDTD|LIBXML_COMPACT ) )
+            trigger_error( 'loadHTML failed!' );
+        $inputs = ['input', 'textarea', 'select', 'button'];
+        foreach ( $inputs as $ctrl ) {
+            $elements = $dom->getElementsByTagName( $ctrl );
+            if ( $elements->length ) {
+                $i = $elements->length - 1;
+                while ( $i > -1 ) {
+                    $ele = $elements->item( $i );
+                    $i -= 1;
+                    $ctrl_name = $ele->getAttribute( 'name' );
+                    $ctrl_value = $ele->getAttribute( 'value' );
+                    if ( $ctrl_value === $uniqueid ) continue;
+                    if ( $ctrl_name && $ctrl_name != "{$basename}__c"
+                        && $ctrl_name != "{$basename}__c[]"
+                        && strpos( $ctrl_name, $uniqueid ) === false ) {
+                        $new_name = "{$uniqueid}_{$ctrl_name}";
+                        $ele->setAttribute( 'name', $new_name );
+                    }
+                }
+            }
+        }
+        $content = mb_convert_encoding( $dom->saveHTML(),
+                                        'utf-8', 'HTML-ENTITIES' );
+        return $content;
     }
 
     public static function object_to_resource ( $obj, $type = 'api', $required = null ) {
         $app = Prototype::get_instance();
         $scheme = $app->get_scheme_from_db( $obj->_model );
         $relations = isset( $scheme['relations'] ) ? $scheme['relations'] : [];
+        $translates = isset( $scheme['translate'] ) ? $scheme['translate'] : [];
         $options = isset( $scheme['options'] ) ? $scheme['options'] : [];
         $column_defs = $scheme['column_defs'];
         $list_properties = $scheme['list_properties'];
@@ -381,12 +423,20 @@ class PTUtil {
                                 $vars[ $key ] = self::trim_to( $vars[ $key ], 60 );
                                 break;
                             case $prop === 'datetime':
+                                $format = 'Y-m-d H:i';
+                                if ( in_array( $key, $translates ) ) {
+                                    $format = $app->translate( $format );
+                                }
                                 if ( $vars[ $key ] ) $vars[ $key ] = 
-                                date( 'Y-m-d H:i', strtotime( $obj->db2ts( $vars[ $key ] ) ) );
+                                date( $format, strtotime( $obj->db2ts( $vars[ $key ] ) ) );
                                 break;
                             case $prop === 'date':
+                                $format = 'Y-m-d';
+                                if ( in_array( $key, $translates ) ) {
+                                    $format = $app->translate( $format );
+                                }
                                 if ( $vars[ $key ] ) $vars[ $key ] = 
-                                date( 'Y-m-d', strtotime( $obj->db2ts( $vars[ $key ] ) ) );
+                                date( $format, strtotime( $obj->db2ts( $vars[ $key ] ) ) );
                                 break;
                             case $key === 'status':
                                 if (! empty( $options ) ) {
@@ -399,14 +449,24 @@ class PTUtil {
                                 }
                                 break;
                             case $prop === 'text':
+                                if ( in_array( $key, $translates ) ) {
+                                    $vars[ $key ] = $app->translate( $vars[ $key ] );
+                                }
                                 $vars[ $key ] = self::trim_to( $vars[ $key ], 40 );
                                 break;
                             case $prop === 'text_short':
+                                if ( in_array( $key, $translates ) ) {
+                                    $vars[ $key ] = $app->translate( $vars[ $key ] );
+                                }
                                 $vars[ $key ] = self::trim_to( $vars[ $key ], 12 );
                                 break;
                             case $prop === 'password':
                                 $vars[ $key ] = $vars[ $key ] ? '**********...' : '';
                                 break;
+                            default:
+                                if ( in_array( $key, $translates ) ) {
+                                    $vars[ $key ] = $app->translate( $vars[ $key ] );
+                                };
                         }
                     }
                 }
@@ -451,7 +511,12 @@ class PTUtil {
             if (! empty( $rel_objs ) ) {
                 $rel_table = $app->get_table( $to_obj );
                 if (! $rel_table ) continue;
-                $primary = $rel_table->primary;
+                $prop = $list_properties[ $name ];
+                $props = explode( ':', $prop );
+                $rel_col = $props[2];
+                if ( $rel_col === 'primary ' ) {
+                    $rel_col = $rel_table->primary;
+                }
                 $rel_ids = [];
                 foreach ( $rel_objs as $rel_obj ) {
                     $rel_ids[] = (int) $rel_obj->to_id;
@@ -465,9 +530,15 @@ class PTUtil {
                         if ( $type === 'api' ) {
                             $relation_vars[] = self::object_to_resource( $rel_obj );
                         } else {
-                            $relation_vars[] = $type === 'list' 
-                                             ? self::trim_to( $rel_obj->$primary, 8 )
-                                             : $rel_obj->$primary;
+                            $rel_value = $type === 'list' 
+                                       ? self::trim_to( $rel_obj->$rel_col, 8 )
+                                       : $rel_obj->$rel_col;
+                            if ( $type === 'list' ) {
+                                if ( in_array( $name, $translates ) ) {
+                                    $rel_value = $app->translate( $rel_value );
+                                }
+                            }
+                            $relation_vars[] = $rel_value;
                         }
                     }
                 }

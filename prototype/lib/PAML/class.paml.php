@@ -104,6 +104,7 @@ class PAML {
     protected $old_params    = [];
     protected $func_map      = [];
     protected $block_vars    = [];
+    public    $dom;
 
     public $default_component= null;
 
@@ -1002,7 +1003,19 @@ class PAML {
                 return $name[ $args['index'] ];
             if ( is_string( $name ) ) $name .= '[' . $args['index'] . ']';
         }
-        return $ctx->get_any( $name );
+        $var = $ctx->get_any( $name );
+        if ( isset( $args['callback'] ) ) {
+            $component = isset( $args['component'] ) 
+                       ? $ctx->component( $args['component'] )
+                       : $ctx->default_component;
+            if ( $component ) {
+                $callback = $args['callback'];
+                if ( method_exists( $component, $callback ) ) {
+                    $component->$callback( $var, $args, $ctx );
+                }
+            }
+        }
+        return $var;
     }
 
     function function_include ( $args, $ctx ) {
@@ -1396,6 +1409,7 @@ class PAML {
         if (!empty( $callbacks['input_filter'] ) )
             $content = $this->call_filter( $content, 'input_filter' );
         $dom = new DomDocument();
+        $this->dom = $dom;
         $id = $this->magic( $content );
         $in_nocache = $this->in_nocache;
         $tags = $this->tags;

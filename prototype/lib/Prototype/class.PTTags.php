@@ -728,6 +728,7 @@ class PTTags {
 
     function hdlr_fieldloop ( $args, $content, $ctx, &$repeat, $counter ) {
         $app = $ctx->app;
+        require_once( 'class.PTUtil.php' );
         if (! $counter ) {
             $model = $ctx->params['context_model'] ? $ctx->params['context_model'] : '';
             if (! $model ) $model = isset( $args['model'] ) ? $args['model'] : '';
@@ -767,14 +768,14 @@ class PTTags {
         }
         $ctx->set_loop_vars( $counter, $params );
         if ( isset( $params[ $counter ] ) ) {
+            $repeat = true;
             $field = $params[ $counter ];
             $prefix = $field->_colprefix;
             $values = $field->get_values();
             $field_label = $field->label;
             $field_content = $field->content;
             if (! $field_content ) {
-                $field_type = 
-                    $app->db->model( 'fieldtype' )->load( (int) $field->fieldtype_id );
+                $field_type = $field->fieldtype;
                 if ( $field_type ) {
                     if (! $field_label ) $field_label = $field_type->label;
                     if (! $field_content ) $field_content = $field_type->content;
@@ -805,6 +806,10 @@ class PTTags {
                 }
                 $ctx->vars['field_options'] = $field_options;
             }
+            foreach ( $values as $key => $value ) {
+                $key = preg_replace( "/^$prefix/", '', $key );
+                $ctx->local_vars[ 'field__' . $key ] = $value;
+            }
             $field_out = false;
             $field_contents = '';
             if (! empty( $object_fields ) ) {
@@ -819,7 +824,8 @@ class PTTags {
                             $set_keys[] = 'field.' . $key;
                         }
                         $ctx->local_vars['field__out'] = $field_out;
-                        $ctx->local_vars['field_uniqueid'] = $app->magic();
+                        $uniqueid = $app->magic();
+                        $ctx->local_vars['field_uniqueid'] = $uniqueid;
                         $_fld_content = $ctx->build( $field_content );
                         $ctx->local_vars['field_content_html'] = $_fld_content;
                         $_fld_content = $app->build_page( 'field' . DS . 'content.tmpl', $param, false );
@@ -829,6 +835,7 @@ class PTTags {
                         $ctx->local_vars['field_label_html'] = $_field_label;
                         $ctx->local_vars['field_content_html'] = $_fld_content;
                         $_fld_content = $app->build_page( 'field' . DS . 'wrapper.tmpl', $param, false );
+                        PTUtil::add_id_to_field( $_fld_content, $uniqueid, $basename );
                         $field_contents .= $_fld_content;
                         foreach ( $set_keys as $key ) {
                             unset( $ctx->local_vars[ $key ] );
@@ -842,10 +849,12 @@ class PTTags {
                 $field_label = $ctx->build( $field_label );
                 $ctx->local_vars['field_label_html'] = $field_label;
                 $field_label = $app->build_page( 'field' . DS . 'label.tmpl', $param, false );
-                $ctx->local_vars['field_uniqueid'] = $app->magic();
+                $uniqueid = $app->magic();
+                $ctx->local_vars['field_uniqueid'] = $uniqueid;
                 $_fld_content = $ctx->build( $field_content );
                 $ctx->local_vars['field_content_html'] = $_fld_content;
                 $field_contents = $app->build_page( 'field' . DS . 'content.tmpl', $param, false );
+                PTUtil::add_id_to_field( $_fld_content, $uniqueid, $basename );
                 $ctx->local_vars['field_label_html'] = $field_label;
                 $ctx->local_vars['field_content_html'] = $field_contents;
                 $field_contents = $app->build_page( 'field' . DS . 'wrapper.tmpl', $param, false );
@@ -853,10 +862,6 @@ class PTTags {
             $field_contents = "<div id=\"field-{$basename}-wrapper\">{$field_contents}</div>";
             $field_contents .= $app->build_page( 'field' . DS . 'footer.tmpl', $param, false );
             $ctx->local_vars[ 'field__html' ] = $field_contents;
-            foreach ( $values as $key => $value ) {
-                $key = preg_replace( "/^$prefix/", '', $key );
-                $ctx->local_vars[ 'field__' . $key ] = $value;
-            }
             foreach ( $restore_vars as $key ) {
                 unset( $ctx->local_vars[ $key ] );
             }
@@ -1423,6 +1428,18 @@ class PTTags {
         if ( $h ) return $app->translate( '%1$sh %2$smin %3$sseconds', [ $h, $m, $s ] );
         if ( $m ) return $app->translate( '%1$smin %2$sseconds', [ $m, $s ] );
         return $app->translate( '%sseconds', $s );
+    }
+
+    function filter_trans ( $str, $arg, $ctx ) {
+        $app = $ctx->app;
+        if (! $arg ) return $str;
+        $component = $app->component( $arg );
+        if ( $component ) {
+            $arg = '';
+        } else {
+            $component = $app;
+        }
+        return $app->translate( $str, $arg, $component );
     }
 
     function filter_epoch2str ( $ts, $arg, $ctx ) {

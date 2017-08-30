@@ -186,6 +186,10 @@
     "child_tables": [
         "column"
     ],
+    "translate": [
+        "label",
+        "plural"
+    ],
     "list_properties": {
         "id": "number",
         "name": "primary",

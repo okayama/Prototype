@@ -188,7 +188,7 @@ class Prototype {
             'block'      => ['objectcols', 'objectloop', 'tables', 'nestableobjects',
                              'countgroupby', 'fieldloop'],
             'conditional'=> ['objectcontext', 'tablehascolumn', 'isadmin', 'ifusercan'],
-            'modifier'   => ['epoch2str', 'sec2hms'] ];
+            'modifier'   => ['epoch2str', 'sec2hms', 'trans'] ];
         foreach ( $tags as $kind => $arr ) {
             $tag_prefix = $kind === 'modifier' ? 'filter_' : 'hdlr_';
             foreach ( $arr as $tag ) {
@@ -476,8 +476,12 @@ class Prototype {
             }
         }
         foreach ( $components as $class ) {
-            if ( strtolower( $class ) == strtolower( $component ) ) {
-                return $components[ $class ];
+            if ( is_object( $class ) ) {
+                if ( strtolower( get_class( $class ) ) == strtolower( $component ) ) {
+                    return $class;
+                }
+            } else if ( strtolower( $class ) == strtolower( $component ) ) {
+                return isset( $components[ $class ] ) ? $components[ $class ] : null;
             }
         }
         return null;
@@ -642,6 +646,7 @@ class Prototype {
         $model = $model ? $model : $app->param( '_model' );
         if (! $model ) return;
         $db = $app->db;
+        require_once( 'class.PTUtil.php' );
         $table = $app->get_table( $model );
         $workspace = $app->workspace();
         $workspace_id = $workspace ? $workspace->id : 0;
@@ -962,6 +967,11 @@ class Prototype {
                     $extra .= " AND {$_colprefix}rev_type=0";
                 }
             }
+            if ( $get_col = $app->param( 'get_col' ) ) {
+                if (! in_array( $get_col, $user_options ) ) {
+                    array_unshift( $user_options, $get_col );
+                }
+            }
             $orig_user_options = $user_options;
             if (! in_array( 'id', $user_options ) ) {
                 array_unshift( $user_options, 'id' );
@@ -983,7 +993,6 @@ class Prototype {
                    ? $app->param( 'totalResult' )
                    : $obj->count( $terms, $args, $select_cols, $extra );
             $items = [];
-            require_once( 'class.PTUtil.php' );
             foreach ( $objects as $_obj ) {
                 $items[] = PTUtil::object_to_resource( $_obj, 'list', $user_options );
             }
@@ -1039,9 +1048,13 @@ class Prototype {
             }
             $ctx->vars['list_from'] = $offset + 1;
         } else if ( $type === 'edit' ) {
+            $obj = $db->model( $model )->new();
             $user_option = $app->get_user_opt( $model, 'edit_option', $workspace_id );
             if (! $user_option->id ) {
                 $display_options = array_keys( $scheme[ $type . '_properties'] );
+                $fields = PTUtil::get_fields( $obj, 'displays' );
+                array_walk( $fields, function( &$field ) { $field = 'field-' . $field; } );
+                $display_options = array_merge( $fields );
             } else {
                 $display_options = explode( ',', $user_option->value );
             }
@@ -1771,6 +1784,7 @@ class Prototype {
 
     function display_options ( $app ) {
         $model = $app->param( '_model' );
+        require_once( 'class.PTUtil.php' );
         $app->validate_magic();
         $workspace_id = $app->param( 'workspace_id' );
         $scheme = $app->get_scheme_from_db( $model );
@@ -1780,6 +1794,20 @@ class Prototype {
         foreach ( $display_options as $opt ) {
             if ( $app->param( '_d_' . $opt ) ) {
                 $options[] = $opt;
+            }
+        }
+        if ( $type == 'edit' ) {
+            $obj = $app->db->model( $model )->new();
+            if ( $workspace_id ) {
+                if ( $obj->has_column( 'workspace_id' ) ) {
+                    $obj->workspace_id( $workspace_id );
+                }
+            }
+            $fields = PTUtil::get_fields( $obj, 'basenames' );
+            foreach ( $fields as $opt ) {
+                if ( $app->param( '_d_field-' . $opt ) ) {
+                    $options[] = 'field-' .$opt;
+                }
             }
         }
         $user_option = $app->get_user_opt( $model, $type . '_option', $workspace_id );
@@ -1914,7 +1942,9 @@ class Prototype {
         $id = (int) $app->param( 'id' );
         $model = $app->param( 'model' );
         $workspace_id = $app->param( 'workspace_id' );
-        $field = $app->db->model( 'field' )->load( $id );
+        $field_model = $app->param( '_type' ) && $app->param( '_type' ) == 'fieldtype'
+                     ? 'fieldtype' : 'field';
+        $field = $app->db->model( $field_model )->load( $id );
         header( 'Content-type: application/json' );
         if (! $field ) {
             echo json_encode( ['status' => 404,
@@ -1924,16 +1954,22 @@ class Prototype {
         $field_label = $field->label;
         $field_content = $field->content;
         if (!$field_label || !$field_content ) {
-            $field_type = 
-                $app->db->model( 'fieldtype' )->load( (int) $field->fieldtype_id );
-            if ( $field_type ) {
-                if (! $field_label ) $field_label = $field_type->label;
-                if (! $field_content ) $field_content = $field_type->content;
+            if ( $field_model == 'field' ) {
+                $field_type = $field->fieldtype;
+                if ( $field_type ) {
+                    if (! $field_label ) $field_label = $field_type->label;
+                    if (! $field_content ) $field_content = $field_type->content;
+                }
             }
         }
         if (! $field_label && ! $field_content ) {
             echo json_encode( ['status' => 404,
                      'message' => $app->translate( 'Field HTML not specified.' ) ] );
+            exit();
+        }
+        if ( $field_model == 'fieldtype' ) {
+            echo json_encode( ['status' => 200,
+                    'label' => $field_label, 'content' => $field_content ] );
             exit();
         }
         $ctx = $app->ctx;
@@ -1965,7 +2001,8 @@ class Prototype {
         if ( $app->param( 'field__out' ) ) {
             $ctx->local_vars['field__out'] = 1;
         }
-        $ctx->local_vars['field_uniqueid'] = $app->magic();
+        $uniqueid = $app->magic();
+        $ctx->local_vars['field_uniqueid'] = $uniqueid;
         $field_label = $ctx->build( $field_label );
         $ctx->local_vars['field_label_html'] = $field_label;
         $field_label = $app->build_page( 'field' . DS . 'label.tmpl', $param, false );
@@ -1975,6 +2012,8 @@ class Prototype {
         $ctx->local_vars['field_label_html'] = $field_label;
         $ctx->local_vars['field_content_html'] = $field_content;
         $html = $app->build_page( 'field' . DS . 'wrapper.tmpl', $param, false );
+        require_once( 'class.PTUtil.php' );
+        PTUtil::add_id_to_field( $html, $uniqueid, $basename );
         if (! $app->param( 'field__out' ) ) {
             $html = "<div id=\"field-{$basename}-wrapper\">{$html}</div>";
             $html .= $app->build_page( 'field' . DS . 'footer.tmpl', $param, false );
@@ -2654,11 +2693,23 @@ class Prototype {
         $field_ids = [];
         foreach ( $field_basenames as $fld ) {
             $fld_value = $app->param( "{$fld}__c" );
+            $unique_ids = $app->param( "field-unique_id-{$fld}" );
             if ( $fld_value !== null ) {
                 if (! is_array( $fld_value ) ) $fld_value = [ $fld_value ];
-                $i = 1;
+                if (! is_array( $unique_ids ) ) $unique_ids = [ $unique_ids ];
+                $i = 0;
                 foreach ( $fld_value as $value ) {
+                    $unique_id = $unique_ids[ $i ];
+                    $i++;
                     $fld_values = json_decode( $value, true );
+                    foreach ( $fld_values as $key => $val ) {
+                        if ( strpos( $key, $unique_id . '_' ) === 0 ) {
+                            $new_key = preg_replace( "/^{$unique_id}_/", '', $key );
+                            unset( $fld_values[ $key ] );
+                            $fld_values[ $new_key ] = $val;
+                        }
+                    }
+                    $value = json_encode( $fld_values, JSON_UNESCAPED_UNICODE );
                     $meta = $db->model( 'meta' )->get_by_key(
                         ['object_id' => $id, 'model' => $obj->_model,
                          'kind' => 'customfield', 'key' => $fld, 'number' => $i ] );
@@ -2672,7 +2723,6 @@ class Prototype {
                     }
                     $meta->save();
                     $field_ids[] = $meta->id;
-                    $i++;
                 }
             }
         }
@@ -4219,6 +4269,8 @@ class Prototype {
         $locale[ $lang ][ $table->plural ] = $app->translate( $table->plural );
         $relations = [];
         $col_options = [];
+        $translates = [];
+        $hints = [];
         $language = $app->language;
         foreach ( $columns as $column ) {
             $col_name = $column->name;
@@ -4241,6 +4293,8 @@ class Prototype {
             if ( $column->unique ) $unique[] = $col_name;
             if ( $column->unchangeable ) $unchangeable[] = $col_name;
             if ( $column->autoset ) $autoset[] = $col_name;
+            if ( $column->translate ) $translates[] = $col_name;
+            if ( $column->hint ) $hints[ $col_name ] = $column->hint;
             $label = $column->label;
             $app->dictionary['default'][ $col_name ] = $label;
             $locale['default'][ $col_name ] = $label;
@@ -4258,6 +4312,8 @@ class Prototype {
         }
         if ( $table->display_system ) $scheme['display'] = (int) $table->display_system;
         $scheme['column_defs'] = $column_defs;
+        if (! empty( $translates ) ) $scheme['translate'] = $translates;
+        if (! empty( $hints ) ) $scheme['hint'] = $hints;
         if (! empty( $relations ) ) $scheme['relations'] = $relations;
         if (! empty( $col_options ) ) $scheme['options'] = $col_options;
         $sort_by = $table->sort_by;

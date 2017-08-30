@@ -65,6 +65,16 @@ $('#alert-saved').focus();
   <mt:setvar name="_primary_" value="$value">
 </mt:if>
 
+<mt:setvarblock name="_hint">
+  <mt:if name="hint">
+  <<mt:if name="edit" like="checkbox">span<mt:else>p</mt:if> class="text-muted <mt:unless name="edit" like="checkbox">hint-block</mt:unless>">
+    <i class="fa fa-question-circle-o" aria-hidden="true"></i>
+    <span class="sr-only"><mt:trans phrase="Hint"></span>
+    <mt:var name="hint" trans="1">
+  </<mt:if name="edit" like="checkbox">span<mt:else>p</mt:if>>
+  </mt:if>
+</mt:setvarblock>
+
 <mt:var name="name" escape setvar="__col_name__">
 <mt:var name="value" escape setvar="__col_value__">
 
@@ -131,6 +141,7 @@ $('#__view-permalink').click(function(){
 });
 </script>
   </mt:if>
+    <mt:var name="_hint">
   </div>
 </div>
 
@@ -153,6 +164,7 @@ $('#__view-permalink').click(function(){
     </select>
     </mt:if>
     </mt:loop>
+      <mt:var name="_hint">
   </div>
 </div>
 
@@ -416,6 +428,7 @@ $(function () {
         .parent().addClass($.support.fileInput ? undefined : 'disabled');
 });
 </script>
+    <mt:var name="_hint">
   </div>
 </div>
 
@@ -434,6 +447,7 @@ $(function () {
         <span class="custom-control-description"> 
         <mt:var name="label" escape></span>
     </label>
+    <mt:var name="_hint">
   </div>
 </div>
 
@@ -449,6 +463,7 @@ $(function () {
   <div class="col-lg-10">
     <input id="<mt:var name="__col_name__">" type="color" <mt:var name="ctrl_class">" name="<mt:var name="__col_name__">" value="<mt:var name="value">"
       <mt:if name="readonly">readonly</mt:if> class="watch-changed">
+    <mt:var name="_hint">
   </div>
 </div>
 
@@ -518,7 +533,10 @@ $(function () {
               <mt:setvarblock name="selected_ids"><mt:loop name="$__rel_name__" glue=","><mt:var name="__value__"></mt:loop></mt:setvarblock>
               <mt:loop name="$__rel_name__">
                 <li class="<mt:var name="__col_name__">-child badge badge-default badge-relation badge-draggable">
-                <span><mt:getobjectname id="$__value__" type="$edit" escape></span>
+                <span>
+                  <mt:getobjectname id="$__value__" type="$edit" escape setvar="_related_object">
+                  <mt:var name="_related_object" trans="$translate">
+                </span>
                 <button type="button" class="btn btn-secondary btn-sm close-sm detach-relation" aria-label="<mt:trans phrase="Detach">" data-name="<mt:var name="__col_name__">">
                   <span aria-hidden="true">&times;</span>
                 </button>
@@ -591,6 +609,7 @@ $(function () {
           </mt:if>
       </mt:if>
     </mt:if>
+    <mt:var name="_hint">
   </div>
 </div>
 
@@ -607,6 +626,7 @@ $(function () {
 <textarea id="<mt:var name="__col_name__">" rows="<mt:if name="options"><mt:var name="options" escape><mt:else>5</mt:if>"
   class="form-control watch-changed" name="<mt:var name="__col_name__">"
   <mt:if name="readonly">readonly</mt:if>><mt:var name="value"></textarea>
+    <mt:var name="_hint">
   </div>
 </div>
 
@@ -622,6 +642,7 @@ $(function () {
 <textarea id="<mt:var name="__col_name__">" rows="<mt:if name="options"><mt:var name="options" escape><mt:else>10</mt:if>"
   class="form-control richtext" name="<mt:var name="__col_name__">"
   <mt:if name="readonly">readonly</mt:if>><mt:var name="value"></textarea>
+    <mt:var name="_hint">
   </div>
 </div>
 
@@ -645,6 +666,7 @@ $(function () {
   </mt:if>
     <input id="<mt:var name="__col_name__">" type="<mt:if name="disp_option" like="num">number<mt:else>text</mt:if>" class="form-control watch-changed <mt:var name="ctrl_class">" name="<mt:var name="__col_name__">" value="<mt:var name="value">"
       <mt:if name="readonly">readonly</mt:if>>
+    <mt:var name="_hint">
   </div>
 </div>
 </mt:if>
@@ -660,6 +682,7 @@ $(function () {
   <div class="col-lg-10">
     <input id="<mt:var name="__col_name__">" type="number" class="form-control watch-changed <mt:var name="ctrl_class">" name="<mt:var name="__col_name__">" value="<mt:var name="value">"
       <mt:if name="readonly">readonly</mt:if>>
+    <mt:var name="_hint">
   </div>
 </div>
 
@@ -693,6 +716,7 @@ $(function () {
   </div>
   <div class="col-lg-10">
     <input id="<mt:var name="__col_name__">-verify" type="password" class="form-control watch-changed" name="<mt:var name="__col_name__">-verify" value="">
+    <mt:var name="_hint">
   </div>
 </div>
 
@@ -713,6 +737,7 @@ $(function () {
     &nbsp;
     <input id="<mt:var name="__col_name__">_time" type="time" step="1" class="form-control time watch-changed" name="<mt:var name="__col_name__">_time" value="<mt:if name="value"><mt:var name="value" format_ts="H:i:s"><mt:else><mt:var name="$time_col_name" escape></mt:if>"
       <mt:if name="readonly">readonly</mt:if>>
+    <mt:var name="_hint">
   </div>
 </div>
 
@@ -765,6 +790,7 @@ $(function () {
     </mt:loop>
     </select>
     </mt:if>
+    <mt:var name="_hint">
   </div>
 </div>
 
@@ -790,10 +816,11 @@ $(function () {
     <select id="_field_selector" class="form-control">
       <option value=""><mt:trans phrase="(None selected)"></option>
 </mt:if>
-      <mt:if name="field__menu"><option id="_selector-field-<mt:var name="field__id" escape>" data-multiple="<mt:var name="field__multiple" escape>" class="<mt:var name="field__basename" escape>" value="<mt:var name="field__id" escape>"><mt:var name="field__name" escape></option></mt:if>
+      <mt:if name="field__menu"><option id="_selector-field-<mt:var name="field__id" escape>" data-multiple="<mt:var name="field__multiple" escape>" class="<mt:var name="field__basename" escape>" value="<mt:var name="field__id" escape>"><mt:var name="field__name" trans="1" escape></option></mt:if>
 <mt:if name="__last__">
     </select>
     <button type="button" id="_field_chooser" class="btn btn-primary btn-sm"><mt:trans phrase="Add"></button>
+    <mt:var name="_hint">
   </div>
 </div>
 <script>
@@ -811,6 +838,7 @@ $('#_field_chooser').click(function(){
         $.post('<mt:var name="script_uri">', str,
             function ( data ) {
                 if ( data.status != 200 ) {
+                    alert( data.message );
                     return;
                 }
                 var dom_obj = $(data.html);
@@ -821,13 +849,15 @@ $('#_field_chooser').click(function(){
                     $('#_field_html_area').append(dom_obj);
                 }
                 var multiple = $('#_field_selector option:selected').attr('data-multiple');
-                if (! multiple ) {
+                if ( multiple == 0 ) {
                     $('#_selector-field-' + field_id ).attr('hidden','hidden');
                     $('#_field_selector').val('');
                 }
             },
             'json'
         );
+    } else {
+        alert('<mt:trans phrase="You did not select any field.">');
     }
 });
 </script>
@@ -848,7 +878,7 @@ $('#_field_chooser').click(function(){
     <mt:getobjectname id="$object_modified_by" type="reference:user:nickname" escape>
   </div>
   <div class="col-lg-8">
-       <mt:var name="object_modified_on">
+    <mt:var name="object_modified_on">
 <mt:if name="_revision_count">
 &nbsp;
   <i class="fa fa-code-fork" aria-hidden="true"></i> <mt:trans phrase="%s revision(s)" params="$_revision_count">
@@ -918,7 +948,6 @@ $('#_field_chooser').click(function(){
   <mt:if name="has_mapping">
     <button type="submit" id="__preview" class="btn btn-secondary"><mt:trans phrase="Preview"></button>
   </mt:if>
-
 <mt:if name="_revisable">
   <mt:if name="request.edit_revision">
     <button type="submit" id="__apply_to_master" class="btn btn-secondary btn-sm"><mt:trans phrase="Apply to Master"></button>
@@ -927,13 +956,11 @@ $('#_field_chooser').click(function(){
     <button type="submit" id="__save_as_revision" class="btn btn-secondary btn-sm"><mt:trans phrase="Save as Revision"></button>
   </mt:if>
 </mt:if>
-
 <mt:if name="request.id">
   <mt:if name="model" eq="table">
     <button type="submit" id="__export" class="btn btn-danger btn-sm"><mt:trans phrase="Export"></button>
   </mt:if>
 </mt:if>
-
   </div>
 </div>
 
@@ -978,7 +1005,7 @@ $('#__delete').click(function(){
 });
 <mt:if name="_revisable">
 $('#__save_as_revision').click(function(){
-    if(!confirm('<mt:trans phrase="Are you sure you want to save this %s as a revision instead of a master?" params="$label">')){
+    if ( !confirm('<mt:trans phrase="Are you sure you want to save this %s as a revision instead of a master?" params="$label">') ) {
         return false;
     }
     $('#_preview').val('');
@@ -1132,8 +1159,19 @@ $('#<mt:var name="__col_name__">-wrapper').hide();
   </mt:if>
 </mt:objectcols>
 </mt:objectcontext>
+<mt:fieldloop workspace_id="$workspace_id" model="$model" id="$object_id">
+<mt:setvarblock name="_fieldbasename">field-<mt:var name="field__basename" escape></mt:setvarblock>
+<mt:ifinarray array="$display_options" value="$_fieldbasename">
+<mt:setvar name="_field_display" value="1">
+</mt:ifinarray>
+<mt:if name="field__required">
+<mt:setvar name="_field_display" value="1">
+</mt:if>
+<mt:unless name="_field_display">
+$('#field-<mt:var name="field__basename">-wrapper').hide();
+</mt:unless>
+</mt:fieldloop>
 </script>
-
 <mt:setvarblock name="include_path">include/edit/<mt:var name="model">/footer.tmpl</mt:setvarblock>
 <mt:include file="$include_path">
 <mt:include file="include/footer.tmpl">

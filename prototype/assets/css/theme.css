@@ -917,12 +917,29 @@ i.required {
 }
 
 .multiple-field {
-  margin-top: -17px;
+  margin-top: -11px;
 }
 
 .detach-field {
   border: 1px solid gray !important;
   margin-top: 2px;
+}
+
+.column-detail-conpact {
+  margin-top: 0px;
+  margin-bottom: 7px;
+}
+
+.column-detail-hint {
+  margin-top: -10px;
+}
+
+.hint-block {
+  margin-top: 6px;
+}
+
+.text-muted {
+  font-size: 90%;
 }
 
 .custom-field-wrapper {
@@ -934,7 +951,9 @@ i.required {
   padding-left: 0px;
   margin-left: -6px;
   margin-right: -6px;
+  margin-bottom: 10px;
 }
+
 .pt-progress-bar {
   width:100%;
   height:30px;

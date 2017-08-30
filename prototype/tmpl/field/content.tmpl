@@ -28,4 +28,4 @@ $('#edit-form-main').submit(function(){
 </button>
 </div>
 <input type="hidden" value="" id="values_<mt:var name="field_uniqueid">" name="<mt:var name="field_basename">__c<mt:if name="field__multiple">[]</mt:if>">
-</div>
+<input type="hidden" name="field-unique_id-<mt:var name="field_basename"><mt:if name="field__multiple">[]</mt:if>" value="<mt:var name="field_uniqueid">"></div>

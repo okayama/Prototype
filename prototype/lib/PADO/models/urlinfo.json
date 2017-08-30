@@ -123,6 +123,10 @@
         "mime_type",
         "workspace_id"
     ],
+    "translate": [
+        "model",
+        "archive_type"
+    ],
     "edit_properties": {
         "id": "hidden",
         "url": "primary",

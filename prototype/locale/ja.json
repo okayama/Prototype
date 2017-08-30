@@ -12,6 +12,7 @@
     "More"               : "続き",
     "Upload"             : "アップロード",
     "URLs"               : "URL",
+    "Hint"               : "ヒント",
     "Profile"            : "プロフィール",
     "Install"            : "インストール",
     "System Settings"    : "システムの設定",
@@ -112,6 +113,25 @@
     "Categories"         : "カテゴリ",
     "Option"             : "オプション",
     "Options"            : "オプション",
+    "entry"              : "記事",
+    "asset"              : "アセット",
+    "category"           : "カテゴリ",
+    "folder"             : "フォルダ",
+    "template"           : "ビュー",
+    "table"              : "モデル",
+    "tag"                : "タグ",
+    "permission"         : "権限",
+    "role"               : "ロール",
+    "group"              : "グループ",
+    "log"                : "ログ",
+    "urlmapping"         : "URLマップ",
+    "urlinfo"            : "URL",
+    "field"              : "フィールド",
+    "phrase"             : "フレーズ",
+    "user"               : "ユーザ",
+    "queue"              : "キュー",
+    "fieldtype"          : "フィールド型",
+    "relation"           : "リレーション",
     "Editor Height"      : "エディタの高さ",
     "Unspecified"        : "指定なし",
     "Multiple"           : "複数",
@@ -415,6 +435,8 @@
     "Disabled %s"        : "無効な%s",
     "Enabled %s"         : "有効な%s",
     "Publish time: %s"   : "処理時間 : %s",
+    "Y-m-d H:i"          : "Y年m月d日 H時i分",
+    "Y-m-d"              : "Y年m月d日",
     "seconds"            : "秒",
     "%sseconds"          : "%s秒",
     "%1$smin %2$sseconds": "%1$s分 %2$s秒",
@@ -451,6 +473,8 @@
         : "モデル名を入力してください。",
     "View or Model not specified."
         : "ビューまたはモデルが指定されていません。",
+    "Model not specified."
+        : "モデルが選択されていません。",
     "Forgot your password?"
         : "パスワードをお忘れですか?",
     "The action '%1$s' was executed for %2$s %3$s by %4$s."
@@ -487,6 +511,14 @@
         : "モデルは非表示にできません。",
     "The Model or Column name must be %s characters or less."
         : "モデル(カラム)名は%s文字以内でなければなりません。",
+    "Even if you do not specify it, you can add it in the edit screen."
+        : "指定のない場合でも、編集画面で追加することができます。",
+    "If the field is not display, the item is not checked."
+        : "フィールドが非表示の場合はチェックされません。",
+    "Comma separated values. The value is stored in the variable 'field_option' in the loop of the template variable 'field_options'."
+        : "カンマ区切りで値を入力すると、テンプレート変数 'field_options'のループの中で 'field_option'変数に値を格納します。",
+    "Comma separated values. The value is stored in the variable 'field_label' in the loop of the template variable 'field_options'."
+        : "カンマ区切りで値を入力すると、テンプレート変数 'field_options'のループの中で 'field_label'変数に値を格納します。",
     "Click Detail button to continue settings."
         : "カスタム設定を行うには「詳細」ボタンをクリックしてください。",
     "Invalid list type (%s)."
@@ -503,6 +535,8 @@
         : "To,Fromアドレスと件名は必須です。",
     "You did not select any %s."
         : "%sが選択されていません。",
+    "You did not select any field."
+        : "フィールドが選択されていません。",
     "Your changes have been saved."
         : "変更を保存しました。",
     "%s's display options saved successfully."
@@ -513,6 +547,8 @@
         : "選択されたフィルタを削除してもよろしいですか?",
     "Are you sure you want to remove this field?"
         : "フィールドを削除してもよろしいですか?",
+    "Are you sure you want to apply the default template?"
+        : "デフォルトテンプレートを適用してもよろしいですか?",
     "Are you sure you want to remove this filter condition?"
         : "フィルタ条件を削除してもよろしいですか?",
     "Model can not be set child of workspace."
@@ -585,6 +621,8 @@
         : "下書き,レビュー,公開予約,公開,非公開(公開終了)",
     "Please enter keyword for search."
         : "検索するキーワードを入力してください。",
+    "The default template was successfully applied. The applied template will not be reflected until you save this page."
+        : "デフォルトテンプレートを適用しました。適用されたテンプレートは、このページを保存するまで確定されません。",
     "The file has successfully uploaded. The uploaded file will not be reflected until you save this page."
         : "ファイルをアップロードしました。アップロードしたファイルは、このページを保存するまで反映されません。",
     "The file has successfully edited. The edited file will not be reflected until you save this page."

@@ -183,7 +183,6 @@ class PTUpgrader {
             if ( $item === 'column' || $item === 'option'
                 || $item === 'meta' || $item === 'session' ) continue;
             $table = $db->model( 'table' )->get_by_key( ['name' => $item ] );
-            // $scheme = $db->scheme[ $item ];
             $scheme = json_decode( file_get_contents( $file ), true );
             if ( isset( $scheme['locale'] ) ) {
                 $locale = $scheme['locale'];
@@ -431,6 +430,8 @@ class PTUpgrader {
             $unchangeable = $app->param( '_unchangeable_' . $id ) ? 1 : 0;
             $list = $app->param( '_list_' . $id );
             $edit = $app->param( '_edit_' . $id );
+            $translate = $app->param( '_trans_' . $id );
+            $hint = $app->param( '_hint_' . $id );
             if ( $edit && ! in_array( $edit, $edit_types ) ) {
                 if ( strpos( $edit, ':' ) === false ||
                     !$app->is_valid_property( str_replace( ':', '', $edit ) ) ) {
@@ -457,6 +458,8 @@ class PTUpgrader {
             $column->unchangeable( $unchangeable );
             $column->list( $list );
             $column->edit( $edit );
+            $column->translate( $translate );
+            $column->hint( $hint );
             $column->autoset( $autoset );
             if ( empty( $errors ) ) {
                 $app->set_default( $column );
@@ -501,6 +504,8 @@ class PTUpgrader {
             $unique = $app->param( '_new_unique_' . $id ) ? 1 : 0;
             $unchangeable = $app->param( '_new_unchangeable_' . $id ) ? 1 : 0;
             $list = $app->param( '_new_list_' . $id );
+            $translate = $app->param( '_new_trans_' . $id );
+            $hint = $app->param( '_new_hint_' . $id );
             if (! $primary && $list === 'primary' ) {
                 $obj->primary( $list );
             }
@@ -536,6 +541,8 @@ class PTUpgrader {
                     'edit'      => $edit,
                     'autoset'   => $autoset,
                     'unchangeable' => $unchangeable,
+                    'translate' => $translate,
+                    'hint'      => $hint
                 ] );
                 $app->set_default( $column );
                 if (! $validation ) $column->save();

@@ -32,6 +32,9 @@
             "type": "string",
             "size": 255
         },
+        "hint": {
+            "type": "text"
+        },
         "edit": {
             "type": "string",
             "size": 255
@@ -57,6 +60,10 @@
             "type": "tinyint",
             "size": 4,
             "default": 0
+        },
+        "translate": {
+            "type": "tinyint",
+            "size": 4
         },
         "unique": {
             "type": "tinyint",

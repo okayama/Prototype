@@ -107,6 +107,11 @@
         "created_by",
         "modified_by"
     ],
+    "translate": [
+        "model",
+        "container",
+        "date_based"
+    ],
     "edit_properties": {
         "id": "hidden",
         "name": "primary",

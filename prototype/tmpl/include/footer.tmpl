@@ -11,7 +11,7 @@
 <script>
 $(function() {
     $(".popup").click(function(){
-        window.open(this.href,"WindowName","width=400,height=340,resizable=yes,scrollbars=yes");
+        window.open(this.href,"WindowName","width=420,height=340,resizable=yes,scrollbars=yes");
         return false;
     });
 });
@@ -60,21 +60,39 @@ function editorInit () {
 </script>
 </mt:if>
 <script>
-    $(function(){
-        $('[data-target="#modal"]').on('click',function(){
-            var $this = $(this);
-            var $modal = $('#modal');
-            var url = '';
-            if( this.href ){
-                url = this.href;
-            } else if( $this.data('href') ) {
-                url = $this.data('href');
-            }
-            if( url ) {
-                $modal.find('iframe').attr('src', url );
-            }
-        });
+function disp_header_alert ( message, dialog_class ) {
+    $("#header-alert-message").html( message );
+    if (! dialog_class ) {
+        dialog_class = 'success';
+    }
+    if ( dialog_class == 'success' ) {
+        $("#header-alert").removeClass("alert-danger");
+        $("#header-alert").addClass("alert-success");
+    } else {
+        $("#header-alert").removeClass("alert-success");
+        $("#header-alert").addClass("alert-danger");
+    }
+    $("#header-alert").show();
+    setTimeout(focus_header_dialog, 500);
+}
+function focus_header_dialog () {
+    $("#header-alert").focus();
+}
+$(function(){
+    $('[data-target="#modal"]').on('click',function(){
+        var $this = $(this);
+        var $modal = $('#modal');
+        var url = '';
+        if( this.href ){
+            url = this.href;
+        } else if( $this.data('href') ) {
+            url = $this.data('href');
+        }
+        if( url ) {
+            $modal.find('iframe').attr('src', url );
+        }
     });
+});
 </script>
   </div>
   </body>

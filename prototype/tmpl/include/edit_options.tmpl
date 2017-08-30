@@ -28,26 +28,38 @@
             <div class="row form-group">
               <div class="col-md-2"><b><mt:trans phrase="Columns"></b></div>
               <div class="col-md-10">
-
           <mt:objectcontext>
             <mt:objectcols type="edit">
               <mt:if name="name" ne="id">
                 <mt:setvar name="_checked" value="0">
                 <mt:if name="edit" eq="primary"><mt:setvar name="_checked" value="1"></mt:if>
-                    <mt:ifinarray array="$display_options" value="$name">
-                    <mt:setvar name="_checked" value="1">
-                    </mt:ifinarray>
-                    <label class="custom-control custom-checkbox">
-                        <mt:if name="edit" eq="primary"><input type="hidden" id="" name="_d_<mt:var name="__key__" escape>" value="1"></mt:if>
-                        <input<mt:if name="edit" eq="primary"> disabled</mt:if><mt:if name="_checked"> checked</mt:if> type="checkbox" class="custom-control-input disp_option" id="<mt:var name="name" escape>-" name="_d_<mt:var name="name" escape>" value="1">
-                        <span class="custom-control-indicator"></span>
-                        <span class="custom-control-description"> 
-                        <mt:var name="label" escape></span>
-                    </label>
+                <mt:ifinarray array="$display_options" value="$name">
+                <mt:setvar name="_checked" value="1">
+                </mt:ifinarray>
+                <label class="custom-control custom-checkbox">
+                  <mt:if name="edit" eq="primary"><input type="hidden" id="" name="_d_<mt:var name="__key__" escape>" value="1"></mt:if>
+                  <input<mt:if name="edit" eq="primary"> disabled</mt:if><mt:if name="_checked"> checked</mt:if> type="checkbox" class="custom-control-input disp_option" id="<mt:var name="name" escape>-" name="_d_<mt:var name="name" escape>" value="1">
+                  <span class="custom-control-indicator"></span>
+                  <span class="custom-control-description"> 
+                  <mt:var name="label" escape></span>
+                </label>
                 </mt:if>
             </mt:objectcols>
           </mt:objectcontext>
-
+              </div>
+            </div>
+            <div class="row form-group">
+              <div class="col-md-2"><b><mt:trans phrase="Fields"></b></div>
+              <div class="col-md-10">
+                <mt:fieldloop workspace_id="$workspace_id" model="$model" id="$object_id">
+                <mt:setvarblock name="_fieldbasename">field-<mt:var name="field__basename" escape></mt:setvarblock>
+                <label class="custom-control custom-checkbox">
+                  <input<mt:if name="field__required"> disabled</mt:if><mt:if name="field__required"> checked</mt:if> <mt:ifinarray array="$display_options" value="$_fieldbasename">checked</mt:ifinarray> type="checkbox" class="custom-control-input disp_option" id="field-<mt:var name="field__basename" escape>-" name="_d_field-<mt:var name="field__basename" escape>" value="1">
+                  <span class="custom-control-indicator"></span>
+                  <span class="custom-control-description"> 
+                  <mt:var name="field__name" trans="1" escape></span>
+                </label>
+                </mt:fieldloop>
               </div>
             </div>
           </div>
@@ -67,30 +79,22 @@ $("#disp_options_save").click(function(){
     $.post("<mt:var name="script_uri">", str,
     function ( data ) {
         if( data.result == true ) {
-            $("#header-alert-message").html("<mt:trans phrase="%s's display options saved successfully." params="$label">");
-            $("#header-alert").removeClass("alert-danger");
-            $("#header-alert").addClass("alert-success");
+            disp_header_alert("<mt:trans phrase="%s's display options saved successfully." params="$label">");
         } else {
-            $("#header-alert-message").html("<mt:trans phrase="An error occurred while saving %s." params="$options_title">");
-            $("#header-alert").removeClass("alert-success");
-            $("#header-alert").addClass("alert-danger");
+            disp_header_alert("<mt:trans phrase="An error occurred while saving %s." params="$options_title">", 'danger');
         }
-        $("#header-alert").show();
-        setTimeout(focus_header_dialog, 500);
     },
     "json"
     );
 });
 $(".disp_option").change(function(){
     var colname = $(this).prop("id");
-    var wrapper = $("#"+colname+"wrapper");
+    var wrapper_name = "#" + colname + "wrapper";
+    var wrapper = $(wrapper_name);
     if($(this).prop("checked")) {
         wrapper.show("fade");
     } else {
         wrapper.hide("fade");
     }
 });
-function focus_header_dialog () {
-    $("#header-alert").focus();
-}
 </script>
