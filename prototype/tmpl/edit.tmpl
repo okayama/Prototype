@@ -55,6 +55,7 @@ $('#alert-saved').focus();
 </mt:if>
 <mt:objectcontext>
 <mt:objectcols type="edit">
+
 <mt:var name="name" setvar="_column_name">
 
 <mt:if name="type" ne="relation">
@@ -945,7 +946,7 @@ $('#_field_chooser').click(function(){
     </mt:if>
   </mt:if>
     <button type="submit" id="__save" class="btn btn-primary"><mt:trans phrase="Save"></button>
-  <mt:if name="has_mapping">
+  <mt:if name="_has_mapping">
     <button type="submit" id="__preview" class="btn btn-secondary"><mt:trans phrase="Preview"></button>
   </mt:if>
 <mt:if name="_revisable">
@@ -1154,7 +1155,7 @@ $('#__export').click(function(){
       <mt:setvar name="_checked" value="1">
     </mt:ifinarray>
     <mt:unless name="_checked">
-$('#<mt:var name="__col_name__">-wrapper').hide();
+$('#<mt:var name="name">-wrapper').hide();
     </mt:unless>
   </mt:if>
 </mt:objectcols>

@@ -1,6 +1,7 @@
 {
     "label"    : "Entry",
     "plural"   : "Entries",
+    "version"  : "1.0",
     "primary"  : "title",
     "display"  : 1,
     "auditing" : 1,
@@ -17,6 +18,7 @@
     "assign_user": 1,
     "display_dashboard": 1,
     "allow_comment": 1,
+    "default_status": 2,
     "column_defs": {
         "id": {
             "type": "int",

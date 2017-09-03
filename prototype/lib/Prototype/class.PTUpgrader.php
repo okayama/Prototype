@@ -11,9 +11,10 @@ class PTUpgrader {
 
     function upgrade () {
         $app = Prototype::get_instance();
+        if ( $app->installed ) {
+            $app->error( 'Invalid request.' );
+        }
         $tmpl = TMPL_DIR . 'upgrade.tmpl';
-        if (! is_readable( $tmpl ) )
-            return; // Show Error
         $ctx = $app->ctx;
         $ctx->vars['language'] = $app->language;
         if ( $app->param( '_type' ) === 'install' ) {
@@ -22,7 +23,7 @@ class PTUpgrader {
             $ctx->vars['page_title'] = $app->translate( 'Upgrade' );
         }
         if ( $app->request_method === 'POST' ) {
-            if ( $app->param( 'type' ) === 'install' ) {
+            if ( $app->param( '_type' ) === 'install' ) {
                 $name = $app->param( 'name' );
                 $pass = $app->param( 'password' );
                 $verify = $app->param( 'password-verify' );
@@ -36,9 +37,9 @@ class PTUpgrader {
                 $copyright = $app->param( 'copyright' );
                 $system_email = $app->param( 'system_email' );
                 $errors = [];
-                if (!$appname || !$site_url || !$system_email ) {
+                if (!$appname || !$site_url || !$system_email || !$site_path ) {
                     $errors[] = $app->translate(
-                        'App Name, System Email and Site URL are required.' );
+                        'App Name, System Email Site URL and Site Path are required.' );
                 }
                 if (!$name || !$pass || !$email ) {
                     $errors[] = $app->translate( 'Name, Password and Email are required.' );
@@ -66,7 +67,7 @@ class PTUpgrader {
                     }
                 }
                 if (! empty( $errors ) ) {
-                    $app->assign_params( $app, $ctx );
+                    $app->assign_params( $app, $ctx, true );
                     $ctx->vars['error'] = join( "\n", $errors );
                     echo $ctx->build_page( $tmpl );
                     exit();
@@ -88,7 +89,28 @@ class PTUpgrader {
                 $language = $app->param( 'language' );
                 $nickname = $app->param( 'nickname' );
                 $password = password_hash( $password, PASSWORD_BCRYPT );
+                $db->upgrader = true;
                 $this->setup_db( true );
+                $plugin_models = $this->plugin_models( true );
+                if (! empty( $plugin_models ) ) {
+                    $m_items = [];
+                    foreach ( $plugin_models as $m_dir => $props ) {
+                        foreach ( $props as $prop ) {
+                            $arr = [ $prop['component'], $m_dir ];
+                            $uniqkey = json_encode( $arr );
+                            $models = isset( $m_items[ $uniqkey ] )
+                                    ? $m_items[ $uniqkey ] : [];
+                            $models[] = $prop['model'];
+                            $m_items[ $uniqkey ] = $models;
+                        }
+                    }
+                    if (! empty( $m_items ) ) {
+                        foreach ( $m_items as $m_key => $m_item ) {
+                            list( $component, $m_dir ) = json_decode( $m_key, true );
+                            $this->setup_db( true, $component, $m_item, $m_dir );
+                        }
+                    }
+                }
                 $user = $db->model( 'user' )->get_by_key( ['name' => $name ] );
                 $user->name( $name );
                 $user->password( $password );
@@ -98,6 +120,7 @@ class PTUpgrader {
                 $user->is_superuser( 1 );
                 $user->modified_on( date( 'YmdHis' ) );
                 $user->created_on( date( 'YmdHis' ) );
+                $user->status( 2 );
                 $user->save();
                 $app->redirect( $app->admin_url );
             }
@@ -158,32 +181,195 @@ class PTUpgrader {
         }
     }
 
-    function setup_db ( $force = false ) {
+    function manage_scheme ( $app ) {
+        if (! $app->user()->is_superuser ) {
+            $app->error( 'Permission denied.' );
+        }
+        $schemes = $app->db->model( 'option' )->load( ['kind' => 'scheme_version'] );
+        $items = [];
+        $current_scheme = $app->db->scheme;
+        $upgrade_count = 0;
+        $model_files = [];
+        $model_names = [];
+        $components = [];
+        foreach ( $schemes as $item ) {
+            $model = $item->key;
+            $model_names[] = $model;
+            $component = $item->extra;
+            $models_dir = null;
+            if ( $component && $component !== 'core' ) {
+                $plugin = $app->component( $component );
+                if (! $plugin ) {
+                    $plugin = $app->autoload_component( $plugin );
+                }
+                if ( $plugin && is_object( $plugin ) ) {
+                    $models_dir = $plugin->path() . DS . 'models';
+                }
+            } else {
+                $models_dir = LIB_DIR . 'PADO' . DS . 'models';
+            }
+            if ( $models_dir ) {
+                $file = $models_dir . DS . $model . '.json';
+                if ( is_readable( $file ) ) {
+                    $model_files[ $model ] = $file;
+                    $scheme = json_decode( file_get_contents( $file ), true );
+                    $scheme_version = isset( $scheme['version'] ) ? $scheme['version'] : '';
+                    $db_version = $item->value;
+                    if ( $db_version < $scheme_version ) {
+                        $upgrade_count++;
+                    }
+                    $component = $component == 'core' ? 'prototype' : $component;
+                    $info = ['model' => $model, 'scheme_version' => $scheme_version,
+                             'db_version' => $db_version, 'component' => $component ];
+                    $items[] = $info;
+                    $components[ $model ] = $component;
+                }
+            }
+        }
+        $json_dirs = array_keys( $this->plugin_models( true ) );
+        array_unshift( $json_dirs, LIB_DIR . 'PADO' . DS . 'models' );
+        $i = 0;
+        foreach ( $json_dirs as $dir ) {
+            $files = scandir( $dir, $app->plugin_order );
+            foreach ( $files as $json ) {
+                if ( strpos( $json, '.' ) === 0 ) continue;
+                $file = $dir . DS . $json;
+                $extension = pathinfo( $json )['extension'];
+                if ( $extension !== 'json' ) continue;
+                $model = pathinfo( $json )['filename'];
+                if (! in_array( $model, $model_names ) ) {
+                    $component = $i
+                               ? strtolower( basename( dirname( dirname( $file ) ) ) )
+                               : 'core';
+                    $data = json_decode( file_get_contents( $file ), true );
+                    if ( isset( $data['component'] ) ) $component = $data['component'];
+                    $version = isset( $data['version'] ) ? $data['version'] : 0;
+                    $info = ['model' => $model, 'scheme_version' => $version,
+                             'db_version' => 0, 'component' => $component ];
+                    $items[] = $info;
+                    $upgrade_count++;
+                    $model_files[ $model ] = $file;
+                    $components[ $model ] = $component;
+                }
+            }
+            $i++;
+        }
+        if ( $app->request_method === 'POST' &&
+            $app->param( '_type' ) && $app->param( '_type' ) === 'upgrade' ) {
+            $app->validate_magic();
+            $models = $app->param( 'model' );
+            $counter = 0;
+            if ( $models && !empty( $models ) ) {
+                $schemes = [];
+                $errors = [];
+                foreach ( $models as $model ) {
+                    if (! isset( $components[ $model ] ) ) {
+                        $errors[] = $app->translate( 'Unknown Model %s.', $model );
+                    }
+                }
+                if (!empty( $errors ) ) {
+                    $app->ctx->vars['error'] = join( "\n", $errors );
+                } else {
+                    foreach ( $models as $model ) {
+                        $file = $model_files[ $model ];
+                        $component = $components[ $model ];
+                        $app->db->base_model->set_scheme_from_json( $model, $file );
+                        $this->setup_db( true, $component, [ $model ], dirname( $file ) );
+                        $scheme = $app->get_scheme_from_db( $model );
+                        $app->db->clear_cache();
+                        $this->setup_db( true, $component, [ $model ], dirname( $file ) );
+                        $counter++;
+                    }
+                }
+            }
+            $app->redirect( $app->admin_url .
+                "?__mode=manage_scheme&saved_changes=" . $counter );
+        }
+        $app->ctx->vars['schemes'] = $items;
+        $app->ctx->vars['upgrade_count'] = $upgrade_count;
+        return $app->__mode( 'manage_scheme' );
+    }
+
+    function plugin_models ( $dirs = false ) {
+        $app = Prototype::get_instance();
+        $plugin_dirs = $app->plugin_dirs;
+        $plugin_models = [];
+        $json_dirs = [];
+        foreach ( $plugin_dirs as $dir ) {
+            $dir .= DS . 'models';
+            if ( is_dir( $dir ) ) {
+                $files = scandir( $dir, $app->plugin_order );
+                $has_model = false;
+                $models = [];
+                foreach ( $files as $json ) {
+                    if ( strpos( $json, '.' ) === 0 ) continue;
+                    $file = $dir . DS . $json;
+                    $extension = pathinfo( $json )['extension'];
+                    if ( $extension !== 'json' ) continue;
+                    $model = pathinfo( $json )['filename'];
+                    $component = strtolower( basename( dirname( dirname( $file ) ) ) );
+                    $data = json_decode( file_get_contents( $file ), true );
+                    if ( isset( $data['component'] ) ) $component = $data['component'];
+                    $version = isset( $data['version'] ) ? $data['version'] : 0;
+                    $info = ['component' => $component, 'version' => $version,
+                             'model' => $model ];
+                    $plugin_models[ $model ] = $info;
+                    $models[] = $info;
+                    $has_model = true;
+                }
+                if ( $has_model ) $json_dirs[ $dir ] = $models;
+            }
+        }
+        return $dirs ? $json_dirs : $plugin_models;
+    }
+
+    function setup_db ( $force = false, $component = 'core', $items = [], $m_dir = '' ) {
         $app = Prototype::get_instance();
         $db = $app->db;
         $db->json_model = true;
         $db->upgrader = true;
+        $init = $db->model( 'table' )->new();
         $init = $db->model( 'option' )->new();
         $init = $db->model( 'session' )->new();
-        $init = $db->model( 'table' )->new();
-        $models_dir = LIB_DIR . 'PADO' . DS . 'models';
-        $items = scandir( $models_dir );
+        if ( $component !== 'core' ) {
+            $plugin = $app->component( $component );
+            if (! $plugin ) {
+                $plugin = $app->autoload_component( $plugin );
+            }
+            if ( $plugin && is_object( $plugin ) && !$m_dir ) {
+                $m_dir = $plugin->path() . DS . 'models';
+            }
+        }
+        $m_dir = $m_dir ? $m_dir : LIB_DIR . 'PADO' . DS . 'models';
+        if ( empty( $items ) ) {
+            $items = scandir( $m_dir );
+            array_unshift( $items, 'phrase.json' );
+        } else {
+            array_walk( $items, function( &$item ) { $item .= '.json'; } );
+        }
         $ws_children = [];
         $workspace = null;
-        array_unshift( $items, 'phrase.json' );
         $items = array_flip( $items );
         $items = array_keys( $items );
         $default_models = [];
         foreach ( $items as $item ) {
             if ( strpos( $item, '.' ) === 0 ) continue;
-            $file = $models_dir . DS . $item;
+            $file = $m_dir . DS . $item;
+            if (! is_readable( $file ) ) continue;
             $item = str_replace( '.json', '', $item );
             $default_models[] = $item;
             $init = $db->model( $item )->new();
+            $scheme = json_decode( file_get_contents( $file ), true );
+            if ( isset( $scheme['version'] ) ) {
+                $version_opt = $db->model( 'option' )->get_by_key(
+                    ['kind' => 'scheme_version', 'key' => $item ] );
+                $version_opt->value( $scheme['version'] );
+                $version_opt->extra( $component );
+                $version_opt->save();
+            }
             if ( $item === 'column' || $item === 'option'
                 || $item === 'meta' || $item === 'session' ) continue;
             $table = $db->model( 'table' )->get_by_key( ['name' => $item ] );
-            $scheme = json_decode( file_get_contents( $file ), true );
             if ( isset( $scheme['locale'] ) ) {
                 $locale = $scheme['locale'];
                 foreach ( $locale as $lang => $dict ) {
@@ -209,15 +395,16 @@ class PTUpgrader {
             $primary = $indexes['PRIMARY'];
             $col_primary = isset( $scheme['primary'] ) ? $scheme['primary'] : null;
             $child_of = isset( $scheme['child_of'] ) ? $scheme['child_of'] : null;
-            $options = ['label', 'plural', 'auditing', 'sort_by', 'order', 'sortable',
+            $options = ['label', 'plural', 'auditing', 'order', 'sortable',
                 'menu_type', 'template_tags', 'taggable', 'display_space', 'start_end',
                 'has_basename', 'has_status', 'assign_user', 'revisable', 'hierarchy',
-                'allow_comment'];
+                'allow_comment', 'default_status'];
             foreach ( $options as $option ) {
                 $opt = isset( $scheme[ $option ] ) ? $scheme[ $option ] : '';
                 if (! $table->$option && $opt ) $table->$option( $opt );
             }
-            if ( isset( $sort_by ) ) {
+            if ( isset( $scheme['sort_by'] ) ) {
+                $sort_by = $scheme['sort_by'];
                 $sort_key = key( $sort_by );
                 $sort_order = $sort_by[ $sort_key ];
                 $table->sort_by( $sort_key );
@@ -239,10 +426,10 @@ class PTUpgrader {
             }
             $app->set_default( $table );
             $table->not_delete( 1 );
+            if ( isset( $scheme['version'] ) ) {
+                $table->version( $scheme['version'] );
+            }
             $table->save();
-            $original = clone $table;
-            $cb = ['is_new' => false, 'original' => $original ];
-            $app->post_save_table( $cb, $app, $table, true );
             if ( $item === 'workspace' ) {
                 $workspace = $table;
             }
@@ -257,6 +444,8 @@ class PTUpgrader {
                 $scheme['unchangeable'] : [];
             $autoset = isset( $scheme['autoset'] ) ? $scheme['autoset'] : [];
             $col_options = isset( $scheme['options'] ) ? $scheme['options'] : [];
+            $translates = isset( $scheme['translate'] ) ? $scheme['translate'] : [];
+            $hints = isset( $scheme['hint'] ) ? $scheme['hint'] : [];
             $i = 1;
             $locale = $app->dictionary['default'];
             foreach ( $column_defs as $name => $defs ) {
@@ -296,6 +485,10 @@ class PTUpgrader {
                 }
                 if ( isset( $col_options[ $name ] ) ) 
                     $record->options( $col_options[ $name ] );
+                if ( isset( $hints[ $name ] ) ) 
+                    $record->hint( $hints[ $name ] );
+                if ( in_array( $name, $translates ) ) 
+                    $record->translate( 1 );
                 $app->set_default( $record );
                 $record->save();
                 if ( $name === 'workspace_id' ) {
@@ -856,17 +1049,18 @@ class PTUpgrader {
         $tables = $app->db->model( 'table' )->load();
         foreach ( $tables as $t ) {
             if ( $table->id == $t->id ) continue;
+            $rel_table = $app->get_table( $t->name );
             $model = $app->db->model( $t->name )->new();
             if ( $model->has_column( 'table_id' ) ) {
                 $rel_objs = $model->load( ['table_id' => $table->id ] );
                 foreach ( $rel_objs as $obj ) {
-                    $app->remove_object( $obj );
+                    $app->remove_object( $obj, $rel_table );
                 }
             }
             if ( $model->has_column( 'model' ) ) {
                 $rel_objs = $model->load( ['model' => $table->name ] );
                 foreach ( $rel_objs as $obj ) {
-                    $app->remove_object( $obj );
+                    $app->remove_object( $obj, $rel_table );
                 }
             }
         }

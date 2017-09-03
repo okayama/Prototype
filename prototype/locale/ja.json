@@ -133,12 +133,19 @@
     "fieldtype"          : "フィールド型",
     "relation"           : "リレーション",
     "Editor Height"      : "エディタの高さ",
+    "Manage Plugins"     : "プラグイン管理",
+    "Manage Scheme"      : "スキーマ管理",
+    "Component"          : "コンポーネント",
+    "Version of Scheme"  : "スキーマバージョン",
+    "Version of Database": "DBバージョン",
     "Unspecified"        : "指定なし",
     "Multiple"           : "複数",
     "Title"              : "タイトル",
     "Text"               : "本文",
     "Content"            : "コンテンツ",
     "Option's Labels"    : "オプションのラベル",
+    "Single Column"      : "1カラム",
+    "Version"            : "バージョン",
     "Keyword"            : "キーワード",
     "Keywords"           : "キーワード",
     "Tag"                : "タグ",
@@ -440,6 +447,19 @@
     "seconds"            : "秒",
     "%sseconds"          : "%s秒",
     "%1$smin %2$sseconds": "%1$s分 %2$s秒",
+    "Unknown Model %s."  : "不明なモデルです(%s)。",
+    "Upgrade 1 scheme."  : "1件のスキーマをアップグレードしました。",
+    "Upgrade %s schemes.": "%s件のスキーマをアップグレードしました。",
+    "There is no upgrade."
+        : "アップグレードはありません。",
+    "There is one upgrade."
+        : "1件のアップグレードが見つかりました。",
+    "You did not select any scheme."
+        : "スキーマが選択されていません。",
+    "There are %s upgrades."
+        : "%s件のアップグレードが見つかりました。",
+    "There is no upgrade."
+        : "アップグレードはありません。",
     "%1$sh %2$smin %3$sseconds"
         : "%1$s時間 %2$s分 %3$s秒",
     "Workspace Administrator"
@@ -455,6 +475,8 @@
         : "%s は変更できません。",
     "File and Label are required."
         : "「ファイル」と「ラベル」は必須です。",
+    "Are you sure you want to upgrade selected scheme(s)?"
+        : "選択されたスキーマをアップグレードしてもよろしいですか?",
     "%1$s '%2$s(ID:%3$s)' created by %4$s."
         : "%4$s が %1$s 「%2$s(ID:%3$s)」を作成しました。",
     "%1$s '%2$s(ID:%3$s)' edited by %4$s."
@@ -529,8 +551,8 @@
         : "不正な編集表示タイプです (%s)。",
     "%s is required."
         : "%sは必須です。",
-    "App Name, System Email and Site URL are required."
-        : "アプリ名, システムのメールとサイトURLは必須です。",
+    "App Name, System Email Site URL and Site Path are required."
+        : "アプリ名, システムのメール, サイトURLとサイト・パスは必須です。",
     "To, From and subject are required."
         : "To,Fromアドレスと件名は必須です。",
     "You did not select any %s."

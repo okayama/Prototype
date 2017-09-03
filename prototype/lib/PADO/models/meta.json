@@ -1,4 +1,5 @@
 {
+    "version"    : "1.0",
     "column_defs": {
         "id": {
             "type": "int",
@@ -15,6 +16,10 @@
             "size": 60
         },
         "kind": {
+            "type": "string",
+            "size": 60
+        },
+        "type": {
             "type": "string",
             "size": 60
         },
@@ -48,6 +53,7 @@
         "PRIMARY": "id",
         "object_id": "object_id",
         "model": "model",
+        "type": "type",
         "key": "key",
         "name": "name",
         "value": "value",

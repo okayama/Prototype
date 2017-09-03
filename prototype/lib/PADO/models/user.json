@@ -1,12 +1,13 @@
 {
-    "label"     : "User",
-    "plural"    : "Users",
-    "primary"   : "name",
-    "display"   : 1,
-    "order"     : 80,
-    "auditing"  : 1,
+    "label"    : "User",
+    "plural"   : "Users",
+    "version"  : "1.0",
+    "primary"  : "name",
+    "display"  : 1,
+    "order"    : 80,
+    "auditing" : 1,
+    "menu_type": 5,
     "has_status": 1,
-    "menu_type" : 5,
     "column_defs": {
         "id": {
             "type": "int",

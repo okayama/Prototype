@@ -1,0 +1,130 @@
+{
+    "version"  : "1.0",
+    "label"    : "Field",
+    "plural"   : "Fields",
+    "primary"  : "name",
+    "auditing" : 1,
+    "order"    : 181,
+    "sortable" : 1,
+    "display"  : 1,
+    "menu_type": 2,
+    "display_space": 1,
+    "has_basename": 1,
+    "column_defs": {
+        "id": {
+            "type": "int",
+            "size": 11,
+            "not_null": 1
+        },
+        "name": {
+            "type": "string",
+            "size": 255
+        },
+        "fieldtype_id": {
+            "type": "int",
+            "size": 11
+        },
+        "label": {
+            "type": "text"
+        },
+        "content": {
+            "type": "text"
+        },
+        "models": {
+            "type": "relation"
+        },
+        "options": {
+            "type": "text"
+        },
+        "options_labels": {
+            "type": "text"
+        },
+        "required": {
+            "type": "tinyint",
+            "size": 4
+        },
+        "display": {
+            "type": "tinyint",
+            "size": 4
+        },
+        "multiple": {
+            "type": "tinyint",
+            "size": 4
+        },
+        "order": {
+            "type": "int",
+            "size": 11
+        },
+        "basename": {
+            "type": "string",
+            "size": 255,
+            "not_null": 1
+        },
+        "workspace_id": {
+            "type": "int",
+            "size": 11
+        },
+        "created_on": {
+            "type": "datetime"
+        },
+        "modified_on": {
+            "type": "datetime"
+        },
+        "created_by": {
+            "type": "int",
+            "size": 11
+        },
+        "modified_by": {
+            "type": "int",
+            "size": 11
+        }
+    },
+    "indexes": {
+        "PRIMARY": "id",
+        "id": "id",
+        "name": "name",
+        "fieldtype_id": "fieldtype_id",
+        "display": "display",
+        "order": "order",
+        "basename": "basename",
+        "workspace_id": "workspace_id",
+        "created_on": "created_on",
+        "modified_on": "modified_on",
+        "created_by": "created_by",
+        "modified_by": "modified_by"
+    },
+    "translate": [
+        "fieldtype_id",
+        "models"
+    ],
+    "hint": {
+        "options": "Comma separated values. The value is stored in the variable 'field_option' in the loop of the template variable 'field_options'.",
+        "options_labels": "Comma separated values. The value is stored in the variable 'field_label' in the loop of the template variable 'field_options'.",
+        "required": "If the field is not display, the item is not checked.",
+        "display": "Even if you do not specify it, you can add it in the edit screen."
+    },
+    "relations": {
+        "models": "table"
+    },
+    "options": {
+        "label": "10",
+        "content": "18"
+    },
+    "sort_by": {
+        "id": "descend"
+    },
+    "autoset": [
+        "workspace_id",
+        "created_on",
+        "modified_on",
+        "created_by",
+        "modified_by"
+    ],
+    "unique": [
+        "name",
+        "basename"
+    ],
+    "unchangeable": [
+        "workspace_id"
+    ]
+}

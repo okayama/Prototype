@@ -1,6 +1,7 @@
 {
     "label"    : "Role",
     "plural"   : "Roles",
+    "version"  : "1.0",
     "primary"  : "name",
     "auditing" : 1,
     "order"    : 160,

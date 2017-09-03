@@ -1,6 +1,7 @@
 {
-    "label" : "Column",
-    "plural": "Columns",
+    "label"   : "Column",
+    "plural"  : "Columns",
+    "version" : "1.0",
     "column_defs": {
         "id": {
             "type": "int",

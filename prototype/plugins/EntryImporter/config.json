@@ -1,4 +1,7 @@
 {
+    "version" : "1.0",
+    "author"  : "Alfasado Inc.",
+    "author_link" : "https://alfasado.net/",
     "menus": {
         "start_import": {
             "display_space" : 1,

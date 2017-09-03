@@ -48,6 +48,7 @@ class Prototype {
     public    $template_paths= [ ALT_TMPL, TMPL_DIR ];
     public    $class_paths   = [];
     public    $components    = [];
+    public    $plugin_dirs   = [];
     public    $remote_ip;
     public    $user;
     public    $appname;
@@ -67,6 +68,7 @@ class Prototype {
     public    $current_magic;
     public    $temp_dir      = '/tmp';
     protected $errors        = [];
+    public    $installed;
 
     public    $registry      = [];
 
@@ -84,7 +86,8 @@ class Prototype {
                                 'export_scheme', 'recover_password', 'save_hierarchy',
                                 'delete_filter', 'edit_image', 'insert_asset',
                                 'upload_multi', 'rebuild_phase', 'get_thumbnail',
-                                'get_field_html', 'debug'];
+                                'get_field_html', 'manage_scheme', 'manage_plugins',
+                                'debug'];
 
     public    $callbacks     = ['pre_save'     => [], 'post_save'   => [],
                                 'pre_delete'   => [], 'post_delete' => [],
@@ -195,6 +198,16 @@ class Prototype {
                 $ctx->register_tag( $tag, $kind, $tag_prefix . $tag, $core_tags );
             }
         }
+        $sth = $db->show_tables( 'table' );
+        $table = $sth->fetchColumn();
+        if (! $table && $this->mode !== 'upgrade' ) 
+            $this->redirect( $this->admin_url . '?__mode=upgrade&_type=install' );
+        if ( $table ) {
+            $this->installed = true;
+        } else {
+            $db->upgrader = true;
+            $db->json_model = true;
+        }
         $this->core_tags = $core_tags;
         $ctx->vars['script_uri'] = $this->admin_url;
         $ctx->vars['this_mode'] = $this->mode;
@@ -219,16 +232,10 @@ class Prototype {
             $this->dictionary[ $lang ]
                 = json_decode( file_get_contents( $locale ), true );
         // if ( $this->param( 'setup_db' ) ) {
-            /*
-            require_once( 'class.PTUpgrader.php' );
-            $upgrader = new PTUpgrader;
-            $upgrader->setup_db( true );
-            */
+            //require_once( 'class.PTUpgrader.php' );
+            //$upgrader = new PTUpgrader;
+            //$upgrader->setup_db( true );
         // }
-        $sth = $db->show_tables( 'table' );
-        $table = $sth->fetchColumn();
-        if (! $table && $this->mode !== 'upgrade' ) 
-            $this->redirect( $this->admin_url . '?__mode=upgrade&_type=install' );
         if ( $lang && $this->mode !== 'upgrade' ) {
             $this->is_login();
             $dictionary =& $this->dictionary;
@@ -273,7 +280,8 @@ class Prototype {
         }
         set_error_handler( [ $this, 'errorHandler'] );
         $this->log_path = __DIR__ . DS . 'log' . DS;
-        $this->components['Core'] = $this;
+        $this->components['core'] = $this;
+        $this->configure_from_json( __DIR__ . DS . 'config.json' );
         if ( $this->use_plugin ) {
             if ( ( $plugin_d = __DIR__ . DS . 'plugins' ) && is_dir( $plugin_d ) )
                 $this->plugin_paths[] = $plugin_d;
@@ -290,6 +298,7 @@ class Prototype {
                 $plugin = $dir . DS . $plugin;
                 if (! is_dir( $plugin ) ) continue;
                 $plugins = scandir( $plugin, $this->plugin_order );
+                $register = false;
                 foreach ( $plugins as $f ) {
                     if ( strpos( $f, '.' ) === 0 ) continue;
                     $_plugin = $plugin . DS . $f;
@@ -300,16 +309,24 @@ class Prototype {
                         continue;
                     }
                     if ( $extension === 'json' ) {
-                        $r = json_decode( file_get_contents( $_plugin ), true );
-                        foreach ( $r as $key => $props ) {
-                            $methods = $r[ $key ];
-                            foreach ( $methods as $meth => $prop ) {
-                                $this->registry[ $key ][ $meth ] = $prop;
-                            }
-                        }
+                        $this->configure_from_json( $_plugin );
                     } else if ( $extension === 'php' ) {
                         $this->class_paths[ pathinfo( $f )['filename'] ] = $_plugin;
                     }
+                    $register = true;
+                }
+                if ( $register ) $this->plugin_dirs[] = $plugin;
+            }
+        }
+    }
+
+    function configure_from_json ( $file ) {
+        $r = json_decode( file_get_contents( $file ), true );
+        foreach ( $r as $key => $props ) {
+            $methods = $r[ $key ];
+            if ( is_array( $methods ) ) {
+                foreach ( $methods as $meth => $prop ) {
+                    $this->registry[ $key ][ $meth ] = $prop;
                 }
             }
         }
@@ -336,13 +353,17 @@ class Prototype {
                             trigger_error( "Plugin '{$_plugin}' load failed!" );
                     if ( class_exists( $plugin ) ) {
                         $component = new $plugin();
-                        $app->components[ $plugin ] = $component;
+                        $app->components[ strtolower( $plugin ) ] = $component;
                         $app->register_callback( $model, $kind, $callback['method'],
                                                  $callback['priority'], $component );
                     }
                 }
             }
         }
+    }
+
+    function path () {
+        return __DIR__;
     }
 
     function run () {
@@ -439,39 +460,48 @@ class Prototype {
         if ( isset( $registry['methods'] ) && isset( $registry['methods'][ $mode ] ) ) {
             $meth = $registry['methods'][ $mode ];
             $plugin = $meth['component'];
-            $components = $app->class_paths;
-            if ( isset( $components[ $plugin ] ) ) {
-                $_plugin = $components[ $plugin ];
-                if (! class_exists( $plugin ) ) require_once( $_plugin );
-                if ( class_exists( $plugin ) ) {
-                    $component = new $plugin();
-                    $app->components[ $plugin ] = $component;
-                    $method = $meth['method'];
-                    if ( method_exists( $component, $method ) ) {
-                        if ( isset( $meth['permission'] ) && $meth['permission'] ) {
-                            if (! $app->can_do( $meth['permission'],
-                                                null, null, $workspace ) ) {
-                                $app->error( 'Permission denied.' );
-                            }
-                        }
-                        return $component->$method( $app );
+            $method = $meth['method'];
+            $component = $app->component( $plugin );
+            if (! $component ) $component = $app->autoload_component( $plugin );
+            if ( method_exists( $component, $method ) ) {
+                if ( isset( $meth['permission'] ) && $meth['permission'] ) {
+                    if (! $app->can_do( $meth['permission'],
+                                        null, null, $workspace ) ) {
+                        $app->error( 'Permission denied.' );
                     }
                 }
+                return $component->$method( $app );
             }
         }
         return $app->__mode( $mode );
     }
 
+    function autoload_component ( $class_name ) {
+        $app = Prototype::get_instance();
+        $components = $app->class_paths;
+        if ( isset( $components[ $class_name ] ) ) {
+            $_component = $components[ $class_name ];
+            if (! class_exists( $class_name ) && is_readable( $_component ) ) 
+                require_once( $_component );
+            if ( class_exists( $class_name ) ) {
+                $component = new $class_name();
+                $app->components[ strtolower( $class_name ) ] = $component;
+                return $component;
+            }
+        }
+    }
+
     function component ( $component ) {
         $components = $this->components;
-        if ( isset( $components[ $component ] ) ) return $components[ $component ];
+        if ( isset( $components[ strtolower( $component ) ] ) )
+            return $components[ strtolower( $component ) ];
         $component_paths = $this->class_paths;
         if ( isset( $component_paths[ $component ] ) ) {
             $_plugin = $component_paths[ $component ];
             if (! class_exists( $component ) ) require_once( $_plugin );
             if ( class_exists( $component ) ) {
                 $class = new $component();
-                $this->components[ $component ] = $class;
+                $this->components[ strtolower( $component ) ] = $class;
                 return $class;
             }
         }
@@ -680,6 +710,10 @@ class Prototype {
         $ctx->vars['max_status'] = $max_status;
         $ctx->vars['status_published'] = $status_published;
         $ctx->vars['_default_status'] = $table->default_status;
+        $maps = $db->model( 'urlmapping' )->count( ['model' => $model ] );
+        if ( $maps ) {
+            $ctx->vars['_has_mapping'] = 1;
+        }
         if ( $type === 'list' ) {
             if (! $app->param( 'dialog_view' ) ) {
                 if (! $app->can_do( $model, 'list', null, $workspace ) ) {
@@ -1031,10 +1065,6 @@ class Prototype {
             $ctx->vars['list_limit']    = $limit;
             $ctx->vars['list_offset']   = $offset;
             $ctx->vars['_has_deadline'] = $obj->has_column( 'has_deadline' );
-            $maps = $db->model( 'urlmapping' )->count( ['model' => $model ] );
-            if ( $maps ) {
-                $ctx->vars['_has_mapping'] = 1;
-            }
             $next_offset = $offset + $limit;
             $prev_offset = $offset - $limit;
             if ( $count > $next_offset )
@@ -1054,7 +1084,7 @@ class Prototype {
                 $display_options = array_keys( $scheme[ $type . '_properties'] );
                 $fields = PTUtil::get_fields( $obj, 'displays' );
                 array_walk( $fields, function( &$field ) { $field = 'field-' . $field; } );
-                $display_options = array_merge( $fields );
+                $display_options = array_merge( $display_options, $fields );
             } else {
                 $display_options = explode( ',', $user_option->value );
             }
@@ -1166,6 +1196,7 @@ class Prototype {
             header( 'Content-type: text/html; charset=utf-8' );
         }
         $tmpl = $app->ctx->get_template_path( $tmpl );
+        if (! $tmpl ) return;
         $src = file_get_contents( $tmpl );
         $cache_id = null;
         $callback = ['name' => 'template_source', 'template' => $tmpl ];
@@ -1189,7 +1220,6 @@ class Prototype {
             $debug = $app->ctx->build_page( $debug_tmpl, $param );
             $out = preg_replace( '!<\/body>!', $debug . '</body>', $out );
         }
-        // $out = $app->ctx->modifier_trim_space( $out, 3 );
         echo $out;
         exit();
     }
@@ -1302,7 +1332,6 @@ class Prototype {
         }
         $permissions = $app->permissions();
         if (! $workspace ) {
-            // $workspace = $app->workspace();
             if ( $obj && $obj->has_column( 'workspace_id' ) ) {
                 $workspace = $obj->workspace;
             }
@@ -1497,6 +1526,16 @@ class Prototype {
         $app->redirect( $app->admin_url .
             "?__mode=view&_type=hierarchy&_model={$model}&saved_hierarchy=1"
             . $app->workspace_param );
+    }
+
+    function manage_scheme ( $app ) {
+        require_once( 'class.PTUpgrader.php' );
+        $upgrader = new PTUpgrader;
+        return $upgrader->manage_scheme( $app );
+    }
+
+    function manage_plugins ( $app ) {
+        return $app->__mode( 'manage_plugins' );
     }
 
     function delete_filter ( $app ) {
@@ -2051,14 +2090,6 @@ class Prototype {
                 if ( $obj->has_column( 'workspace_id' ) && $app->workspace() ) {
                     $terms['workspace_id'] = $app->workspace()->id;
                 }
-                /*
-                if ( $obj->has_column( 'status' ) ) {
-                    $status_published = $app->status_published( $model );
-                    if ( $status_published ) {
-                        $terms['status'] = $status_published;
-                    }
-                }
-                */
                 $extra = '';
                 if ( $table->revisable ) {
                     $extra .= " AND {$_colprefix}rev_type=0";
@@ -2315,8 +2346,9 @@ class Prototype {
         $barcolor = $app->param( 'barcolor' );
         $bartextcolor = $app->param( 'bartextcolor' );
         $errors = [];
-        if (!$appname || !$site_url ) {
-            $errors[] = $app->translate( 'App Name and Site URL is required.' );
+        if (!$appname || !$site_url || !$system_email || !$site_path ) {
+            $errors[] = $app->translate(
+                'App Name, System Email Site URL and Site Path are required.' );
         }
         if ( $site_url && !$app->is_valid_url( $site_url, $msg ) ) {
             $errors[] = $msg;
@@ -2363,10 +2395,6 @@ class Prototype {
     }
 
     function debug ( $app ) {
-        //
-        require_once( 'class.PTUtil.php' );
-        $fields = PTUtil::get_fields( 'entry', 'requireds' );
-        var_dump($fields);
     }
 
     function save ( $app ) {
@@ -2688,10 +2716,10 @@ class Prototype {
         }
         if ( $has_file && ! $as_revision ) $obj->save();
         $id = $obj->id;
-        $field_basenames = PTUtil::get_fields( $obj, 'basenames' );
+        $object_fields = PTUtil::get_fields( $obj, 'types' );
         $custom_fields = $app->get_meta( $obj, 'customfield' );
         $field_ids = [];
-        foreach ( $field_basenames as $fld ) {
+        foreach ( $object_fields as $fld => $fieldtype ) {
             $fld_value = $app->param( "{$fld}__c" );
             $unique_ids = $app->param( "field-unique_id-{$fld}" );
             if ( $fld_value !== null ) {
@@ -2714,6 +2742,7 @@ class Prototype {
                         ['object_id' => $id, 'model' => $obj->_model,
                          'kind' => 'customfield', 'key' => $fld, 'number' => $i ] );
                     $meta->text( $value );
+                    $meta->type( $fieldtype );
                     if ( count( $fld_values ) == 1 ) {
                         $meta_key = key( $fld_values );
                         $meta->name( $meta_key );
@@ -2897,7 +2926,8 @@ class Prototype {
                 'sort' => 'order', 'limit' => 1, 'direction' => 'descend'] );
         if ( is_array( $last ) && count( $last ) ) {
             $last = $last[0];
-            $value = $last->order + 1;
+            $incl = $obj->_model == 'table' ? 10 : 1;
+            $value = $last->order + $incl;
         } else {
             $value = 1;
         }
@@ -2916,6 +2946,7 @@ class Prototype {
         $template = $map->template;
         $table = $app->get_table( $map->model );
         $archive_type = '';
+        $workspace = $app->workspace();
         if ( $obj->_model === 'template' ) {
             $tmpl = $obj->text;
             $terms = [];
@@ -2954,8 +2985,9 @@ class Prototype {
                     $date_col = $app->get_date_col( $container_obj );
                     $terms = [];
                     if ( $container_obj->has_column( 'workspace_id' )
-                        && $app->workspace() ) {
-                        $terms['workspace_id'] = $app->workspace()->id;
+                        && $workspace ) {
+                        $terms['workspace_id'] = $workspace->id;
+                        $workspace = $obj->workspace;
                     }
                     $last = $container_obj->load( $terms,
                         ['limit' => 1, 'sort' => $date_col, 'direction' => 'descend'] );
@@ -2976,6 +3008,7 @@ class Prototype {
         $ctx->stash( 'current_template', $template );
         $ctx->stash( 'current_context', $obj->_model );
         $ctx->stash( $obj->_model, $obj );
+        $ctx->stash( 'workspace', $workspace );
         foreach ( $properties as $key => $val ) {
             if ( $val === 'file' ) {
                 $magic = $app->param( "{$key}-magic" );
@@ -4012,6 +4045,7 @@ class Prototype {
             $base_url = $workspace->site_url;
             $base_path = $workspace->site_path;
             $asset_publish = $workspace->asset_publish;
+            $ctx->stash( 'workspace', $workspace );
         }
         $file_path = str_replace( DS, '/', $file_path );
         $base_path = str_replace( DS, '/', $base_path );
@@ -4263,6 +4297,7 @@ class Prototype {
         $locale['default'] = [];
         $lang = $app->language;
         $locale[ $lang ] = [];
+        $scheme['version'] = $table->version;
         $scheme['label'] = $table->label;
         $scheme['plural'] = $table->plural;
         $locale[ $lang ][ $table->label ] = $app->translate( $table->label );
@@ -4306,7 +4341,7 @@ class Prototype {
         $options = ['auditing', 'order', 'sortable', 'hierarchy', 'start_end',
                     'menu_type', 'template_tags', 'taggable', 'display_space',
                     'has_basename', 'has_status', 'assign_user', 'revisable',
-                    'allow_comment'];
+                    'allow_comment', 'default_status'];
         foreach ( $options as $option ) {
             if ( $table->$option ) $scheme[ $option ] = (int) $table->$option;
         }

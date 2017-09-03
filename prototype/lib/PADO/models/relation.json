@@ -1,6 +1,7 @@
 {
     "label"    : "Relation",
     "plural"   : "Relations",
+    "version"  : "1.0",
     "display"  : 0,
     "order"    : 81,
     "primary"  : "name",

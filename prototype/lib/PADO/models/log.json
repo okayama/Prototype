@@ -2,6 +2,7 @@
     "label"    : "Log",
     "plural"   : "Logs",
     "primary"  : "message",
+    "version"  : "1.0",
     "order"    : 150,
     "menu_type": 3,
     "display"  : 1,

@@ -1,6 +1,7 @@
 {
     "label"    : "Asset",
     "plural"   : "Assets",
+    "version"  : "1.0",
     "primary"  : "label",
     "display"  : true,
     "order"    : 80,

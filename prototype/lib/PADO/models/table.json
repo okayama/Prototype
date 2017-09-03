@@ -1,6 +1,7 @@
 {
     "label"    : "Model",
     "plural"   : "Models",
+    "version"  : "1.0",
     "primary"  : "name",
     "display"  : true,
     "sortable" : true,
@@ -30,6 +31,10 @@
         "description": {
             "type": "string",
             "size": 255
+        },
+        "version": {
+            "type": "string",
+            "size": 25
         },
         "primary": {
             "type": "string",
@@ -165,6 +170,7 @@
         "PRIMARY": "id",
         "display_system": "display_system",
         "sortable": "sortable",
+        "version": "version",
         "display_space": "display_space",
         "menu_type": "menu_type",
         "display_dashboard": "display_dashboard",
@@ -195,6 +201,7 @@
         "name": "primary",
         "label": "text",
         "plural": "text",
+        "version": "text_short",
         "order": "number",
         "space_child": "checkbox",
         "not_delete": "checkbox",
@@ -207,6 +214,7 @@
         "name": "primary",
         "label": "text",
         "plural": "text",
+        "version": "text_short",
         "description": "textarea",
         "primary": "text_short",
         "display_system": "checkbox",

@@ -1,15 +1,21 @@
 <mt:include file="include/header.tmpl">
 
+<mt:setvarblock name="field_required">
+  <i class="fa fa-asterisk required" aria-hidden="true"></i>
+  <span class="sr-only"><mt:trans phrase="Required"></span>
+</mt:setvarblock>
+
 <form action="<mt:var name="script_uri">" method="POST">
 <input type="hidden" name="__mode" value="upgrade">
-<input type="hidden" name="type" value="install">
+<input type="hidden" name="_type" value="install">
 
 <h2><mt:trans phrase="System Settings"></h2>
 
 <div class="row form-group">
   <div class="col-lg-2">
     <label for="appname">
-        <mt:trans phrase="App Name">
+      <mt:trans phrase="App Name">
+      <mt:var name="field_required">
     </label>
   </div>
   <div class="col-lg-10 input-group">
@@ -20,7 +26,7 @@
 <div class="row form-group">
   <div class="col-lg-2">
     <label for="copyright">
-        <mt:trans phrase="Copyright">
+      <mt:trans phrase="Copyright">
     </label>
   </div>
   <div class="col-lg-10 input-group">
@@ -31,7 +37,8 @@
 <div class="row form-group">
   <div class="col-lg-2">
     <label for="system_email">
-        <mt:trans phrase="System Email">
+      <mt:trans phrase="System Email">
+      <mt:var name="field_required">
     </label>
   </div>
   <div class="col-lg-10 input-group">
@@ -42,7 +49,8 @@
 <div class="row form-group">
   <div class="col-lg-2">
     <label for="site_url">
-        <mt:trans phrase="Site URL">
+      <mt:trans phrase="Site URL">
+      <mt:var name="field_required">
     </label>
   </div>
   <div class="col-lg-10 input-group">
@@ -53,7 +61,8 @@
 <div class="row form-group">
   <div class="col-lg-2">
     <label for="site_path">
-        <mt:trans phrase="Site Path">
+      <mt:trans phrase="Site Path">
+      <mt:var name="field_required">
     </label>
   </div>
   <div class="col-lg-10 input-group">
@@ -64,13 +73,13 @@
 <div class="row form-group">
   <div class="col-lg-2">
     <label for="extra_path">
-        <mt:trans phrase="Upload Path">
+      <mt:trans phrase="Upload Path">
     </label>
   </div>
-  <div class="col-lg-3 input-group">
+  <div class="col-lg-2 input-group">
     <input type="text" id="extra_path" name="extra_path" class="form-control" value="<mt:var name="extra_path" escape>">
   </div>
-  <div class="col-lg-3 input-group">
+  <div class="col-lg-2 input-group">
     <label class="custom-control custom-checkbox">
     <input id="asset_publish" class="custom-control-input"
      type="checkbox" name="asset_publish" value="1" <mt:if name="asset_publish">checked</mt:if>>
@@ -84,7 +93,7 @@
 <div class="row form-group">
   <div class="col-lg-2">
     <label for="sys_language">
-        <mt:trans phrase="Language">
+      <mt:trans phrase="Language">
     </label>
   </div>
   <div class="col-lg-10 col-2">
@@ -107,7 +116,8 @@
 <div class="row form-group">
   <div class="col-lg-2">
     <label for="name">
-        <mt:trans phrase="Username">
+      <mt:trans phrase="Username">
+      <mt:var name="field_required">
     </label>
   </div>
   <div class="col-lg-10 input-group">
@@ -118,29 +128,32 @@
 <div class="row form-group">
   <div class="col-lg-2">
     <label for="password">
-        <mt:trans phrase="Password">
+      <mt:trans phrase="Password">
+      <mt:var name="field_required">
     </label>
   </div>
   <div class="col-lg-10 input-group">
-    <input type="password" id="password" name="password" class="form-control" value="<mt:var name="password" escape>">
+    <input type="password" id="password" name="password" class="form-control" value="">
   </div>
 </div>
 
 <div class="row form-group">
   <div class="col-lg-2">
     <label for="password-verify">
-        <mt:trans phrase="Password (Confirm)">
+      <mt:trans phrase="Password (Confirm)">
+      <mt:var name="field_required">
     </label>
   </div>
   <div class="col-lg-10 input-group">
-    <input type="password" id="password-verify" name="password-verify" class="form-control" value="<mt:var name="password-verify" escape>">
+    <input type="password" id="password-verify" name="password-verify" class="form-control" value="">
   </div>
 </div>
 
 <div class="row form-group">
   <div class="col-lg-2">
     <label for="email">
-        <mt:trans phrase="Email">
+      <mt:trans phrase="Email">
+      <mt:var name="field_required">
     </label>
   </div>
   <div class="col-lg-10 input-group">
@@ -151,7 +164,8 @@
 <div class="row form-group">
   <div class="col-lg-2">
     <label for="nickname">
-        <mt:trans phrase="Display Name">
+      <mt:trans phrase="Display Name">
+      <mt:var name="field_required">
     </label>
   </div>
   <div class="col-lg-10 input-group">
@@ -162,7 +176,7 @@
 <div class="row form-group">
   <div class="col-lg-2">
     <label for="language">
-        <mt:trans phrase="Language">
+      <mt:trans phrase="Language">
     </label>
   </div>
   <div class="col-lg-10 col-2">
@@ -179,7 +193,9 @@
 </div>
 
 <div class="row form-group">
+  <div class="col-lg-12">
   <button type="submit" class="btn btn-primary"><mt:trans phrase="Install"></button>
+  </div>
 </div>
 </form>
 

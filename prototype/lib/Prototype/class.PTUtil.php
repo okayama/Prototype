@@ -317,6 +317,13 @@ class PTUtil {
                 $basenames[] = $field->basename;
             }
             return $basenames;
+        } else if ( $type === 'types' ) {
+            $meta_fields = [];
+            foreach ( $_fields as $field ) {
+                $fieldtype = $field->fieldtype;
+                $basenames[ $field->basename ] = $fieldtype ? $fieldtype->basename : '';
+            }
+            return $basenames;
         } else if ( $type === 'requireds' ) {
             $meta_fields = [];
             foreach ( $_fields as $field ) {

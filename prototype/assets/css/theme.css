@@ -422,6 +422,10 @@ select.short {
   text-overflow: ellipsis;
 }
 
+.cb-col {
+  width: 20px !important;
+}
+
 .nav-link {
   color:#ddd !important;
   font-size:90%;
@@ -940,6 +944,22 @@ i.required {
 
 .text-muted {
   font-size: 90%;
+}
+
+.short-col {
+  width: 180px;
+}
+
+.table-screen .active-cell {
+  background-color: #FBF7D9 !important;
+}
+
+.table-screen .active-cell th {
+  padding-bottom: 0px;
+}
+
+.table-screen .all-selector {
+  padding-bottom: 0px;
 }
 
 .custom-field-wrapper {

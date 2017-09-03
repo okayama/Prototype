@@ -1,6 +1,7 @@
 {
     "label"    : "WorkSpace",
     "plural"   : "WorkSpaces",
+    "version"  : "1.0",
     "primary"  : "name",
     "display"  : true,
     "sortable" : true,

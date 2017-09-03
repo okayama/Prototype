@@ -1,6 +1,7 @@
 {
     "label"    : "View",
     "plural"   : "Views",
+    "version"  : "1.0",
     "auditing" : 1,
     "display"  : 1,
     "order"    : 130,

@@ -147,7 +147,7 @@ $(".query-box").keypress(function(e){
 
 <mt:unless name="list_items">
   <div class="alert alert-success full">
-    <mt:trans phrase="%s not found." params="$plural">
+    <mt:trans phrase="%s not found." params="$label">
   </div>  
 <mt:if name="query">
   <div class="full">
@@ -535,6 +535,7 @@ $('#list_body tr').click(function() {
     } else {
         $('#box_'+line).prop('checked', true);
     }
+    set_all_select();
 });
 <mt:if name="_sortable">
 $('#list_body tr').mouseover(function() {
@@ -692,6 +693,9 @@ $('.query-box').change(function(){
     $('.query-box').val( $(this).val() );
 });
 $("input[name='id[]']").change(function(){
+    set_all_select();
+});
+function set_all_select () {
     is_all = true;
     $("input[name='id[]']").each(function(){
         if ( $(this).prop('checked') == false ) {
@@ -702,7 +706,7 @@ $("input[name='id[]']").change(function(){
         }
     });
     $('.selector').prop('checked', is_all );
-});
+}
 $('.selector').click(function(){
     checked = $(this).prop('checked');
     $("input[name='id[]']").each(function(){

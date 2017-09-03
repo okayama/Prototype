@@ -1183,9 +1183,10 @@ class PADOBaseModel {
  * Get table scheme from JSON file and set to $pado->scheme[ $model ].
  * 
  * @param string $model : Name of model.
+ * @param string $json  : File path of json.
  */
-    function set_scheme_from_json ( $model ) {
-        $json = PADODIR . 'models' . DS . $model . '.json';
+    function set_scheme_from_json ( $model, $json = '' ) {
+        $json = $json ? $json : PADODIR . 'models' . DS . $model . '.json';
         if ( file_exists( $json ) ) {
             $scheme = json_decode( file_get_contents( $json ), true );
             if ( isset( $scheme['indexes'] ) && isset( $scheme['indexes']['PRIMARY'] ) ) {

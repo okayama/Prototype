@@ -1,6 +1,7 @@
 {
     "label"    : "Group",
     "plural"   : "Groups",
+    "version"  : "1.0",
     "primary"  : "name",
     "display"  : 1,
     "auditing" : 1,
@@ -100,10 +101,5 @@
         "modified_on": "datetime",
         "modified_by": "reference:user:name",
         "workspace_id": "reference:workspace:name"
-    },
-    "locale": {
-        "default": {
-            "status": "Archive"
-        }
     }
 }

@@ -1,6 +1,7 @@
 {
     "label"    : "Category",
     "plural"   : "Categories",
+    "version"  : "1.0",
     "primary"  : "label",
     "auditing" : 1,
     "order"    : 20,

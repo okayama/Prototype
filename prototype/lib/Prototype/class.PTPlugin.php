@@ -31,4 +31,8 @@ class PTPlugin {
             ? sprintf( $phrase, $params ) : vsprintf( $phrase, $params );
         return $phrase;
     }
+
+    function path () {
+        return dirname( $this->path );
+    }
 }
