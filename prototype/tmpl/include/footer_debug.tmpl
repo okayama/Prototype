@@ -1,17 +1,28 @@
-<div style="font-size:80%;width:100%;padding:10px;position:fixed;bottom:0;background-color:#cdf;max-height:60px;overflow-y:scroll">
+<div style="font-size:80%;width:100%;padding:10px;position:fixed;bottom:0;background-color:#cdf;max-height:70px;overflow-y:scroll">
 Request completed in <mt:var name="processing_time"> seconds.
 
 <mt:loop name="errors">
 <mt:if name="__first__">
-<h2 style="font-size:110%;margin-top:4px;">Errors or Warnings</h2>
+<h2 style="font-size:110%;margin-top:6px;margin-bottom:3px;">Errors or Warnings</h2>
 <ul></mt:if>
 <li><mt:var name="__value__" escape></li>
 <mt:if name="__last__"></ul></mt:if>
 </mt:loop>
 
+<mt:if name="query_string">
+<h2 style="font-size:110%;margin-top:6px;margin-bottom:3px;">Query Parameters</h2>
+<ul>
+<mt:var name="query_string" split="
+" setvar="query_strings">
+<mt:loop name="query_strings">
+<li><mt:var name="__value__" escape></li>
+</mt:loop>
+</ul>
+</mt:if>
+
 <mt:loop name="queries">
 <mt:if name="__first__">
-<h2 style="font-size:110%;margin-top:6px;">SQL Queries (<mt:var name="query_count"> Queries)</h2>
+<h2 style="font-size:110%;margin-top:6px;margin-bottom:3px;">SQL Queries (<mt:var name="query_count"> Queries)</h2>
 <ul></mt:if>
 <li><mt:var name="__value__" escape></li>
 <mt:if name="__last__"></ul></mt:if>

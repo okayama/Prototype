@@ -15,6 +15,7 @@
     "Saving comment failed.": "コメントを保存できませんでした。",
     "Default password for new users:" : "新しいユーザーの初期パスワード",
     "Enter a default password for new users." : "新しいユーザーの初期パスワードを入力してください。",
+    "It provides entries import function." : "記事のインポート機能を提供します。",
     "Could not expand ZIP archive." : "ZIPアーカイブを解凍できませんでした。",
     "Unknown import format '%s'" : "対応していないインポートフォーマットです。'%s'",
     "Invalid File extension'%s'." : "許可されていないファイル拡張子です。'%s'",

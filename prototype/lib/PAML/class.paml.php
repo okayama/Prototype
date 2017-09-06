@@ -618,7 +618,7 @@ class PAML {
  * @param  string $name: Template tag name.
  * @return array  $args: Set-uped $args.
  */
-    function setup_args ( $args, $name = '', $ctx = null, $vars = null ) {
+    function setup_args ( $args, $name = '', $ctx = null, $vars = null, $debug = false ) {
         $string = false;
         if (! $ctx ) $ctx = $this;
         if (! is_array( $args ) ) {
@@ -632,19 +632,30 @@ class PAML {
             if ( strpos( $v, '$' ) === 0 ) { // Variable
                 if (!$vars ) $vars = array_merge( $ctx->vars, $ctx->local_vars );
                 $v = ltrim( $v, '$' );
-                if ( preg_match( "/(.{1,})\[(.*?)]$/", $v, $mts ) )
+                if ( preg_match( "/(.{1,})\[(.*?)\]$/", $v, $mts ) ) {
                     list( $v, $idx ) = [ trim( $mts[1] ), trim( $mts[2] ) ];
-                $v = isset( $vars[ $v ] ) ? $vars[ $v ] : '';
-                if ( isset( $idx ) ) {
-                    $args[ $k ] = isset( $v[ $idx ] ) ? $v[ $idx ] : '';
-                    if ( strpos( $idx ,'$' ) === 0 ) {
-                        $idx = ltrim( $idx, '$' );
-                        $idx = isset( $vars[ $idx ] ) ? $vars[ $idx ] : '';
-                        if ( is_array( $v ) && isset( $v[ $idx ] ) )
-                            $args[ $k ] = ['__array__' => $v[ $idx ] ];
-                    }
+                }
+                if ( isset( $idx ) && isset( $args['this_tag'] ) 
+                    && $args['this_tag'] === 'if' && $k == 'name' ) {
+                    $v = [ $v => $idx ];
+                    $args['name'] = $v;
                 } else {
-                    $args[ $k ] = $this->setup_args( $v );
+                    $v = isset( $vars[ $v ] ) ? $vars[ $v ] : '';
+                    if ( isset( $idx ) ) {
+                        $args[ $k ] = isset( $v[ $idx ] ) ? $v[ $idx ] : '';
+                        if ( strpos( $idx ,'$' ) === 0 ) {
+                            $idx = ltrim( $idx, '$' );
+                            $idx = isset( $vars[ $idx ] ) ? $vars[ $idx ] : '';
+                            if ( is_array( $v ) && isset( $v[ $idx ] ) )
+                                $args[ $k ] = ['__array__' => $v[ $idx ] ];
+                        }
+                        if ( isset( $idx ) && isset( $args['this_tag'] ) 
+                            && $args['this_tag'] === 'var' && $k == 'name' ) {
+                            $args['setuped_var'] = $args[ $k ];
+                        }
+                    } else {
+                        $args[ $k ] = $this->setup_args( $v );
+                    }
                 }
             } elseif ( strpos( $v, $delim ) !== false
                 && preg_match( "/^{$encl}.*?{$delim}.*{$encl}$/", $v ) ) {
@@ -931,8 +942,14 @@ class PAML {
             if( $result === false ) trigger_error( "error in expression '{$test}'" );
             return ( $result ) ? $true : $false;
         }
+        $encl = preg_quote( $ctx->csv_enclosure );
+        $delim = preg_quote( $ctx->csv_delimiter );
         if (!isset( $args['name'] ) ) return $false;
-        if ( strpos( $args['name'], 'request.' ) === 0 ) {
+        if ( is_array( $args['name'] ) ) {
+            $key = key( $args['name'] );
+            $value = $args['name'][ $key ];
+            $v = isset( $vars[ $key ][ $value ] ) ? $vars[ $key ][ $value ] : '';
+        } elseif ( strpos( $args['name'], 'request.' ) === 0 ) {
             $v = $ctx->request_var( $args['name'], $args );
         } else {
             if ( isset( $vars[ $args['name'] ] ) ) $v = $vars[ $args['name'] ];
@@ -992,6 +1009,8 @@ class PAML {
 
     function function_var ( $args, $ctx ) {
         if (!isset( $args['name'] ) ) return;
+        if ( isset( $args['setuped_var'] ) && $args['setuped_var'] )
+            return $args['setuped_var'];
         if ( isset( $args['value'] ) ) return $ctx->function_setvar( $args, $ctx );
         $name = $args['name'];
         if ( is_array( $name )&&isset( $name['__array__'] ) )

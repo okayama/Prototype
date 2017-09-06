@@ -51,6 +51,7 @@ $('#header-alert-message').focus();
 <input type="hidden" name="magic_token" value="<mt:var name="magic_token">">
 <input type="hidden" name="_type" value="rebuild_archives">
 <input type="hidden" id="next_models" name="next_models" value="<mt:var name="next_models" escape>">
+<input type="hidden" name="current_model" value="<mt:var name="current_model" escape>">
 <input type="hidden" name="start_time" value="<mt:var name="request.start_time" escape>">
 </fotm>
 <p>100%</p>
@@ -92,7 +93,7 @@ if ( $('#next_models').val() ) {
 
 <script>
 setTimeout(function(){
-$('#rebuild_next').submit();
+    $('#rebuild_next').submit();
 } , 500);
 </script>
 

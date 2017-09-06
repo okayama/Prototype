@@ -1,7 +1,17 @@
 {
-    "version" : "1.0",
-    "author"  : "Alfasado Inc.",
+    "label"       : "Entry Importer",
+    "id"          : "entryimporter",
+    "component"   : "EntryImporter",
+    "version"     : "1.0",
+    "author"      : "Alfasado Inc.",
     "author_link" : "https://alfasado.net/",
+    "description" : "It provides entries import function.",
+    "cfg_template": "cfg_template.tmpl",
+    "cfg_system"  : 1,
+    "cfg_space"   : 1,
+    "settings"    : {
+        "name" : "EntryImporter"
+    },
     "menus": {
         "start_import": {
             "display_space" : 1,

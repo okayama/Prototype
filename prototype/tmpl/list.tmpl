@@ -360,9 +360,10 @@ $('#dialog-cancel-btn').click(function(){
             </mt:if>
           </mt:if>
           <mt:unless name="$_name">
-          <mt:setvarblock name="$_name">(<mt:trans phrase="null">)</mt:setvarblock>
+            <mt:trans phrase="null">
+          <mt:else>
+            <mt:var name="$_name" escape>
           </mt:unless>
-          <mt:var name="$_name" escape>
         <mt:ifusercan action="edit" model="$this_model" id="$id" workspace_id="$workspace_id"></a></mt:ifusercan>
         <mt:if name="_has_mapping">
           <mt:if name="_permalink">

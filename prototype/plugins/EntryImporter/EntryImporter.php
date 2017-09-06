@@ -101,6 +101,7 @@ class EntryImporter extends PTPlugin {
     }
 
     function upload_import_file ( $app ) {
+        $app->db->caching = false;
         $app->validate_magic( true );
         if (! $app->can_do( 'entry', 'create' ) ) {
             $error = $app->translate( 'Permission denied.' );
@@ -124,6 +125,7 @@ class EntryImporter extends PTPlugin {
     }
 
     function import_movabletype ( $app, $session ) {
+        $app->db->caching = false;
         $table = $app->get_table( 'entry' );
         $workspace_id = (int) $app->param( 'workspace_id' );
         $default_status = $table->default_status ? $table->default_status : 1;

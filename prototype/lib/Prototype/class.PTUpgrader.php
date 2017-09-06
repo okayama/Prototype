@@ -192,6 +192,7 @@ class PTUpgrader {
         $model_files = [];
         $model_names = [];
         $components = [];
+        $cfg_settings = $app->cfg_settings;
         foreach ( $schemes as $item ) {
             $model = $item->key;
             $model_names[] = $model;
@@ -218,9 +219,17 @@ class PTUpgrader {
                     if ( $db_version < $scheme_version ) {
                         $upgrade_count++;
                     }
-                    $component = $component == 'core' ? 'prototype' : $component;
+                    $component = $component == 'core' ? 'Prototype' : $component;
                     $info = ['model' => $model, 'scheme_version' => $scheme_version,
                              'db_version' => $db_version, 'component' => $component ];
+                    if ( isset( $cfg_settings[ $component ] ) &&
+                        isset( $cfg_settings[ $component ]['label'] ) ) {
+                        $cfg_setting = $cfg_settings[ $component ];
+                        $plugin = $app->component( $component );
+                        $component = $app->translate( $cfg_settings[ $component ]['label'],
+                                        null, $plugin );
+                        $info['component'] = $component;
+                    }
                     $items[] = $info;
                     $components[ $model ] = $component;
                 }
@@ -419,7 +428,7 @@ class PTUpgrader {
                 $table->display_space( 1 );
             }
             $table->primary( $col_primary );
-            if ( isset( $scheme['display'] ) && $scheme['display'] ) {
+            if ( isset( $scheme['display_system'] ) && $scheme['display_system'] ) {
                 $table->display_system( 1 );
             } else {
                 $table->display_system( 0 );

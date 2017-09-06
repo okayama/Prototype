@@ -3,7 +3,7 @@
     "plural"   : "Views",
     "version"  : "1.0",
     "auditing" : 1,
-    "display"  : 1,
+    "display_system": 1,
     "order"    : 130,
     "primary"  : "name",
     "menu_type": 1,
@@ -108,5 +108,8 @@
         "modified_on": "datetime",
         "modified_by": "reference:user:name",
         "workspace_id": "reference:workspace:name"
+    },
+    "options": {
+        "status": "Disable,Enable"
     }
 }

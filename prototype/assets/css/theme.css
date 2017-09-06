@@ -146,6 +146,19 @@ h1 {
   width:70% !important;
 }
 
+.page-title-full {
+  width:100% !important;
+}
+
+.plugin-action-buttons {
+  margin-left: -5px;
+  margin-top: 40px;
+}
+
+.plugin-doc-link {
+  font-weight: normal;
+}
+
 .edit_image h1 {
   color: #000;
 }
@@ -424,6 +437,11 @@ select.short {
 
 .cb-col {
   width: 20px !important;
+}
+
+.plugin-switch {
+  font-size: 85%;
+  margin-top: 5px;
 }
 
 .nav-link {

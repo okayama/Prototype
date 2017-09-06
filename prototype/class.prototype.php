@@ -19,6 +19,7 @@ class Prototype {
 
     public static $app = null;
 
+    public    $name          = 'Prototype';
     public    $db            = null;
     public    $ctx           = null;
     public    $dictionary    = [];
@@ -49,6 +50,8 @@ class Prototype {
     public    $class_paths   = [];
     public    $components    = [];
     public    $plugin_dirs   = [];
+    public    $cfg_settings  = [];
+    public    $plugin_switch = [];
     public    $remote_ip;
     public    $user;
     public    $appname;
@@ -95,6 +98,7 @@ class Prototype {
                                 'pre_listing'  => [], 'template_source' => [],
                                 'template_output'];
 
+    public    $permissions   = ['can_rebuild', 'manage_plugins'];
     public    $disp_option;
     public    $workspace_param;
     public    $return_args   = [];
@@ -290,6 +294,11 @@ class Prototype {
     }
 
     function init_plugins () {
+        $settings = $this->db->model( 'option' )->load( ['kind' => 'plugin'] );
+        $plugin_objs = [];
+        foreach ( $settings as $setting ) {
+            $plugin_objs[ $setting->key ] = $setting;
+        }
         $plugin_paths = $this->plugin_paths;
         foreach ( $plugin_paths as $dir ) {
             $items = scandir( $dir, $this->plugin_order );
@@ -299,6 +308,8 @@ class Prototype {
                 if (! is_dir( $plugin ) ) continue;
                 $plugins = scandir( $plugin, $this->plugin_order );
                 $register = false;
+                $component = null;
+                $php_classes = [];
                 foreach ( $plugins as $f ) {
                     if ( strpos( $f, '.' ) === 0 ) continue;
                     $_plugin = $plugin . DS . $f;
@@ -309,27 +320,48 @@ class Prototype {
                         continue;
                     }
                     if ( $extension === 'json' ) {
-                        $this->configure_from_json( $_plugin );
+                        $r = json_decode( file_get_contents( $_plugin ), true );
+                        $r['plugin_path'] = dirname( $_plugin );
+                        $component = strtolower( $r['component'] );
+                        if (! isset( $plugin_objs[ $component ] ) ) {
+                            $obj = $this->db->model( 'option' )->get_by_key(
+                                ['kind' => 'plugin', 'key' => $component ] );
+                            $obj->number( 0 );
+                            $obj->save();
+                            $plugin_objs[ $component ] = $obj;
+                        }
+                        $this->plugin_switch = $plugin_objs;
+                        $setting = $plugin_objs[ $component ];
+                        $this->cfg_settings[ $component ] = $r;
+                        if (! $setting->number ) continue;
+                        $this->configure_from_json( $_plugin, $r );
                     } else if ( $extension === 'php' ) {
-                        $this->class_paths[ pathinfo( $f )['filename'] ] = $_plugin;
+                        $php_classes[] = $_plugin;
                     }
                     $register = true;
+                }
+                foreach ( $php_classes as $_plugin ) {
+                    if(! $component ) 
+                        $component = strtolower( pathinfo( $_plugin )['filename'] );
+                    $this->class_paths[ $component ] = $_plugin;
                 }
                 if ( $register ) $this->plugin_dirs[] = $plugin;
             }
         }
     }
 
-    function configure_from_json ( $file ) {
-        $r = json_decode( file_get_contents( $file ), true );
+    function configure_from_json ( $file, $r = null ) {
+        $r = $r ? $r : json_decode( file_get_contents( $file ), true );
         foreach ( $r as $key => $props ) {
             $methods = $r[ $key ];
+            if ( $key === 'settings' ) continue;
             if ( is_array( $methods ) ) {
                 foreach ( $methods as $meth => $prop ) {
                     $this->registry[ $key ][ $meth ] = $prop;
                 }
             }
         }
+        return $r;
     }
 
     function init_callbacks ( $model, $action ) {
@@ -345,8 +377,9 @@ class Prototype {
             if ( strpos( key( $callback ), $action ) !== false ) {
                 $kind = key( $callback );
                 $callback = $callback[ key( $callback ) ];
-                if ( isset( $components[ $callback['component'] ] ) ) {
-                    $_plugin = $components[ $callback['component'] ];
+                $component_name = strtolower( $callback['component'] );
+                if ( isset( $components[ $component_name ] ) ) {
+                    $_plugin = $components[ $component_name ];
                     $plugin = $callback['component'];
                     if (!class_exists( $plugin ) ) 
                         if (!include_once( $_plugin ) )
@@ -478,9 +511,12 @@ class Prototype {
 
     function autoload_component ( $class_name ) {
         $app = Prototype::get_instance();
+        if ( $component = $app->component( $class_name ) ) {
+            return $component;
+        } 
         $components = $app->class_paths;
-        if ( isset( $components[ $class_name ] ) ) {
-            $_component = $components[ $class_name ];
+        if ( isset( $components[ strtolower( $class_name ) ] ) ) {
+            $_component = $components[ strtolower( $class_name ) ];
             if (! class_exists( $class_name ) && is_readable( $_component ) ) 
                 require_once( $_component );
             if ( class_exists( $class_name ) ) {
@@ -496,8 +532,8 @@ class Prototype {
         if ( isset( $components[ strtolower( $component ) ] ) )
             return $components[ strtolower( $component ) ];
         $component_paths = $this->class_paths;
-        if ( isset( $component_paths[ $component ] ) ) {
-            $_plugin = $component_paths[ $component ];
+        if ( isset( $component_paths[ strtolower( $component ) ] ) ) {
+            $_plugin = $component_paths[ strtolower( $component ) ];
             if (! class_exists( $component ) ) require_once( $_plugin );
             if ( class_exists( $component ) ) {
                 $class = new $component();
@@ -552,7 +588,7 @@ class Prototype {
                     $input = isset( $prop['input'] ) ? (int) $prop['input'] : 0;
                     $label = $prop['label'];
                     $plugin = $prop['component'];
-                    $_plugin = $components[ $plugin ];
+                    $_plugin = $components[ strtolower( $plugin ) ];
                     $meth = $prop['method'];
                     if (!include( $_plugin ) )
                         trigger_error( "Plugin '{$_plugin}' load failed!" );
@@ -1216,6 +1252,7 @@ class Prototype {
             $param['query_count'] = count( $app->db->queries );
             $param['db_errors'] = $app->db->errors;
             $param['errors'] = $app->errors;
+            $param['query_string'] = $app->query_string( true, true );
             $app->ctx->force_compile = true;
             $debug = $app->ctx->build_page( $debug_tmpl, $param );
             $out = preg_replace( '!<\/body>!', $debug . '</body>', $out );
@@ -1307,9 +1344,10 @@ class Prototype {
     }
 
     function can_do ( $model, $action = null, $obj = null, $workspace = null  ) {
+        $orig_action = $action;
         if (! $action && strpos( $model, '_' ) !== false )
             list( $action, $model ) = explode( '_', $model );
-        if ( $model == 'rebuild' && is_object( $action ) ) {
+        if ( ( $model == 'rebuild' || $model == 'plugins' ) && is_object( $action ) ) {
             if ( $action->_model == 'workspace' ) {
                 $workspace = $action;
             }
@@ -1346,12 +1384,13 @@ class Prototype {
         } else {
             $perms = isset( $permissions[0] ) ? $permissions[0] : [];
         }
-        if ( $model == 'rebuild' ) {
+        $_perms = $app->permissions;
+        if ( is_array( $orig_action, $_perms ) ) {
             if ( $workspace ) {
-                return in_array( 'can_rebuild', $perms );
+                return in_array( $orig_action, $perms );
             } else {
-                return isset( $permissions[0] ) && isset( $permissions[0]['can_rebuild'] )
-                       ? true : false;
+                return isset( $permissions[0] )
+                        && isset( $permissions[0][ $orig_action ] ) ? true : false;
             }
         } else if ( $action == 'list' ) {
             $name = 'can_list_' . $model;
@@ -1535,37 +1574,15 @@ class Prototype {
     }
 
     function manage_plugins ( $app ) {
-        return $app->__mode( 'manage_plugins' );
+        require_once( 'class.PTPlugin.php' );
+        $plugin = new PTPlugin;
+        return $plugin->manage_plugins( $app );
     }
 
     function delete_filter ( $app ) {
-        $app->validate_magic();
-        header( 'Content-type: application/json' );
-        $_filter_id = (int) $app->param( '_filter_id' );
-        if (! $_filter_id ) {
-            echo json_encode( ['result' => false ] );
-            exit();
-        }
-        $option = $app->db->model( 'option' )->load( $_filter_id );
-        if ( $option && $option->id ) {
-            if ( $option->user_id == $app->user()->id && $option->kind == 'list_filter'
-                && $option->key == $app->param( '_model' ) ) {
-                $workspace_id = $app->workspace() ? $app->workspace()->id : 0;
-                $filter_primary = ['key' => $option->key, 'user_id' => $app->user()->id,
-                                   'workspace_id' => $workspace_id,
-                                   'kind'  => 'list_filter_primary',
-                                   'object_id' => $option->id ];
-                $primary = $app->db->model( 'option' )->get_by_key( $filter_primary );
-                if ( $primary->id ) {
-                    $primary->remove();
-                }
-                $res = $option->remove();
-                echo json_encode( ['result' => $res ] );
-                exit();
-            }
-        }
-        echo json_encode( ['result' => true ] );
-        exit();
+        require_once( 'class.PTSystemFilters.php' );
+        $filter = new PTSystemFilters;
+        return $filter->delete_filter( $app );
     }
 
     function insert_asset ( $app ) {
@@ -2077,6 +2094,9 @@ class Prototype {
         $next_model = '';
         $next_models = [];
         $rebuild_last = false;
+        $current_model = $app->param( 'current_model' );
+        $start_time = $app->param( 'start_time' );
+        $ctx->vars['current_model'] = $current_model;
         if ( $app->param( '_type' ) && $app->param( '_type' ) == 'rebuild_archives' ) {
             $model = $app->param( 'next_models' );
             $models = explode( ',', $model );
@@ -2094,6 +2114,12 @@ class Prototype {
                 if ( $table->revisable ) {
                     $extra .= " AND {$_colprefix}rev_type=0";
                 }
+                if ( $current_model == $model ) {
+                    $ctx->vars['rebuild_end'] = 1;
+                    $ctx->vars['page_title'] = $app->translate( 'Done.' );
+                    $ctx->vars['publish_time'] = time() - $start_time;
+                    return $app->build_page( $tmpl );
+                }
                 $objects = $obj = $app->db->model( $model )->load( $terms, [], '*', $extra );
                 $apply_actions = count( $objects );
                 if (! $apply_actions ) {
@@ -2101,6 +2127,7 @@ class Prototype {
                         return $app->rebuild_phase( $app, $start, $counter + 1 );
                     } else {
                         $ctx->vars['rebuild_end'] = 1;
+                        $ctx->vars['publish_time'] = time() - $start_time;
                         $ctx->vars['page_title'] = $app->translate( 'Done.' );
                         return $app->build_page( $tmpl );
                     }
@@ -2124,6 +2151,7 @@ class Prototype {
                             return $app->rebuild_phase( $app, $start, $counter + 1 );
                         } else {
                             $ctx->vars['rebuild_end'] = 1;
+                            $ctx->vars['publish_time'] = time() - $start_time;
                             $ctx->vars['page_title'] = $app->translate( 'Done.' );
                             return $app->build_page( $tmpl );
                         }
@@ -2146,6 +2174,7 @@ class Prototype {
         $next_ids = array_slice( $ids , $per_rebuild );
         $rebuilt = $apply_actions - ( count( $ids ) - count( $rebuild_ids ) );
         $objects = $app->db->model( $model )->load( ['id' => ['IN' => $rebuild_ids ] ] );
+        $ctx->vars['current_model'] = $model;
         foreach ( $objects as $obj ) {
             $cache_vars = $app->ctx->vars;
             $cache_local_vars = $app->ctx->local_vars;
@@ -2254,7 +2283,6 @@ class Prototype {
             }
             if ( $rebuild_last ) {
                 $ctx->vars['rebuild_end'] = 1;
-                $start_time = $app->param( 'start_time' );
                 $ctx->vars['publish_time'] = time() - $start_time;
                 $ctx->vars['page_title'] = $app->translate( 'Done.' );
             } else {
@@ -2430,6 +2458,7 @@ class Prototype {
             $app->register_callback( $cb[2], $cb[0] . '_' . $cb[1], $meth, 1, $app );
         }
         $app->init_callbacks( $model, 'save' );
+        $db->caching = false;
         $orig_relations = $app->get_relations( $obj );
         $orig_metadata  = $app->get_meta( $obj );
         $original = clone $obj;
@@ -3222,6 +3251,7 @@ class Prototype {
                                  'post_save_permission', 5, $app );
         $app->register_callback( 'table', 'post_delete', 'post_delete_table', 5, $app );
         $app->init_callbacks( $model, 'delete' );
+        $db->caching = false;
         $errors = [];
         $callback = ['name' => 'delete_filter', 'error' => ''];
         $delete_filter = $app->run_callbacks( $callback, $model );
@@ -3958,7 +3988,7 @@ class Prototype {
     }
 
     function publish ( $file_path, $obj, $key,
-                        $mime_type = 'text/html', $type = 'file' ) {
+                       $mime_type = 'text/html', $type = 'file' ) {
         require_once( 'class.PTUtil.php' );
         $app = Prototype::get_instance();
         $cache_vars = $app->ctx->vars;
@@ -4345,7 +4375,8 @@ class Prototype {
         foreach ( $options as $option ) {
             if ( $table->$option ) $scheme[ $option ] = (int) $table->$option;
         }
-        if ( $table->display_system ) $scheme['display'] = (int) $table->display_system;
+        if ( $table->display_system )
+            $scheme['display_system'] = (int) $table->display_system;
         $scheme['column_defs'] = $column_defs;
         if (! empty( $translates ) ) $scheme['translate'] = $translates;
         if (! empty( $hints ) ) $scheme['hint'] = $hints;
@@ -4835,7 +4866,7 @@ class Prototype {
         return $qurey;
     }
 
-    function query_string ( $force = false ) {
+    function query_string ( $force = false, $debug = false ) {
         if (! $force && ( $query_string = $this->query_string ) ) {
             return $query_string;
         }
@@ -4852,7 +4883,8 @@ class Prototype {
                     }
                 }
                 if ( $params_array ) {
-                    $this->query_string = join( '&', $params_array );
+                    $separator = $debug ? "\n" : '&';
+                    $this->query_string = join( $separator, $params_array );
                     return $this->query_string;
                 }
             }

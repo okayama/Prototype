@@ -3,7 +3,7 @@
     "plural"   : "Phrases",
     "version"  : "1.0",
     "primary"  : "phrase",
-    "display"  : true,
+    "display_system": 1,
     "editable" : true,
     "order"    : 120,
     "auditing" : 1,

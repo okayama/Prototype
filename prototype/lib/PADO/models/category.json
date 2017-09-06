@@ -20,7 +20,8 @@
         },
         "label": {
             "type": "string",
-            "size": 255
+            "size": 255,
+            "not_null": 1
         },
         "description": {
             "type": "text"

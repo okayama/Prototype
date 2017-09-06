@@ -3,7 +3,7 @@
     "plural"   : "Entries",
     "version"  : "1.0",
     "primary"  : "title",
-    "display"  : 1,
+    "display_system": 1,
     "auditing" : 1,
     "order"    : 10,
     "menu_type": 1,

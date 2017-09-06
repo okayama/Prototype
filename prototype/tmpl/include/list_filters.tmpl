@@ -157,11 +157,11 @@
                             <mt:trans phrase="Disable,Enable" split="," setvar="status_label">
                             </mt:if>
                             <select class="form-control form-control-sm short" name="">
-                            <mt:for from="1" to="$max_status">
+                            <mt:loop name="status_label">
                               <mt:if name="__counter__" le="$max_status">
-                                <option value="<mt:var name="__counter__">"><mt:var name="$status_label[$__index__]"></option>
+                                <option value="<mt:var name="__counter__">"><mt:var name="__value__"></option>
                               </mt:if>
-                            </mt:for>
+                            </mt:loop>
                             </select>
                             <input type="hidden" name="" value="eq">
                             <button type="button" class="btn btn-secondary btn-sm close-sm detach-filter" aria-label="<mt:trans phrase="Detach">">

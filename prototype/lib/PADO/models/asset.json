@@ -3,7 +3,7 @@
     "plural"   : "Assets",
     "version"  : "1.0",
     "primary"  : "label",
-    "display"  : true,
+    "display_system": 1,
     "order"    : 80,
     "auditing" : 1,
     "menu_type": 1,

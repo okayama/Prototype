@@ -102,6 +102,36 @@ class PTSystemFilters {
         return $app->get_registries( $model, 'system_filters', $system_filters );
     }
 
+    function delete_filter ( $app ) {
+        $app->validate_magic();
+        header( 'Content-type: application/json' );
+        $_filter_id = (int) $app->param( '_filter_id' );
+        if (! $_filter_id ) {
+            echo json_encode( ['result' => false ] );
+            exit();
+        }
+        $option = $app->db->model( 'option' )->load( $_filter_id );
+        if ( $option && $option->id ) {
+            if ( $option->user_id == $app->user()->id && $option->kind == 'list_filter'
+                && $option->key == $app->param( '_model' ) ) {
+                $workspace_id = $app->workspace() ? $app->workspace()->id : 0;
+                $filter_primary = ['key' => $option->key, 'user_id' => $app->user()->id,
+                                   'workspace_id' => $workspace_id,
+                                   'kind'  => 'list_filter_primary',
+                                   'object_id' => $option->id ];
+                $primary = $app->db->model( 'option' )->get_by_key( $filter_primary );
+                if ( $primary->id ) {
+                    $primary->remove();
+                }
+                $res = $option->remove();
+                echo json_encode( ['result' => $res ] );
+                exit();
+            }
+        }
+        echo json_encode( ['result' => true ] );
+        exit();
+    }
+
     function owned_objects ( $app, &$terms, $model, $col = 'user_id' ) {
         $terms[ $col ] = ['AND' => (int) $app->user()->id ];
     }

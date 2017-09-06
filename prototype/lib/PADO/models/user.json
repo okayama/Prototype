@@ -3,7 +3,7 @@
     "plural"   : "Users",
     "version"  : "1.0",
     "primary"  : "name",
-    "display"  : 1,
+    "display_system": 1,
     "order"    : 80,
     "auditing" : 1,
     "menu_type": 5,

@@ -2,7 +2,7 @@
     "label"    : "Permission",
     "plural"   : "Permissions",
     "version"  : "1.0",
-    "display"  : 1,
+    "display_system": 1,
     "order"    : 130,
     "menu_type": 5,
     "display_space": 1,

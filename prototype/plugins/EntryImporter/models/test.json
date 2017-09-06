@@ -1,9 +1,9 @@
 {
     "label"    : "Test",
     "plural"   : "Tests",
-    "version"  : "2.3",
+    "version"  : "2.4",
     "primary"  : "phrase",
-    "display"  : true,
+    "display_system" : true,
     "editable" : true,
     "order"    : 130,
     "auditing" : 1,

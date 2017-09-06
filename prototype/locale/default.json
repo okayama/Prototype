@@ -154,6 +154,7 @@
     "can_review"    : "Can Review",
     "can_activate"  : "Can Activate",
     "can_rebuild"   : "Can Rebuild",
+    "manage_plugins": "Manage Plugins",
     "workspace_admin": "Workspace Administrator",
     "display_dashboard": "Display in Dashboard"
 }

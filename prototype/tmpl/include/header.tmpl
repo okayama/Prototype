@@ -362,7 +362,7 @@ $('.dropdown-sub').each(function(){
       </mt:if>
       <div class="row">
         <main class="col-md-12 pt-3">
-          <h1<mt:if name="has_option"> class="title-with-opt"</mt:if>><span class="title"><mt:var name="page_title"></span>
+          <h1 class="<mt:if name="has_option"> title-with-opt</mt:if>"><span class="title"><mt:var name="page_title"></span>
       <mt:if name="this_mode" ne="login">
         <mt:if name="request._type" eq="list">
           <mt:unless name="request.revision_select">

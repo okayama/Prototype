@@ -3,11 +3,11 @@
     "plural"   : "WorkSpaces",
     "version"  : "1.0",
     "primary"  : "name",
-    "display"  : true,
+    "display_system": 1,
     "sortable" : true,
     "order"    : 20,
     "auditing" : 1,
-    "menu_type": 5,
+    "menu_type": 2,
     "template_tags": 1,
     "column_defs": {
         "id": {

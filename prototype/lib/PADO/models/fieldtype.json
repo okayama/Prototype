@@ -6,7 +6,7 @@
     "auditing" : 1,
     "order"    : 191,
     "sortable" : 1,
-    "display"  : 1,
+    "display_system": 1,
     "menu_type": 2,
     "has_basename": 1,
     "column_defs": {

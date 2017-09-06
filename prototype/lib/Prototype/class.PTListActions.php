@@ -19,6 +19,7 @@ class PTListActions {
             $component = $action['component'];
             $meth = $action['method'];
             if ( method_exists( $component, $meth ) ) {
+                $db->caching = false;
                 return $component->$meth( $app, $objects, $action );
             }
         }

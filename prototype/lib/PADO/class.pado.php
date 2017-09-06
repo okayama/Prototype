@@ -26,7 +26,7 @@ class PADO {
     public  $dbuser      = '';
     public  $dbpasswd    = '';
     public  $dbport      =  3306;
-    public  $dbcharset   = 'utf8';
+    public  $dbcharset   = 'utf8mb4';
     public  $db;
     public  $dsn         = '';
     public  $max_packet  = 16777216;
@@ -75,6 +75,7 @@ class PADO {
     public  $app         = null;
     public  $queries     = [];
     public  $errors      = [];
+    public  $blob_type   = 'LONGBLOB';
 
     public  $callbacks   = [
           'pre_save'     => [], 'post_save'   => [],
@@ -1117,6 +1118,9 @@ class PADOBaseModel {
             $pado->queries[] = $sql;
             $this->$id_column = isset( $object_id )
                               ? $object_id : (int) $pdo->lastInsertId( $id_column );
+            if ( $pado->caching ) {
+                unset ( $pado->cache[ $model ][ $this->$id_column ] );
+            }
             $callback['name'] = 'post_save';
             $pado->run_callbacks( $callback, $model, $this );
             return $res;
@@ -1161,6 +1165,9 @@ class PADOBaseModel {
         try {
             $res = $sth->execute();
             $pado->queries[] = $sql;
+            if ( $pado->caching ) {
+                unset ( $pado->cache[ $model ][ $id ] );
+            }
             $callback['name'] = 'post_delete';
             $pado->run_callbacks( $callback, $model, $this );
             return $res;
@@ -1788,7 +1795,7 @@ class PADOMySQL extends PADOBaseModel {
                         $type = 'TIME';
                         break;
                     case ( $type === 'blob' ):
-                        $type = 'MEDIUMBLOB';
+                        $type = $pado->blob_type;
                         break;
                     default:
                         $type = '';
@@ -1963,6 +1970,7 @@ class PADOMySQL extends PADOBaseModel {
         $pado = $this->pado();
         $charset = $pado->dbcharset;
         if ( $charset ) $sql .= ' DEFAULT CHARSET=' . $charset;
+        // DEFAULT CHARSET=utf8mb4
         if ( $pado->debug === 3 ) $pado->debugPrint( $sql );
         $sth = $pado->db->prepare( $sql );
         try {

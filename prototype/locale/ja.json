@@ -3,6 +3,7 @@
     "WorkSpace"          : "スペース",
     "WorkSpaces"         : "スペース",
     "Child of WorkSpace" : "スペースの子テーブル",
+    "Creator"            : "作成者",
     "Login"              : "ログイン",
     "Logout"             : "ログアウト",
     "Permission"         : "権限",
@@ -450,6 +451,17 @@
     "Unknown Model %s."  : "不明なモデルです(%s)。",
     "Upgrade 1 scheme."  : "1件のスキーマをアップグレードしました。",
     "Upgrade %s schemes.": "%s件のスキーマをアップグレードしました。",
+    "Enable this plugin" : "プラグインを有効化",
+    "Disable this plugin": "プラグインを無効化",
+    "Document"           : "ドキュメント",
+    "Plugin %s's Settings":
+        "プラグイン「%s」の設定",
+    "Plugin(s) enabled successfully."
+        : "プラグインを有効化しました。",
+    "Plugin(s) disabled successfully."
+        : "プラグインを無効化しました。",
+    "Plugin %s's settings has been saved."
+        : "プラグイン「%s」の設定を保存しました。",
     "There is no upgrade."
         : "アップグレードはありません。",
     "There is one upgrade."
@@ -460,6 +472,16 @@
         : "%s件のアップグレードが見つかりました。",
     "There is no upgrade."
         : "アップグレードはありません。",
+    "You did not select any plugin."
+        : "プラグインが選択されていません。",
+    "Are you sure you want to enable this plugin?"
+        : "このプラグインを有効化してもよろしいですか?",
+    "Are you sure you want to disable this plugin?"
+        : "このプラグインを無効化してもよろしいですか?",
+    "Are you sure you want to enable plugin(s)?"
+        : "プラグインを有効化してもよろしいですか?",
+    "Are you sure you want to disable plugin(s)?"
+        : "プラグインを無効化してもよろしいですか?",
     "%1$sh %2$smin %3$sseconds"
         : "%1$s時間 %2$s分 %3$s秒",
     "Workspace Administrator"
