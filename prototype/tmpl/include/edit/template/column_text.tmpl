@@ -7,12 +7,15 @@
         editorMode = 'None';
         $(this).removeClass('btn-primary');
         $(this).addClass('btn-secondary');
+        editor.save();
+        $('#text').val(editor.getTextArea().value);
     } else {
         $('#text').hide();
         $('.CodeMirror').show();
         editorMode = 'CodeMirror';
         $(this).removeClass('btn-secondary');
         $(this).addClass('btn-primary');
+        editor.setValue($('#text').val());
     }
 ">
     <i class="fa fa-code" aria-hidden="true"></i>
@@ -38,10 +41,25 @@
 </div>
 
 <script>
-var editorMode = 'CodeMirror';
-var editor = CodeMirror.fromTextArea(document.getElementById("text"), {
-  lineNumbers: true,
-  mode: "text/html"
+$('#edit-form-main').submit(function(){
+    if ( editorMode == 'None' ) {
+        editorMode = 'CodeMirror';
+        editor.setValue($('#text').val());
+        $('#text').show();
+        $('.CodeMirror').hide();
+        editorMode = 'None';
+        editor.save();
+        $('#text').val(editor.getTextArea().value);
+    }
 });
-editor.setSize('100%', 600);
+var editorMode = 'CodeMirror';
+var editor;
+function init_codemirror () {
+      editor = CodeMirror.fromTextArea(document.getElementById("text"), {
+      lineNumbers: true,
+      mode: "text/html"
+    });
+    editor.setSize('100%', 600);
+}
+init_codemirror();
 </script>

@@ -6,16 +6,20 @@ class PTListActions {
         $app->validate_magic();
         $db = $app->db;
         $model = $app->param( '_model' );
-        $objects = $app->get_object( $model );
-        foreach ( $objects as $obj ) {
-            if (! $app->can_do( $model, 'edit', $obj ) ) {
-                return $app->error( 'Permission denied.' );
-            }
-        }
         $list_actions = $this->get_list_actions( $model );
         $action_name = $app->param( 'action_name' );
         $action = $list_actions[ $action_name ];
         if ( is_array( $action ) && isset( $action['component'] ) ) {
+            if ( isset( $action['columns'] ) && $action['columns'] ) {
+                $objects = $app->get_object( $model, $action['columns'] );
+            } else {
+                $objects = $app->get_object( $model );
+            }
+            foreach ( $objects as $obj ) {
+                if (! $app->can_do( $model, 'edit', $obj ) ) {
+                    return $app->error( 'Permission denied.' );
+                }
+            }
             $component = $action['component'];
             $meth = $action['method'];
             if ( method_exists( $component, $meth ) ) {

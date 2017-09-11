@@ -85,7 +85,7 @@ $(".query-box").keypress(function(e){
 </mt:setvarblock>
 <mt:setvarblock name="current_filter">
 <mt:unless name="request._fix_filter">
-<mt:if name="current_filter_name"><span class="current-filter"> ( <mt:trans phrase="Current Filter"> : <a href="javascript:void(0);" data-toggle="modal" data-target="#filterOptions"><mt:var name="current_filter_name" escape></a> - <a href="<mt:var name="this_url">&amp;_detach_filter=1<mt:var name="query_cond"><mt:var name="dialog_param"><mt:if name="workspace_id">&amp;workspace_id=<mt:var name="workspace_id"></mt:if><mt:var name="selecter_param"><mt:var name="insert_cond" strip_linefeeds="1">"><mt:trans phrase="Detach"></a> )</span></mt:if>
+<mt:if name="current_filter_name"><span class="current-filter"><span class="hidden apply-filter-separator"><br><br></span> ( <mt:trans phrase="Current Filter"> : <a href="javascript:void(0);" data-toggle="modal" data-target="#filterOptions"><mt:var name="current_filter_name" escape></a> - <a href="<mt:var name="this_url">&amp;_detach_filter=1<mt:var name="query_cond"><mt:var name="dialog_param"><mt:if name="workspace_id">&amp;workspace_id=<mt:var name="workspace_id"></mt:if><mt:var name="selecter_param"><mt:var name="insert_cond" strip_linefeeds="1">"><mt:trans phrase="Detach"></a> )</span></mt:if>
 </mt:unless>
 </mt:setvarblock>
 
@@ -98,24 +98,33 @@ $(".query-box").keypress(function(e){
 </mt:if>
 
     <mt:if name="request.deleted">
-  <div class="alert alert-success">
+  <div class="alert alert-success" tabindex="0">
     <mt:var name="alert_close">
     <mt:trans phrase="Removed %s." params="$plural">
   </div>
+    <script>
+    $('.alert-success').focus();
+    </script>
     </mt:if>
 
     <mt:if name="request.saved_order">
-  <div class="alert alert-success">
+  <div class="alert alert-success" tabindex="0">
     <mt:var name="alert_close">
     <mt:trans phrase="%s's order saved successfully." params="$plural">
   </div>
+    <script>
+    $('.alert-success').focus();
+    </script>
     </mt:if>
 
     <mt:if name="request.saved_props">
-  <div class="alert alert-success">
+  <div class="alert alert-success" tabindex="0">
     <mt:var name="alert_close">
     <mt:trans phrase="%s's display options saved successfully." params="$label">
   </div>
+    <script>
+    $('.alert-success').focus();
+    </script>
     </mt:if>
 
 <form action="<mt:var name="script_uri">" method="POST" class="form-inline" id="list-select-form">
@@ -242,6 +251,7 @@ $('#dialog-cancel-btn').click(function(){
 </mt:unless>
 </th>
 <mt:loop name="list_cols">
+<mt:ifinarray value="$_name" array="$show_cols">
 <th class="<mt:if name="_name" eq="id">id </mt:if><mt:if name="_list" eq="primary"> primary <mt:elseif name="_list" like="num"> num </mt:if><mt:if name="_list" ne="primary"> not-primary</mt:if>">
   <mt:var name="_label" escape trim_to="10+...">
   <mt:if name="_type" ne="relation">
@@ -259,6 +269,7 @@ $('#dialog-cancel-btn').click(function(){
     <a aria-label="<mt:trans phrase="Sort by %s in %s" params="'$_label','$order_desc'" escape><mt:if name="class_asc">(<mt:trans phrase="Selected">)</mt:if>" class="<mt:if name="class_desc">current-cnd</mt:if>" href="<mt:var name="this_url">&amp;sort=<mt:var name="_name">&amp;direction=desc<mt:var name="query_cond"><mt:var name="workspace_param"><mt:var name="dialog_param"><mt:var name="filter_cond" strip_linefeeds="1"><mt:var name="insert_cond" strip_linefeeds="1"><mt:var name="selected_ids_cond" strip_linefeeds="1"><mt:if name="workspace_id">&amp;workspace_id=<mt:var name="workspace_id"></mt:if>">&#9660;</a></span>
   </mt:if>
 </th>
+</mt:ifinarray>
 </mt:loop>
 </tr>
 <mt:unless name="_single_select">
@@ -312,6 +323,7 @@ $('#dialog-cancel-btn').click(function(){
   </mt:unless>
 </td>
 </mt:if>
+<mt:ifinarray value="$_name" array="$show_cols">
 <td <mt:if name="_list" eq="primary"><mt:if name="_icon">style="line-height:1.6em;"</mt:if></mt:if> class="<mt:if name="_name" eq="id">id </mt:if><mt:if name="_list" eq="number"><mt:unless name="sort_order"><mt:if name="_name" ne="status">num</mt:if></mt:unless></mt:if> list-col<mt:if name="_list" eq="primary">-primary primary<mt:else> not-primary</mt:if>">
   <mt:if name="_list" eq="primary">
   <mt:if name="_get_col">
@@ -436,6 +448,7 @@ $('#popover-<mt:var name="_name">-<mt:var name="id">').popover({
   </mt:if>
 </mt:if>
 </td>
+</mt:ifinarray>
 </mt:loop>
 <td class="hidden" id="detail_<mt:var name="id">">
   <table class="cell-detail table-sm">
@@ -461,24 +474,6 @@ $('#popover-<mt:var name="_name">-<mt:var name="id">').popover({
 
 <script>
 var $win = $(window);
-$win.on('load resize', function() {
-    var windowWidth = window.innerWidth;
-    if ( windowWidth > 768 ) {
-        $('.info-box').html('');
-        $('.info-box').hide();
-        $('.toggle-icn').removeClass('fa-caret-up');
-        $('.toggle-icn').addClass('fa-caret-down');
-        $('.alt-search-button').hide();
-        if( $('.create-new-button-icon').length ) {
-            $('.create-new-button-icon').removeClass('fa-plus-circle');
-        }
-    } else {
-        $('.alt-search-button').show();
-        if( $('.create-new-button-icon').length ) {
-            $('.create-new-button-icon').addClass('fa-plus-circle');
-        }
-    }
-});
 $('.toggle-infobox').click(function(){
     this_id = $(this).prop('id');
     this_id = this_id.replace( /toggle_/, '' );
@@ -807,6 +802,28 @@ function item_checked( count ) {
 }
 </script>
 </mt:unless>
+
+<script>
+var $win = $(window);
+$win.on('load resize', function() {
+    var windowWidth = window.innerWidth;
+    if ( windowWidth > 768 ) {
+        $('.info-box').html('');
+        $('.info-box').hide();
+        $('.toggle-icn').removeClass('fa-caret-up');
+        $('.toggle-icn').addClass('fa-caret-down');
+        $('.alt-search-button').hide();
+        if( $('.create-new-button-icon').length ) {
+            $('.create-new-button-icon').removeClass('fa-plus-circle');
+        }
+    } else {
+        $('.alt-search-button').show();
+        if( $('.create-new-button-icon').length ) {
+            $('.create-new-button-icon').addClass('fa-plus-circle');
+        }
+    }
+});
+</script>
 
 <mt:if name="request.dialog_view">
 <mt:include file="include/dialog_footer.tmpl">

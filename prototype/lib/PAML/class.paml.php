@@ -1196,6 +1196,7 @@ class PAML {
     }
 
     function modifier_truncate ( $str, $len, $ctx ) {
+        list ( $plus, $tail ) = [false, ''];
         if ( strpos( $len, $ctx->csv_delimiter )!== false )
             $len = $ctx->parse_csv( $len );
         if ( is_array( $len ) ) {

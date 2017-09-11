@@ -18,6 +18,9 @@
     "Install"            : "インストール",
     "System Settings"    : "システムの設定",
     "Communication"      : "コミュニケーション",
+    "monthly"            : "月別",
+    "yearly"             : "年別",
+    "fiscal-yearly"      : "年度別",
     "Text Format"        : "フォーマット",
     "User Settings"      : "ユーザの設定",
     "Edit Image"         : "画像の編集",
@@ -454,6 +457,9 @@
     "Enable this plugin" : "プラグインを有効化",
     "Disable this plugin": "プラグインを無効化",
     "Document"           : "ドキュメント",
+    "F, Y"               : "Y年m月",
+    "Y"                  : "Y年",
+    "Fiscal Y"           : "Y年度",
     "Plugin %s's Settings":
         "プラグイン「%s」の設定",
     "Plugin(s) enabled successfully."
@@ -601,6 +607,8 @@
         : "カラムを削除してもよろしいですか?",
     "Please enter comma-separated tags to add."
         :"追加するタグをカンマ区切りで入力してください。",
+    "Are you sure you want to remove %s?"
+        : "%sを削除してもよろしいですか?",
     "Are you sure you want to remove _1 %s?"
         : "_1件の%sを削除してもよろしいですか?",
     "Are you sure you want to export %s?"

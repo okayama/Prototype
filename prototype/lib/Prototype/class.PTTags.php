@@ -1,5 +1,7 @@
 <?php
 
+use Michelf\Markdown;
+
 class PTTags {
 
     function init_tags () {
@@ -7,10 +9,11 @@ class PTTags {
         if ( $app->init_tags ) return;
         $ctx = $app->ctx;
         $tables = $app->db->model( 'table' )->load( ['template_tags' => 1] );
-        $block_relations = [];
+        $block_relations    = [];
         $function_relations = [];
-        $function_date = [];
-        $workspace_tags = [];
+        $function_date      = [];
+        $workspace_tags     = [];
+        $fileurl_tags       = [];
         $alias = [];
         $tags = $this;
         foreach ( $tables as $table ) {
@@ -56,6 +59,18 @@ class PTTags {
                             $alias[ $table->name . 'date'] 
                                 = $table->name . $key;
                     }
+                    if ( isset( $edit_properties[ $key ] ) 
+                        && $edit_properties[ $key ] === 'file' ) {
+                        if (! $obj->has_column( $tag_name . 'url' ) ) {
+                            $fileurl_tags[ $table->name . $tag_name . 'url'] = $key;
+                            if ( $table->name === 'workspace' ) {
+                                $workspace_tags[] = $table->name . $tag_name . 'url';
+                            }
+                            $ctx->register_tag(
+                                $table->name . $tag_name . 'url',
+                                    'function', 'hdlr_get_objecturl', $tags );
+                        }
+                    }
                 }
                 if ( preg_match( '/(^.*)_id$/', $key, $mts ) ) {
                     if ( isset( $edit_properties[ $key ] ) ) {
@@ -79,13 +94,24 @@ class PTTags {
                     }
                 }
             }
+            $maps = $app->db->model( 'urlmapping' )->count( ['model' => $table->name ] );
+            if ( $maps ) {
+                $ctx->register_tag(
+                    $table->name . 'permalink',
+                        'function', 'hdlr_get_objectcol', $tags );
+            }
             foreach ( $relations as $key => $model ) {
                 $ctx->register_tag( $table->name . $key, 'block',
                     'hdlr_get_relatedobjs', $tags );
                 $block_relations[ $table->name . $key ] = [ $key, $table->name, $model ];
             }
             if ( $table->taggable ) {
-                // TODO $table->name . 'iftagged'
+                $ctx->register_tag( $table->name . 'iftagged',
+                    'conditional', 'hdlr_iftagged', $tags );
+            }
+            if ( $table->hierarchy ) {
+                $ctx->register_tag( $table->name . 'path',
+                    'function', 'hdlr_get_objectpath', $tags );
             }
         }
         $ctx->stash( 'workspace', $app->workspace() );
@@ -93,6 +119,7 @@ class PTTags {
         $ctx->stash( 'block_relations', $block_relations );
         $ctx->stash( 'function_date', $function_date );
         $ctx->stash( 'workspace_tags', $workspace_tags );
+        $ctx->stash( 'fileurl_tags', $fileurl_tags );
         $ctx->stash( 'alias_functions', $alias );
         $registry = $app->registry;
         if ( isset( $registry['tags'] ) ) {
@@ -271,6 +298,40 @@ class PTTags {
         return false;
     }
 
+    function hdlr_iftagged ( $args, $content, $ctx, $repeat, $counter ) {
+        $app = $ctx->app;
+        $current_context = $ctx->stash( 'current_context' );
+        $obj = $ctx->stash( $current_context );
+        if (! $obj ) return false;
+        $tag = isset( $args['tag'] ) ? $args['tag'] : '';
+        if (! $tag && isset( $args['name'] ) ) $tag = $args['name'];
+        if ( $tag ) {
+            $terms = ['name' => $tag ];
+            if ( $obj->has_column( 'workspace_id' ) && $obj->workspace_id ) {
+                $terms['workspace_id'] = $obj->workspace_id;
+            } else {
+                $terms['workspace_id'] = 0;
+            }
+            $tag_obj = $app->db->model( 'tag' )->load( $terms );
+            if (! $tag_obj ) return false;
+            $from_id = $obj->id;
+            $terms = ['from_id'  => $obj->id, 'to_id' => $tag_obj->id,
+                      'from_obj' => $obj->_model, 'to_obj' => 'tag' ];
+            $cnt = $app->db->model( 'relation' )->count( $terms );
+            return $cnt ? true : false;
+        }
+        if ( isset( $args['include_private'] ) && $args['include_private'] ) {
+            $relations = $app->get_relations( $obj, 'tag' );
+            if ( $relations && count( $relations ) ) return true;
+        } else {
+            $terms = ['from_id'  => $obj->id, 'from_obj' => $obj->_model,
+                      'to_obj' => 'tag', 'name' => ['not_like' => '@%'] ];
+            $cnt = $app->db->model( 'relation' )->count( $terms );
+            return $cnt ? true : false;
+        }
+        return false;
+    }
+
     function hdlr_ifusercan ( $args, $content, $ctx, $repeat, $counter ) {
         $app = $ctx->app;
         if ( $user = $app->user() ) {
@@ -304,8 +365,55 @@ class PTTags {
         return false;
     }
 
+    function hdlr_get_objectpath ( $args, $ctx ) {
+        $app = $ctx->app;
+        $current_context = $ctx->stash( 'current_context' );
+        $obj = $ctx->stash( $current_context );
+        $column = isset( $args['column'] ) ? $args['column'] : 'basename';
+        $separator = isset( $args['separator'] ) ? $args['separator'] : '/';
+        $parent = $obj;
+        $paths = [ $parent->$column ];
+        while ( $parent !== null ) {
+            if ( $parent_id = $parent->parent_id ) {
+                $parent_id = (int) $parent_id;
+                $parent = $app->db->model( $current_context )->load( $parent_id );
+                if ( $parent->id ) {
+                    array_unshift( $paths, $parent->$column );
+                } else {
+                    $parent = null;
+                }
+            } else {
+                $parent = null;
+            }
+        }
+        return join( $separator, $paths );
+    }
+
     function hdlr_archivetitle ( $args, $ctx ) {
-        return $ctx->stash( 'current_archive_title' );
+        $app = $ctx->app;
+        $format = isset( $args['format'] ) ? $args['format'] : 0;
+        $title = $ctx->stash( 'current_archive_title' );
+        if ( $format ) {
+            $at = $ctx->stash( 'current_archive_type' );
+            $fmt = '';
+            $ts = $title;
+            if ( $at === 'monthly' ) {
+                $fmt = $app->translate( 'F, Y' );
+                $ts .= '01000000';
+            } else if ( $at === 'yearly' ) {
+                $fmt = $app->translate( 'Y' );
+                $ts .= '0101000000';
+            } else if ( $at === 'fiscal-yearly' ) {
+                $fmt = $app->translate( 'Fiscal Y' );
+                $ts .= '0101000000';
+            }
+            if ( $fmt ) {
+                $args['ts'] = $ts;
+                $args['format'] = $fmt;
+                $title = $ctx->function_date( $args, $ctx );
+            }
+        }
+        return $title;
     }
 
     function hdlr_archivedate ( $args, $ctx ) {
@@ -514,7 +622,7 @@ class PTTags {
                 return $app->get_assetproperty( $obj, $name, $property );
             }
         }
-        if (! $obj->id ) return;
+        if (! $obj || ! $obj->id ) return;
         return $app->get_assetproperty( $obj, $name, $property );
     }
 
@@ -601,6 +709,7 @@ class PTTags {
             $ctx->stash( $model, $obj );
         }
         if (! $data && $type !== 'default' ) {
+            /*
             if (! $obj->$name ) return;
             $height = isset( $args['height'] ) ? $args['height'] : null;
             $width = isset( $args['width'] ) ? $args['width'] : null;
@@ -608,9 +717,6 @@ class PTTags {
             $upload_dir = $app->upload_dir();
             $file = $upload_dir . DS . $obj->file_name;
             file_put_contents( $file, $obj->$name );
-            $_FILES = [];
-            $_FILES['files'] = ['name' => basename( $file ), 'type' => $mime_type,
-                      'tmp_name' => $file, 'error' => 0, 'size' => filesize( $file ) ];
             if ( (!$width && !$height ) && $scale ) {
                 list( $w, $h ) = getimagesize( $file );
                 $scale = $scale * 0.01;
@@ -630,21 +736,15 @@ class PTTags {
             if ( $square ) {
                 $image_versions['thumbnail']['crop'] = true;
             }
-            $options = ['upload_dir' => $upload_dir . DS,
+            $options = ['upload_dir' => $app->upload_dir() . DS, 'user_id' => -1,
                         'prototype' => $app, 'print_response' => false,
                         'no_upload' => true, 'image_versions' => $image_versions ];
-            $upload_handler = new UploadHandler( $options );
-            $_SERVER['CONTENT_LENGTH'] = filesize( $file );
-            $upload_handler->post( false );
             $thumbnail = $upload_dir . DS . 'thumbnail' . DS . basename( $file );
             $thumbnail_dir = dirname( $thumbnail );
             $data = file_get_contents( $thumbnail );
             list( $width, $height ) = getimagesize( $thumbnail );
             $meta = ['image_width' => $width, 'image_height' => $height ];
-            unlink( $thumbnail );
-            rmdir( $thumbnail_dir );
-            unlink( $file );
-            rmdir( $upload_dir );
+            */
         }
         if ( $data_uri && $data ) {
             $data = base64_encode( $data );
@@ -989,8 +1089,12 @@ class PTTags {
 
     function hdlr_get_objectcol ( $args, $ctx ) {
         $this_tag = $args['this_tag'];
-        $function_relations = $ctx->stash( 'function_relations' );
+        $current_context = $ctx->stash( 'current_context' );
         $workspace_tags = $ctx->stash( 'workspace_tags' );
+        if ( $workspace_tags && in_array( $this_tag, $workspace_tags ) ) {
+            $current_context = 'workspace';
+        }
+        $function_relations = $ctx->stash( 'function_relations' );
         $function_date = $ctx->stash( 'function_date' );
         $alias_functions = $ctx->stash( 'alias_functions' );
         if( isset( $alias_functions[ $this_tag ] ) ) {
@@ -999,10 +1103,6 @@ class PTTags {
         if ( $function_relations && isset( $function_relations[ $this_tag ] ) ) {
             $settings = $function_relations[ $this_tag ];
             $column = $settings[0];
-        }
-        $current_context = $ctx->stash( 'current_context' );
-        if ( $workspace_tags && in_array( $this_tag, $workspace_tags ) ) {
-            $current_context = 'workspace';
         }
         $obj = $ctx->stash( $current_context );
         if (! $obj ) return;
@@ -1028,6 +1128,41 @@ class PTTags {
             }
             return $value;
         }
+        if ( $this_tag == $obj->_model . 'permalink' ) {
+            $app = $ctx->app;
+            return $app->get_permalink( $obj, false, true );
+        }
+    }
+
+    function hdlr_get_objecturl ( $args, $ctx ) {
+        $app = $ctx->app;
+        $this_tag = $args['this_tag'];
+        $fileurl_tags = $ctx->stash( 'fileurl_tags' );
+        $key = $fileurl_tags[ $this_tag ];
+        $current_context = $ctx->stash( 'current_context' );
+        $workspace_tags = $ctx->stash( 'workspace_tags' );
+        if ( $workspace_tags && in_array( $this_tag, $workspace_tags ) ) {
+            $current_context = 'workspace';
+        }
+        $obj = $ctx->stash( $current_context );
+        if (! $obj ) return;
+        $urlinfo = $app->db->model( 'urlinfo' )->get_by_key(
+            ['model' => $obj->_model, 'object_id' => $obj->id,
+             'key' => $key, 'class' => 'file' ] );
+        return $urlinfo->url;
+    }
+
+    function hdlr_tagcount ( $args, $ctx ) {
+        $this_tag = $args['this_tag'];
+        $obj = $ctx->stash( 'tag' );
+        if (! $obj ) return;
+        $app = $ctx->app;
+        $tag_id = (int) $obj->id;
+        $model = isset( $args['model'] ) ? $args['model'] : 'entry';
+        $count = $app->db->model( 'relation' )->count( 
+                                ['to_id' => $tag_id, 'to_obj' => 'tag',
+                                 'from_obj' => $model ] );
+        return $count;
     }
 
     function hdlr_nestableobjects ( $args, &$content, $ctx, &$repeat, $counter ) {
@@ -1153,13 +1288,14 @@ class PTTags {
         $model = isset( $args['model'] ) ? $args['model'] : null;
         $this_tag = $args['this_tag'];
         $model = $model ? $model : $ctx->stash( 'blockmodel_' . $this_tag );
+        $local_vars = [ $model, 'current_context'];
         if (! $counter ) {
             if (! $model ) {
                 $repeat = false;
                 return;
             }
             $orig_args = $args;
-            $ctx->localize( [ $model ] );
+            $ctx->localize( $local_vars );
             $loop_objects = $ctx->stash( 'loop_objects' );
             if (! $loop_objects ) {
                 $obj = $app->db->model( $model );
@@ -1215,7 +1351,6 @@ class PTTags {
                         $terms[ $key ] = $value;
                     }
                 }
-                // TODO search and relations
                 $container = $ctx->stash( 'current_container' );
                 $context = $ctx->stash( 'current_context' );
                 $context = $context == 'template' ? '' : $context;
@@ -1276,7 +1411,7 @@ class PTTags {
                     } else {
                         if ( $this_tag !== 'objectloop' ) {
                             $repeat = false;
-                            $ctx->restore( [ $model ] );
+                            $ctx->restore( $local_vars );
                             return;
                         }
                     }
@@ -1313,7 +1448,7 @@ class PTTags {
             }
             if ( empty( $loop_objects ) ) {
                 $repeat = false;
-                $ctx->restore( [ $model ] );
+                $ctx->restore( $local_vars );
                 return;
             }
             $ctx->local_params = $loop_objects;
@@ -1321,7 +1456,7 @@ class PTTags {
         $params = $ctx->local_params;
         if ( empty( $params ) ) {
             $repeat = false;
-            $ctx->restore( [ $model ] );
+            $ctx->restore( $local_vars );
             return;
         }
         $ctx->set_loop_vars( $counter, $params );
@@ -1338,6 +1473,8 @@ class PTTags {
                 }
                 $repeat = true;
             }
+        } else {
+            $ctx->restore( $local_vars );
         }
         return ( $counter > 1 && isset( $args['glue'] ) )
             ? $args['glue'] . $content : $content;
@@ -1440,6 +1577,21 @@ class PTTags {
             $component = $app;
         }
         return $app->translate( $str, $arg, $component );
+    }
+
+    function filter_convert_breaks ( $text, $arg, $ctx ) {
+        $current_context = $ctx->stash( 'current_context' );
+        $obj = $ctx->stash( $current_context );
+        $format = $arg == 'auto' ? $obj->text_format : $arg;
+        if ( $format === 'markdown' ) {
+            require_once( LIB_DIR . 'php-markdown'
+                . DS . 'Michelf' . DS . 'Markdown.inc.php' );
+            $text = Markdown::defaultTransform( $text );
+        } else if ( $format === 'convert_breaks' ) {
+            require_once( 'class.PTUtil.php' );
+            $text = PTUtil::convert_breaks( $text );
+        }
+        return $text;
     }
 
     function filter_epoch2str ( $ts, $arg, $ctx ) {

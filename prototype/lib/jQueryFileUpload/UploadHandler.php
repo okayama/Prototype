@@ -123,7 +123,7 @@ class UploadHandler
             // Set to 0 to use the GD library to scale and orient images,
             // set to 1 to use imagick (if installed, falls back to GD),
             // set to 2 to use the ImageMagick convert binary directly:
-            'image_library' => 1,
+            'image_library' => 0,
             // Uncomment the following to define an array of resource limits
             // for imagick:
             /*
@@ -575,6 +575,7 @@ class UploadHandler
         $file_path = $this->get_upload_path($file_name);
         if (!empty($version)) {
             $version_dir = $this->get_upload_path(null, $version);
+            $version_dir = rtrim($version_dir,'/');
             if (!is_dir($version_dir)) {
                 mkdir($version_dir, $this->options['mkdir_mode'], true);
             }
@@ -901,6 +902,7 @@ class UploadHandler
     }
 
     protected function imagick_create_scaled_image($file_name, $version, $options, $square = false) {
+        $success = null;
         list($file_path, $new_file_path) =
             $this->get_scaled_image_file_paths($file_name, $version);
         $image = $this->imagick_get_image_object(
@@ -935,13 +937,13 @@ class UploadHandler
             }
             $smaller = true;
         }
+        if ($square) {
+            $basename = preg_quote(basename($new_file_path));
+            $new_file_path = preg_replace("/($basename$)/","square-$1", $new_file_path);
+        }
         if (!$smaller) {
             $new_file_path = str_replace( DIRECTORY_SEPARATOR.DIRECTORY_SEPARATOR,
                 DIRECTORY_SEPARATOR, $new_file_path );
-            if ($square) {
-                $basename = preg_quote(basename($new_file_path));
-                $new_file_path = preg_replace("/($basename$)/","square-$1", $new_file_path);
-            }
             $crop = !empty($options['crop']);
             if ($crop) {
                 $x = 0;
@@ -989,7 +991,9 @@ class UploadHandler
         if (!isset($this->options['no_upload'])){
             if (! $square ) {
                 $options['crop'] = true;
+                $options['max_width'] = isset($options['max_width']) ? $options['max_width'] : 500;
                 $options['max_width'] = $options['max_width']/2;
+                $options['max_height'] = isset($options['max_height']) ? $options['max_height'] : 500;
                 $options['max_height'] = $options['max_height']/2;
                 $this->imagick_create_scaled_image($file_name, $version, $options,true);
             }
@@ -1238,7 +1242,6 @@ class UploadHandler
                 $this->thumb_square_data = base64_encode($data);
                 $sess->extradata($data);
                 $this->square_file = $square;
-                $this->square_file = '';
             } else {
                 $sess->extradata('');
             }
@@ -1286,7 +1289,6 @@ class UploadHandler
                     $append_file ? FILE_APPEND : 0
                 );
             }
-            
             $file_size = $this->get_file_size($file_path, $append_file);
             if ($file_size === $file->size) {
                 $file->url = $this->get_download_url($file->name);

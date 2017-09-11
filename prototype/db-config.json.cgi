@@ -1,7 +1,7 @@
 {
-    "dbname"    : "Prototype12",
+    "dbname"    : "Prototype",
     "dbhost"    : "localhost",
     "dbuser"    : "root",
-    "dbpasswd"  : "root",
-    "dbport"    :  8889
+    "dbpasswd"  : "oDasaf1a.",
+    "dbport"    :  3306
 }

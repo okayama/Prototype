@@ -83,6 +83,8 @@ class PADO {
           'pre_load'     => [], 'save_filter' => [],
           'delete_filter'=> [] ];
 
+    public  $last_cache_key;
+
 /**
  * Initialize a PADO.
  *
@@ -357,7 +359,9 @@ class PADO {
             print_r( $cols );
             print_r( $extra );
         $res = ob_get_clean();
-        return md5( $res );
+        $res = md5( $res );
+        $this->last_cache_key = $res;
+        return $res;
     }
 
 /**
@@ -880,6 +884,8 @@ class PADOBaseModel {
         } elseif ( is_numeric( $terms ) ) {
             $sql .= "WHERE {$id_column}=?";
             $vals[] = $terms;
+        } elseif ( is_string( $terms ) ) {
+            $sql = $terms;
         }
         $sql .= $group_by;
         if ( $extra ) $sql .= $extra . ' ';
@@ -1002,7 +1008,16 @@ class PADOBaseModel {
         $args = ['limit' => 1, 'get_by_key' => true ];
         $obj = $this->load( $params, $args );
         if ( $obj && is_array( $obj ) ) $obj = $obj[ 0 ];
-        if (! $obj ) $obj = $this->__new( $params );
+        if (! $obj ) {
+            $pado = $this->pado();
+            file_put_contents('11.txt',$pado->last_cache_key."\n", FILE_APPEND);
+            $obj = $this->__new( $params );
+            if ( isset( $pado->cache[ $obj->_model ] ) ) {
+                if ( isset( $pado->cache[ $obj->_model ][ $pado->last_cache_key ] ) ) {
+                    unset( $pado->cache[ $obj->_model ][ $pado->last_cache_key ] );
+                }
+            }
+        }
         return $obj;
     }
 
@@ -1079,11 +1094,13 @@ class PADOBaseModel {
         }
         $original = $arr;
         $statement = 'UPDATE';
+        $update = true;
         if (! isset( $arr[ $id_column ] ) || ! $arr[ $id_column ] ) {
             $statement = 'INSERT';
             unset( $arr[ $id_column ] );
+            $update = false;
         }
-        $arr = $this->validation( $arr );
+        $arr = $this->validation( $arr, $update );
         $cols = [];
         $vals = [];
         $placeholders = [];
@@ -1134,7 +1151,8 @@ class PADOBaseModel {
 /**
  * Alias for save.
  */
-    function update () {
+    function update ( $values = [] ) {
+        // TODO
         return $this->save();
     }
 
@@ -1429,7 +1447,7 @@ class PADOBaseModel {
  * @param  array $values : An array for sanitize.
  * @return array $values : Sanitized an array.
  */
-    function validation ( $values, &$error = null ) {
+    function validation ( $values, $update = false, &$error = null ) {
         $pado = $this->pado();
         if ( isset( $pado->methods['validation'] ) )
             return $this->_driver->validation( $values );
@@ -1450,6 +1468,7 @@ class PADOBaseModel {
         }
         foreach ( $scheme as $col => $props ) {
             if ( $col === $pado->id_column ) continue;
+            if ( $update && !isset( $values[ $col ] ) ) continue;
             if ( isset( $props['not_null'] ) && $props['not_null'] ) {
                 if (!isset( $values[ $col ] ) &&!isset( $values[ $colprefix . $col ] ) ) {
                     if ( isset( $props['default'] ) && $props['default'] ) {

@@ -942,13 +942,13 @@ class PTUpgrader {
                     $last++;
                     $upgrade = true;
                 }
-                $values = ['type' => 'string', 'size' => 255, 'index' => 1,
+                $values = ['type' => 'string', 'size' => 255, 'index' => 1, 'list' => 'text',
                            'label'=> 'Change Note', 'order' => $last ];
                 if ( $this->make_column( $obj, 'rev_note', $values, $force ) ) {
                     $last++;
                     $upgrade = true;
                 }
-                $values = ['type' => 'text', 'label'=> 'Diff',
+                $values = ['type' => 'text', 'label'=> 'Diff', 'list' => 'popover',
                            'order' => $last, 'autoset' => 1];
                 if ( $this->make_column( $obj, 'rev_diff', $values, $force ) ) {
                     $last++;

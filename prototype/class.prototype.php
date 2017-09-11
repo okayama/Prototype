@@ -69,7 +69,7 @@ class Prototype {
     public    $admin_url;
     public    $request_method;
     public    $current_magic;
-    public    $temp_dir      = '/tmp';
+    public    $temp_dir      = '/powercms/data/temp';
     protected $errors        = [];
     public    $installed;
 
@@ -191,11 +191,11 @@ class Prototype {
         $tags = [
             'function'   => ['objectvar', 'include', 'includeparts', 'getobjectname',
                              'assetthumbnail', 'assetproperty', 'getoption', 'statustext',
-                             'archivetitle', 'archivedate'],
+                             'archivetitle', 'archivedate', 'tagcount'],
             'block'      => ['objectcols', 'objectloop', 'tables', 'nestableobjects',
                              'countgroupby', 'fieldloop'],
             'conditional'=> ['objectcontext', 'tablehascolumn', 'isadmin', 'ifusercan'],
-            'modifier'   => ['epoch2str', 'sec2hms', 'trans'] ];
+            'modifier'   => ['epoch2str', 'sec2hms', 'trans', 'convert_breaks'] ];
         foreach ( $tags as $kind => $arr ) {
             $tag_prefix = $kind === 'modifier' ? 'filter_' : 'hdlr_';
             foreach ( $arr as $tag ) {
@@ -421,6 +421,7 @@ class Prototype {
             $workspace_id = $workspace->id;
             $ctx->vars['workspace_scope'] = 1;
             $ctx->vars['workspace_name'] = $workspace->name;
+            $ctx->vars['workspace_url'] = $workspace->site_url;
             $ctx->vars['workspace_barcolor'] = $workspace->barcolor;
             $ctx->vars['workspace_bartextcolor'] = $workspace->bartextcolor;
             $ctx->vars['workspace_extra_path'] = $workspace->extra_path;
@@ -825,6 +826,25 @@ class Prototype {
             }
             $obj = $db->model( $model );
             $_colprefix = $obj->_colprefix;
+            if ( $app->workspace() && in_array( 'workspace_id', $user_options ) ) {
+                $search = array_search( 'workspace_id',  $user_options );
+                $split = array_splice( $user_options, $search, 1 );
+            }
+            if ( $app->param( 'revision_select' ) ) {
+                if (! in_array( 'rev_diff', $user_options ) ) $user_options[] = 'rev_diff';
+                if (! in_array( 'rev_note', $user_options ) ) $user_options[] = 'rev_note';
+            } else {
+                unset( $list_props['rev_diff'], $list_props['rev_note'],
+                       $list_props['rev_changed'] );
+                if ( in_array( 'rev_diff', $user_options ) ) {
+                    $search = array_search( 'rev_diff',  $user_options );
+                    $split = array_splice( $user_options, $search, 1 );
+                }
+                if ( in_array( 'rev_note', $user_options ) ) {
+                    $search = array_search( 'rev_note',  $user_options );
+                    $split = array_splice( $user_options, $search, 1 );
+                }
+            }
             $app->disp_option = $user_options;
             $sorted_props = [];
             $select_cols  = [];
@@ -1074,7 +1094,7 @@ class Prototype {
             }
             $list_cols = [];
             $has_primary = false;
-            foreach ( $orig_user_options as $option ) {
+            foreach ( $user_options as $option ) {
                 if (! isset( $list_props[ $option ] ) ) continue;
                 if ( $list_props[ $option ] == 'primary' ) $has_primary = true;
                 $col_props = ['_name' => $option, '_label' => $labels[ $option ],
@@ -1090,6 +1110,7 @@ class Prototype {
             } else if (! $has_primary ) {
                 $ctx->vars['_no_primary'] = 1;
             }
+            $ctx->vars['show_cols'] = $orig_user_options;
             $ctx->vars['list_cols'] = $list_cols;
             $ctx->vars['list_colspan'] = count( $list_cols ) + 1;
             $filter_params = ['terms' => $terms, 'args' => $args, 'extra' => $extra ];
@@ -1277,7 +1298,7 @@ class Prototype {
         return openssl_decrypt( hex2bin( $text ), $meth, $key );
     }
 
-    function get_permalink ( $obj, $has_map = false ) {
+    function get_permalink ( $obj, $has_map = false, $rebuild = true ) {
         $app = Prototype::get_instance();
         $table = $app->get_table( $obj->_model );
         $terms = ['model' => $obj->_model ];
@@ -1301,6 +1322,9 @@ class Prototype {
             $app->stash( $cache_key, $ui );
             if ( $ui ) {
                 return $ui->url;
+            } else {
+                if (! $rebuild )
+                return $app->build_path_with_map( $obj, $urlmapping, $table, null, true );
             }
         }
         return false;
@@ -1611,7 +1635,7 @@ class Prototype {
                     $url = $urlinfo->url;
                     $assetproperty = $app->get_assetproperty( $obj, 'file' );
                     $label = $app->param( 'asset-label-' . $id );
-                    $save_label = $app->param( 'save-label' . $id );
+                    $save_label = $app->param( 'save-label-' . $id );
                     if ( $save_label ) {
                         $obj->label( $label );
                         $obj->save();
@@ -1695,6 +1719,7 @@ class Prototype {
         }
         $ctx->vars['image_width'] = $assetproperty['image_width'];
         $ctx->vars['image_height'] = $assetproperty['image_height'];
+        $ctx->vars['page_title'] = $app->translate( 'Edit Image' );
         $key = htmlspecialchars( $key );
         $model = htmlspecialchars( $model );
         $screen_id = htmlspecialchars( $screen_id );
@@ -2080,6 +2105,8 @@ class Prototype {
     }
 
     function rebuild_phase ( $app, $start = false, $counter = 0, $dependencies = false ) {
+        $start_time = $app->param( 'start_time' );
+        if (! $start_time ) $start_time = time();
         $ctx = $app->ctx;
         $per_rebuild = $app->per_rebuild;
         $tmpl = 'rebuild_phase.tmpl';
@@ -2095,7 +2122,6 @@ class Prototype {
         $next_models = [];
         $rebuild_last = false;
         $current_model = $app->param( 'current_model' );
-        $start_time = $app->param( 'start_time' );
         $ctx->vars['current_model'] = $current_model;
         if ( $app->param( '_type' ) && $app->param( '_type' ) == 'rebuild_archives' ) {
             $model = $app->param( 'next_models' );
@@ -2267,7 +2293,15 @@ class Prototype {
                     $progress = round( ( ( $keys - $i + 1 ) / $keys ) * 100 );
                     $app->param( 'progress', $progress );
                 }
+                $return_args = rawurldecode( $return_args );
                 parse_str( $return_args, $params );
+                if ( $workspace_id = $app->param( 'workspace_id' ) ) {
+                    $params['workspace_id'] = $workspace_id;
+                }
+                if (! isset( $params['magic_token'] ) ) {
+                    $params['magic_token'] = $app->current_magic;
+                }
+                $return_args = http_build_query( $params );
                 if ( isset( $params['__mode'] ) && $params['__mode'] === 'rebuild_phase' ) {
                     $next_model = $params['_model'];
                     $table = $app->get_table( $next_model );
@@ -2278,7 +2312,6 @@ class Prototype {
                     $ctx->vars['next_url'] = $app->admin_url . '?' . $return_args;
                     return $app->build_page( $tmpl );
                 }
-                $return_args = rawurldecode( $return_args );
                 $app->redirect( $app->admin_url . '?' . $return_args );
             }
             if ( $rebuild_last ) {
@@ -2575,9 +2608,8 @@ class Prototype {
             if ( $col !== 'id' ) {
                 $not_null = isset( $props['not_null'] ) ? $props['not_null'] : false;
                 if ( $not_null && $col === 'basename' ) {
-                    if ( $value ) {
-                        $value = PTUtil::make_basename( $obj, $value );
-                    } else {
+                    // $value = PTUtil::make_basename( $obj, $value );
+                    if (! $value ) {
                         $text = strip_tags( $text );
                         $value = PTUtil::make_basename( $obj, $text, true );
                     }
@@ -2869,7 +2901,21 @@ class Prototype {
         $model = $obj->_model;
         $table = $app->get_table( $model );
         $scheme = $app->get_scheme_from_db( $model );
+        $workspace = $app->workspace();
+        if ( $obj->_model === 'workspace' ) {
+            $workspace = $obj;
+        } else {
+            $workspace = $obj->workspace;
+        }
         $properties = $scheme['edit_properties'];
+        $base_url = $app->site_url;
+        $base_path = $app->site_path;
+        $extra_path = $app->extra_path;
+        if ( $workspace ) {
+            $base_url = $workspace->site_url;
+            $base_path = $workspace->site_path;
+            $extra_path = $workspace->extra_path;
+        }
         foreach ( $properties as $key => $val ) {
             if ( $model === 'asset' && $key === 'file' ) continue;
             if ( $val === 'file' ) {
@@ -2882,14 +2928,6 @@ class Prototype {
                 $file_ext = $file_meta['extension'];
                 $file = "{$model}/{$model}-{$key}-" . $obj->id;
                 if ( $file_ext ) $file .= '.' . $file_ext;
-                $base_url = $app->site_url;
-                $base_path = $app->site_path;
-                $extra_path = $app->extra_path;
-                if ( $workspace = $obj->workspace ) {
-                    $base_url = $workspace->site_url;
-                    $base_path = $workspace->site_path;
-                    $extra_path = $workspace->extra_path;
-                }
                 $file_path = $base_path . '/'. $extra_path . $file;
                 $file_path = str_replace( '/', DS, $file_path );
                 $url = $base_url . '/'. $extra_path . $file;
@@ -2943,6 +2981,65 @@ class Prototype {
                         $app->publish_dependencies( $obj, $original, $mapping );
                     } else {
                         $app->publish_dependencies( $obj, $original, $mapping, false );
+                    }
+                } else if ( $mapping->date_based && $mapping->container ) {
+                    $at = $mapping->date_based;
+                    $container = $mapping->container;
+                    $container_table = $app->get_table( $container );
+                    $app->get_scheme_from_db( $container );
+                    $status_published = $app->status_published( $container );
+                    $container_obj = $app->db->model( $container )->new();
+                    $_colprefix = $container_obj->_colprefix;
+                    $date_col = $_colprefix
+                              . $app->get_date_col( $container_obj );
+                    $_table = $db->prefix . $container;
+                    $sql = "SELECT DISTINCT YEAR({$date_col}), MONTH({$date_col}) FROM $_table";
+                    if ( $status_published || $mapping->workspace_id ) {
+                        $sql .= " WHERE ";
+                        $wheres = [];
+                        if ( $status_published ) {
+                            $wheres[] = "{$_colprefix}status=$status_published";
+                        }
+                        if ( $mapping->workspace_id ) {
+                            $ws_id = $mapping->workspace_id;
+                            $wheres[] = "{$_colprefix}workspace_id=$ws_id";
+                        }
+                        $sql .= join( ' AND ', $wheres );
+                    }
+                    $sql .= " ORDER BY YEAR({$date_col}),MONTH({$date_col})";
+                    $year_and_month = $container_obj->load( $sql );
+                    if ( $at === 'Fiscal-Yearly' ) {
+                        $fy_start = $mapping->fiscal_start;
+                        $fy_end = $fiscal_start == 1 ? 12 : $fiscal_start - 1;
+                    }
+                    $time_stamp = [];
+                    foreach ( $year_and_month as $ym ) {
+                        $ym = $ym->get_values();
+                        $y = $ym["YEAR({$date_col})"];
+                        $m = $ym["MONTH({$date_col})"];
+                        $m = sprintf( '%02d', $m );
+                        if ( $at === 'Fiscal-Yearly' ) {
+                            if ( $m > $fy_end ) $y++;
+                            $time_stamp[ $y ] = true;
+                        } else if ( $at === 'Yearly' ) {
+                            $time_stamp[ $y ] = true;
+                        } else if ( $at === 'Monthly' ) {
+                            $time_stamp[ $y . $m ] = true;
+                        }
+                    }
+                    $time_stamp = array_keys( $time_stamp );
+                    foreach ( $time_stamp as $time ) {
+                        $terms = [];
+                        if ( $at === 'Fiscal-Yearly' ) {
+                            $fy_start = sprintf( '%02d', $fy_start );
+                            $ts = $time . $fy_start . '01000000';
+                        } else if ( $at === 'Yearly' ) {
+                            $ts = $time . '0101000000';
+                        } else if ( $at === 'Monthly' ) {
+                            $ts = $time . '01000000';
+                        }
+                        $file_path = $app->build_path_with_map( $obj, $mapping, $table, $ts );
+                        $app->publish( $file_path, $obj, $mapping, null, $ts );
                     }
                 }
             }
@@ -3052,6 +3149,8 @@ class Prototype {
                 }
             }
         }
+        $ctx->vars = [];
+        $ctx->local_vars = [];
         echo $ctx->build( $tmpl );
         exit();
     }
@@ -3342,15 +3441,15 @@ class Prototype {
                     $url_objs = array_merge( $url_objs, $_url_objs );
                 }
             }
-            foreach ( $url_objs as $fi ) {
-                if ( $fi->is_published && $fi->file_path ) {
-                    $file_path = $fi->file_path;
+            foreach ( $url_objs as $ui ) {
+                if ( $ui->is_published && $ui->file_path ) {
+                    $file_path = $ui->file_path;
                     $file_path = str_replace( '/', DS, $file_path );
                     if ( file_exists( $file_path ) ) {
                         unlink( $file_path );
                     }
                 }
-                if (! $fi->remove() ) $error = true;
+                if (! $ui->remove() ) $error = true;
             }
         }
         $children = $table->child_tables ? explode( ',', $table->child_tables ) : [];
@@ -3451,7 +3550,7 @@ class Prototype {
         if (! $scheme ) return null;
         $primary = $scheme['indexes']['PRIMARY'];
         $objects = [];
-        if ( empty( $required ) ) {
+        if ( is_array( $required ) && empty( $required ) ) {
             $required = [];
             $required[] = 'id';
             if ( $model === 'urlinfo' ) {
@@ -3471,7 +3570,9 @@ class Prototype {
                 $required[] = 'order';
             }
         }
-        $required = join( ',', $required );
+        if ( is_array( $required ) ) {
+            $required = join( ',', $required );
+        }
         if ( $app->param( 'all_selected' ) ) {
             $filter_params = json_decode(
                 $app->decrypt( $app->param( 'filter_params' ) ), true );
@@ -3909,43 +4010,44 @@ class Prototype {
 
     function rebuild_urlinfo ( $url, $path, $workspace = null ) {
         $terms = $workspace ? ['workspace_id' => $workspace->id ] : null;
+        // TODO load_iter and required columns
         $app = Prototype::get_instance();
         if ( $terms ) {
-            $files = $app->db->model( 'urlinfo' )->load_iter( $terms );
+            $urls = $app->db->model( 'urlinfo' )->load( $terms );
         } else {
-            $files = $app->db->model( 'urlinfo' )->load_iter();
+            $urls = $app->db->model( 'urlinfo' )->load();
         }
         $dirs = [];
-        foreach ( $files as $fi ) {
-            $map = $fi->urlmapping;
+        foreach ( $urls as $url_info ) {
+            $map = $url_info->urlmapping;
             if ( $workspace && $map && $workspace->workspace_id != $map->workspace_id ) {
                 continue;
             } else if (! $workspace && $map && $map->workspace_id ) {
                 continue;
             }
-            $relative_path = $fi->relative_path;
-            $file_path = str_replace( '%r', $path, $relative_path );
-            $file_path = str_replace( '/', DS, $file_path );
-            $file_url = str_replace( '%r/', $url, $relative_path );
-            $file_url = str_replace( DS, '/', $file_url );
-            if ( $fi->file_path !== $file_path || $fi->url !== $file_url ) {
-                if ( $fi->file_path !== $file_path && $fi->is_published ) {
-                    if ( file_exists( $fi->file_path ) ) {
-                        if ( file_exists( $file_path ) ) {
-                            $dirs[ dirname( $file_path ) ] = true;
-                            rename( $file_path, "{$file_path}.bk" );
+            $relative_path = $url_info->relative_path;
+            $url_path = str_replace( '%r', $path, $relative_path );
+            $url_path = str_replace( '/', DS, $url_path );
+            $url_url = str_replace( '%r/', $url, $relative_path );
+            $url_url = str_replace( DS, '/', $url_url );
+            if ( $url_info->file_path !== $url_path || $url_info->url !== $url_url ) {
+                if ( $url_info->file_path !== $url_path && $url_info->is_published ) {
+                    if ( file_exists( $url_info->file_path ) ) {
+                        if ( file_exists( $url_path ) ) {
+                            $dirs[ dirname( $url_path ) ] = true;
+                            rename( $url_path, "{$url_path}.bk" );
                         }
                         require_once( 'class.PTUtil.php' );
-                        PTUtil::mkpath( dirname( $file_path ) );
-                        rename( $fi->file_path, $file_path );
-                        if ( file_exists( "{$file_path}.bk" ) ) {
-                            unlink( "{$file_path}.bk" );
+                        PTUtil::mkpath( dirname( $url_path ) );
+                        rename( $url_info->file_path, $url_path );
+                        if ( file_exists( "{$url_path}.bk" ) ) {
+                            unlink( "{$url_path}.bk" );
                         }
                     }
                 }
-                $fi->file_path( $file_path );
-                $fi->url( $file_url );
-                $fi->save();
+                $url_info->file_path( $url_path );
+                $url_info->url( $url_url );
+                $url_info->save();
             }
         }
         require_once( 'class.PTUtil.php' );
@@ -3999,9 +4101,6 @@ class Prototype {
         $db = $app->db;
         $ctx = clone $app->ctx;
         $fi = $db->model( 'urlinfo' )->get_by_key( ['file_path' => $file_path ] );
-        if (! $mime_type ) {
-            // TODO
-        }
         $fi_exists = false;
         $urlmapping_id = 0;
         $old_path = '';
@@ -4011,11 +4110,18 @@ class Prototype {
         $template;
         $mapping = '';
         $urlmapping = null;
-        $workspace = $obj->workspace;
+        $workspace = $app->workspace();
+        if ( $obj->_model === 'workspace' ) {
+            $workspace = $obj;
+        } else {
+            $workspace = $obj->workspace;
+        }
+        $date_based = false;
         $ctx->stash( 'current_container', '' );
         if ( is_object( $key ) ) {
             $urlmapping_id = $key->id;
             $urlmapping = $key;
+            if ( $urlmapping->date_based ) $archive_date = $type;
             $type = $urlmapping->template_id ? 'archive' : 'model';
             $publish = $urlmapping->publish_file;
             $template = $urlmapping->template;
@@ -4029,7 +4135,8 @@ class Prototype {
                     $ctx->stash( 'current_container', $container->name );
                 }
             }
-            $link_status = $key->link_status;
+            $date_based = $urlmapping->date_based;
+            $link_status = $urlmapping->link_status;
             $key = '';
         }
         if ( $fi->id ) {
@@ -4055,7 +4162,7 @@ class Prototype {
                     $i++;
                 }
                 if ( $unique && $obj->has_column( 'basename' ) ) {
-                    $obj->basename( basename( $file_path ) );
+                    $obj->basename( pathinfo( $file_path )['filename'] );
                     $obj->save();
                 }
             }
@@ -4096,6 +4203,7 @@ class Prototype {
                           'class' => $type,
                           'relative_path' => '%r' . DS . $relative_path,
                           'workspace_id' => $obj->workspace_id ] );
+        if ( isset( $archive_date ) ) $fi->archive_date( $archive_date );
         if ( $obj->has_column( 'status' ) ) {
             $status_published = $app->status_published( $obj->_model );
             if ( $obj->status != $status_published ) {
@@ -4141,6 +4249,26 @@ class Prototype {
                             $ctx->stash( 'current_context', '' );
                             $ctx->stash( $obj->_model, '' );
                         }
+                        if ( $date_based ) {
+                            $date_col = $app->get_date_col( $obj );
+                            $ctx->stash( 'archive_date_based_col', $date_col );
+                            $ts = $fi->db2ts( $fi->archive_date );
+                            list( $title, $start, $end )
+                                = $app->title_start_end( $date_based, $ts, $urlmapping );
+                            $ctx->stash( 'archive_date_based',
+                                $ctx->stash( 'current_container' ) );
+                            $ctx->stash( 'current_timestamp', $start );
+                            $ctx->stash( 'current_timestamp_end', $end );
+                        } else {
+                            $ctx->stash( 'current_timestamp', null );
+                            $ctx->stash( 'current_timestamp_end', null );
+                            $ctx->stash( 'archive_date_based', false );
+                        }
+                        $ctx->vars['current_archive_type'] =
+                            $ctx->stash( 'current_archive_type' );
+                        $ctx->vars['current_archive_url'] = $url;
+                        $ctx->vars = [];
+                        $ctx->local_vars = [];
                         $data = $ctx->build( $tmpl );
                         $app->ctx->vars = $cache_vars;
                         $app->ctx->local_vars = $cache_local_vars;
@@ -4184,6 +4312,14 @@ class Prototype {
                 $fi->archive_date = null;
             }
             $fi->archive_type( $ctx->stash( 'current_archive_type' ) );
+            if (! $fi->mime_type ) {
+                if ( file_exists( $file_path ) ) {
+                    $mime_type = mime_content_type( $file_path );
+                    $fi->mime_type( $mime_type );
+                } else {
+                    $mime_type = PTUtil::get_mime_type( pathinfo( $file_path )['extension'] );
+                }
+            }
             $fi->save();
         }
         PTUtil::remove_empty_dirs( $remove_dirs );
@@ -4238,7 +4374,6 @@ class Prototype {
                         $date = substr( $date, 0, 4 );
                         $orig_date = substr( $orig_date, 0, 4 );
                     } else {
-                        // Monthly
                         $date = substr( $date, 0, 6 );
                         $orig_date = substr( $orig_date, 0, 6 );
                     }
@@ -4249,7 +4384,7 @@ class Prototype {
                 if ( $publish ) {
                     $file_path = $app->build_path_with_map
                                                 ( $dependencie, $mapping, $table, $ts );
-                    $app->publish( $file_path, $dependencie, $mapping );
+                    $app->publish( $file_path, $dependencie, $mapping, null, $ts );
                 } else {
                     $dependencies = $app->stash( 'rebuild_dependencies' ) ?
                                     $app->stash( 'rebuild_dependencies' ) : [];
@@ -4790,7 +4925,7 @@ class Prototype {
     }
 
     function log ( $message ) {
-        $message = is_string( $message ) ? ['message' => $message ] : $message;
+        $message = ! is_array( $message ) ? ['message' => $message ] : $message;
         $app = Prototype::get_instance();
         if (! isset( $message['metadata'] ) ) {
             if ( mb_strlen( $message['message'] ) >= 255 ) {
@@ -5017,8 +5152,10 @@ class Prototype {
     }
 
     function errorHandler ( $errno, $errmsg, $f, $line ) {
+        $q = $this->query_string( true );
+        $q = preg_replace( "/(^.*?)\n.*$/si", "$1", $q );
         if ( $tmpl = $this->ctx->template_file ) $errmsg = " $errmsg( in {$tmpl} )";
-        $msg = "{$errmsg} ({$errno}) occured( line {$line} of {$f} ).";
+        $msg = "{$errmsg} ({$errno}) occured( line {$line} of {$f} ). {$q}";
         $this->errors[] = $msg;
         if ( $this->debug === 2 ) $this->debugPrint( $msg );
         if ( $this->logging ) error_log( date( 'Y-m-d H:i:s T', time() ) .

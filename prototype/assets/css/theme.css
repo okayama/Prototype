@@ -30,6 +30,26 @@ body {
   .header-util {
     margin-top: 1em;
   }
+  .modal {
+    width: 100% !important;
+    padding: 0px !important;
+    overflow: auto !important;
+  }
+  .modal-dialog {
+    width: 100% !important;
+    padding: 0px !important;
+    margin: 0px !important;
+  }
+  .modal-lg {
+    width: 100% !important;
+    padding: 0px !important;
+    margin: 0px !important;
+  }
+  .modal-content {
+    width: 100% !important;
+    padding: 0px !important;
+    margin: 0px !important;
+  }
 }
 
 @media ( max-width: 768px ) {
@@ -97,10 +117,94 @@ body {
   .dialog-chooser {
     margin-top: 0px !important;
   }
+  .time{
+    height: 2em;
+    margin-bottom: 4px;
+  }
+  .date{
+    height: 2em;
+    margin-bottom: 4px;
+  }
+  .published_on-col .date-input {
+    width: 100% !important;
+    display: block !important;
+  }
+  .disp-option-button {
+    display: none;
+  }
+  .alt-disp-option-button {
+    display: inline !important;
+  }
+  .insert-asset-preview {
+    width: 80px;
+    height: 80px;
+  }
+  .apply-filter-separator {
+    display: inline !important;
+  }
+  .modal {
+    width: 100% !important;
+    padding: 0px !important;
+    overflow: auto !important;
+  }
+  .modal-dialog {
+    width: 100% !important;
+    padding: 0px !important;
+    margin: 0px !important;
+  }
+  .modal-content {
+    width: 100% !important;
+    padding: 0px !important;
+    margin: 0px !important;
+  }
 }
+
+@media ( max-width: 576px ) {
+  .table-inner tr th label {
+    margin-top: 8px;
+  }
+}
+
+.filter-selecter-ctrl {
+  margin-bottom:5px !important;
+}
+
+.filter-selecter-ctrl-apply {
+  margin-bottom:5px !important;
+  margin-left:13px !important;
+}
+
+.detach-filter-btn {
+  margin-bottom:5px !important;
+  margin-top:1px !important;
+  margin-left:14px !important;
+}
+
+.insert-asset-selector-th {
+  width: 14px !important;
+  padding-right: 0;
+  min-width:0px !important;
+}
+
+.insert-asset-selector {
+  width: 14px !important;
+  padding-right: 0;
+  min-width:0px !important;
+}
+
+.insert-asset-preview-wrapper {
+  vertical-align: middle !important;
+  min-width:50px !important;
+}
+
+.edit-action-bar {
+  line-height: 3em;
+}
+
 .create-new-button-icon {
     display: none;
 }
+
 .alt-search-button {
   margin-left: 3px !important;
 }
@@ -826,10 +930,20 @@ div.mce-fullscreen {
 
 .table-inner tr th {
   border: none !important;
+  padding: 2px;
 }
 
 .table-inner tr td {
   border: none !important;
+  padding: 3px;
+}
+
+.table-inner {
+  width: 100% !important;
+}
+
+.table-inner tr td input[type="text"] {
+  width: 100% !important;
 }
 
 .insert-asset-selector {

@@ -27,24 +27,32 @@
   </div>
 </div>
 <mt:tablehascolumn column="published_on">
-<div class="row form-group">
+<div class="row form-group published_on-col">
   <div class="col-lg-2">
       <label for="published_on_date"><mt:trans phrase="Publish Date"></label>
   </div>
   <div class="col-lg-10 form-inline">
-<label>
+    <span class="date-input">
     <input id="published_on_date" type="date" class="form-control date" name="published_on_date" value="<mt:if name="object_published_on"><mt:var name="object_published_on" format_ts="Y-m-d"></mt:if>">
+    </span>
+    <span class="date-input">
     <input id="published_on_time" type="time" step="1" class="form-control time" name="published_on_time" value="<mt:if name="object_published_on"><mt:var name="object_published_on" format_ts="H:i:s"></mt:if>">
-</label>
+    </span>
 <mt:tablehascolumn column="unpublished_on">
 <span class="period-separator" class="unpublished-on-col">
 <i class="fa fa-arrows-h unpublished-on-col" aria-hidden="true"></i>
   <label for="unpublished_on_date"><span class="sr-only"><mt:trans phrase="To"></span></label>
 </span>
-<label class="unpublished-on-col">
+<span class="date-input">
+<span class="unpublished-on-col">
     <input id="unpublished_on_date" type="date" class="form-control date" name="unpublished_on_date" value="<mt:if name="object_unpublished_on"><mt:var name="object_unpublished_on" format_ts="Y-m-d"></mt:if>">
+</span>
+</span>
+<span class="date-input">
+<span class="unpublished-on-col">
     <input id="unpublished_on_time" type="time" step="1" class="form-control time" name="unpublished_on_time" value="<mt:if name="object_unpublished_on"><mt:var name="object_unpublished_on" format_ts="H:i:s"></mt:if>">
-</label>
+</span>
+</span>
 </mt:tablehascolumn>
   </div>
 </div>

@@ -105,6 +105,9 @@
         "id": "number",
         "name": "primary",
         "status": "number",
+        "rev_diff": "popover",
+        "rev_note": "text",
+        "rev_changed": "text",
         "modified_on": "datetime",
         "modified_by": "reference:user:name",
         "workspace_id": "reference:workspace:name"

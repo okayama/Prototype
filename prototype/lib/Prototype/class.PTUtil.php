@@ -1,5 +1,14 @@
 <?php
 
+function __autoLoader($class) {
+    $path = $class;
+    $path = str_replace( '\\', DS, $path ) . '.php';
+    if ( file_exists( LIB_DIR . $path ) ) {
+        include_once( LIB_DIR . $path );
+    }
+}
+spl_autoload_register( '\__autoLoader' );
+
 class PTUtil {
 
     public static function mkpath ( $path, $mode = 0777 ) {
@@ -88,10 +97,7 @@ class PTUtil {
         $basename = preg_replace( "/\s{1,}/", ' ', $basename );
         $basename = str_replace( ' ', '_', $basename );
         $basename = trim( $basename, '_' );
-        $basename = mb_substr( $basename, 0, 30, $app->db->charset );
-        if ( $basename && strpos( $basename, '_' ) !== false ) {
-            $basename = preg_replace( '/_[^_]*$/', '', $basename );
-        }
+        $basename = mb_substr( $basename, 0, 255, $app->db->charset );
         if (! $basename ) $basename = $obj->_model;
         if ( $unique ) {
             $terms = [];
@@ -142,16 +148,19 @@ class PTUtil {
         $height = isset( $args['height'] ) ? (int) $args['height'] : '';
         $square = isset( $args['square'] ) ? $args['square'] : false;
         $scale = isset( $args['scale'] ) ? (int) $args['scale'] : '';
+        $model = isset( $args['model'] ) ? $args['model'] : $obj->_model;
+        $name = isset( $args['name'] ) ? $args['name'] : 'file';
+        if (! $obj->$name ) return;
         if ( $scale ) {
             if ( $width ) $width = round( $width * $scale / 100 );
             if ( $height ) $height = round( $height * $scale / 100 );
         }
         $modified_on = $obj->modified_on;
         $modified_on = $obj->db2ts( $modified_on );
-        if (! $assetproperty ) $assetproperty = $app->get_assetproperty( $obj, 'file' );
+        if (! $assetproperty ) $assetproperty = $app->get_assetproperty( $obj, $name );
         $basename = $assetproperty['basename'];
         $extension = $assetproperty['extension'];
-        $thumbnail_basename = "thumb";
+        $thumbnail_basename = 'thumb';
         if ( $width && !$height ) {
             $thumbnail_basename .= "-{$width}xauto";
         } else if (!$width && $height ) {
@@ -188,8 +197,8 @@ class PTUtil {
         $asset_path = rtrim( $asset_path, DS );
         $asset_path .= DS . 'thumbnails' . DS . $thumbnail_name;
         $metadata = $app->db->model( 'meta' )->get_by_key( [
-            'object_id' => $id, 'model' => 'asset',
-            'kind' => 'thumbnail', 'key' => 'file', 'value' => $thumbnail_basename ] );
+            'object_id' => $id, 'model' => $model,
+            'kind' => 'thumbnail', 'key' => $name, 'value' => $thumbnail_basename ] );
         $uploaded = 0;
         if ( $metadata->text ) {
             $thumb_props = json_decode( $metadata->text, true );
@@ -197,16 +206,38 @@ class PTUtil {
             $uploaded = $obj->db2ts( $uploaded );
         }
         if (! $metadata->id || $modified_on > $uploaded ) {
-            $core_tags = $app->core_tags;
-            $ctx->stash( 'current_context', 'asset' );
-            $ctx->stash( 'asset', $obj );
+            $ctx->stash( 'current_context', $model );
+            $ctx->stash( $model, $obj );
             $args = ['model' => 'asset', 'name' => 'file', 'id' => $id ];
             $args['width'] = $width;
             $args['height'] = $height;
             $args['square'] = $square;
             $args['scale'] = $scale;
             $meta = [];
-            $thumb = $core_tags->hdlr_assetthumbnail( $args, $ctx, $meta );
+            $upload_dir = $app->upload_dir();
+            $file = $upload_dir . DS . $obj->file_name;
+            file_put_contents( $file, $obj->$name );
+            list( $w, $h ) = getimagesize( $file );
+            if (! $width || ! $height ) {
+                if ( $scale ) {
+                    $scale = $scale * 0.01;
+                    $height = round( $h * $scale );
+                    $width = round( $w * $scale );
+                } else {
+                    if ( $width ) {
+                        $scale = $width / $w;
+                        $height = round( $h * $scale );
+                    } else if ( $height ) {
+                        $scale = $height / $h;
+                        $width = round( $w * $scale );
+                    }
+                }
+            }
+            $imagine = new \Imagine\Gd\Imagine();
+            $image = $imagine->open( $file );
+            $thumbnail = $image->thumbnail( new Imagine\Image\Box( $width, $height ) );
+            $thumbnail->save( $upload_dir . DS . $thumbnail_name );
+            $thumb = file_get_contents( $upload_dir . DS . $thumbnail_name );
             $t_property = $assetproperty;
             $t_property['file_name'] = $thumbnail_name;
             $t_property['basename'] = $thumbnail_basename;
@@ -243,13 +274,13 @@ class PTUtil {
                 $info->is_published( 1 );
             }
         }
+        $publish = false;
         if ( $obj->status != 4 ) {
             if ( file_exists( $asset_path ) ) {
                 unlink( $asset_path );
                 $info->is_published( 0 );
             }
         } else {
-            $publish = false;
             if ( file_exists( $asset_path ) ) {
                 $comp = base64_encode( file_get_contents( $asset_path ) );
                 $data = base64_encode( $thumb );
@@ -394,13 +425,17 @@ class PTUtil {
             }
             if ( isset( $list_properties[ $key ] ) ) {
                 if (! in_array( $key, $relations ) ) {
+                    $rel_obj = null;
                     $prop = $list_properties[ $key ];
-                    if ( strpos( $prop, 'reference:' ) === 0 ) {
+                    if ( $prop && strpos( $prop, 'reference:' ) === 0 ) {
                         $props = explode( ':', $prop );
                         $rel_model = $props[1];
+                        if ( $rel_model == '__any__' ) {
+                            if (! isset( $vars['model'] ) ) continue;
+                            $rel_model = $vars['model'];
+                        }
                         if ( ctype_digit( $vars[ $key ] ) ) {
                             $ref_id = (int) $vars[ $key ];
-                            $rel_obj = null;
                             if ( $ref_id ) {
                                 $rel_obj = $app->db->model( $rel_model )->load( $ref_id );
                             }
@@ -409,14 +444,16 @@ class PTUtil {
                                     $vars[ $key ] = self::object_to_resource( $rel_obj );
                                 } else {
                                     $rel_col = $props[2];
-                                    if ( $rel_col == 'primary' ) {
+                                    if ( $rel_col == '__primary__' ) {
                                         $rel_table = $app->get_table( $rel_model );
                                         $rel_col = $rel_table->primary;
                                     }
-                                    if ( $key == 'workspace_id' ) {
-                                        $vars['workspace_name'] = $rel_obj->$rel_col;
-                                    } else {
-                                        $vars[ $key ] = $rel_obj->$rel_col;
+                                    if ( $rel_obj->has_column( $rel_col ) ) {
+                                        if ( $key == 'workspace_id' ) {
+                                            $vars['workspace_name'] = $rel_obj->$rel_col;
+                                        } else {
+                                            $vars[ $key ] = $rel_obj->$rel_col;
+                                        }
                                     }
                                 }
                             } else {
@@ -427,7 +464,7 @@ class PTUtil {
                     if ( $type === 'list' ) {
                         switch ( true ) {
                             case $prop === 'primary':
-                                $vars[ $key ] = self::trim_to( $vars[ $key ], 60 );
+                                //$vars[ $key ] = self::trim_to( $vars[ $key ], 60 );
                                 break;
                             case $prop === 'datetime':
                                 $format = 'Y-m-d H:i';
@@ -471,9 +508,8 @@ class PTUtil {
                                 $vars[ $key ] = $vars[ $key ] ? '**********...' : '';
                                 break;
                             default:
-                                if ( in_array( $key, $translates ) ) {
+                                if ( in_array( $key, $translates ) )
                                     $vars[ $key ] = $app->translate( $vars[ $key ] );
-                                };
                         }
                     }
                 }
@@ -642,6 +678,127 @@ class PTUtil {
             $options .= "{$key}: {$value}\r\n";
         }
         return mb_send_mail( $to, $subject, $body, $options );
+    }
+
+    public static function convert_breaks ( $str = '' ) {
+        if (! $str ) return '';
+        $app = Prototype::get_instance();
+        $ctx = $app->ctx;
+        $dom = $ctx->dom;
+        if (! $dom ) $dom = new DomDocument();
+        libxml_use_internal_errors( true );
+        if (!$dom->loadHTML( mb_convert_encoding( $str, 'HTML-ENTITIES','utf-8' ),
+            LIBXML_HTML_NOIMPLIED|LIBXML_HTML_NODEFDTD|LIBXML_COMPACT ) )
+            trigger_error( 'loadHTML failed!' );
+        $str = mb_convert_encoding( $dom->saveHTML(),
+                                        'utf-8', 'HTML-ENTITIES' );
+        return $str;
+    }
+
+    public static function get_mime_type ( $extension ) {
+        $extension = strtolower( $extension );
+        $extension = ltrim( $extension, '.' );
+        if ( isset( $_SERVER[ 'HTTP_USER_AGENT' ] ) ) {
+            if ( strpos( $_SERVER[ 'HTTP_USER_AGENT' ], 'DoCoMo/2.0' ) === 0 ) {
+                if ( $extension === 'html' ) {
+                    return 'application/xhtml+xml';
+                }
+            }
+        }
+        $mime_type = array (
+            'css'     => 'text/css',
+            'html'    => 'text/html',
+            'mtml'    => 'text/html',
+            'xhtml'   => 'application/xhtml+xml',
+            'htm'     => 'text/html',
+            'txt'     => 'text/plain',
+            'rtx'     => 'text/richtext',
+            'tsv'     => 'text/tab-separated-values',
+            'csv'     => 'text/csv',
+            'hdml'    => 'text/x-hdml; charset=Shift_JIS',
+            'xml'     => 'application/xml',
+            'atom'    => 'application/atom+xml',
+            'rss'     => 'application/rss+xml',
+            'rdf'     => 'application/rdf+xml',
+            'xsl'     => 'text/xsl',
+            'mpeg'    => 'video/mpeg',
+            'mpg'     => 'video/mpeg',
+            'mpe'     => 'video/mpeg',
+            'avi'     => 'video/x-msvideo',
+            'movie'   => 'video/x-sgi-movie',
+            'mov'     => 'video/quicktime',
+            'qt'      => 'video/quicktime',
+            'ice'     => 'x-conference/x-cooltalk',
+            'svr'     => 'x-world/x-svr',
+            'vrml'    => 'x-world/x-vrml',
+            'wrl'     => 'x-world/x-vrml',
+            'vrt'     => 'x-world/x-vrt',
+            'spl'     => 'application/futuresplash',
+            'hqx'     => 'application/mac-binhex40',
+            'doc'     => 'application/msword',
+            'pdf'     => 'application/pdf',
+            'ai'      => 'application/postscript',
+            'eps'     => 'application/postscript',
+            'ps'      => 'application/postscript',
+            'ppt'     => 'application/vnd.ms-powerpoint',
+            'rtf'     => 'application/rtf',
+            'dcr'     => 'application/x-director',
+            'dir'     => 'application/x-director',
+            'dxr'     => 'application/x-director',
+            'js'      => 'application/javascript',
+            'dvi'     => 'application/x-dvi',
+            'gtar'    => 'application/x-gtar',
+            'gzip'    => 'application/x-gzip',
+            'latex'   => 'application/x-latex',
+            'lzh'     => 'application/x-lha',
+            'swf'     => 'application/x-shockwave-flash',
+            'sit'     => 'application/x-stuffit',
+            'tar'     => 'application/x-tar',
+            'tcl'     => 'application/x-tcl',
+            'tex'     => 'application/x-texinfo',
+            'texinfo' => 'application/x-texinfo',
+            'texi'    => 'application/x-texi',
+            'src'     => 'application/x-wais-source',
+            'zip'     => 'application/zip',
+            'au'      => 'audio/basic',
+            'snd'     => 'audio/basic',
+            'midi'    => 'audio/midi',
+            'mid'     => 'audio/midi',
+            'kar'     => 'audio/midi',
+            'mpga'    => 'audio/mpeg',
+            'mp2'     => 'audio/mpeg',
+            'mp3'     => 'audio/mpeg',
+            'ra'      => 'audio/x-pn-realaudio',
+            'ram'     => 'audio/x-pn-realaudio',
+            'rm'      => 'audio/x-pn-realaudio',
+            'rpm'     => 'audio/x-pn-realaudio-plugin',
+            'wav'     => 'audio/x-wav',
+            'bmp'     => 'image/x-ms-bmp',
+            'gif'     => 'image/gif',
+            'jpeg'    => 'image/jpeg',
+            'jpg'     => 'image/jpeg',
+            'jpe'     => 'image/jpeg',
+            'png'     => 'image/png',
+            'tiff'    => 'image/tiff',
+            'tif'     => 'image/tiff',
+            'pnm'     => 'image/x-portable-anymap',
+            'ras'     => 'image/x-cmu-raster',
+            'pnm'     => 'image/x-portable-anymap',
+            'pbm'     => 'image/x-portable-bitmap',
+            'pgm'     => 'image/x-portable-graymap',
+            'ppm'     => 'image/x-portable-pixmap',
+            'rgb'     => 'image/x-rgb',
+            'xbm'     => 'image/x-xbitmap',
+            'xls'     => 'application/vnd.ms-excel',
+            'xpm'     => 'image/x-pixmap',
+            'xwd'     => 'image/x-xwindowdump',
+            'ico'     => 'image/vnd.microsoft.icon',
+            'docx'    => 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+            'pptx'    => 'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+            'xlsx'    => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            'json'    => 'application/json',
+        );
+        return isset( $mime_type[ $extension ] ) ? $mime_type[ $extension ] : 'text/plain';
     }
 
     public static function file_find ( $dir, &$files = [], &$dirs = [] ) {

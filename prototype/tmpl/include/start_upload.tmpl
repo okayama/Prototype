@@ -90,10 +90,6 @@ $(function () {
                 new_input.val(file.asset_id);
                 selected_ids.push(file.asset_id);
             });
-            <mt:if name="request.insert_editor">
-            $("#__mode").prop('value', 'insert_asset');
-            $("#list-select-form").submit();
-            </mt:if>
         },
         progressall: function (e, data) {
             var progress = parseInt(data.loaded / data.total * 100, 10);
@@ -102,7 +98,7 @@ $(function () {
                 progress + '%'
             );
             if ( progress == 100 ) {
-                setTimeout(uploaded_hdlr, 1200);
+                setTimeout(uploaded_hdlr, 3600);
             }
         }
     }).prop('disabled', !$.support.fileInput)
@@ -110,6 +106,11 @@ $(function () {
 });
 function uploaded_hdlr () {
     this_url += '&selected_ids=' + selected_ids.join(',');
+    <mt:if name="request.insert_editor">
+    $("#__mode").prop('value', 'insert_asset');
+    $("#list-select-form").submit();
+    <mt:else>
     window.location.href = this_url;
+    </mt:if>
 }
 </script>

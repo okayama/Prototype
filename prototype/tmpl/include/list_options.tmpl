@@ -1,6 +1,9 @@
       <div class="text-right disp-option">
-        <button type="button" class="btn btn-outline-primary btn-sm" data-toggle="modal" data-target="#dispOptions">
+        <button type="button" class="btn btn-outline-primary btn-sm disp-option-button" data-toggle="modal" data-target="#dispOptions">
           <mt:trans phrase="Display Options">
+        </button>
+        <button data-toggle="modal" data-target="#dispOptions" class="hidden btn btn-secondary alt-disp-option-button btn-sm" type="button">
+        <i class="fa fa-television" aria-hidden="true"></i><span class="sr-only"><mt:trans phrase="Display Options"></span>
         </button>
       </div>
       <div class="modal fade" id="dispOptions" tabindex="-1" role="dialog" aria-labelledby="dispOptionsTitle" aria-hidden="true">

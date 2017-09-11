@@ -166,6 +166,10 @@ window.onload = function(){
         </mt:tables>
         </ul>
         <div class="header-util">
+          <a href="<mt:var name="site_url">" target="_blank" class="btn btn-sm btn-secondary my-2 my-sm-0" data-toggle="tooltip" data-placement="bottom" title="<mt:trans phrase="View">">
+            <i class="fa fa-external-link-square" aria-hidden="true"></i>
+            <span class="sr-only"><mt:trans phrase="View"></span>
+          </a>
         <mt:ifusercan action="rebuild" workspace_id="0">
         <mt:countgroupby model="urlmapping" group="'workspace_id','model'" workspace_id="0" limit="1">
           <a href="<mt:var name="script_uri">?__mode=rebuild_phase&_type=start_rebuild" class="popup btn btn-sm btn-secondary my-2 my-sm-0" data-toggle="tooltip" data-placement="right" title="<mt:trans phrase="Rebuild">">
@@ -294,6 +298,10 @@ window.onload = function(){
         </mt:tables>
         </ul>
         <div class="header-util">
+          <a href="<mt:var name="workspace_url">" target="_blank" class="btn btn-sm btn-secondary my-2 my-sm-0" data-toggle="tooltip" data-placement="bottom" title="<mt:trans phrase="View">">
+            <i class="fa fa-external-link-square" aria-hidden="true"></i>
+            <span class="sr-only"><mt:trans phrase="View"></span>
+          </a>
         <mt:ifusercan action="rebuild" workspace_id="$workspace_id">
         <mt:countgroupby model="urlmapping" group="'workspace_id','model'" workspace_id="$workspace_id" limit="1">
           <a href="<mt:var name="script_uri">?__mode=rebuild_phase&_type=start_rebuild&amp;workspace_id=<mt:var name="workspace_id">" class="popup btn btn-sm btn-secondary my-2 my-sm-0" data-toggle="tooltip" data-placement="bottom" title="<mt:trans phrase="Rebuild">">

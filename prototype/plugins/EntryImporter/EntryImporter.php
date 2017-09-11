@@ -92,6 +92,8 @@ class EntryImporter extends PTPlugin {
                 }
                 return $app->build_page( $tmpl );
             } else {
+                echo str_pad('',4096)."\n";
+                ob_end_flush();
                 echo '<html><body>';
                 return $component->$meth( $app, $session );
             }
@@ -112,7 +114,7 @@ class EntryImporter extends PTPlugin {
         $magic = $app->magic();
         $upload_dir = $app->upload_dir();
         $options = ['upload_dir' => $upload_dir . DS, 'prototype' => $app,
-                    'magic' => $magic ];
+                    'magic' => $magic, 'user_id' => $app->user()->id ];
         $name = $_FILES['files']['name'];
         $extension = strtolower( pathinfo( $name )['extension'] );
         if (! in_array( $extension, $this->allowed ) ) {
@@ -155,8 +157,8 @@ class EntryImporter extends PTPlugin {
         foreach ( $import_files as $file ) {
             $handle = @fopen( $file, "r" );
             if ( $handle ) {
-                while ( ( $buffer = fgets( $handle, 4096 ) ) !== false ) {
-                    $buffer = trim( $buffer );
+                while ( ( $_buffer = fgets( $handle, 4096 ) ) !== false ) {
+                    $buffer = trim( $_buffer );
                     if ( $buffer == '-----' ) {
                         if ( $context == 'comment' ) {
                             $comments[] = $comment;
@@ -174,6 +176,7 @@ class EntryImporter extends PTPlugin {
                             echo $this->translate( 'Saving entry failed.' );
                         }
                         echo "<br>\n";
+                        flush();
                         if (! empty( $categories ) ) {
                             $categories = array_unique( $categories );
                             $to_ids = [];
@@ -192,6 +195,7 @@ class EntryImporter extends PTPlugin {
                                         echo $this->translate( 'Saving category failed.' );
                                     }
                                     echo "<br>\n";
+                                    flush();
                                 }
                                 $to_ids[] = (int) $category->id;
                             }
@@ -239,6 +243,7 @@ class EntryImporter extends PTPlugin {
                                     echo $this->translate( 'Saving comment failed.' );
                                 }
                                 echo "<br>\n";
+                                flush();
                             }
                             $entry->comment_count( count( $comments ) );
                             $entry->save();
@@ -298,7 +303,7 @@ class EntryImporter extends PTPlugin {
                                         $user = $app->user();
                                     }
                                     echo "<br>\n";
-                                    
+                                    flush();
                                 }
                                 $entry->user_id( $user->id );
                             }
@@ -375,15 +380,15 @@ class EntryImporter extends PTPlugin {
                         if( !empty( $buffer ) )
                             $buffer .= "\n";
                         if ( $context == 'body' ) {
-                            $entry->text .= $buffer;
+                            $entry->text .= $_buffer;
                         } else if ( $context == 'extended' ) {
-                            $entry->text_more .= $buffer;
+                            $entry->text_more .= $_buffer;
                         } else if ( $context == 'excerpt' ) {
-                            $entry->excerpt .= $buffer;
+                            $entry->excerpt .= $_buffer;
                         } else if ( $context == 'keywords' ) {
-                            $entry->keywords .= $buffer;
+                            $entry->keywords .= $_buffer;
                         } else if ( $context == 'comment' ) {
-                            $comment->text .= $buffer;
+                            $comment->text .= $_buffer;
                         } else if ( $context == 'ping' ) {
                         }
                     }

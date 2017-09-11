@@ -95,6 +95,7 @@
         "id": "number",
         "label": "primary",
         "description": "text_short",
+        "basename": "text_short",
         "parent_id": "reference:category:label",
         "order": "number",
         "workspace_id": "reference:workspace:name",
