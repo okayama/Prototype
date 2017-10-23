@@ -72,7 +72,7 @@ class PTSystemFilters {
                                  'label' => $app->translate( 'Show only errors' ),
                                  'component' => $this,
                                  'method' => 'show_only_errors'];
-            $args  = [ 'group' => [ 'category' ] ];
+            $args  = ['group' => ['category']];
             $group = $obj->count_group_by( $ws_terms, $args );
             foreach ( $group as $item ) {
                 $log_category = $item[ $_colprefix . 'category' ];
@@ -83,7 +83,7 @@ class PTSystemFilters {
                                      'option' => $log_category,
                                      'method' => 'filter_log_category'];
             }
-            $args  = [ 'group' => [ 'level' ] ];
+            $args  = ['group' => ['level'] ];
             $group = $obj->count_group_by( $ws_terms, $args );
             $log_levels = [1 => 'info', 2 => 'warning', 4 => 'error',
                            8 => 'security', 16 => 'debug'];
@@ -130,6 +130,14 @@ class PTSystemFilters {
         }
         echo json_encode( ['result' => true ] );
         exit();
+    }
+
+    function filter_log_category ( $app, &$terms, $model, $category ) {
+        $terms['category'] = $category;
+    }
+
+    function filter_log_level ( $app, &$terms, $model ) {
+        $terms['level'] = 4;
     }
 
     function owned_objects ( $app, &$terms, $model, $col = 'user_id' ) {

@@ -36,6 +36,34 @@
 
 <div class="row form-group">
   <div class="col-lg-2">
+    <label for="two_factor_auth">
+      <mt:trans phrase="Authentication">
+    </label>
+  </div>
+  <div class="col-lg-10 input-group">
+    <label class="custom-control custom-checkbox">
+    <input id="two_factor_auth" class="custom-control-input"
+     type="checkbox" name="two_factor_auth" value="1" <mt:if name="two_factor_auth">checked</mt:if>>
+        <span class="custom-control-indicator"></span>
+        <span class="custom-control-description"> 
+        <mt:var name="label" escape><mt:trans phrase="Use Two-factor Authentication"></span>
+    </label>
+  </div>
+</div>
+
+<div class="row form-group">
+  <div class="col-lg-2">
+    <label for="lockout_limit">
+      <mt:trans phrase="Lock Out Limit">
+    </label>
+  </div>
+  <div class="col-lg-2 input-group">
+    <input type="number" id="lockout_limit" name="lockout_limit" class="form-control" value="<mt:if name="lockout_limit"><mt:var name="lockout_limit" escape><mt:else>3</mt:if>">
+  </div>
+</div>
+
+<div class="row form-group">
+  <div class="col-lg-2">
     <label for="system_email">
       <mt:trans phrase="System Email">
       <mt:var name="field_required">
@@ -43,6 +71,20 @@
   </div>
   <div class="col-lg-10 input-group">
     <input type="text" id="system_email" name="system_email" class="form-control" value="<mt:var name="system_email" escape>">
+  </div>
+</div>
+
+<div class="row form-group">
+  <div class="col-lg-2">
+    <label for="tmpl_markup">
+      <mt:trans phrase="Template Markup">
+    </label>
+  </div>
+  <div class="col-lg-2">
+    <select class="form-control" id="tmpl_markup" name="tmpl_markup">
+      <option value="mt" <mt:if name="tmpl_markup" eq="mt">selected</mt:if>><mt:trans phrase="MT Compatible"></option>
+      <option value="smarty" <mt:if name="tmpl_markup" eq="smarty">selected</mt:if>><mt:trans phrase="Smarty Compatible"></option>
+    </select>
   </div>
 </div>
 

@@ -18,6 +18,18 @@ $('#field-<mt:var name="field_basename">-wrapper').sortable ( {
             }
             counter++;
         });
+        var counter = 0;
+        $('#field-<mt:var name="field_basename">-wrapper .custom-field-content-wrapper .custom-field-content-inner').each(function(){
+            var detach_btn = $(this).children('.detach-button-wrapper');
+            if ( counter ) {
+                detach_btn.show();
+            } else {
+                if ($(this).hasClass( 'field__display' ) ) {
+                    detach_btn.hide();
+                }
+            }
+            counter++;
+        });
     }
 });
 </script></mt:if>

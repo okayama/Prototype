@@ -8,26 +8,71 @@ class PTTags {
         $app = Prototype::get_instance();
         if ( $app->init_tags ) return;
         $ctx = $app->ctx;
+        $ctx->stash( 'workspace', $app->workspace() );
+        $cache_key = 'template_tags__c';
+        $cache = $app->get_cache( $cache_key );
+        if ( $cache ) {
+            $r_tags = $cache['tags'];
+            $components = $cache['components'];
+            $blockmodels = $cache['blockmodels'];
+            $function_relations = $cache['function_relations'];
+            $block_relations = $cache['block_relations'];
+            $function_date = $cache['function_date'];
+            $fileurl_tags = $cache['fileurl_tags'];
+            $workspace_tags = $cache['workspace_tags'];
+            $alias = $cache['alias_functions'];
+            $count_tags = $cache['count_tags'];
+            foreach ( $r_tags as $name => $prop ) {
+                list( $kind, $method, $component ) = $prop;
+                if ( $component === 'PTTags' ) {
+                    $_component = $this;
+                } else {
+                    $_component = $app->component( $component );
+                    if (! $_component ) $_component = $app->autoload_component( $component );
+                }
+                $ctx->register_tag( $name, $kind, $method, $_component );
+            }
+            foreach ( $blockmodels as $key => $value ) {
+                $ctx->stash( $key, $value );
+            }
+            $ctx->stash( 'function_relations', $function_relations );
+            $ctx->stash( 'block_relations', $block_relations );
+            $ctx->stash( 'function_date', $function_date );
+            $ctx->stash( 'workspace_tags', $workspace_tags );
+            $ctx->stash( 'fileurl_tags', $fileurl_tags );
+            $ctx->stash( 'alias_functions', $alias );
+            $ctx->stash( 'count_tags', $count_tags );
+            $app->init_tags = true;
+            return;
+        }
         $tables = $app->db->model( 'table' )->load( ['template_tags' => 1] );
         $block_relations    = [];
         $function_relations = [];
         $function_date      = [];
         $workspace_tags     = [];
         $fileurl_tags       = [];
-        $alias = [];
+        $count_tags         = [];
+        $alias              = [];
         $tags = $this;
+        $r_tags             = [];
+        $blockmodels        = [];
+        $components = ['pttags' => true];
         foreach ( $tables as $table ) {
             $plural = strtolower( $table->plural );
             $plural = preg_replace( '/[^a-z]/', '' , $plural );
-            $ctx->register_tag( $plural, 'block', 'hdlr_objectloop', $tags );
+            $this->register_tag( $ctx, $plural, 'block', 'hdlr_objectloop', $tags, $r_tags );
             $ctx->stash( 'blockmodel_' . $plural, $table->name );
+            $blockmodels[ 'blockmodel_' . $plural ] = $table->name;
             $scheme = $app->get_scheme_from_db( $table->name );
             $columns = $scheme['column_defs'];
             $locale = $scheme['locale']['default'];
             $edit_properties = $scheme['edit_properties'];
             $relations = isset( $scheme['relations'] ) ? $scheme['relations'] : [];
             $obj = $app->db->model( $table->name )->new();
+            $excludes = ['rev_note', 'rev_changed', 'rev_diff', 'rev_type',
+                         'rev_object_id'];
             foreach ( $columns as $key => $props ) {
+                if ( in_array( $key, $excludes ) ) continue;
                 if (! isset( $relations[ $key ] ) ) {
                     $label = strtolower( $locale[ $key ] );
                     $label = preg_replace( '/[^a-z]/', '' , $label );
@@ -38,24 +83,24 @@ class PTTags {
                     if ( $key !== $tag_name ) {
                         $alias[ $table->name . $tag_name ] = $table->name . $key;
                     }
-                    $ctx->register_tag(
-                        $table->name . $tag_name, 'function', 'hdlr_get_objectcol', $tags );
+                    $this->register_tag( $ctx, $table->name . $tag_name, 'function',
+                        'hdlr_get_objectcol', $tags, $r_tags );
                     if ( $table->name === 'workspace' ) {
                         $workspace_tags[] = $table->name . $tag_name;
                     }
                     if ( $label && $label != $tag_name ) {
                         if (! $obj->has_column( $label ) ) {
-                            $ctx->register_tag(
+                            $this->register_tag( $ctx,
                                 $table->name . $label,
-                                    'function', 'hdlr_get_objectcol', $tags );
+                                    'function', 'hdlr_get_objectcol', $tags, $r_tags );
                             $alias[ $table->name . $label ] 
                                 = $table->name . $key;
                         }
                     }
                     if ( $key === 'published_on' ) {
-                        $ctx->register_tag(
+                        $this->register_tag( $ctx,
                             $table->name . 'date', 'function',
-                                                'hdlr_get_objectcol', $tags );
+                                                'hdlr_get_objectcol', $tags, $r_tags );
                             $alias[ $table->name . 'date'] 
                                 = $table->name . $key;
                     }
@@ -66,9 +111,9 @@ class PTTags {
                             if ( $table->name === 'workspace' ) {
                                 $workspace_tags[] = $table->name . $tag_name . 'url';
                             }
-                            $ctx->register_tag(
+                            $this->register_tag( $ctx,
                                 $table->name . $tag_name . 'url',
-                                    'function', 'hdlr_get_objecturl', $tags );
+                                    'function', 'hdlr_get_objecturl', $tags, $r_tags );
                         }
                     }
                 }
@@ -78,14 +123,14 @@ class PTTags {
                         if ( strpos( $prop, ':' ) !== false ) {
                             $edit = explode( ':', $prop );
                             if ( $edit[0] === 'relation' || $edit[0] === 'reference' ) {
-                                $ctx->register_tag( $table->name . $mts[1],
-                                    'function', 'hdlr_get_objectcol', $tags );
+                                $this->register_tag( $ctx, $table->name . $mts[1],
+                                    'function', 'hdlr_get_objectcol', $tags, $r_tags );
                                 $function_relations[ $table->name . $mts[1] ]
                                     = [ $key, $table->name, $mts[1], $edit[2] ];
                                 $alias[ $table->name . $label ] = $table->name . $mts[1];
                                 if ( $key === 'user_id' ) {
-                                        $ctx->register_tag( $table->name . 'author',
-                                            'function', 'hdlr_get_objectcol', $tags );
+                                        $this->register_tag( $ctx, $table->name . 'author',
+                                            'function', 'hdlr_get_objectcol', $tags, $r_tags );
                                     $alias[ $table->name . 'author']
                                         = $table->name . $mts[1];
                                 }
@@ -95,32 +140,40 @@ class PTTags {
                 }
             }
             $maps = $app->db->model( 'urlmapping' )->count( ['model' => $table->name ] );
-            if ( $maps ) {
-                $ctx->register_tag(
+            if ( count( $maps ) ) {
+                $this->register_tag( $ctx,
                     $table->name . 'permalink',
-                        'function', 'hdlr_get_objectcol', $tags );
+                        'function', 'hdlr_get_objectcol', $tags, $r_tags );
+            }
+            $maps = $app->db->model( 'urlmapping' )->count( ['container' => $table->name ] );
+            if ( $maps ) {
+                $count_tagname = strtolower( $table->plural ) . 'count';
+                $this->register_tag( $ctx,
+                    $count_tagname,
+                        'function', 'hdlr_container_count', $tags, $r_tags );
+                $count_tags[ $count_tagname ] = $table->name;
             }
             foreach ( $relations as $key => $model ) {
-                $ctx->register_tag( $table->name . $key, 'block',
-                    'hdlr_get_relatedobjs', $tags );
+                $this->register_tag( $ctx, $table->name . $key, 'block',
+                    'hdlr_get_relatedobjs', $tags, $r_tags );
                 $block_relations[ $table->name . $key ] = [ $key, $table->name, $model ];
             }
             if ( $table->taggable ) {
-                $ctx->register_tag( $table->name . 'iftagged',
-                    'conditional', 'hdlr_iftagged', $tags );
+                $this->register_tag( $ctx, $table->name . 'iftagged',
+                    'conditional', 'hdlr_iftagged', $tags, $r_tags );
             }
             if ( $table->hierarchy ) {
-                $ctx->register_tag( $table->name . 'path',
-                    'function', 'hdlr_get_objectpath', $tags );
+                $this->register_tag( $ctx, $table->name . 'path',
+                    'function', 'hdlr_get_objectpath', $tags, $r_tags );
             }
         }
-        $ctx->stash( 'workspace', $app->workspace() );
         $ctx->stash( 'function_relations', $function_relations );
         $ctx->stash( 'block_relations', $block_relations );
         $ctx->stash( 'function_date', $function_date );
         $ctx->stash( 'workspace_tags', $workspace_tags );
         $ctx->stash( 'fileurl_tags', $fileurl_tags );
         $ctx->stash( 'alias_functions', $alias );
+        $ctx->stash( 'count_tags', $count_tags );
         $registry = $app->registry;
         if ( isset( $registry['tags'] ) ) {
             $tags = $registry['tags'];
@@ -131,13 +184,29 @@ class PTTags {
                     $plugin = $prop['component'];
                     if ( $component = $app->component( $plugin ) ) {
                         $meth = $prop['method'];
-                        if ( method_exists( $component, $meth ) )
-                            $ctx->register_tag( $name, $tag_kind, $meth, $component );
+                        if ( method_exists( $component, $meth ) ) {
+                            $this->register_tag( $ctx,
+                                $name, $tag_kind, $meth, $component, $r_tags );
+                            $components[ strtolower( $plugin ) ] = true;
+                        }
                     }
                 }
             }
         }
+        $cache = ['tags' => $r_tags, 'components' => $components,
+                  'blockmodels' => $blockmodels, 'function_relations' => $function_relations,
+                  'block_relations' => $block_relations, 'function_date' => $function_date,
+                  'workspace_tags' => $workspace_tags, 'alias_functions' => $alias,
+                  'count_tags' => $count_tags, 'fileurl_tags' => $fileurl_tags ];
+        $app->set_cache( $cache_key, $cache );
+        // $cache = serialize( $cache );
+        // file_put_contents( $cache_path, $cache );
         $app->init_tags = true;
+    }
+
+    function register_tag ( $ctx, $name, $kind, $method, $obj, &$registered_tags = [] ) {
+        $ctx->register_tag( $name, $kind, $method, $obj );
+        $registered_tags[ $name ] = [ $kind, $method, get_class( $obj ) ];
     }
 
     function hdlr_tablehascolumn ( $args, $content, $ctx, $repeat, $counter ) {
@@ -145,6 +214,7 @@ class PTTags {
         $column = $args['column'];
         $model = isset( $args['model'] ) ? $args['model'] : '';
         $obj = $model ? $app->db->model( $model ) : $ctx->stash( 'object' );
+        if ( $model ) $app->get_scheme_from_db( $model );
         if (! $obj ) return;
         if ( $obj->_model !== 'table' || $model ) {
             return $obj->has_column( $column );
@@ -298,6 +368,13 @@ class PTTags {
         return false;
     }
 
+    function hdlr_ifworkspacemodel ( $args, $content, $ctx, $repeat, $counter ) {
+        $app = $ctx->app;
+        $model = $args['model'];
+        $obj = $app->db->model( $model )->new();
+        return $obj->has_column( 'workspace_id' );
+    }
+
     function hdlr_iftagged ( $args, $content, $ctx, $repeat, $counter ) {
         $app = $ctx->app;
         $current_context = $ctx->stash( 'current_context' );
@@ -422,6 +499,10 @@ class PTTags {
         return $ctx->function_date( $args, $ctx );
     }
 
+    function hdlr_archivelink ( $args, $ctx ) {
+        return $ctx->stash( 'current_archive_link' );
+    }
+
     function hdlr_statustext ( $args, $ctx ) {
         $app = $ctx->app;
         $int = isset( $args['status'] ) ? (int) $args['status'] : 0;
@@ -465,6 +546,18 @@ class PTTags {
         $f = isset( $args['file'] ) ? $args['file'] : '';
         $m = isset( $args['module'] ) ? $args['module'] : '';
         $workspace_id = isset( $args['workspace_id'] ) ? $args['workspace_id'] : 0;
+        $cache_key = isset( $args['cache_key'] ) ? $args['cache_key'] : '';
+        $request_id = $app->request_id;
+        $db_cache_key = md5( "template-module-{$cache_key}-{$request_id}" );
+        if ( $cache_key && $app->stash( "template-module-{$cache_key}" ) ) {
+            return $app->stash( "template-module-{$cache_key}" );
+        } else if ( $cache_key ) {
+            $session = $app->db->model( 'session' )->get_by_key( [
+                           'name' => $db_cache_key, 
+                           'kind' => 'CH',
+                           'key'  => $cache_key ] );
+            if ( $session->id && ( $session->expires > time() ) ) return $session->data;
+        }
         if (! $f && ! $m ) return '';
         if ( $f ) {
             $f = str_replace( '/', DS, $f );
@@ -482,7 +575,7 @@ class PTTags {
         } else {
             $current_context = $ctx->stash( 'current_context' );
             $obj = $ctx->stash( $current_context );
-            $terms = ['name' => $m ];
+            $terms = ['name' => $m, 'status' => 2, 'rev_type' => 0];
             $tmpl = [];
             $current_template = $ctx->stash( 'current_template' );
             $template_workspace_id = 0;
@@ -504,10 +597,29 @@ class PTTags {
             }
             if ( empty( $tmpl ) ) return '';
             $tmpl = $tmpl[0];
+            $_compiled = $tmpl->compiled;
+            $_cache_key = $tmpl->cache_key;
+            if ( $_compiled && $_cache_key ) {
+                $ctx->compiled[ $_cache_key ] = $_compiled;
+            }
+            $app->modules[ $tmpl->id ] = $tmpl->get_values();
             $tmpl = $tmpl->text;
         }
         if (! $tmpl ) return '';
-        return $ctx->build( $tmpl );
+        $build = $ctx->build( $tmpl );
+        if ( $cache_key ) {
+            $app->stash( "template-module-{$cache_key}", $build );
+            $session = $app->db->model( 'session' )->get_by_key( [
+                           'name'  => $db_cache_key, 
+                           'kind'  => 'CH',
+                           'value' => $request_id,
+                           'key'   => $cache_key ] );
+            $session->start( time() );
+            $session->expires( time() + $app->token_expires );
+            $session->data( $build );
+            $session->save();
+        }
+        return $build;
     }
 
     function hdlr_includeparts ( $args, $ctx ) {
@@ -561,7 +673,11 @@ class PTTags {
         if ( isset( $ctx->local_vars['object_' . $col ] ) ) 
             return $ctx->local_vars['object_' . $col ];
         $obj = $ctx->stash( 'object' )
-             ? $ctx->stash( 'object' ) : $ctx->local_vars['__value__'];
+             ? $ctx->stash( 'object' ) : null;
+        if (! $obj ) {
+            $obj = isset( $ctx->local_vars['__value__'] )
+                 ? $ctx->local_vars['__value__'] : null;
+        }
         if ( $obj && $obj->has_column( $col ) ) {
             if ( $id = $obj->id ) {
                 $cache_key = 'can_edit_' . $obj->_model . '_' . $id;
@@ -599,7 +715,7 @@ class PTTags {
         $app = $ctx->app;
         $property = isset( $args['property'] ) ? $args['property'] : '';
         $model = isset( $args['model'] ) ? $args['model'] : $app->param( 'model' );
-        $name = isset( $args['name'] ) ? $args['name'] : null;
+        $name = isset( $args['name'] ) ? $args['name'] : 'file';
         if ( isset( $args['id'] ) && $args['id'] ) {
             $id = (int) $args['id'];
             $obj = $ctx->app->db->model( $model )->load( $id );
@@ -710,40 +826,7 @@ class PTTags {
         }
         if (! $data && $type !== 'default' ) {
             /*
-            if (! $obj->$name ) return;
-            $height = isset( $args['height'] ) ? $args['height'] : null;
-            $width = isset( $args['width'] ) ? $args['width'] : null;
-            $scale = isset( $args['scale'] ) ? $args['scale'] : null;
-            $upload_dir = $app->upload_dir();
-            $file = $upload_dir . DS . $obj->file_name;
-            file_put_contents( $file, $obj->$name );
-            if ( (!$width && !$height ) && $scale ) {
-                list( $w, $h ) = getimagesize( $file );
-                $scale = $scale * 0.01;
-                $width = $w * $scale;
-                $height = $h * $scale;
-            }
-            if (!$height ||!$width ) {
-                if (!$height ) $height = $width ? $width : null;
-                if (!$width ) $width = $height ? $height : null;
-            }
-            $width = (int) $width;
-            $height = (int) $height;
-            $max_scale = ( $width > $height ) ? $width : $height;
-            $image_versions = [
-                ''          => ['auto_orient' => true ],
-                'thumbnail' => ['max_width' => $max_scale, 'max_height' => $max_scale ] ];
-            if ( $square ) {
-                $image_versions['thumbnail']['crop'] = true;
-            }
-            $options = ['upload_dir' => $app->upload_dir() . DS, 'user_id' => -1,
-                        'prototype' => $app, 'print_response' => false,
-                        'no_upload' => true, 'image_versions' => $image_versions ];
-            $thumbnail = $upload_dir . DS . 'thumbnail' . DS . basename( $file );
-            $thumbnail_dir = dirname( $thumbnail );
-            $data = file_get_contents( $thumbnail );
-            list( $width, $height ) = getimagesize( $thumbnail );
-            $meta = ['image_width' => $width, 'image_height' => $height ];
+                TODO
             */
         }
         if ( $data_uri && $data ) {
@@ -766,7 +849,7 @@ class PTTags {
         $model = (! $model && isset( $args['model'] ) ) ? $args['model'] : $model;
         $id = $args['id'];
         $id = (int) $id;
-        if ( $model == '__any__' ) {
+        if ( $model === '__any__' ) {
             $from_obj = $ctx->stash( 'object' )
                  ? $ctx->stash( 'object' ) : $ctx->local_vars['__value__'];
             $to_model = '';
@@ -837,18 +920,58 @@ class PTTags {
                 return;
             }
             $id = isset( $args['id'] ) ? (int) $args['id'] : '';
+            $obj = $id ? $app->db->model( $model )->load( $id ) 
+                       : $app->db->model( $model )->new();
             $object_fields = [];
-            if ( $id ) {
-                $obj = $app->db->model( $model )->load( $id );
-                if ( $obj ) {
-                    $meta = $app->get_meta( $obj, 'customfield' );
-                    foreach ( $meta as $cf ) {
-                        $basename = $cf->key;
-                        $custom_fields = isset( $object_fields[ $basename ] )
-                                       ? $object_fields[ $basename ] : [];
-                        $custom_fields[] = $cf;
-                        $object_fields[ $basename ] = $custom_fields;
+            $meta = [];
+            if ( isset( $ctx->vars['forward_params'] ) ) {
+                require_once( 'class.PTUtil.php' );
+                $_obj_fields = PTUtil::get_fields( $model, 'types' );
+                foreach ( $_obj_fields as $fld => $fieldtype ) {
+                    $fld_value = $app->param( "{$fld}__c" );
+                    $unique_ids = $app->param( "field-unique_id-{$fld}" );
+                    if ( $fld_value !== null ) {
+                        if (! is_array( $fld_value ) ) $fld_value = [ $fld_value ];
+                        if (! is_array( $unique_ids ) ) $unique_ids = [ $unique_ids ];
+                        $i = 0;
+                        foreach ( $fld_value as $value ) {
+                            $unique_id = $unique_ids[ $i ];
+                            $i++;
+                            $fld_values = json_decode( $value, true );
+                            foreach ( $fld_values as $key => $val ) {
+                                if ( strpos( $key, $unique_id . '_' ) === 0 ) {
+                                    $new_key = preg_replace( "/^{$unique_id}_/", '', $key );
+                                    unset( $fld_values[ $key ] );
+                                    $fld_values[ $new_key ] = $val;
+                                }
+                            }
+                            $value = json_encode( $fld_values, JSON_UNESCAPED_UNICODE );
+                            $meta_obj = $app->db->model( 'meta' )->get_by_key(
+                                ['object_id' => $id, 'model' => $obj->_model,
+                                 'kind' => 'customfield', 'key' => $fld, 'number' => $i ] );
+                            $meta_obj->text( $value );
+                            $meta_obj->type( $fieldtype );
+                            if ( count( $fld_values ) == 1 ) {
+                                $meta_key = key( $fld_values );
+                                $meta_obj->name( $meta_key );
+                                $meta_obj->value( $fld_values[ $meta_key ] );
+                            } else {
+                                $meta_obj->value( '' );
+                            }
+                            $meta[] = $meta_obj;
+                        }
                     }
+                }
+            } else if ( $id && $obj ) {
+                $meta = $app->get_meta( $obj, 'customfield' );
+            }
+            if (! empty( $meta ) ) {
+                foreach ( $meta as $cf ) {
+                    $basename = $cf->key;
+                    $custom_fields = isset( $object_fields[ $basename ] )
+                                   ? $object_fields[ $basename ] : [];
+                    $custom_fields[] = $cf;
+                    $object_fields[ $basename ] = $custom_fields;
                 }
             }
             require_once( 'class.PTUtil.php' );
@@ -887,7 +1010,8 @@ class PTTags {
                              'field_options', 'field_uniqueid', 'field_label_html',
                              'field_content_html'];
             $param = [];
-            $ctx->local_vars['field_name'] = $field->name;
+            $ctx->local_vars['field_name'] = $field->translate
+                ? $app->translate( $field->name ) : $field->name;
             $ctx->local_vars['field_required'] = $field->required;
             $basename = $field->basename;
             $ctx->local_vars['field_basename'] = $basename;
@@ -897,6 +1021,13 @@ class PTTags {
                 $labels = $field->options_labels;
                 $options = preg_split( '/\s*,\s*/', $options );
                 $labels = $labels ? preg_split( '/\s*,\s*/', $labels ) : $options;
+                if ( $field->translate_labels ) {
+                    $trans_labels = [];
+                    foreach ( $labels as $label ) {
+                        $trans_labels[] = $app->translate( $label );
+                    }
+                    $labels = $trans_labels;
+                }
                 $i = 0;
                 $field_options = [];
                 foreach ( $options as $option ) {
@@ -916,12 +1047,18 @@ class PTTags {
                 $basename = $field->basename;
                 if ( isset( $object_fields[ $basename ] ) ) {
                     $fields = $object_fields[ $basename ];
+                    $field_counter = 0;
                     foreach ( $fields as $custom_field ) {
                         $set_keys = [];
                         $vars = json_decode( $custom_field->text, true );
                         foreach ( $vars as $key => $value ) {
                             $ctx->local_vars['field.' . $key ] = $value;
                             $set_keys[] = 'field.' . $key;
+                        }
+                        if (! $field_counter && $display ) {
+                            $ctx->local_vars['field__not_delete'] = 1;
+                        } else {
+                            $ctx->local_vars['field__not_delete'] = 0;
                         }
                         $ctx->local_vars['field__out'] = $field_out;
                         $uniqueid = $app->magic();
@@ -942,25 +1079,37 @@ class PTTags {
                         }
                         $field_out = true;
                         $display = true;
+                        $field_counter++;
                     }
                 }
             }
             if (! $field_out ) {
-                $field_label = $ctx->build( $field_label );
-                $ctx->local_vars['field_label_html'] = $field_label;
-                $field_label = $app->build_page( 'field' . DS . 'label.tmpl', $param, false );
                 $uniqueid = $app->magic();
+                if ( $display ) {
+                    $ctx->local_vars['field__not_delete'] = 1;
+                } else {
+                    $ctx->local_vars['field__not_delete'] = 0;
+                }
                 $ctx->local_vars['field_uniqueid'] = $uniqueid;
-                $_fld_content = $ctx->build( $field_content );
+                $field_label = $app->tmpl_markup === 'mt' ? $ctx->build( $field_label )
+                                                          : $app->build( $field_label, $ctx );
+                $ctx->local_vars['field_label_html'] = $field_label;
+                $src = file_get_contents( TMPL_DIR . 'field' . DS . 'label.tmpl' );
+                $field_label = $ctx->build( $src );
+                $_fld_content = $app->tmpl_markup === 'mt' ? $ctx->build( $field_content )
+                                                           : $app->build( $field_content, $ctx );
                 $ctx->local_vars['field_content_html'] = $_fld_content;
-                $field_contents = $app->build_page( 'field' . DS . 'content.tmpl', $param, false );
+                $src = file_get_contents( TMPL_DIR . 'field' . DS . 'content.tmpl' );
+                $field_contents = $ctx->build( $src );
                 PTUtil::add_id_to_field( $_fld_content, $uniqueid, $basename );
                 $ctx->local_vars['field_label_html'] = $field_label;
                 $ctx->local_vars['field_content_html'] = $field_contents;
-                $field_contents = $app->build_page( 'field' . DS . 'wrapper.tmpl', $param, false );
+                $src = file_get_contents( TMPL_DIR . 'field' . DS . 'wrapper.tmpl' );
+                $field_contents = $ctx->build( $src );
             }
             $field_contents = "<div id=\"field-{$basename}-wrapper\">{$field_contents}</div>";
-            $field_contents .= $app->build_page( 'field' . DS . 'footer.tmpl', $param, false );
+            $src = file_get_contents( TMPL_DIR . 'field' . DS . 'footer.tmpl' );
+            $field_contents .= $ctx->build( $src );
             $ctx->local_vars[ 'field__html' ] = $field_contents;
             foreach ( $restore_vars as $key ) {
                 unset( $ctx->local_vars[ $key ] );
@@ -1035,27 +1184,22 @@ class PTTags {
                     }
                 }
             } else {
-                if ( $to_obj === '__any__' ) $to_obj = null;
-                $relations = $app->get_relations( $obj, $to_obj, $colname );
-                if ( empty( $relations ) ) {
+                if ( $to_obj === '__any__' ) {
+                    if ( $obj->has_column( 'model' ) ) {
+                        $to_obj = $obj->model;
+                    } else if ( $obj->has_column( 'table_id' ) ) {
+                        $table = $app->db->model( 'table' )->load( (int) $obj->table_id );
+                        if ( $table ) {
+                            $to_obj = $table->name;
+                        }
+                    }
+                }
+                if ( $to_obj === '__any__' ) {
                     $ctx->restore( [ $model, 'current_context', 'to_object'] );
                     $repeat = false;
                     return;
                 }
-                foreach ( $relations as $relation ) {
-                    $id = (int) $relation->to_id;
-                    $to_obj = $relation->to_obj;
-                    $obj = $app->db->model( $to_obj )->load( $id );
-                    if ( is_object( $obj ) ) {
-                        if (! $include_draft ) {
-                            $status = $app->status_published( $to_obj );
-                            if ( $status && $obj->status != $status ) {
-                                continue;
-                            }
-                        }
-                        $objects[] = $obj;
-                    }
-                }
+                $objects = $app->get_related_objs( $obj, $to_obj, $colname );
             }
             // Filter Status
             $scheme = $app->db->scheme;
@@ -1112,6 +1256,7 @@ class PTTags {
             $column = str_replace( '_', '', $column );
         }
         if ( $obj->has_column( $column ) ) {
+            $column = $obj->_colprefix . $column;
             $value = $obj->$column;
             if ( $value && isset( $settings ) ) {
                 $value = (int) $value;
@@ -1119,6 +1264,7 @@ class PTTags {
                 $obj = $app->db->model( $settings[2] )->load( $value );
                 $col = isset( $args['wants'] ) ? $args['wants'] : $settings[3];
                 if ( $obj && $obj->has_column( $col ) ) {
+                    $col = $obj->_colprefix . $col;
                     $value = $obj->$col;
                 }
             }
@@ -1152,17 +1298,288 @@ class PTTags {
         return $urlinfo->url;
     }
 
-    function hdlr_tagcount ( $args, $ctx ) {
-        $this_tag = $args['this_tag'];
-        $obj = $ctx->stash( 'tag' );
-        if (! $obj ) return;
+    function hdlr_container_count ( $args, $ctx ) {
         $app = $ctx->app;
-        $tag_id = (int) $obj->id;
-        $model = isset( $args['model'] ) ? $args['model'] : 'entry';
-        $count = $app->db->model( 'relation' )->count( 
-                                ['to_id' => $tag_id, 'to_obj' => 'tag',
-                                 'from_obj' => $model ] );
-        return $count;
+        $terms = [];
+        $context = $ctx->stash( 'current_context' );
+        $this_tag = $args['this_tag'];
+        $count_tags = $ctx->stash( 'count_tags' );
+        $at = $ctx->stash( 'current_archive_context' )
+            ? $ctx->stash( 'current_archive_context' )
+            : $ctx->stash( 'current_archive_type' );
+        $workspace = $ctx->stash( 'workspace' );
+        $model = $count_tags[ $this_tag ];
+        $table = $app->get_table( $model );
+        $archive_date_based = false;
+        if ( $at && ( $at === 'monthly' || $at === 'yearly' || $at === 'fiscal-yearly' ) ) {
+            $archive_date_based = true;
+        }
+        if ( $archive_date_based ) {
+            $ts = $ctx->stash( 'current_timestamp' );
+            if (! $ts ) return 0;
+            $fiscal_start = null;
+            if ( $at === 'fiscal-yearly' ) {
+                $fiscal_start = isset( $args['fiscal_start'] ) ? $args['fiscal_start'] : 0;
+                if (! $fiscal_start ) {
+                    $map = $ctx->stash( 'current_urlmapping' );
+                    if ( $map && $map->date_based === 'Fiscal-Yearly' ) {
+                        $fiscal_start = $map->fiscal_start;
+                    } else {
+                        $map_terms = ['date_based' => 'Fiscal-Yearly'];
+                        if ( $workspace ) $map_terms['workspace_id'] = $workspace->id;
+                        $map = $app->db->model( 'urlmapping' )
+                            ->load( $map_terms, ['limit' => 1] );
+                        if ( is_array( $map ) && !empty( $map ) ) {
+                            $map = $map[0];
+                            $fiscal_start = $map->fiscal_start;
+                        } else if ( isset( $map_terms['workspace_id'] ) ) {
+                            unset( $map_terms['workspace_id'] );
+                            $map = $app->db->model( 'urlmapping' )
+                                ->load( $map_terms, ['limit' => 1] );
+                            if ( is_array( $map ) && !empty( $map ) ) {
+                                $map = $map[0];
+                                $fiscal_start = $map->fiscal_start;
+                            }
+                        }
+                    }
+                }
+                if (! $fiscal_start ) $fiscal_start = $app->fiscal_start;
+            }
+            list( $title, $start, $end ) = $app->title_start_end( $at, $ts, $fiscal_start );
+            $obj = $app->db->model( $model )->new();
+            $date_col = $app->get_date_col( $obj );
+            $terms = [ $date_col => ['BETWEEN' => [ $start, $end ] ] ];
+        } else {
+            $obj = $ctx->stash( $context );
+            if (! $obj ) return 0;
+            $args = [];
+            $relations = $app->db->model( 'relation' )->load( 
+                                    ['to_id' => $obj->id, 'to_obj' => $context,
+                                     'from_obj' => $model ], $args, 'from_id' );
+            if ( empty( $relations ) ) return 0;
+            if (! $table->has_status && ! $table->revisable )
+                return count( $relations );
+            $ids = [];
+            foreach ( $relations as $rel ) {
+                $ids[ (int) $rel->from_id ] = true;
+            }
+            if ( empty( $ids ) ) return 0;
+            $ids = array_keys( $ids );
+            $terms = ['id' => ['IN' => $ids ] ];
+        }
+        if ( $table->has_status ) {
+            $terms['status'] = $app->status_published( $model );
+        }
+        if ( $table->revisable ) {
+            $terms['rev_type'] = 0;
+        }
+        return $app->db->model( $model )->count( $terms );
+    }
+
+    function hdlr_archivelist ( $args, &$content, $ctx, &$repeat, $counter ) {
+        $app = $ctx->app;
+        $at = isset( $args['type'] ) ? strtolower( $args['type'] ) : '';
+        if (! $at ) $at = isset( $args['archive_type'] ) ? strtolower( $args['archive_type'] ) : '';
+        if (! $at ) {
+            $repeat = false;
+            return;
+        }
+        $date_based = false;
+        if ( $at === 'monthly' || $at === 'yearly' || $at === 'fiscal-yearly' ) {
+            $at = $at === 'fiscal-yearly' ? 'Fiscal-Yearly' : ucfirst( $at );
+            $date_based = true;
+        }
+        $local_vars = ['current_archive_type', 'current_archive_title',
+                       'current_archive_link', 'current_timestamp'];
+        if (! $counter ) {
+            $terms = [];
+            $ctx->localize( $local_vars );
+            $model = isset( $args['model'] ) ? $args['model'] : '';
+            $container = isset( $args['container'] ) ? $args['container'] : '';
+            if ( $model ) $terms['model'] = $model;
+            if ( $container ) $terms['container'] = $container;
+            $workspace = $ctx->stash( 'workspace' ) 
+                       ? $ctx->stash( 'workspace' ) : $app->workspace();
+            $workspace_id = 0;
+            if ( $workspace ) {
+                $terms['workspace_id'] = ['IN' => [0, $workspace->id ] ];
+                $workspace_id = $workspace->id;
+            } else {
+                $terms['workspace_id'] = 0;
+            }
+            $urlmapping = isset( $args['urlmapping'] ) ? $args['urlmapping'] : '';
+            if ( $urlmapping ) {
+                $terms['name'] = $urlmapping;
+            } else if ( $date_based ) {
+                $terms['date_based'] = $at;
+            } else {
+                $obj = $app->db->model( $at )->new();
+                if ( $obj ) {
+                    $model = $model ? $model : $at;
+                    $terms['model'] = $model;
+                }
+            }
+            $_args = ['sort' => 'workspace_id', 'direction' => 'descend', 'limit' => 1];
+            $urlmapping = $app->db->model( 'urlmapping' )->load( $terms, $_args );
+            $fy_start = $app->fiscal_start;
+            if (! empty( $urlmapping ) ) $urlmapping = $urlmapping[0];
+            if ( $urlmapping && is_object( $urlmapping ) && $urlmapping->id ) {
+                $model = $model ? $model : $urlmapping->model;
+                $container = $container ? $container : $urlmapping->container;
+                if (! $container && $date_based ) $container = 'entry';
+                $workspace_id = $urlmapping->workspace_id;
+                $fy_start = $urlmapping->fiscal_start;
+                $ctx->stash( 'current_urlmapping', $urlmapping );
+            } else {
+                $repeat = false;
+                $ctx->restore( $local_vars );
+                return;
+            }
+            $fy_end = $fy_start == 1 ? 12 : $fy_start - 1;
+            require_once( 'class.PTUtil.php' );
+            $archive_loop = [];
+            if (! $date_based ) {
+                if ( $model === 'template' ) {
+                    $repeat = false;
+                    return;
+                }
+                $terms = [];
+                $obj = $app->db->model( $model )->new();
+                $table = $app->get_table( $model );
+                if ( $obj->has_column( 'workspace_id' ) ) {
+                    $obj->workspace_id( $workspace_id );
+                }
+                $load_args = [];
+                if ( isset( $args['sort_order'] ) ) {
+                    $sort_order = $args['sort_order'];
+                    $sort_order = stripos( $sort_order, 'asc' ) === 0 ? 'ascend' : 'descend';
+                    $load_args['order'] = $sort_order;
+                }
+                if ( isset( $args['sort_by'] ) ) {
+                    $sort_by = $args['sort_by'];
+                    if ( $obj->has_column( $sort_by ) ) {
+                        $load_args['sort'] = $sort_by;
+                    }
+                }
+                if ( isset( $args['limit'] ) ) {
+                    $load_args['limit'] = (int) $args['limit'];
+                }
+                $terms = PTUtil::setup_terms( $obj, $terms );
+                $objects = $app->db->model( $model )->load( $terms, $load_args );
+                $title_col = isset( $args['title_col'] ) ? $args['title_col'] : $table->primary;
+                foreach ( $objects as $object ) {
+                    $url = $app->build_path_with_map( $object, $urlmapping, $table, null, true );
+                    $archive_loop[] = [ 'archive_title' => $object->$title_col,
+                                        'archive_link'  => $url ];
+                }
+            } else {
+                $container_obj = $app->db->model( $container )->new();
+                $table = $app->get_table( $container );
+                $_colprefix = $container_obj->_colprefix;
+                $date_col = $_colprefix
+                          . $app->get_date_col( $container_obj );
+                $_table = $app->db->prefix . $container;
+                $sql = "SELECT DISTINCT YEAR({$date_col}), MONTH({$date_col}) FROM $_table";
+                $status_published = $app->status_published( $container );
+                $sql .= " WHERE ";
+                $wheres = [];
+                if ( $status_published ) {
+                    $wheres[] = "{$_colprefix}status=$status_published";
+                }
+                if ( $container_obj->has_column( 'workspace_id' ) ) {
+                    $wheres[] = "{$_colprefix}workspace_id=$workspace_id";
+                }
+                if ( $container_obj->has_column( 'rev_type' ) ) {
+                    $wheres[] = "{$_colprefix}rev_type=0";
+                }
+                $sql .= join( ' AND ', $wheres );
+                $request_id = $app->request_id;
+                $cache_key = md5( "archive-list-{$sql}-{$request_id}" );
+                $session = $app->db->model( 'session' )->get_by_key( [
+                               'name'  => $cache_key, 
+                               'kind'  => 'CH',
+                               'value' => $request_id,
+                               'key'   => $cache_key ] );
+                $time_stamp = [];
+                if ( $session->id && ( $session->expires > time() ) ) {
+                    $time_stamp = unserialize( $session->data );
+                } else {
+                    $year_and_month = $container_obj->load( $sql );
+                    $time_stamp = [];
+                    foreach ( $year_and_month as $ym ) {
+                        $ym = $ym->get_values();
+                        $y = $ym["YEAR({$date_col})"];
+                        $m = $ym["MONTH({$date_col})"];
+                        $m = sprintf( '%02d', $m );
+                        if ( $at === 'Fiscal-Yearly' ) {
+                            if ( $m <= $fy_end ) $y--;
+                            $time_stamp[ $y ] = true;
+                        } else if ( $at === 'Yearly' ) {
+                            $time_stamp[ $y ] = true;
+                        } else if ( $at === 'Monthly' ) {
+                            $time_stamp[ $y . $m ] = true;
+                        }
+                    }
+                    $sort_order = 'ascend';
+                    if ( isset( $args['sort_order'] ) ) {
+                        $sort_order = $args['sort_order'];
+                        $sort_order = stripos( $sort_order, 'asc' ) === 0 ? 'ascend' : 'descend';
+                    }
+                    if ( $sort_order == 'ascend' ) {
+                        ksort( $time_stamp, SORT_NUMERIC );
+                    } else {
+                        krsort( $time_stamp, SORT_NUMERIC );
+                    }
+                    $time_stamp = array_keys( $time_stamp );
+                    $ser = serialize( $time_stamp );
+                    $session->start( time() );
+                    $session->expires( time() + $app->token_expires );
+                    $session->data( $ser );
+                    $session->save();
+                }
+                $template = $urlmapping->template;
+                $limit = 0;
+                if ( isset( $args['limit'] ) ) {
+                    $limit = (int) $args['limit'];
+                }
+                $i = 0;
+                foreach ( $time_stamp as $time ) {
+                    if ( $limit && $limit <= $i ) break;
+                    $ts = '';
+                    if ( $at === 'Fiscal-Yearly' ) {
+                        $fy_start = sprintf( '%02d', $fy_start );
+                        $ts = $time . $fy_start . '01000000';
+                    } else if ( $at === 'Yearly' ) {
+                        $ts = $time . '0101000000';
+                    } else if ( $at === 'Monthly' ) {
+                        $ts = $time . '01000000';
+                    }
+                    $url = $app->build_path_with_map( $template, $urlmapping, $table, $ts, true );
+                    $archive_loop[] = [ 'archive_title' => $time,
+                                        'archive_link'  => $url,
+                                        'current_timestamp' => $ts ];
+                    $i++;
+                }
+            }
+            $ctx->local_params = $archive_loop;
+        }
+        $params = $ctx->local_params;
+        $ctx->set_loop_vars( $counter, $params );
+        if ( isset( $params[ $counter ] ) ) {
+            $archive = $params[ $counter ];
+            $ctx->stash( 'current_archive_title', $archive['archive_title'] );
+            $ctx->stash( 'current_archive_type', strtolower( $at ) );
+            $ctx->stash( 'current_archive_link', $archive['archive_link'] );
+            if ( isset( $archive['current_timestamp'] ) ) {
+                $ctx->stash( 'current_timestamp', $archive['current_timestamp'] );
+            }
+            $repeat = true;
+        } else {
+            $ctx->restore( $local_vars );
+            $repeat = false;
+        }
+        return ( $counter > 1 && isset( $args['glue'] ) )
+            ? $args['glue'] . $content : $content;
     }
 
     function hdlr_nestableobjects ( $args, &$content, $ctx, &$repeat, $counter ) {
@@ -1176,9 +1593,11 @@ class PTTags {
         if (! $counter ) {
             $obj = $app->db->model( $model );
             if (! $parent_id ) $parent_id = 0;
-            $terms = ['parent_id' => $parent_id];
-            if ( $app->workspace() ) {
-                $terms['workspace_id'] = $app->workspace()->id;
+            $terms = ['parent_id' => $parent_id ];
+            $workspace = $ctx->stash( 'workspace' ) 
+                       ? $ctx->stash( 'workspace' ) : $app->workspace();
+            if ( $workspace ) {
+                $terms['workspace_id'] = $workspace->id;
             }
             /* // TODO for not admin screen
             $status = $app->status_published( $to_obj );
@@ -1288,7 +1707,8 @@ class PTTags {
         $model = isset( $args['model'] ) ? $args['model'] : null;
         $this_tag = $args['this_tag'];
         $model = $model ? $model : $ctx->stash( 'blockmodel_' . $this_tag );
-        $local_vars = [ $model, 'current_context'];
+        $local_vars = [ $model, 'current_context', 'current_archive_context',
+                        'current_container' ];
         if (! $counter ) {
             if (! $model ) {
                 $repeat = false;
@@ -1296,9 +1716,9 @@ class PTTags {
             }
             $orig_args = $args;
             $ctx->localize( $local_vars );
+            $obj = $app->db->model( $model );
             $loop_objects = $ctx->stash( 'loop_objects' );
             if (! $loop_objects ) {
-                $obj = $app->db->model( $model );
                 $table_id = isset( $args['table_id'] ) ? (int) $args['table_id'] : null;
                 if ( isset( $args['table_id'] ) && !$table_id ) {
                     $repeat = false;
@@ -1318,6 +1738,11 @@ class PTTags {
                 if ( isset( $args['sort_order'] ) ) {
                     $args['direction'] = ( stripos( $args['sort_order'], 'desc' )
                         !== false ) ? 'descend' : 'ascend';
+                    if (! isset( $sort_by ) ) {
+                        $sort_by = $app->get_date_col( $obj );
+                        if (! $sort_by ) $sort_by = 'id';
+                        $args['sort'] = $sort_by;
+                    }
                 }
                 if ( isset( $args['offset'] ) ) {
                     $args['offset'] = (int) $args['offset'];
@@ -1351,6 +1776,7 @@ class PTTags {
                         $terms[ $key ] = $value;
                     }
                 }
+                $current_template = $ctx->stash( 'current_template' );
                 $container = $ctx->stash( 'current_container' );
                 $context = $ctx->stash( 'current_context' );
                 $context = $context == 'template' ? '' : $context;
@@ -1416,7 +1842,8 @@ class PTTags {
                         }
                     }
                 }
-                $table = $app->get_table( $model );
+                $table = $model !== 'option' && $model !== 'column'
+                       ? $app->get_table( $model ) : null;
                 if ( $table ) {
                     if (! isset( $args['status'] ) && ! isset( $args['include_draft'] ) ) {
                         if ( $table->has_status ) {
@@ -1429,13 +1856,17 @@ class PTTags {
                     }
                 }
                 $date_based = $ctx->stash( 'archive_date_based' );
-                if ( $date_based && $date_based == $obj->_model ) {
+                if (! $ignore_context && $date_based && $date_based == $obj->_model ) {
                     $date_based_col = $ctx->stash( 'archive_date_based_col' );
                     $start = $ctx->stash( 'current_timestamp' );
                     $end = $ctx->stash( 'current_timestamp_end' );
                     if ( $start && $end ) {
                         $terms[ $date_based_col ] = ['BETWEEN' => [ $start, $end ] ];
                     }
+                }
+                if ( $current_template
+                    && $current_template->workspace_id && ! $ignore_context ) {
+                    //
                 }
                 if ( isset( $args['can_access'] ) ) {
                     $user = $app->user();
@@ -1444,8 +1875,11 @@ class PTTags {
                         $terms['workspace_id'] = ['IN' => $permissions ];
                     }
                 }
+                unset( $args['sort_order'], $args['ignore_archive_context'],
+                       $args['this_tag'], $args['options'], $args['table_id'] );
                 $loop_objects = $obj->load( $terms, $args );
             }
+            $ctx->stash( 'current_archive_context', $obj->_model );
             if ( empty( $loop_objects ) ) {
                 $repeat = false;
                 $ctx->restore( $local_vars );
@@ -1580,18 +2014,36 @@ class PTTags {
     }
 
     function filter_convert_breaks ( $text, $arg, $ctx ) {
+        $text = trim( $text );
+        if (! $text ) return;
+        $app = $ctx->app;
         $current_context = $ctx->stash( 'current_context' );
         $obj = $ctx->stash( $current_context );
+        if (! $obj ) return $text;
         $format = $arg == 'auto' ? $obj->text_format : $arg;
         if ( $format === 'markdown' ) {
+            $cache_key = $obj->_model . DS . $obj->id. DS . 'md_' . md5( $text ) . '__c';
+            $cache = $app->get_cache( $cache_key );
+            if ( $cache ) return $cache;
             require_once( LIB_DIR . 'php-markdown'
                 . DS . 'Michelf' . DS . 'Markdown.inc.php' );
             $text = Markdown::defaultTransform( $text );
+            $app->set_cache( $cache_key, $text );
         } else if ( $format === 'convert_breaks' ) {
+            $cache_key = $obj->_model . DS . $obj->id. DS . 'cb_' . md5( $text ) . '__c';
+            $cache = $app->get_cache( $cache_key );
+            if ( $cache ) return $cache;
             require_once( 'class.PTUtil.php' );
             $text = PTUtil::convert_breaks( $text );
+            $app->set_cache( $cache_key, $text );
         }
         return $text;
+    }
+
+    function filter__eval ( $text, $arg, $ctx ) {
+        $app = $ctx->app;
+        return $app->tmpl_markup === 'mt' ? $ctx->build( $text )
+                                          : $app->build( $text, $ctx );
     }
 
     function filter_epoch2str ( $ts, $arg, $ctx ) {

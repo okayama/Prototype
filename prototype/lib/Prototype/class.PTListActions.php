@@ -32,7 +32,6 @@ class PTListActions {
 
     function get_list_actions ( $model, &$list_actions = [] ) {
         $app = Prototype::get_instance();
-        $registry = $app->registry;
         $table = $app->get_table( $model );
         if ( $table->has_status ) {
             $list_actions[] = ['name' => 'set_status', 'input' => 0,
@@ -49,6 +48,18 @@ class PTListActions {
                                'label' => $app->translate( 'Remove Tags' ),
                                'component' => $this,
                                'method' => 'remove_tags'];
+        }
+        if ( $table->name === 'asset' ) {
+            $list_actions[] = ['name' => 'publish_assets', 'input' => 0,
+                               'label' => $app->translate( 'Publish Files' ),
+                               'component' => $this,
+                               'method' => 'publish_assets'];
+        }
+        if ( $table->name === 'fieldtype' ) {
+            $list_actions[] = ['name' => 'export_fieldtypes', 'input' => 0,
+                               'label' => $app->translate( 'Export' ),
+                               'component' => $this,
+                               'method' => 'export_fieldtypes'];
         }
         return $app->get_registries( $model, 'list_actions', $list_actions );
     }
@@ -67,6 +78,9 @@ class PTListActions {
         }
         $counter = 0;
         $rebuild_ids = [];
+        $error = false;
+        $db = $app->db;
+        $db->begin_work();
         foreach ( $objects as $obj ) {
             if (! $obj->has_column( 'status' ) ) {
                 return $app->error( 'Invalid request.' );
@@ -79,12 +93,19 @@ class PTListActions {
                     }
                 }
                 $obj->status( $status );
-                $obj->save();
+                if (! $obj->save() ) $error = true;
                 $original = clone $obj;
                 $callback = ['name' => 'post_save', 'error' => '', 'is_new' => false ];
                 $app->run_callbacks( $callback, $model, $obj, $original );
                 $counter++;
             }
+        }
+        if ( $error || !empty( $db->errors ) ) {
+            $errstr = $app->translate( 'An error occurred while saving %s.',
+                      $app->translate( $table->label ) );
+            $app->rollback( $errstr );
+        } else {
+            $db->commit();
         }
         if ( $counter ) {
             $column = $app->db->model( 'column' )->get_by_key(
@@ -158,6 +179,8 @@ class PTListActions {
         }
         $rebuild_ids = [];
         $rebuild_tag_ids = [];
+        $db = $app->db;
+        $db->begin_work();
         foreach ( $objects as $obj ) {
             $res = false;
             if ( $add ) {
@@ -186,6 +209,13 @@ class PTListActions {
                     }
                 }
             }
+        }
+        if ( !empty( $db->errors ) ) {
+            $errstr = $app->translate( 'An error occurred while saving %s.',
+                      $app->translate( $table->label ) );
+            return $app->rollback( $errstr );
+        } else {
+            $db->commit();
         }
         if ( $counter ) {
             $add_tags = join( ', ', $add_tags );
@@ -218,6 +248,65 @@ class PTListActions {
         return $this->add_tags( $app, $objects, $action, false );
     }
 
+    function publish_assets ( $app, $objects, $action ) {
+        $model = $app->param( '_model' );
+        $counter = 0;
+        $callback = ['name' => 'post_save', 'is_new' => false ];
+        foreach ( $objects as $obj ) {
+            if ( $obj->status == 4 ) {
+                $obj = $app->db->model( 'asset' )->load( $obj->id );
+                $app->publish_obj( $obj, null, true );
+                $res = $app->post_save_asset( $callback, $app, $obj );
+                if ( $res ) $counter++;
+            }
+        }
+        $return_args = "does_act=1&__mode=view&_type=list&_model={$model}&"
+                     ."apply_actions={$counter}" . $app->workspace_param;
+        $app->redirect( $app->admin_url . '?' . $return_args );
+    }
+
+    function export_fieldtypes ( $app, $objects, $action ) {
+        $counter = 0;
+        $model = $app->param( '_model' );
+        $counter = 0;
+        $temp_dir = $app->upload_dir();
+        $temp_dir .= DS . 'field_types';
+        $tmpl_dir = $temp_dir . DS . 'tmpl' . DS;
+        mkdir( $tmpl_dir, 0777, TRUE );
+        $config = [];
+        $files = [];
+        $dirs = [ $tmpl_dir, $temp_dir, dirname( $tmpl_dir ), dirname( $tmpl_dir ) ];
+        foreach ( $objects as $obj ) {
+            $counter++;
+            $obj = $app->db->model( 'fieldtype' )->load( $obj->id );
+            $basename = $obj->basename;
+            $label = "{$tmpl_dir}{$basename}_label.tmpl";
+            file_put_contents( $label, $obj->label );
+            $files[] = $label;
+            $content = "{$tmpl_dir}{$basename}_content.tmpl";
+            file_put_contents( $content, $obj->content );
+            $files[] = $content;
+            $config[ $basename ] = [
+                'name' => $obj->name,
+                'order' => (int) $obj->order ];
+        }
+        $config = json_encode( $config, JSON_UNESCAPED_UNICODE|JSON_PRETTY_PRINT );
+        file_put_contents( $temp_dir . DS ."fields.json", $config );
+        $files[] = "{$temp_dir}field.json";
+        require_once( 'class.PTUtil.php' );
+        $zip_path = rtrim( $temp_dir, '/' ) . '.zip';
+        $res = PTUtil::make_zip_archive( $temp_dir, $zip_path );
+        $files[] = $zip_path;
+        PTUtil::export_data( $zip_path, 'application/zip' );
+        foreach ( $files as $file ) {
+            unlink( $file );
+        }
+        foreach ( $dirs as $dir ) {
+            rmdir( $dir );
+        }
+        exit();
+    }
+
     function add_tags_to_obj ( $obj, $add_tags, $name = 'tags', &$tag_ids ) {
         $app = Prototype::get_instance();
         if (! empty( $add_tags ) ) {
@@ -227,6 +316,7 @@ class PTListActions {
                 $workspace_id = (int) $obj->workspace_id;
             }
             $to_ids = [];
+            $error = false;
             foreach ( $add_tags as $tag ) {
                 $normalize = preg_replace( '/\s+/', '', trim( strtolower( $tag ) ) );
                 if (! $tag ) continue;
@@ -250,7 +340,8 @@ class PTListActions {
                      'name' => $name,
                      'from_obj' => $obj->_model,
                      'to_obj' => 'tag' ];
-            return $app->set_relations( $args, $to_ids, true );
+            $res = $app->set_relations( $args, $to_ids, true );
+            return $res;
         }
         return null;
     }

@@ -11,28 +11,55 @@
 <script>
 $(function() {
     $(".popup").click(function(){
-        window.open(this.href,"WindowName","width=480,height=340,resizable=yes,scrollbars=yes");
+        window.open(this.href,"WindowName","width=480,height=360,resizable=yes,scrollbars=yes");
         return false;
     });
+});
+</script>
+<script>
+var $win = $(window);
+$win.on('load resize', function() {
+    var windowWidth = window.innerWidth;
+    if ( windowWidth > 768 ) {
+        $('.info-box').html('');
+        $('.info-box').hide();
+        $('.toggle-icn').removeClass('fa-caret-up');
+        $('.toggle-icn').addClass('fa-caret-down');
+        $('.alt-search-button').hide();
+        if( $('.create-new-button-icon').length ) {
+            $('.create-new-button-icon').removeClass('fa-plus-circle');
+        }
+    } else {
+        $('.alt-search-button').show();
+        if( $('.create-new-button-icon').length ) {
+            $('.create-new-button-icon').addClass('fa-plus-circle');
+        }
+    }
 });
 </script>
 <mt:if name="request._type" eq="edit">
 <script src="assets/js/tinymce/tinymce.min.js"></script>
 <script>
+<mt:unless name="object_text_format">
+editorInit();
+editorMode = 'richtext';
+<mt:else>
 <mt:if name="object_text_format" eq="richtext">
 editorInit();
+editorMode = 'richtext';
 </mt:if>
+</mt:unless>
 function editorInit () {
     tinymce.init({
-      language : 'ja',
-      selector : 'textarea.richtext',
-      relative_urls : false,
-      image_advtab: true,
-      content_css: "assets/css/editor.css",
-      onchange_callback : "editHtmlEditor",
-      plugins  : 'advlist autolink lists link image charmap print preview anchor searchreplace visualblocks code fullscreen insertdatetime media table contextmenu paste code',
-      toolbar  : 'undo redo | insert | styleselect | bold italic | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | link image | pt-file pt-image',
-      setup: function (ed) {
+        language : '<mt:var name="user_language">',
+        selector : 'textarea.richtext',
+        relative_urls : false,
+        image_advtab: true,
+        content_css: "assets/css/editor.css",
+        onchange_callback : "editHtmlEditor",
+        plugins  : 'advlist autolink lists link image charmap print preview anchor searchreplace visualblocks code fullscreen insertdatetime media table contextmenu paste code',
+        toolbar  : 'undo redo | insert | styleselect | bold italic | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | link image | pt-file pt-image',
+        setup: function (ed) {
         ed.on('change', function(e) {
             editContentChanged = true;
         });
@@ -54,7 +81,7 @@ function editorInit () {
                 $('#modal').modal().find('iframe').attr( 'src', url );
             }
         });
-      }
+    }
     });
 }
 </script>

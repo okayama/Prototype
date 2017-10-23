@@ -8,6 +8,16 @@ class EntryImporter extends PTPlugin {
         parent::__construct();
     }
 
+    function list_options () {
+        $app = Prototype::get_instance();
+        $export_format = $app->registry['export_format'];
+        $list_options = [];
+        foreach ( $export_format as $format => $prop ) {
+            $list_options[] = ['label' => $prop['label'], 'value' => $format ];
+        }
+        return $list_options;
+    }
+
     function start_import ( $app ) {
         $tmpl = dirname( $this->path ) . DS . 'tmpl' . DS . 'import.tmpl';
         $importers = $app->registry['import_format'];
@@ -92,7 +102,7 @@ class EntryImporter extends PTPlugin {
                 }
                 return $app->build_page( $tmpl );
             } else {
-                echo str_pad('',4096)."\n";
+                echo str_pad( '', 4096 ) . "\n";
                 ob_end_flush();
                 echo '<html><body>';
                 return $component->$meth( $app, $session );
@@ -128,6 +138,7 @@ class EntryImporter extends PTPlugin {
 
     function import_movabletype ( $app, $session ) {
         $app->db->caching = false;
+        $app->db->max_queries = 100;
         $table = $app->get_table( 'entry' );
         $workspace_id = (int) $app->param( 'workspace_id' );
         $default_status = $table->default_status ? $table->default_status : 1;
@@ -166,14 +177,19 @@ class EntryImporter extends PTPlugin {
                         }
                         $context = '';
                     } else if ( $buffer == '--------' ) {
+                        $app->db->begin_work();
+                        $error = false;
                         $app->set_default( $entry );
                         echo $this->translate( "Saving entry ('%s')...", 
                                 htmlspecialchars( $entry->title ) );
                         if ( $entry->save() ) {
+                            $callback = ['name' => 'post_inport' ];
+                            $app->run_callbacks( $callback, 'entry', $entry );
                             echo $this->translate( 'ok (ID %s)', $entry->id );
                             $counter++;
                         } else {
                             echo $this->translate( 'Saving entry failed.' );
+                            $error = true;
                         }
                         echo "<br>\n";
                         flush();
@@ -193,6 +209,7 @@ class EntryImporter extends PTPlugin {
                                         echo $this->translate( 'ok (ID %s)', $category->id );
                                     } else {
                                         echo $this->translate( 'Saving category failed.' );
+                                        $error = true;
                                     }
                                     echo "<br>\n";
                                     flush();
@@ -241,6 +258,7 @@ class EntryImporter extends PTPlugin {
                                     echo $this->translate( 'ok (ID %s)', $comment->id );
                                 } else {
                                     echo $this->translate( 'Saving comment failed.' );
+                                    $error = true;
                                 }
                                 echo "<br>\n";
                                 flush();
@@ -248,6 +266,13 @@ class EntryImporter extends PTPlugin {
                             $entry->comment_count( count( $comments ) );
                             $entry->save();
                         }
+                        if (! $error ) {
+                            $app->db->commit();
+                        } else {
+                            $app->db->rollback();
+                        }
+                        // usleep( 50000 );
+                        // $app->db->reconnect();
                         $context = '';
                         $entry = $app->db->model( 'entry' )->new();
                         $categories = [];
@@ -404,4 +429,40 @@ class EntryImporter extends PTPlugin {
         $this->scrollBottom();
     }
 
+    function export_movabletype ( $app, $objects, $action ) {
+        $ctx = $app->ctx;
+        $ctx->stash( 'current_context', 'entry' );
+        $app->caching = false;
+        $app->db->caching = false;
+        $ctx->force_compile = true;
+        $ctx->caching = false;
+        $app->init_tags();
+        $tmpl = $this->path() . DS . 'tmpl' . DS . 'movabletype.tmpl';
+        $file_name = 'export_movabletype.txt';
+        header( "Content-Type: text/plain" );
+        header( "Content-Disposition: attachment;"
+            . " filename=\"{$file_name}\"" );
+        header( 'Pragma: ' );
+        foreach ( $objects as $obj ) {
+            $id = (int)$obj->id;
+            $entry = $app->db->model( 'entry' )->load( $id );
+            $ctx->stash( 'entry', $entry );
+            echo $ctx->build_page( $tmpl );
+        }
+        exit();
+    }
+
+    function export_entry ( $app, $objects, $action ) {
+        $input = $app->param( 'itemset_action_input' );
+        $exporters = $app->registry['export_format'];
+        if ( isset( $exporters[ $input ] ) ) {
+            $prop = $exporters[ $input ];
+            $component = $app->component( $prop['component'] );
+            $method = $prop['method'];
+            if ( $component && method_exists( $component, $method ) ) {
+                return $component->$method( $app, $objects, $action );
+            }
+        }
+        return $app->error( 'Invalid request.' );
+    }
 }

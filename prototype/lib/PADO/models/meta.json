@@ -38,11 +38,18 @@
         "text": {
             "type": "text"
         },
+        "blob": {
+            "type": "blob"
+        },
         "data": {
             "type": "blob"
         },
         "metadata": {
             "type": "blob"
+        },
+        "field_id": {
+            "type": "int",
+            "size": 11
         },
         "number": {
             "type": "int",
@@ -57,6 +64,7 @@
         "key": "key",
         "name": "name",
         "value": "value",
+        "field_id": "field_id",
         "kind": "kind"
     }
 }

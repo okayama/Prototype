@@ -2,11 +2,22 @@
 
 <mt:if name="workspace_id">
 <mt:var name="workspace_name" setvar="scope_name">
+<mt:setvarblock name="scope_link">
+<a target="_blank" href="<mt:var name="workspace_url">" class="link-in-alert"><mt:var name="workspace_name"></a>
+</mt:setvarblock>
 <mt:else>
 <mt:var name="appname" setvar="scope_name">
+<mt:var name="site_url" setvar="website_url">
+<mt:setvarblock name="scope_link">
+<a target="_blank" href="<mt:var name="site_url">" class="link-in-alert"><mt:var name="appname"></a>
+</mt:setvarblock>
 </mt:if>
 
 <mt:if name="next_url">
+
+    <script src="assets/js/pace.min.js"></script>
+    <link href="assets/css/pace.css" rel="stylesheet">
+
 <p><mt:trans phrase="Rebuilding dependencies..."></p>
 <mt:var name="request.progress" escape setvar="progress">
 <div class="pt-progress-bar">
@@ -16,15 +27,12 @@
 <script>
 setTimeout(function(){
     window.location.href = "<mt:var name="next_url">";
-} , 500);
+} , 200);
 </script>
 
 <mt:elseif name="rebuild_end">
   <div id="header-alert-message" class="alert alert-success" tabindex="0">
-    <button type="button" class="close" data-dismiss="alert" aria-label="<mt:trans phrase="Close">">
-      <span aria-hidden="true">&times;</span>
-    </button>
-    <mt:trans phrase="The files for %s have been published." params="$scope_name">
+    <mt:trans phrase="The files for %s have been published." params="$scope_link">
     <mt:if name="publish_time">
       <mt:var name="publish_time" sec2hms="1" setvar="_publish_time">
       <mt:trans phrase="Publish time: %s" params="$_publish_time">
@@ -45,6 +53,10 @@ $('#header-alert-message').focus();
 </script>
 
 <mt:elseif name="rebuild_next">
+
+    <script src="assets/js/pace.min.js"></script>
+    <link href="assets/css/pace.css" rel="stylesheet">
+
 <form method="POST" id="rebuild_next" action="<mt:var name="script_uri">">
 <input type="hidden" name="__mode" value="rebuild_phase">
 <input type="hidden" name="workspace_id" value="<mt:var name="workspace_id">">
@@ -52,9 +64,10 @@ $('#header-alert-message').focus();
 <input type="hidden" name="_type" value="rebuild_archives">
 <input type="hidden" id="next_models" name="next_models" value="<mt:var name="next_models" escape>">
 <input type="hidden" name="current_model" value="<mt:var name="current_model" escape>">
-<input type="hidden" name="start_time" value="<mt:var name="request.start_time" escape>">
+<input type="hidden" name="start_time" value="<mt:var name="start_time" escape>">
+<input type="hidden" name="request_id" value="<mt:var name="request_id" escape>">
 </fotm>
-<p>100%</p>
+<p class="rebuilt_percent">100%</p>
 <div class="pt-progress-bar">
 <div class="pt-progress-bar-inner" style="width: 100%">
 </div>
@@ -64,12 +77,16 @@ $('#header-alert-message').focus();
 if ( $('#next_models').val() ) {
     setTimeout(function(){
         $('#rebuild_next').submit();
-    } , 500);
+    } , 200);
 }
 </script>
 
 <mt:else>
 <mt:unless name="request._type" eq="start_rebuild">
+
+    <script src="assets/js/pace.min.js"></script>
+    <link href="assets/css/pace.css" rel="stylesheet">
+
 <form method="POST" id="rebuild_next" action="<mt:var name="script_uri">">
 <input type="hidden" name="__mode" value="rebuild_phase">
 <input type="hidden" name="workspace_id" value="<mt:var name="workspace_id">">
@@ -81,10 +98,11 @@ if ( $('#next_models').val() ) {
 <input type="hidden" name="next_models" value="<mt:var name="next_models" escape>">
 <input type="hidden" name="dependencies" value="<mt:var name="request.dependencies" escape>">
 <input type="hidden" name="rebuild_dependencies" value="<mt:var name="rebuild_dependencies" escape>">
-<input type="hidden" name="start_time" value="<mt:var name="request.start_time" escape>">
+<input type="hidden" name="start_time" value="<mt:var name="start_time" escape>">
+<input type="hidden" name="request_id" value="<mt:var name="request_id" escape>">
 </fotm>
 
-<p><mt:var name="rebuilt_percent">%</p>
+<p class="rebuilt_percent"><mt:var name="rebuilt_percent">%</p>
 
 <div class="pt-progress-bar">
 <div class="pt-progress-bar-inner" style="width: <mt:var name="rebuilt_percent">%">
@@ -94,7 +112,7 @@ if ( $('#next_models').val() ) {
 <script>
 setTimeout(function(){
     $('#rebuild_next').submit();
-} , 500);
+} , 200);
 </script>
 
 <mt:else>
@@ -107,6 +125,7 @@ setTimeout(function(){
 <input type="hidden" name="magic_token" value="<mt:var name="magic_token">">
 <input type="hidden" name="_type" value="rebuild_archives">
 <input type="hidden" name="start_rebuild" value="1">
+<input type="hidden" name="request_id" value="<mt:var name="request_id" escape>">
 <div class="row form-group" style="padding:7px;">
 <mt:countgroupby model="urlmapping" group="'workspace_id','model'" workspace_id="$workspace_id" sort_by="order" sort_order="ascend" glue="," setvar="all_models"><mt:var name="count_group_by_model"></mt:countgroupby>
 <mt:unless name="workspace_id">
@@ -124,9 +143,16 @@ setTimeout(function(){
 </mt:countgroupby>
 </div>
 <div class="row form-group">
+<button id="close-btn" class="btn btn-s btn-secondary"><mt:trans phrase="Cancel"></button>
 <button class="btn btn-primary"><mt:trans phrase="Rebuild"></button>
 </div>
 </fotm>
+
+<script>
+$('#close-btn').click(function(){
+    window.open('about:blank','_self').close();
+});
+</script>
 </main>
 </mt:unless>
 </mt:if>

@@ -8,11 +8,12 @@
     "auditing" : 1,
     "menu_type": 5,
     "has_status": 1,
+    "has_uuid": 1,
     "column_defs": {
         "id": {
             "type": "int",
-            "not_null": 1,
-            "size": 11
+            "size": 11,
+            "not_null": 1
         },
         "name": {
             "type": "string",
@@ -20,31 +21,30 @@
         },
         "password": {
             "type": "string",
-            "not_null": 1,
-            "size": 255
+            "size": 255,
+            "not_null": 1
         },
         "email": {
             "type": "string",
-            "not_null": 1,
-            "size": 255
+            "size": 255,
+            "not_null": 1
         },
         "nickname": {
             "type": "string",
-            "not_null": 1,
-            "size": 255
+            "size": 255,
+            "not_null": 1
         },
         "photo": {
-            "type": "blob",
-            "default": null
+            "type": "blob"
         },
         "language": {
             "type": "string",
-            "size": 30
+            "size": 255
         },
         "is_superuser": {
             "type": "tinyint",
             "size": 4,
-            "default": 0
+            "default": "0"
         },
         "status": {
             "type": "int",
@@ -55,9 +55,16 @@
             "type": "int",
             "size": 11
         },
+        "lock_out": {
+            "type": "tinyint",
+            "size": 4
+        },
         "modified_by": {
             "type": "int",
             "size": 11
+        },
+        "lock_out_on": {
+            "type": "datetime"
         },
         "created_on": {
             "type": "datetime"
@@ -67,35 +74,47 @@
         },
         "last_login_on": {
             "type": "datetime"
+        },
+        "uuid": {
+            "type": "string",
+            "size": 255,
+            "default": null
         }
     },
     "indexes": {
         "PRIMARY": "id",
         "name": "name",
-        "nickname": "nickname",
         "email": "email",
+        "nickname": "nickname",
         "is_superuser": "is_superuser",
         "status": "status",
+        "created_by": "created_by",
+        "lock_out": "lock_out",
+        "modified_by": "modified_by",
+        "lock_out_on": "lock_out_on",
         "created_on": "created_on",
         "modified_on": "modified_on",
-        "created_by": "created_by",
-        "modified_by": "modified_by",
-        "last_login_on": "last_login_on"
+        "last_login_on": "last_login_on",
+        "uuid": "uuid"
     },
     "unique":  [
-        "name", "email"
+        "name",
+        "email"
     ],
     "unchangeable": [
-        "name"
+        "name",
+        "uuid"
     ],
     "autoset": [
         "created_by",
         "modified_by",
+        "lock_out_on",
         "created_on",
         "modified_on",
         "last_login_on"
     ],
     "options": {
+        "photo": "image",
         "status": "Disable,Enable"
     },
     "sort_by": {
@@ -104,10 +123,11 @@
     "list_properties": {
         "id": "number",
         "name": "primary",
-        "nickname": "text",
         "email": "text",
+        "nickname": "text",
         "is_superuser": "checkbox",
         "status": "number",
+        "lock_out": "checkbox",
         "modified_by": "reference:user:name",
         "created_on": "date",
         "last_login_on": "datetime"
@@ -122,7 +142,10 @@
         "language": "languages",
         "is_superuser": "checkbox",
         "status": "selection",
+        "lock_out": "checkbox",
+        "lock_out_on": "datetime",
         "created_on": "datetime",
-        "last_login_on": "datetime"
+        "last_login_on": "datetime",
+        "uuid": "text_short"
     }
 }

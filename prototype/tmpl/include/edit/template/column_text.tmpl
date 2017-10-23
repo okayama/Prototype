@@ -1,21 +1,23 @@
 <div style="height: 30px;margin-top:-10px">
 <span class="pull-right">
-<button type="button" class="btn btn-primary btn-sm" onclick="
-    if ( editorMode == 'CodeMirror' ) {
+<button type="button" class="btn btn-primary btn-sm toggle-editor-btn" onclick="
+    if ( editTemplateMode == 'CodeMirror' ) {
         $('#text').show();
         $('.CodeMirror').hide();
-        editorMode = 'None';
+        editTemplateMode = 'None';
         $(this).removeClass('btn-primary');
         $(this).addClass('btn-secondary');
         editor.save();
         $('#text').val(editor.getTextArea().value);
+        $.cookie( 'pt-template-editor-mode', 'Plain', { expires: 365 });
     } else {
         $('#text').hide();
         $('.CodeMirror').show();
-        editorMode = 'CodeMirror';
+        editTemplateMode = 'CodeMirror';
         $(this).removeClass('btn-secondary');
         $(this).addClass('btn-primary');
         editor.setValue($('#text').val());
+        $.cookie( 'pt-template-editor-mode', 'CodeMirror', { expires: 365 });
     }
 ">
     <i class="fa fa-code" aria-hidden="true"></i>
@@ -34,7 +36,7 @@
 <script src="assets/codemirror/Prototype/htmlmixed.js"></script>
 
 <div class="row form-group">
-  <div class="col-lg-12" style="">
+  <div class="col-lg-12">
 <textarea id="text" rows="40"
   class="form-control watch-changed" name="<mt:var name="__col_name__">"><mt:var name="value"></textarea>
   </div>
@@ -42,17 +44,17 @@
 
 <script>
 $('#edit-form-main').submit(function(){
-    if ( editorMode == 'None' ) {
-        editorMode = 'CodeMirror';
+    if ( editTemplateMode == 'None' ) {
+        editTemplateMode = 'CodeMirror';
         editor.setValue($('#text').val());
         $('#text').show();
         $('.CodeMirror').hide();
-        editorMode = 'None';
+        editTemplateMode = 'None';
         editor.save();
         $('#text').val(editor.getTextArea().value);
     }
 });
-var editorMode = 'CodeMirror';
+var editTemplateMode = 'CodeMirror';
 var editor;
 function init_codemirror () {
       editor = CodeMirror.fromTextArea(document.getElementById("text"), {
@@ -62,4 +64,14 @@ function init_codemirror () {
     editor.setSize('100%', 600);
 }
 init_codemirror();
+var editor_mode = $.cookie( 'pt-template-editor-mode' );
+if ( editor_mode == 'Plain' ) {
+    $('#text').show();
+    $('.CodeMirror').hide();
+    editTemplateMode = 'None';
+    $('.toggle-editor-btn').removeClass('btn-primary');
+    $('.toggle-editor-btn').addClass('btn-secondary');
+    editor.save();
+    $('#text').val(editor.getTextArea().value);
+}
 </script>

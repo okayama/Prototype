@@ -1,7 +1,7 @@
 {
-    "version"  : "1.0",
     "label"    : "Field",
     "plural"   : "Fields",
+    "version"  : "1.0",
     "primary"  : "name",
     "auditing" : 1,
     "order"    : 181,
@@ -10,6 +10,7 @@
     "menu_type": 2,
     "display_space": 1,
     "has_basename": 1,
+    "has_uuid": 1,
     "column_defs": {
         "id": {
             "type": "int",
@@ -19,6 +20,10 @@
         "name": {
             "type": "string",
             "size": 255
+        },
+        "translate": {
+            "type": "tinyint",
+            "size": 4
         },
         "fieldtype_id": {
             "type": "int",
@@ -40,6 +45,10 @@
             "type": "text"
         },
         "required": {
+            "type": "tinyint",
+            "size": 4
+        },
+        "translate_labels": {
             "type": "tinyint",
             "size": 4
         },
@@ -77,6 +86,11 @@
         "modified_by": {
             "type": "int",
             "size": 11
+        },
+        "uuid": {
+            "type": "string",
+            "size": 255,
+            "default": null
         }
     },
     "indexes": {
@@ -91,16 +105,19 @@
         "created_on": "created_on",
         "modified_on": "modified_on",
         "created_by": "created_by",
-        "modified_by": "modified_by"
+        "modified_by": "modified_by",
+        "uuid": "uuid"
     },
     "translate": [
         "fieldtype_id",
         "models"
     ],
     "hint": {
+        "translate": "Translate to the user's language.",
         "options": "Comma separated values. The value is stored in the variable 'field_option' in the loop of the template variable 'field_options'.",
         "options_labels": "Comma separated values. The value is stored in the variable 'field_label' in the loop of the template variable 'field_options'.",
         "required": "If the field is not display, the item is not checked.",
+        "translate_labels": "Translate labels to the user's language.",
         "display": "Even if you do not specify it, you can add it in the edit screen."
     },
     "relations": {
@@ -125,6 +142,47 @@
         "basename"
     ],
     "unchangeable": [
-        "workspace_id"
-    ]
+        "workspace_id",
+        "uuid"
+    ],
+    "edit_properties": {
+        "id": "hidden",
+        "name": "primary",
+        "translate": "checkbox",
+        "fieldtype_id": "relation:fieldtype:name:select",
+        "label": "textarea",
+        "content": "textarea",
+        "models": "relation:table:label:dialog",
+        "options": "text",
+        "options_labels": "text",
+        "required": "checkbox",
+        "translate_labels": "checkbox",
+        "display": "checkbox",
+        "multiple": "checkbox",
+        "order": "number",
+        "basename": "text_short",
+        "uuid": "text_short"
+    },
+    "list_properties": {
+        "id": "number",
+        "name": "primary",
+        "translate": "checkbox",
+        "fieldtype_id": "reference:fieldtype:name",
+        "models": "reference:table:label",
+        "options": "text",
+        "options_labels": "text",
+        "required": "checkbox",
+        "translate_labels": "checkbox",
+        "display": "checkbox",
+        "multiple": "checkbox",
+        "order": "number",
+        "workspace_id": "reference:workspace:name",
+        "modified_on": "datetime",
+        "modified_by": "reference:user:name"
+    },
+    "locale": {
+        "default": {
+            "display": "Display"
+        }
+    }
 }

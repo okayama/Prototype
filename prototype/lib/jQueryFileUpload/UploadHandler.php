@@ -1547,6 +1547,14 @@ class UploadHandler
                 $callback = ['name' => 'post_save', 'error' => '', 'is_new' => true,
                              'original' => $original ];
                 $app->post_save_asset( $callback, $app, $asset );
+                $nickname = $app->user()->nickname;
+                $params = [ $app->translate( 'Asset' ), $label, $asset->id, $nickname ];
+                $message = $app->translate( "%1\$s '%2\$s(ID:%3\$s)' created by %4\$s.", $params );
+                $app->log( ['message'   => $message,
+                            'category'  => 'save',
+                            'model'     => 'asset',
+                            'object_id' => $asset->id,
+                            'level'     => 'info'] );
                 if ( file_exists( $path ) ) {
                     unlink( $path );
                 }

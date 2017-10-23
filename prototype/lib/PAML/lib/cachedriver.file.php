@@ -36,6 +36,17 @@ class PAMLCacheFile extends PAMLCache {
         }
     }
 
+    function getAllKeys () {
+        $dir = $this->cache_dir;
+        $items = scandir( $dir );
+        $keys = [];
+        foreach ( $items as $cache ) {
+            if ( strpos( $cache, '.' ) === 0 ) continue;
+            $keys[] = basename( $cache );
+        }
+        return $keys;
+    }
+
     function set ( $key, $data, $ttl = null ) {
         $file = ( strpos( $key, $this->_prefix . 'c__' ) === 0 )
               ? $this->cache_dir . $key . '.php' : $this->compile_dir . $key . '.php';

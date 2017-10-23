@@ -1,11 +1,11 @@
-<div class="row form-group row-title-foot">
+<div class="row form-group" style="margin-bottom:3px">
   <div class="col-lg-9 input-group-lg">
   <mt:if name="permalink">
     <div class="input-group copy-url copy-url-permalink">
     <input type="text" class="form-control form-control-sm clipboard-url" id="__permalink-clipboard"
     value="<mt:var name="permalink">">
     <button data-toggle="tooltip" data-placement="left" title="<mt:trans phrase="Copy to Clipboard">" type="button" class="input-group-addon copy-clipboard" data-clipboard-target="#__permalink-clipboard"><i class="fa fa-clipboard" aria-hidden="true" aria-label="<mt:trans phrase="Copy to Clipboard">"></i></button>
-    <button id="__view-permalink" data-toggle="tooltip" data-placement="left" title="<mt:trans phrase="View">" type="button" class="input-group-addon copy-clipboard"><i class="fa fa-external-link" aria-hidden="true" aria-label="<mt:trans phrase="View">"></i></button>
+    <button id="__view-permalink" data-toggle="tooltip" data-placement="left" title="<mt:trans phrase="View">" type="button" class="input-group-addon"><i class="fa fa-external-link" aria-hidden="true" aria-label="<mt:trans phrase="View">"></i></button>
     </div>
     <mt:setvar name="permalink" value="">
     <script>

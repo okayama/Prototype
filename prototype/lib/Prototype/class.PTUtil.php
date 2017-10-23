@@ -1,13 +1,13 @@
 <?php
 
-function __autoLoader($class) {
+function ptutil_auto_loader($class) {
     $path = $class;
     $path = str_replace( '\\', DS, $path ) . '.php';
     if ( file_exists( LIB_DIR . $path ) ) {
         include_once( LIB_DIR . $path );
     }
 }
-spl_autoload_register( '\__autoLoader' );
+spl_autoload_register( '\ptutil_auto_loader' );
 
 class PTUtil {
 
@@ -25,8 +25,24 @@ class PTUtil {
         return [ $start, $end ];
     }
 
-    public static function current_ts () {
-        return date( 'YmdHis' );
+    public static function setup_terms ( $obj, &$terms = [] ) {
+        $app = Prototype::get_instance();
+        if ( $obj->has_column( 'workspace_id' ) ) {
+            $terms['workspace_id'] = $obj->workspace_id;
+        }
+        if ( $obj->has_column( 'status' ) ) {
+            $status_published = $app->status_published( $obj->_model );
+            $terms['status'] = $status_published;
+        }
+        if ( $obj->has_column( 'rev_type' ) ) {
+            $terms['rev_type'] = 0;
+        }
+        return $terms;
+    }
+
+    public static function current_ts ( $ts = null ) {
+        $ts = $ts ? $ts : time();
+        return date( 'YmdHis', $ts );
     }
 
     public static function sec2hms ( $sec ) {
@@ -55,24 +71,25 @@ class PTUtil {
         return $renderer->render( $diff );
     }
 
-    public static function remove_dir ( $dir ) {
+    public static function remove_dir ( $dir, $children_only = false ) {
+        if (! is_dir( $dir ) ) return;
         if ( $handle = opendir( $dir ) ) {
             while ( false !== ( $item = readdir( $handle ) ) ) {
                 if ( $item != "." && $item != ".." ) {
                     if ( is_dir( $dir . DS . $item ) ) {
-                        self::remove_dir( $dir . DS . $item );
+                        self::remove_dir( $dir . DS . $item, false );
                     } else {
                         unlink( $dir . DS . $item );
                     }
                 }
             }
             closedir( $handle );
-            rmdir( $dir );
+            if ( $children_only ) return true;
+            return rmdir( $dir );
         }
     }
 
     public static function remove_empty_dirs ( $dirs ) {
-        $app = Prototype::get_instance();
         if ( empty( $dirs ) ) {
             return false;
         }
@@ -91,13 +108,14 @@ class PTUtil {
 
     public static function make_basename ( $obj, $basename = '', $unique = false ) {
         $app = Prototype::get_instance();
+        $basename_len = $app->basename_len;
         if (! $basename ) $basename = $obj->_model;
         $basename = strtolower( $basename );
         $basename = preg_replace( "/[^a-z0-9]/", ' ', $basename );
         $basename = preg_replace( "/\s{1,}/", ' ', $basename );
         $basename = str_replace( ' ', '_', $basename );
         $basename = trim( $basename, '_' );
-        $basename = mb_substr( $basename, 0, 255, $app->db->charset );
+        $basename = mb_substr( $basename, 0, $basename_len, $app->db->charset );
         if (! $basename ) $basename = $obj->_model;
         if ( $unique ) {
             $terms = [];
@@ -126,10 +144,10 @@ class PTUtil {
                     break;
                 } else {
                     $len = mb_strlen( $basename . '_' . $i );
-                    if ( $len > 255 ) {
-                        $diff = $len - 255;
+                    if ( $len > $basename_len ) {
+                        $diff = $len - $basename_len;
                         $basename = mb_substr(
-                            $basename, 0, 255 - $diff, $app->db->charset );
+                            $basename, 0, $basename_len - $diff, $app->db->charset );
                     }
                     $new_basename = $basename . '_' . $i;
                     $terms['basename'] = $new_basename;
@@ -300,7 +318,18 @@ class PTUtil {
         return $asset_url;
     }
 
-    public static function get_fields ( $obj, $args = [], $type = 'objects' ) {
+    public static function generate_uuid () {
+        return sprintf( '%04x%04x-%04x-%04x-%04x-%04x%04x%04x',
+            mt_rand( 0, 0xffff ), 
+            mt_rand( 0, 0xffff ),
+            mt_rand( 0, 0xffff ),
+            mt_rand( 0, 0x0fff ) | 0x4000,
+            mt_rand( 0, 0x3fff ) | 0x8000,
+            mt_rand( 0, 0xffff ), mt_rand( 0, 0xffff ), mt_rand( 0, 0xffff )
+        );
+    }
+
+    public static function get_fields ( $obj, $args = [], $type = 'objects', $all = false ) {
         $app = Prototype::get_instance();
         if ( is_string( $obj ) ) $obj = $app->db->model( $obj )->new();
         if ( is_string( $args ) ) {
@@ -330,8 +359,12 @@ class PTUtil {
             $workspace_ids[] = (int) $args['workspace_id'];
         }
         $workspace_ids = array_unique( $workspace_ids );
-        $fields = $app->db->model( 'field' )->load(
-            ['id' => ['IN' => $ids ], 'workspace_id' => ['IN' => $workspace_ids ] ] );
+        if (! $all ) {
+            $fields = $app->db->model( 'field' )->load(
+                ['id' => ['IN' => $ids ], 'workspace_id' => ['IN' => $workspace_ids ] ] );
+        } else {
+            $fields = $app->db->model( 'field' )->load( ['id' => ['IN' => $ids ] ] );
+        }
         if ( empty( $fields ) ) {
             return [];
         }
@@ -352,7 +385,9 @@ class PTUtil {
             $meta_fields = [];
             foreach ( $_fields as $field ) {
                 $fieldtype = $field->fieldtype;
-                $basenames[ $field->basename ] = $fieldtype ? $fieldtype->basename : '';
+                $type = $fieldtype ? $fieldtype->basename : '';
+                $props = ['type' => $type, 'id' => $field->id ];
+                $basenames[ $field->basename ] = $props;
             }
             return $basenames;
         } else if ( $type === 'requireds' ) {
@@ -404,6 +439,39 @@ class PTUtil {
         $content = mb_convert_encoding( $dom->saveHTML(),
                                         'utf-8', 'HTML-ENTITIES' );
         return $content;
+    }
+
+    public static function make_zip_archive ( $dir, $file, $root = '' ){
+        $zip = new ZipArchive();
+        $res = $zip->open( $file, ZipArchive::CREATE );
+        if( $res ) {
+            if( $root ) {
+                $zip->addEmptyDir( $root );
+                $root .= DS;
+            }
+            $base_len = mb_strlen( $dir );
+            $iterator = new RecursiveIteratorIterator(
+                new RecursiveDirectoryIterator(
+                    $dir,
+                    FilesystemIterator::SKIP_DOTS
+                    |FilesystemIterator::KEY_AS_PATHNAME
+                    |FilesystemIterator::CURRENT_AS_FILEINFO
+                ), RecursiveIteratorIterator::SELF_FIRST
+            );
+            $list = [];
+            foreach( $iterator as $pathname => $info ){
+                $localpath = $root . mb_substr( $pathname, $base_len );
+                if( $info->isFile() ){
+                    $zip->addFile( $pathname, $localpath );
+                } else {
+                    $res = $zip->addEmptyDir( $localpath );
+                }
+            }
+            $zip->close();
+        } else {
+            return false;
+        }
+        return $res;
     }
 
     public static function object_to_resource ( $obj, $type = 'api', $required = null ) {
@@ -540,6 +608,9 @@ class PTUtil {
                         $icon = $app->admin_url
                               . '?__mode=get_thumbnail&square=1&id=' . $meta->id;
                         $vars['_icon'] = $icon;
+                        $icon2 = $app->admin_url
+                              . '?__mode=get_thumbnail&id=' . $meta->id;
+                        $vars['_icon_large'] = $icon2;
                     }
                 }
                 if ( in_array( $col, $object_keys ) ) {
@@ -695,7 +766,24 @@ class PTUtil {
         return $str;
     }
 
-    public static function get_mime_type ( $extension ) {
+    public static function export_data ( $path, $mimetype = '' ) {
+        $file_size = filesize( $path );
+        $file_name = basename( $path );
+        if ( $mimetype ) {
+            $extension = isset( pathinfo( $path )['extension'] )
+                       ? pathinfo( $path )['extension'] : '';
+            $mimetype = self::get_mime_type( $extension );
+        }
+        header( "Content-Type: {$mimetype}" );
+        header( "Content-Length: {$file_size}" );
+        header( "Content-Disposition: attachment;"
+            . " filename=\"{$file_name}\"" );
+        header( 'Pragma: ' );
+        // TODO buffer
+        echo file_get_contents( $path );
+    }
+
+    public static function get_mime_type ( $extension, $default = '' ) {
         $extension = strtolower( $extension );
         $extension = ltrim( $extension, '.' );
         if ( isset( $_SERVER[ 'HTTP_USER_AGENT' ] ) ) {
@@ -798,7 +886,10 @@ class PTUtil {
             'xlsx'    => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
             'json'    => 'application/json',
         );
-        return isset( $mime_type[ $extension ] ) ? $mime_type[ $extension ] : 'text/plain';
+        if ( isset( $mime_type[ $extension ] ) ) {
+            return $mime_type[ $extension ];
+        }
+        return $default ? $default : 'text/plain';
     }
 
     public static function file_find ( $dir, &$files = [], &$dirs = [] ) {

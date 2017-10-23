@@ -4,6 +4,7 @@
     "Import as me"           : "自分の記事としてインポートする",
     "Preserve original user" : "記事の著者を変更しない",
     "Status for Comments:"   : "コメントのステータス",
+    "Export Entries"         : "記事のエクスポート",
     "Saving entry ('%s')..." : "記事 (%s)を保存しています...",
     "ok (ID %s)"             : "完了 (ID %s)",
     "Saving entry failed."   : "記事を保存できませんでした。",

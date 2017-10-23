@@ -15,7 +15,23 @@
     "URLs"               : "URL",
     "Hint"               : "ヒント",
     "Profile"            : "プロフィール",
+    "IP Address"         : "IPアドレス",
+    "IP Addresses"       : "IPアドレス",
+    "banned"             : "禁止",
+    "allow"              : "許可",
+    "info"               : "情報",
+    "Template Markup"    : "テンプレート記法",
+    "MT Compatible"      : "MT互換",
+    "Smarty Compatible"  : "Smarty互換",
+    "Clear"              : "クリア",
+    "Rotate Left"        : "左へ回転",
+    "Rotate Right"       : "右へ回転",
+    "Flip Horizontal"    : "左右反転",
+    "Flip Vertical"      : "上下反転",
+    "Lock Out Date"      : "ロックアウト日時",
     "Install"            : "インストール",
+    "Compiled"           : "コンパイル済",
+    "Cache Key"          : "キャッシュ・キー",
     "System Settings"    : "システムの設定",
     "Communication"      : "コミュニケーション",
     "monthly"            : "月別",
@@ -25,9 +41,11 @@
     "User Settings"      : "ユーザの設定",
     "Edit Image"         : "画像の編集",
     "Image for Edit"     : "編集対象の画像",
+    "Include Modules"    : "インクルード先",
     "Keep aspect ratio"  : "縦横比を維持",
     "Save as Asset Label": "ラベルとして保存",
     "Use Thumbnail"      : "サムネイルを利用",
+    "Page not found."    : "ページが見つかりません。",
     "Insert"             : "挿入",
     "Field"              : "フィールド",
     "Fields"             : "フィールド",
@@ -85,6 +103,7 @@
     "Activate(Publish)"  : "有効化 (公開)",
     "Relative URL"       : "相対URL",
     "Can Rebuild"        : "再構築",
+    "Can Publish"        : "パブリッシュ",
     "Publish %s"         : "%sの再構築",
     "Rebuilding..."      : "再構築中...",
     "Rebuilding %s..."   : "%sの再構築中...",
@@ -176,7 +195,7 @@
     "Labels"             : "ラベル",
     "Plural"             : "複数形",
     "Display"            : "表示",
-    "List"               : "一覧",
+    "List"               : "リスト",
     "Edit"               : "編集",
     "Order"              : "表示順",
     "None"               : "なし",
@@ -206,8 +225,12 @@
     "Detach Filter"      : "フィルタを解除",
     "Sort By"            : "ソート設定",
     "Sort"               : "ソート",
+    "Input Text"         : "テキスト",
     "Radio Buttons"      : "ラジオボタン",
     "Checkboxes"         : "チェックボックス",
+    "Multiple Checkboxes": "チェックボックス (複数)",
+    "Tel"                : "電話番号",
+    "Tel (Separated)"    : "電話番号 (セパレート)",
     "Dropdown"           : "ドロップダウン",
     "Dialog"             : "ダイアログ",
     "Custom"             : "カスタム",
@@ -219,6 +242,7 @@
     "Color"              : "カラー",
     "Copyright"          : "コピーライト",
     "Index"              : "インデックス",
+    "index"              : "インデックス",
     "Parent"             : "親",
     "Child Models"       : "子モデル",
     "Primary"            : "プライマリ",
@@ -243,7 +267,7 @@
     "Reserved"           : "公開予約",
     "Between"            : "期間指定",
     "Review"             : "レビュー",
-    "Unpublished (End)"  : "非公開(公開終了)",
+    "Ended"              : "終了",
     "Publish Date"       : "公開日",
     "Unpublish Date"     : "非公開日",
     "Status"             : "ステータス",
@@ -280,6 +304,7 @@
     "Search"             : "検索",
     "Save"               : "保存",
     "Save Changes"       : "変更を保存",
+    "Save & Publish"     : "保存と再構築",
     "Cancel"             : "キャンセル",
     "Delete"             : "削除",
     "Export"             : "エクスポート",
@@ -443,7 +468,8 @@
     "Published %s"       : "公開中の%s",
     "Unpublished %s"     : "公開終了された%s",
     "Publish Again"      : "再構築しなおす",
-    "Disabled %s"        : "無効な%s",
+    "Publish Again"      : "再構築しなおす",
+    "Preview URL"        : "プレビューURL",
     "Enabled %s"         : "有効な%s",
     "Publish time: %s"   : "処理時間 : %s",
     "Y-m-d H:i"          : "Y年m月d日 H時i分",
@@ -451,7 +477,8 @@
     "seconds"            : "秒",
     "%sseconds"          : "%s秒",
     "%1$smin %2$sseconds": "%1$s分 %2$s秒",
-    "Unknown Model %s."  : "不明なモデルです(%s)。",
+    "Lock Out"           : "ロックアウト",
+    "Unknown Model %s."  : "不明なモデルです (%s)。",
     "Upgrade 1 scheme."  : "1件のスキーマをアップグレードしました。",
     "Upgrade %s schemes.": "%s件のスキーマをアップグレードしました。",
     "Enable this plugin" : "プラグインを有効化",
@@ -460,8 +487,41 @@
     "F, Y"               : "Y年m月",
     "Y"                  : "Y年",
     "Fiscal Y"           : "Y年度",
-    "Plugin %s's Settings":
-        "プラグイン「%s」の設定",
+    "Authentication"     : "認証",
+    "User Lock Out"      : "ユーザーロックアウト",
+    "IP Lock Out"        : "IPロックアウト",
+    "Lock Out Limit"     : "認証ロック回数",
+    "Password Reset"     : "パスワードを再設定",
+    "Input Text (Multiple)" : "テキスト (可変長)",
+    "Column's Permissions" : "カラムの権限",
+    "An error occurred while updating the related object(s)."
+        : "関連オブジェクトのアップデート中にエラーが発生しました。",
+    "Lock Out Interval(Seconds)"
+        : "ロックアウト間隔 (秒)",
+    "When Lock Out Limit is set to 0, lockout is not performed."
+        : "認証ロック回数に0に指定すると、ロックアウトは行われません。",
+    "This IP address is locked out."
+        : "このIPアドレスはロックアウトされています。",
+    "This User is locked out."
+        : "このユーザーはロックアウトされています。",
+    "This IP address was locked out because you failed to log in continuously."
+        : "連続してログインに失敗したため、このIPアドレスはロックアウトされました。",
+    "This User was locked out because you failed to log in continuously."
+        : "連続してログインに失敗したため、このアカウントはロックアウトされました。",
+    "Two-factor Authentication"
+        : "2段階認証",
+    "Use Two-factor Authentication"
+        : "2段階認証を利用する",
+    "Enter Confirmation Code"
+        : "確認用コードを入力",
+    "Confirmation Code do not match."
+        : "確認用コードが一致しません。",
+    "The confirmation code has been expired."
+        : "確認用コードの有効期限が切れました。",
+    "The number of retry times limit was exceeded, the confirmation code was discarded."
+        : "リトライ回数制限を超えたため、確認用コードは破棄されました。",
+    "Plugin %s's Settings"
+        : "プラグイン「%s」の設定",
     "Plugin(s) enabled successfully."
         : "プラグインを有効化しました。",
     "Plugin(s) disabled successfully."
@@ -529,10 +589,16 @@
         : "パスワードをお忘れですか?",
     "The action '%1$s' was executed for %2$s %3$s by %4$s."
         : "%4$s がアクション「%1$s」を %2$s個の%3$sに適用しました。",
+    "User %s updated the system settings."
+        : "ユーザー %s がシステムの設定を更新しました。",
     "The files for %s have been published."
         : "%sを再構築しました。",
     "An error occurred while uploading."
         : "ファイルのアップロード中にエラーが発生しました。",
+    "An error occurred while saving %s."
+        : "%sの保存中にエラーが発生しました。",
+    "An error occurred while deleting %s."
+        : "%sの削除中にエラーが発生しました。",
     "Please enter the Name of this Filter."
         : "フィルタ名を入力してください。",
     "The Filter Name is required."
@@ -571,6 +637,8 @@
         : "カンマ区切りで値を入力すると、テンプレート変数 'field_options'のループの中で 'field_label'変数に値を格納します。",
     "Click Detail button to continue settings."
         : "カスタム設定を行うには「詳細」ボタンをクリックしてください。",
+    "When previewing with a URL different from the URL of the management screen, please enter the URL of the PHP application."
+        : "管理画面のURLと異なるURLでプレビューを行う場合、PHPアプリケーションのURLを入力してください。",
     "Invalid list type (%s)."
         : "不正な一覧表示タイプです (%s)。",
     "%s cannot be deleted."
@@ -627,8 +695,10 @@
         : "同じ値の%2$s「%1$s」がすでに存在します。",
     "Both passwords must match."
         : "パスワードが一致しません。",
-    "Name, Password and Email are required."
-        : "ユーザー名, パスワードとメールアドレスは必須です。",
+    "Username, Password and Email are required."
+        : "ユーザ名, パスワードとメールアドレスは必須です。",
+    "Login failed: Username or Password was wrong."
+        : "ログインできませんでした。ユーザ名とパスワードを確認してください。",
     "Please specify a valid email address."
         : "正しいメールアドレスを指定してください。",
     "System Email Address is not set in System."
@@ -661,6 +731,10 @@
         : "_1件の_2に適用してもよろしいですか?",
     "You did not select any action."
         : "アクションが選択されていません。",
+    "Publish your site to see these changes take effect."
+        : "変更を反映させるには再構築してください。",
+    "Are you sure you want to delete the file? Delete is reflected when saving this page."
+        : "ファイルを削除してもよろしいですか? (ファイルの削除はこのページを保存時に反映されます)",
     "Are you sure you want to apply this revision to master?"
         : "このリビジョンをマスタに適用してもよろしいですか?",
     "Disable,Enable"
@@ -669,8 +743,12 @@
         : "選択されたフィルタを削除しました。",
     "An error occurred while removing the Filter."
         : "フィルタの削除中にエラーが発生しました。",
-    "Draft,Review,Reserved,Publish,Unpublished (End)"
-        : "下書き,レビュー,公開予約,公開,非公開(公開終了)",
+    "Draft,Review,Reserved,Publish,Ended"
+        : "下書き,レビュー,公開予約,公開,終了",
+    "Translate to the user's language."
+        : "ユーザーの設定言語に翻訳します。",
+    "Translate labels to the user's language."
+        : "ラベルをユーザーの設定言語に翻訳します。",
     "Please enter keyword for search."
         : "検索するキーワードを入力してください。",
     "The default template was successfully applied. The applied template will not be reflected until you save this page."
@@ -695,6 +773,8 @@
         : "このページはワークスペース「%s」のダッシュボードです!",
     "If you want to customize or delete this widget please click this link text."
         : "このウィジェットをカスタマイズまたは削除するには、リンクをクリックしてください。",
+    "To activate this field, enable the display option of this field on the edit screen."
+        : "このフィールドを有効化するには、編集画面でこのフィールドの表示オプションを有効にしてください。",
     "You are about to edit the revision. To apply this revision to the master click the 'Apply to Master' button."
         : "リビジョンを編集しようとしています。このリビジョンをマスタに適用するには「マスタに適用」ボタンをクリックしてください。"
 }

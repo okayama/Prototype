@@ -3,7 +3,7 @@
 <mt:loop name="insert_loop">
 <mt:if name="class" eq="image">
 <img alt="<mt:var name="label" escape>"
-<mt:if name="align" eq="left">
+<mt:if name="align" eq="right">
  style="float: right; margin: 0 0 20px 20px;"
 <mt:elseif name="align" eq="left">
  style="float: left; margin: 0 20px 20px 0;"
@@ -39,11 +39,10 @@
 <input type="hidden" name="_system_filters_option" value="<mt:var name="request._system_filters_option" escape>">
 <input type="hidden" name="insert_editor" value="1">
 <input type="hidden" name="do_insert" value="1">
-
 <mt:objectloop model="asset">
 <mt:if name="__first__"><table class="table">
 <thead>
-<tr><th class="insert-asset-selector-th"><mt:trans phrase="Insert"></th><th><mt:trans phrase="Preview"></th><th colspan="2"><mt:trans phrase="Metadata"></th></tr>
+<tr><th class="insert-asset-selector-th"><mt:trans phrase="Insert"></th><th class="insert-asset-preview-th"><mt:trans phrase="Preview"></th><th colspan="2"><mt:trans phrase="Metadata"></th></tr>
 </thead>
 <tbody id="list_body">
 </mt:if>
@@ -64,7 +63,7 @@
     </mt:if>
   </td>
   <td>
-  <table class="table-inner">
+  <table class="table-inner insert-asset-innner">
 <tr>
   <th class="form-inline insert-asset-label">
   <mt:if name="class" eq="image"><mt:trans phrase="Text Alternative"><mt:else><mt:trans phrase="Label"></mt:if>
@@ -79,13 +78,13 @@
   </th>
 </tr>
 <tr>
-  <td class="form-inline insert-asset-label">
-    <input type="text" class="form-control form-control-sm" value="<mt:var name="label" escape>" name="asset-label-<mt:var name="id">">
+  <td class="insert-asset-label">
+    <input type="text" class="form-control form-control-sm insert-asset-content" value="<mt:var name="label" escape>" name="asset-label-<mt:var name="id">">
   </td>
 </tr>
 <mt:if name="class" eq="image">
 <tr>
-  <th class="form-inline insert-asset-label">
+  <th class="form-inline insert-asset-label insert-image-top-margin">
   <mt:trans phrase="Size">
   &nbsp;
     <label class="custom-control custom-checkbox" style="font-weight:normal;">
@@ -99,30 +98,30 @@
 </tr>
 <tr class="thumb-width-<mt:var name="id"> hidden">
   <td class="form-inline insert-image-size">
-    <label><mt:trans phrase="Width"> : &nbsp; <input type="number" class="num form-control form-control-sm very-short" value="<mt:assetproperty property="image_width">" name="thumb-width-<mt:var name="id">"> &nbsp; px</label>
+    <label class="insert-asset-content" style="margin-left:4px !important"><mt:trans phrase="Width"> : &nbsp; <input type="number" class="num form-control form-control-sm very-short" value="<mt:assetproperty property="image_width">" name="thumb-width-<mt:var name="id">"> &nbsp; px</label>
   </td>
 </tr>
 <tr>
-  <th><mt:trans phrase="Alignment"></th>
+  <th class="insert-image-top-margin"><mt:trans phrase="Alignment"></th>
 </tr>
 <tr>
-  <td class="form-inline insert-image-size">
-  <label class="custom-control custom-radio">
+  <td class="form-inline">
+  <label class="custom-control custom-radio" style="margin-left:4px !important">
     <input class="custom-control-input" type="radio" name="insert-align-<mt:var name="id">" value="">
     <span class="custom-control-indicator"></span>
     <span class="custom-control-description"><mt:trans phrase="None"></span>
   </label>
-  <label class="custom-control custom-radio">
+  <label class="custom-control custom-radio" style="margin-left:4px !important">
     <input class="custom-control-input" type="radio" name="insert-align-<mt:var name="id">" value="left">
     <span class="custom-control-indicator"></span>
     <span class="custom-control-description"><mt:trans phrase="Left"></span>
   </label>
-  <label class="custom-control custom-radio">
+  <label class="custom-control custom-radio" style="margin-left:4px !important">
     <input class="custom-control-input" type="radio" name="insert-align-<mt:var name="id">" value="center">
     <span class="custom-control-indicator"></span>
     <span class="custom-control-description"><mt:trans phrase="Center"></span>
   </label>
-  <label class="custom-control custom-radio">
+  <label class="custom-control custom-radio" style="margin-left:4px !important">
     <input class="custom-control-input" type="radio" name="insert-align-<mt:var name="id">" value="right">
     <span class="custom-control-indicator"></span>
     <span class="custom-control-description"><mt:trans phrase="Right"></span>
@@ -131,7 +130,6 @@
 </tr>
 </mt:if>
 </table>
-
   </td>
 </tr>
 <mt:if name="__last__">

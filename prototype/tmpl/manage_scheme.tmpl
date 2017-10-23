@@ -77,7 +77,7 @@
   </th>
   </mt:if>
   <td><mt:var name="model" escape></td>
-  <td><mt:var name="component" escape></td>
+  <td><mt:if name="component" eq="core">prototype<mt:else><mt:var name="component" lower_case escape></mt:if></td>
   <td><mt:var name="scheme_version" escape></td>
   <td><mt:var name="db_version" escape></td>
   <mt:if name="upgrade_count">

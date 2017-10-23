@@ -1,14 +1,40 @@
-<mt:include file="include/header.tmpl">
+<mt:setvarblock name="recover_link">
+<a href="<mt:var name="script_uri">?__mode=start_recover"><mt:trans phrase="Password Reset"></a>
+</mt:setvarblock>
 
-<mt:if name="error">
-  <div class="alert alert-warning" role="alert">
-  <mt:var name="error">
-  </div>
+<mt:if name="request._lockout">
+<mt:if name="request._type" eq="ip">
+<mt:trans phrase="This IP address is locked out." setvar="lockout_error">
+<mt:elseif name="request._type" eq="user">
+<mt:trans phrase="This User is locked out." setvar="lockout_error">
+<mt:setvar name="lockout_error" value="$recover_link" append="1">
 </mt:if>
+</mt:if>
+
+<mt:if name="request._lockedout">
+<mt:if name="request._type" eq="ip">
+<mt:trans phrase="This IP address was locked out because you failed to log in continuously." setvar="lockout_error">
+<mt:elseif name="request._type" eq="user">
+<mt:trans phrase="This User was locked out because you failed to log in continuously." setvar="lockout_error">
+<mt:setvar name="lockout_error" value="$recover_link" append="1">
+</mt:if>
+</mt:if>
+
+<mt:include file="include/header.tmpl">
+    <mt:if name="lockout_error">
+    <div id="header-error-message" class="alert alert-danger" role="alert" tabindex="0">
+    <mt:var name="lockout_error">
+    </div>
+    <script>
+    $('#header-error-message').focus();
+    </script>
+    </mt:if>
+
 
 <div class="col-md-12 form-group">
 <form action="<mt:var name="script_uri">" method="POST" >
   <input type="hidden" name="__mode" value="login">
+  <input type="hidden" name="return_args" value="<mt:var name="query_string" escape>">
 <div class="form-group">
   <label for="name"><mt:trans phrase="Username"> :</label>
   <input id="name" type="text" class="form-control" name="name" value="<mt:var name="name">">

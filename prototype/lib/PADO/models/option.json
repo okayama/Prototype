@@ -11,14 +11,16 @@
             "size": 255
         },
         "value": {
-            "type": "string",
-            "size": 255
+            "type": "text"
         },
         "number": {
             "type": "int",
             "size": 11
         },
         "data": {
+            "type": "text"
+        },
+        "option": {
             "type": "text"
         },
         "extra": {

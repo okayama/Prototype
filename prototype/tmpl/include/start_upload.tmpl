@@ -21,17 +21,17 @@
                   <mt:trans phrase="Upload Path">
                   <input id="extra_path" type="text" style="width:200px;" class="form-control" name="extra_path" value="<mt:var name="extra_path" escape>">
                 </div>
-                <!-- The global progress bar -->
-                <div id="progress" class="progress">
-                    <div class="progress-bar progress-bar-success"></div>
-                </div>
                 <!-- The container for the uploaded files -->
                 <div id="files" class="files"></div>
                 </form>
               </div>
+                <!-- The global progress bar -->
+                <div id="progress" class="progress">
+                    <div class="progress-bar progress-bar-success"></div>
+                </div>
             </div>
             <div class="modal-footer">
-              <button type="button" class="btn btn-secondary" data-dismiss="modal"><mt:trans phrase="Cancel"></button>
+              <button type="button" class="btn btn-secondary upload-cancel-button" data-dismiss="modal"><mt:trans phrase="Cancel"></button>
               <button type="submit" class="btn btn-primary new-filter-elem hidden" id="filter-apply"><mt:trans phrase="Next"></button>
             </div>
           </div>
@@ -43,10 +43,13 @@
 <script src="assets/js/jquery.iframe-transport.js"></script>
 <!-- The basic File Upload plugin -->
 <mt:var name="query_string" regex_replace="'/&offset=[0-9]{1,}/',''" setvar="_query_string">
+<mt:var name="_query_string" regex_replace="'/&deleted=1/',''" setvar="_query_string">
 <script src="assets/js/jquery.fileupload.js"></script>
 <script>
 var this_url = '<mt:var name="script_uri">?<mt:if name="workspace_id">workspace_id=<mt:var name="workspace_id">&</mt:if><mt:var name="_query_string" regex_replace="'/&selected_ids=.*$/',''">&sort=id&direction=desc';
 var selected_ids = [];
+var upload_count = 0;
+var receive_count = 0;
 var DropZone = document.getElementById('drop-zone');
 DropZone.addEventListener('dragover', function (event) {
     $('#drop-zone').css('background-color','#ddf');
@@ -65,6 +68,12 @@ $(function () {
         dataType: 'json',
         dropZone: $("#drop-zone"),
         formData: {extra_path: $('#extra_path').val()},
+        add: function (e, data) {
+            data.submit();
+            upload_count++;
+            $("#drop-zone").hide( 'slow' );
+            $('.upload-cancel-button').hide( 'slow' );
+        },
         done: function (e, data) {
             if (!data.result.files) {
                 var error = data.result.message;
@@ -89,6 +98,10 @@ $(function () {
                 new_input.attr('name','id[]');
                 new_input.val(file.asset_id);
                 selected_ids.push(file.asset_id);
+                receive_count++;
+                if ( upload_count == receive_count ) {
+                    setTimeout(uploaded_hdlr, 1000);
+                }
             });
         },
         progressall: function (e, data) {
@@ -97,9 +110,6 @@ $(function () {
                 'width',
                 progress + '%'
             );
-            if ( progress == 100 ) {
-                setTimeout(uploaded_hdlr, 3600);
-            }
         }
     }).prop('disabled', !$.support.fileInput)
         .parent().addClass($.support.fileInput ? undefined : 'disabled');

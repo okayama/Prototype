@@ -50,5 +50,27 @@
             "order"      : 10,
             "options"    : [ "author_setting", "new_author_password", "comment_status" ]
         }
+    },
+    "export_format": {
+        "movabletype": {
+            "component"  : "EntryImporter",
+            "label"      : "Movable Type",
+            "method"     : "export_movabletype"
+        }
+    },
+    "list_actions": {
+        "export_entry" : {
+            "entry" : {
+                "export_entry": {
+                    "name" : "export_entry",
+                    "label" : "Export Entries",
+                    "component" : "EntryImporter",
+                    "method"    : "export_entry",
+                    "input"     : 1,
+                    "scope"     : ["workspace"],
+                    "input_options": "list_options"
+                }
+            }
+        }
     }
 }

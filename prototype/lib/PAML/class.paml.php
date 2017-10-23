@@ -42,9 +42,11 @@ class PAML {
     public    $caching       = false;
     public    $force_compile = true;
     public    $compile_check = true;
+    public    $request_cache = true;
     public    $advanced_mode = true;
     public    $cache_dir;
     public    $compile_dir;
+    public    $unify_breaks  = true;
     public    $logging       = false;
     public    $log_path;
     public    $csv_delimiter = ':';
@@ -53,6 +55,8 @@ class PAML {
     public    $path          = __DIR__;
     public    $esc_trans     = false;
     public    $app           = null;
+    public    $meta;
+    public    $inited;
 
 /**
  * $autoescape: Everything is escaped(When there is no designation of 'raw' modifier).
@@ -105,6 +109,7 @@ class PAML {
     protected $func_map      = [];
     protected $block_vars    = [];
     public    $dom;
+    public    $compiled      = [];
 
     public $default_component= null;
 
@@ -119,9 +124,9 @@ class PAML {
                         'ifinarray', 'isarray'],
       'modifier'    => ['escape' ,'setvar', 'format_ts', 'zero_pad', 'trim_to', 'eval',
                         'strip_linefeeds', 'sprintf', 'encode_js', 'truncate', 'wrap',
-                        'trim_space', 'regex_replace', 'setvartemplate', 'replace',
+                        'trim_space', 'regex_replace', 'setvartemplate', 'replace', 'translate',
                         'to_json', 'from_json', 'nocache', 'split', 'join', 'format_size'],
-      'function'    => ['getvar', 'trans', 'setvar', 'property', 'ldelim', 'include',
+      'function'    => ['getvar', 'trans', 'setvar', 'property', 'ldelim', 'include', 'math',
                         'rdelim', 'fetch', 'var', 'date', 'assign', 'count', 'vardump'],
       'include'     => ['include', 'includeblock', 'extends'] ];
 
@@ -162,7 +167,7 @@ class PAML {
     }
 
     function __get ( $name ) {
-        return property_exists( $this, $name ) ? $this->$name : null;
+        return isset( $this->$name ) ? $this->$name : null;
     }
 
     function init () {
@@ -177,8 +182,9 @@ class PAML {
             $this->all_tags[ $kind ] = array_flip( $tags_arr );
         if ( debug_backtrace()[0] && $f = debug_backtrace()[0]['file'] )
             $this->include_paths[ dirname( $f ) ] = true;
-        if (!$this->force_compile && !$this->caching )
+        if ( $this->cache_driver ) {
             $this->init_cache( $this->cache_driver );
+        }
         if ( $this->use_plugin ) {
             if ( ( $plugin_d = PAMLDIR . 'plugins' ) && is_dir( $plugin_d ) )
                 $this->plugin_paths[] = $plugin_d;
@@ -902,15 +908,28 @@ class PAML {
 
     function block_literal ( $args, &$content, $ctx, &$repeat, $counter ) {
         if (!$counter ) return;
+        $request_cache = $this->request_cache;
+        $this->request_cache = false;
         if ( isset( $args['nocache'] ) && ! $ctx->caching ) return $content;
         $var = isset( $ctx->literal_vars[ $args['index'] ] )
              ? $ctx->literal_vars[ $args['index'] ] : '';
+        //$this->request_cache = $request_cache;
         return $var;
     }
 
     function conditional_if ( $args, $content, $ctx, $repeat, $context = true ) {
         $vars = array_merge( $ctx->vars, $ctx->local_vars );
         list( $true, $false ) = $context ? [ true, false ] : [ false, true ];
+        if ( ( isset( $args['tag'] ) ) && ( $tag = $args['tag'] ) ) {
+            $tag = strtolower( $tag );
+            $functions = $ctx->all_tags['function'];
+            if ( isset( $functions[ $tag ] ) ) {
+                $tag = $ctx->prefix . $tag;
+                $res = $ctx->build( "<{$tag}>" );
+                return $res ? $true : $false;
+            }
+            return false;
+        }
         if ( ( isset( $args['test'] ) ) && ( $test = $args['test'] ) ) {
             if ( preg_match_all( "/\\$[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*/",
                 $test, $mts ) ) {
@@ -1089,6 +1108,39 @@ class PAML {
         return $ctx->function_setvar( $args, $ctx );
     }
 
+    function function_math ( $args, $ctx ) {
+        static $allowed_funcs =
+            ['int', 'abs', 'ceil', 'cos', 'exp', 'floor', 'log', 'log10', 'max', 'min',
+             'pi', 'pow', 'rand', 'round', 'sin', 'sqrt', 'srand', 'tan'];
+        $eq = isset( $args['eq'] ) ? $args['eq'] : '';
+        if (! $eq ) return;
+        if ( substr_count( $eq, '(' ) != substr_count( $eq, ')' ) ) {
+            return;
+        }
+        preg_match_all( "!(?:0x[a-fA-F0-9]+)|([a-zA-Z][a-zA-Z0-9_]*)!", $eq, $match );
+        foreach ( $match[1] as $var ) {
+            if ( $var && !isset( $args[ $var ] ) &&
+                ! in_array( $var, $allowed_funcs ) ) {
+                return;
+            }
+        }
+        $modifiers = isset( $this->all_tags['modifiers'] )
+                   ? $this->all_tags['modifiers'] : [];
+        $modifiers[] = 'eq';
+        foreach ( $args as $key => $var ) {
+            if (! in_array( $key, $modifiers ) ) {
+                if ( strlen( $var ) == 0 ) {
+                    return;
+                }
+                $var = (int) $var;
+                $eq = preg_replace( "/\b{$key}\b/", $var, $eq );
+            }
+        }
+        $result = null;
+        eval( '$result=' . $eq . ';' );
+        return $result;
+    }
+
     function function_trans ( $args, $ctx ) {
         $phrase = ! isset( $args['phrase'] ) ? '' : $args['phrase'];
         $lang = isset( $args['language'] ) ? $args['language'] : $ctx->language;
@@ -1243,6 +1295,11 @@ class PAML {
         return json_encode( $v );
     }
 
+    function modifier_translate ( $v, $arg, $ctx ) {
+        $args = ['phrase' => $v, 'params' => $arg ];
+        return $ctx->function_trans( $args, $ctx );
+    }
+
     function modifier_format_size ( $size, $precision, $ctx ) {
         $size = (int) $size;
         $precision = (int) $precision;
@@ -1264,13 +1321,13 @@ class PAML {
 
     function modifier_trim_space ( $str, $arg ) {
         if ( $arg == 1 || $arg == 3 ) {
-            $ptns = [ ['/^ {2,}/m', ''],['/ +$/m', ''],['/ {2,}/', ' '] ];
+            $ptns = [ ['/^\s{2,}/m', ''],['/\s{1,}$/m', ''],['/\s{2,}/', ' '] ];
             $str = preg_replace(
             array_map( function( $func ) { return $func[0];}, $ptns ),
             array_map( function( $func ) { return $func[1];}, $ptns ), $str );
         }
         if ( $arg == 2 || $arg == 3 ) {
-            $list = preg_split( "/[\r\n|\r|\n]/", $str );
+            $list = preg_split( "/[\r\n]/", $str );
             $txt = '';
             foreach ( $list as $out ) if ( $out != '' ) $txt .= $out . PHP_EOL;
             $str = rtrim( $txt );
@@ -1322,6 +1379,17 @@ class PAML {
  * @return string $str : After processing $content.
  */
     function append_prepend ( $str, $args, $name ) {
+        if ( isset( $args['function'] ) && $args['function'] ) {
+            $function = $args['function'];
+            $v = $this->get_any( $args[ $name ] ) ? $this->get_any( $args[ $name ] ) : [];
+            if ( is_string( $v ) ) $v = [ $v ];
+            if ( $function === 'push' ) {
+                $v[] = $str;
+            } else if ( $function === 'unshift' ) {
+                array_unshift( $v, $str );
+            }
+            return $v;
+        }
         if ( $v = $this->get_any( $args[ $name ] ) ) {
             if ( isset( $args['append'] ) && $args['append'] ) {
                 return $v . $str;
@@ -1346,6 +1414,7 @@ class PAML {
         $this->local_vars[ '__odd__' ]    = !$even;
         $this->local_vars[ '__index__' ]  = $cnt;
         $this->local_vars[ '__counter__' ]= $cnt + 1;
+        $this->local_vars[ '__end__' ]    = $cnt >= count( $params );
         if ( $cnt === 0 ) $this->local_vars[ '__total__' ] = count( $params );
     }
 
@@ -1362,6 +1431,8 @@ class PAML {
  * @return bool : nocache tag exists or not.
  */
     function parse_literal ( &$content, $kind = null ) {
+        $request_cache = $this->request_cache;
+        $this->request_cache = false;
         list( $tag_s, $tag_e, $h_sta, $h_end, $pfx ) = $this->quoted_vars;
         if (!$kind  ) $tagname = 'literal';
         else $tagname = $kind === 1 ? 'setvartemplate' : 'nocache';
@@ -1392,8 +1463,14 @@ class PAML {
                 $end = str_replace( 'nocache', 'literal', $mts[5][ $i ] );
             }
             $content = preg_replace( "!$tag!si", $start . $block . $end, $content, 1 );
+            $ids = $this->ids;
+            foreach ( $ids as $id => $bool ) {
+                $block = str_replace( '%' . $id, '<', $block );
+                $block = str_replace( $id . '%', '>', $block );
+            }
             $this->literal_vars[] = $block;
         }
+        $this->request_cache = $request_cache;
         return ( $kind === 2 ) ? true : false;
     }
 
@@ -1409,7 +1486,8 @@ class PAML {
  * @return string $out    : After processing $content(or compiled PHP code).
  */
     function compile ( $content, $disp = true, $tags_arr = null, $use_tags = [],
-      $params = [], $compiled = false, $nocache = false ) {
+        $params = [], $compiled = false, $nocache = false ) {
+        $orig_key = md5( $content );
         if (!$this->build_start ) {
             $this->tags['block'] = array_unique(
                 array_merge( $this->tags['block'], $this->tags['block_once'] ) );
@@ -1424,383 +1502,391 @@ class PAML {
         list( $literals, $templates ) = (!$this->_include )
             ? [ $this->literal_vars, $this->template_paths ] : [ [], [] ];
         $callbacks = $this->callbacks;
-        $all_tags = $this->all_tags;
-        if (!$this->allow_php ) $content = self::strip_php( $content );
-        if (!empty( $callbacks['input_filter'] ) )
-            $content = $this->call_filter( $content, 'input_filter' );
-        $dom = new DomDocument();
-        $this->dom = $dom;
-        $id = $this->magic( $content );
-        $in_nocache = $this->in_nocache;
-        $tags = $this->tags;
-        $prefix = $this->prefix;
-        if (!$tags_arr )
-      { // Process in descending order of length of the tag names.
-        $tags_arr = array_merge( $tags['block'], $tags['function'],
-            $tags['conditional'], $tags['include'] );
-        usort( $tags_arr, create_function('$a,$b','return strlen($b)-strlen($a);') );
-      }
-        list( $t_sta, $t_end, $sta_h, $end_h )
-            = array_merge( $this->tag_block, $this->html_block );
-        list( $tag_s, $tag_e, $h_sta, $h_end, $pfx )
-            = $this->get_quoted( [ $t_sta, $t_end, $sta_h, $end_h, $prefix ] );
-        if (!$this->_include ) if ( stripos( $content, 'literal' ) !== false )
-            $this->parse_literal( $content );
-        if (!$pfx && ( $pfx = $prefix = 'paml' ) )
-            $content = preg_replace( '/' . $tag_s . '(\/{0,1})\${0,1}(.*?)\${0,1}' .
-            $tag_e . '/si', $t_sta . '$1paml:$2' . $t_end, $content );
-        if ( strpos( $t_sta ,'<' ) === 0 && strpos( $t_end ,'>' ) !== false )
-      {
-        $content = preg_replace( '/' . $tag_s . '(\/{0,1})\${0,1}(' . $pfx .
-            '.*?)\${0,1}' . $tag_e . '/si', '{%$1$2%}', $content );
-        list( $t_sta, $t_end, $tag_s, $tag_e ) = ['{%', '%}', '\{%', '%\}'];
-      }
-        $content = preg_replace( '/' . $tag_s . '\${0,1}(' .
-        $pfx . '.*?)\${0,1}' . $tag_e . '/si', '<$1>', $content );
-        $content = preg_replace('/' . $tag_s . '(\/' . $pfx . '.*?)' .
-        $tag_e . '/si', '<$1>', $content );
-        foreach ( $tags_arr as $tag )
-      {
-        $close = isset( $all_tags['function'][ $tag ] ) || $tag === 'include'
-            || $tag === 'extends' || $tag === 'else' || $tag === 'elseif'
-            || $tag === 'elseifgetvar' ? ' /' : '';
-        $content = preg_replace("/<\\s*\\" . "\${0,1}{$pfx}:{0,1}\s*{$tag}(.*?)\\\${0,1}>"
-        . '/si', $t_sta . $pfx . $tag . '$1' . $close . $t_end, $content );
-        $content = preg_replace( "!<\\s*{$pfx}:{0,1}\s*{$tag}(.*?)(>)!si", $t_sta . $pfx
-        . $tag . '$1' . $close . $t_end, $content );
-        $content = preg_replace( "!<\/{$pfx}:{0,1}\s*{$tag}\s*?>!si", $t_sta . '/' . $pfx
-        . $tag . '$1' . $t_end, $content );
-      }
-        $content = preg_replace( '/<([^<|>]*?)>/s', $sta_h . '$1' . $end_h, $content );
-        // <> in JavaScript
-        $content = str_replace( '<', $this->html_ldelim, $content );
-        $content = str_replace( '>', $this->html_rdelim, $content );
-        $content = "<{$id}>{$content}</{$id}>";
-        $content = preg_replace( '/' . $tag_s . '(\/{0,1}' . $pfx . '.*?)'
-        . $tag_e . '/si', '<$1>', $content );
-        if ( stripos( $content, 'setvartemplate' ) !== false )
-            $this->parse_literal( $content, 1 );
-        if ( stripos( $content, 'nocache' ) !== false ) {
-            $res = $this->parse_literal( $content, 2 );
-            if (!$nocache ) $nocache = $res;
-        }
-     // Measures against the problem that blank characters disappear.
-        $insert = $this->insert_text ? $this->insert_text : "__{$id}__";
-        $content = preg_replace( "/(<\/{0,1}$pfx.*?>)/",
-        $insert . '$1' . $insert, $content );
-     // Double escape HTML entities.
-        $content = preg_replace_callback( "/(&#{0,1}[a-zA-Z0-9]{2,};)/is",
-        function( $mts ) { return htmlspecialchars( $mts[0], ENT_QUOTES ); }, $content );
-        if (!empty( $callbacks['pre_parse_filter'] ) )
-        $content = $this->call_filter( $content, 'pre_parse_filter', $insert );
-        libxml_use_internal_errors( true ); // Tag parsing.
-        if (!$dom->loadHTML( mb_convert_encoding( $content, 'HTML-ENTITIES','utf-8' ),
-            LIBXML_HTML_NOIMPLIED|LIBXML_HTML_NODEFDTD|LIBXML_COMPACT ) )
-            trigger_error( 'loadHTML failed!' );
-        $this->_include = false;
-        $include_tags = $tags['include'];
-        foreach ( $include_tags as $include )
-    {
-        $elements = $dom->getElementsByTagName( $prefix . $include );
-        if (!$elements->length ) continue;
-        $i = $elements->length - 1;
-        $use_tags[] = 'include_' . $include;
-        while ( $i > -1 )
-      {
-        $ele = $elements->item( $i );
-        $i -= 1;
-        if ( $f = $ele->getAttribute( 'file' ) )
-        {
-        if ( strpos( $f, '$' ) !== false ) continue;
-        if (!$f = $this->get_template_path( $f ) ) continue;
-        if (!$incl = file_get_contents( $f ) ) continue;
-        if ( stripos( $incl, 'literal' ) !== false ) $this->parse_literal( $incl );
-        list( $attrs, $t_args, $attributes ) = $this->get_attributes( $ele );
-        unset( $attrs['file'] );
-        $this->_include = true;
-        if ( $include === 'includeblock' )
-      {
-        $nodeValue = str_replace( $insert, '', $ele->nodeValue );
-        $attributes .= ' contents="' . addslashes( $nodeValue ) . '"';
-      }
-        if (!empty( $attrs ) )
-            $incl="<{$prefix}block {$attributes}>{$incl}</{$prefix}block>";
-        $parent = $ele->parentNode;
-        if ( $include === 'extends' )
+            $all_tags = $this->all_tags;
+        if ( $this->request_cache && isset( $this->compiled[ $orig_key ] ) ) {
+            $out = $this->compiled[ $orig_key ];
+        } else {
+            if (!$this->allow_php ) $content = self::strip_php( $content );
+            if (!empty( $callbacks['input_filter'] ) )
+                $content = $this->call_filter( $content, 'input_filter' );
+            $dom = new DomDocument();
+            $this->dom = $dom;
+            $id = $this->magic( $content );
+            $in_nocache = $this->in_nocache;
+            $tags = $this->tags;
+            $prefix = $this->prefix;
+            if (!$tags_arr )
+          { // Process in descending order of length of the tag names.
+            $tags_arr = array_merge( $tags['block'], $tags['function'],
+                $tags['conditional'], $tags['include'] );
+            usort( $tags_arr, create_function('$a,$b','return strlen($b)-strlen($a);') );
+          }
+            list( $t_sta, $t_end, $sta_h, $end_h )
+                = array_merge( $this->tag_block, $this->html_block );
+            list( $tag_s, $tag_e, $h_sta, $h_end, $pfx )
+                = $this->get_quoted( [ $t_sta, $t_end, $sta_h, $end_h, $prefix ] );
+            if (!$this->_include ) if ( stripos( $content, 'literal' ) !== false )
+                $this->parse_literal( $content );
+            if (!$pfx && ( $pfx = $prefix = 'paml' ) )
+                $content = preg_replace( '/' . $tag_s . '(\/{0,1})\${0,1}(.*?)\${0,1}' .
+                $tag_e . '/si', $t_sta . '$1paml:$2' . $t_end, $content );
+            if ( strpos( $t_sta ,'<' ) === 0 && strpos( $t_end ,'>' ) !== false )
           {
-            $parent->appendChild( $dom->createTextNode("</{$prefix}isinchild>". $incl ) );
-            $parent->replaceChild( $dom->createTextNode("<{$prefix}isinchild>"), $ele );
-          } else {
-            $parent->replaceChild( $dom->createTextNode( $incl ), $ele );
+            $content = preg_replace( '/' . $tag_s . '(\/{0,1})\${0,1}(' . $pfx .
+                '.*?)\${0,1}' . $tag_e . '/si', '{%$1$2%}', $content );
+            list( $t_sta, $t_end, $tag_s, $tag_e ) = ['{%', '%}', '\{%', '%\}'];
+          }
+            $content = preg_replace( '/' . $tag_s . '\${0,1}(' .
+            $pfx . '.*?)\${0,1}' . $tag_e . '/si', '<$1>', $content );
+            $content = preg_replace('/' . $tag_s . '(\/' . $pfx . '.*?)' .
+            $tag_e . '/si', '<$1>', $content );
+            foreach ( $tags_arr as $tag )
+          {
+            $close = isset( $all_tags['function'][ $tag ] ) || $tag === 'include'
+                || $tag === 'extends' || $tag === 'else' || $tag === 'elseif'
+                || $tag === 'elseifgetvar' ? ' /' : '';
+            $content = preg_replace("/<\\s*\\" . "\${0,1}{$pfx}:{0,1}\s*{$tag}(.*?)\\\${0,1}>"
+            . '/si', $t_sta . $pfx . $tag . '$1' . $close . $t_end, $content );
+            $content = preg_replace( "!<\\s*{$pfx}:{0,1}\s*{$tag}(.*?)(>)!si", $t_sta . $pfx
+            . $tag . '$1' . $close . $t_end, $content );
+            $content = preg_replace( "!<\/{$pfx}:{0,1}\s*{$tag}\s*?>!si", $t_sta . '/' . $pfx
+            . $tag . '$1' . $t_end, $content );
+          }
+            $content = preg_replace( '/<([^<|>]*?)>/s', $sta_h . '$1' . $end_h, $content );
+            // <> in JavaScript
+            $content = str_replace( '<', $this->html_ldelim, $content );
+            $content = str_replace( '>', $this->html_rdelim, $content );
+            $content = "<{$id}>{$content}</{$id}>";
+            $content = preg_replace( '/' . $tag_s . '(\/{0,1}' . $pfx . '.*?)'
+            . $tag_e . '/si', '<$1>', $content );
+            if ( stripos( $content, 'setvartemplate' ) !== false )
+                $this->parse_literal( $content, 1 );
+            if ( stripos( $content, 'nocache' ) !== false ) {
+                $res = $this->parse_literal( $content, 2 );
+                if (!$nocache ) $nocache = $res;
+            }
+         // Measures against the problem that blank characters disappear.
+            $insert = $this->insert_text ? $this->insert_text : "__{$id}__";
+            $content = preg_replace( "/(<\/{0,1}$pfx.*?>)/",
+            $insert . '$1' . $insert, $content );
+         // Double escape HTML entities.
+            $content = preg_replace_callback( "/(&#{0,1}[a-zA-Z0-9]{2,};)/is",
+            function( $mts ) { return htmlspecialchars( $mts[0], ENT_QUOTES ); }, $content );
+            if (!empty( $callbacks['pre_parse_filter'] ) )
+            $content = $this->call_filter( $content, 'pre_parse_filter', $insert );
+            libxml_use_internal_errors( true ); // Tag parsing.
+            if (!$dom->loadHTML( mb_convert_encoding( $content, 'HTML-ENTITIES','utf-8' ),
+                LIBXML_HTML_NOIMPLIED|LIBXML_HTML_NODEFDTD|LIBXML_COMPACT ) )
+                trigger_error( 'loadHTML failed!' );
+            $this->_include = false;
+            $include_tags = $tags['include'];
+            foreach ( $include_tags as $include )
+        {
+            $elements = $dom->getElementsByTagName( $prefix . $include );
+            if (!$elements->length ) continue;
+            $i = $elements->length - 1;
+            $use_tags[] = 'include_' . $include;
+            while ( $i > -1 )
+          {
+            $ele = $elements->item( $i );
+            $i -= 1;
+            if ( $f = $ele->getAttribute( 'file' ) )
+            {
+            if ( strpos( $f, '$' ) !== false ) continue;
+            if (!$f = $this->get_template_path( $f ) ) continue;
+            if (!$incl = file_get_contents( $f ) ) continue;
+            if ( stripos( $incl, 'literal' ) !== false ) $this->parse_literal( $incl );
+            list( $attrs, $t_args, $attributes ) = $this->get_attributes( $ele );
+            unset( $attrs['file'] );
+            $this->_include = true;
+            if ( $include === 'includeblock' )
+          {
+            $nodeValue = str_replace( $insert, '', $ele->nodeValue );
+            $attributes .= ' contents="' . addslashes( $nodeValue ) . '"';
+          }
+            if (!empty( $attrs ) )
+                $incl="<{$prefix}block {$attributes}>{$incl}</{$prefix}block>";
+            $parent = $ele->parentNode;
+            if ( $include === 'extends' )
+              {
+                $parent->appendChild( $dom->createTextNode("</{$prefix}isinchild>". $incl ) );
+                $parent->replaceChild( $dom->createTextNode("<{$prefix}isinchild>"), $ele );
+              } else {
+                $parent->replaceChild( $dom->createTextNode( $incl ), $ele );
+              }
+            }
           }
         }
-      }
-    }
-        if ( $this->_include )
-      { // Processed recursively if included.
-        $out = mb_convert_encoding( $dom->saveHTML(), 'utf-8', 'HTML-ENTITIES' );
-        $out = preg_replace( "!^.*?<$id>(.*?)<\/$id>.*$!si", '$1', $out );
-        return $this->compile( str_replace( $insert, '', $out ),
-            $disp, $tags_arr, $use_tags, [], $compiled, $nocache );
-      }
-        $pid = '$' . $this->id . '_';
-        $adv = $this->advanced_mode;
-        $modifier_funcs = $this->modifier_funcs;
-        $functions = $this->functions;
-        $modifiers = $all_tags['modifier'];
-        $esc = $this->autoescape;
-        $func_map = $this->func_map;
-        $block_tags = $tags['block'];
-        $core_tags = $this->core_tags;
-        $cores = $core_tags['block'];
-        $core_once  = $core_tags['block_once'];
-        foreach ( $block_tags as $block )
-    {
-        if ( $block === 'setvartemplate' || $block === 'nocache' ) continue;
-        $elements = $dom->getElementsByTagName( $prefix . $block );
-        if (!$elements->length ) continue;
-        if ( $block === 'capture' ) $block = 'setvarblock';
-        elseif ( $block === 'foreach' ) $block = 'loop';
-        elseif ( $block === 'section' ) $block = 'for';
-        elseif ( $block === 'assignvars' ) $block = 'setvars';
-        $i = $elements->length - 1;
-        $tag_name = 'block_' . $block;
-        $use_tags[] = $tag_name;
-        $method = $p = isset( $functions[ $tag_name ] ) ? $functions[ $tag_name ][0] : '';
-        if ( $method )
-      {
-        if (!function_exists(!$method ) ) include( $functions[ $tag_name ][1] );
-        if ( $in_nocache ) $this->cache_includes[] = $functions[ $tag_name ][1];
-      }
-        if ( isset( $func_map[ $tag_name ] ) )
-      {
-        list( $class, $name ) = $this->func_map[ $tag_name ];
-        $method = '$this->component(\'' . get_class( $class ) . '\')->' . $name;
-      } elseif ( in_array( $block, $cores ) || in_array( $block, $core_once ) )
-        $method = "\$this->{$tag_name}";
-      {
-      }
-        if (!$method ) continue;
-        while ( $i > -1 )
-      {
-        $ele = $elements->item( $i );
-        $i -= 1;
-        $bid = $this->magic( $content );
-        if ( $block === 'isinchild' )
-      {
-        $sta = "<?php {$pid}local_vars['__child_context__']=true;ob_start();?>";
-        $end = "<?php unset({$pid}local_vars['__child_context__']);ob_end_clean();?>";
-      } else
-      {
-        $restore = "{$pid}local_params={$pid}old_params['{$bid}'];"
-                 . "{$pid}local_vars={$pid}old_vars['{$bid}'];" . EP;
-        list ( $_args, $_content, $_repeat, $_params, $_param ) =
-            ['a' . $bid, 'c' . $bid, 'r' . $bid, 'ps' . $bid, 'p' . $bid ];
-        list( $attrs, $t_args ) = $this->get_attributes( $ele, $block, $p );
-        $out = $this->add_modifier( "\${$_content}",
-            $attrs, $modifiers, $modifier_funcs, $func_map, $requires, false );
-        list( $begin, $last ) = strpos( $out, '(' )
-            ? ['ob_start();', "\${$_content}=ob_get_clean();echo({$out});"] : ['', ''];
-        $setup_args = $adv ? "\$this->setup_args({$t_args},null,\$this)" : $t_args;
-        $sta = "<?php \${$_content}=null;{$begin}{$pid}old_params['{$bid}']="
-             . "{$pid}local_params;{$pid}old_vars['{$bid}']={$pid}local_vars;"
-             . "\${$_args}={$setup_args};";
-        if ( isset( $all_tags['block_once'][ $block ] ) )
-       {
-        $sta .= "ob_start();" . EP;
-        $end ="<?php \${$_content}=ob_get_clean();\${$_content}=$method(\${$_args},"
-             . "\${$_content},\$this,\${$_repeat},1,'{$bid}');echo({$out});{$restore}";
-       } else
-       {
-        $cond = "while(\${$_repeat}===true):";
-        $sta .= "\${$bid}=-1;\${$_repeat}=true;${cond}\${$_repeat}=(\${$bid}!==-1)"
-             .  "?false:true;echo $method(\${$_args},\${$_content},"
-             .  "\$this,\${$_repeat},++\${$bid},'{$bid}');ob_start();" . EP;
-        // $sta .= "<?php if(isset(\$this->local_vars['__total__'])&&isset
-        // (\$this->local_vars['__index__'])&&\$this->local_vars['__total__']==
-        // \$this->local_vars['__index__'])break;" . EP;
-        $end = "<?php \${$_content}=ob_get_clean();endwhile;{$last}{$restore}";
-       }
-      }
-        $parent = $ele->parentNode;
-        if ( $block === 'ignore' )
+            if ( $this->_include )
+          { // Processed recursively if included.
+            $out = mb_convert_encoding( $dom->saveHTML(), 'utf-8', 'HTML-ENTITIES' );
+            $out = preg_replace( "!^.*?<$id>(.*?)<\/$id>.*$!si", '$1', $out );
+            return $this->compile( str_replace( $insert, '', $out ),
+                $disp, $tags_arr, $use_tags, [], $compiled, $nocache );
+          }
+            $pid = '$' . $this->id . '_';
+            $adv = $this->advanced_mode;
+            $modifier_funcs = $this->modifier_funcs;
+            $functions = $this->functions;
+            $modifiers = $all_tags['modifier'];
+            $esc = $this->autoescape;
+            $func_map = $this->func_map;
+            $block_tags = $tags['block'];
+            $core_tags = $this->core_tags;
+            $cores = $core_tags['block'];
+            $core_once  = $core_tags['block_once'];
+            foreach ( $block_tags as $block )
         {
-          $parent->removeChild( $ele );
-        } else {
-          if ( $block === 'literal' ) $ele->nodeValue = '';
-          $parent->insertBefore( $dom->createTextNode( $sta ), $ele );
-          $parent->insertBefore( $dom->createTextNode( $end ), $ele->nextSibling );
-        }
-      }
-    }
-        $cores = $core_tags['conditional'];
-        $conditional_tags = $tags['conditional'];
-        foreach ( $conditional_tags as $conditional )
-    {
-        $elements = $dom->getElementsByTagName( $prefix . $conditional );
-        if (!$elements->length ) continue;
-        $i = $elements->length - 1;
-        $tag_name = 'conditional_' . $conditional;
-        $use_tags[] = $tag_name;
-        $method = $p = isset( $functions[ $tag_name ] )? $functions[ $tag_name ][0] : '';
-        if ( $method )
-      {
-        if (!function_exists(!$method ) ) include( $functions[ $tag_name ][1] );
-        if ( $in_nocache ) $this->cache_includes[] = $functions[ $tag_name ][1];
-      }
-        if ( isset( $func_map[ $tag_name ] ) )
-      {
-        list( $class, $name ) = $this->func_map[ $tag_name ];
-        $method = '$this->component(\'' . get_class( $class ) . '\')->' . $name;
-      } elseif ( in_array( $conditional , $cores ) ) {
-        $method = $conditional === 'elseifgetvar' ? '$this->conditional_ifgetvar'
-                : '$this->conditional_' . $conditional;
-      }
-        if (!$method ) continue;
-        while ( $i > -1 )
-      {
-        $ele = $elements->item( $i );
-        $i -= 1;
-        list( $attrs, $t_args ) = $this->get_attributes( $ele, $conditional, $p );
-        $bid = $this->magic( $content );
-        $_args = '_' . $bid;
-        $out = $this->add_modifier( "\${$bid}",
-            $attrs, $modifiers, $modifier_funcs, $func_map, $requires, false );
-        list( $begin, $last ) = strpos( $out, '(' )
-            ? ['ob_start();', "\${$bid}=ob_get_clean();echo {$out};"] : ['', ''];
-        $setup_args = $adv ? "\$this->setup_args({$t_args},null,\$this)" : $t_args;
-        if (!$adv && ( $conditional === 'ifgetvar' || $conditional === 'elseifgetvar' )
-            && isset( $attrs['name'] ) ) {
-            $nm = $attrs['name'];
-            $cond = "(isset({$pid}local_vars['${nm}'])&&{$pid}local_vars['${nm}'])||"
-                  . "(isset({$pid}vars['${nm}'])&&{$pid}vars['${nm}'])";
-        } else {
-            $cond = "{$method}({$setup_args},null,\$this,true,true)";
-        }
-        $parent = $ele->parentNode;
-        if ( $conditional === 'elseif' || $conditional === 'elseifgetvar' )
-        {
-          $parent->replaceChild( 
-              $dom->createTextNode( '<?php elseif(' . $cond . '):' . EP ), $ele );
-        } elseif ( $conditional === 'else' ) {
-          $parent->replaceChild( $dom->createTextNode('<?php else:' . EP ), $ele );
-        } else {
-          $sta = "<?php $begin{$pid}old_params['{$bid}']={$pid}local_params;"
-               . "{$pid}old_vars['{$bid}']={$pid}local_vars;if({$cond}):" . EP;
-          $end = "<?php endif;{$last}{$pid}local_params={$pid}old_params['{$bid}'];"
-               . "{$pid}local_vars={$pid}old_vars['{$bid}'];" . EP;
-          $parent->insertBefore( $dom->createTextNode( $sta ), $ele );
-          $parent->insertBefore( $dom->createTextNode( $end ), $ele->nextSibling );
-        }
-      }
-    }
-        $function_tags = $tags['function'];
-        $cores = $core_tags['function'];
-        foreach ( $function_tags as $function )
-    {
-        $elements = $dom->getElementsByTagName( $prefix . $function );
-        if (!$elements->length ) continue;
-        $i = $elements->length - 1;
-        $tag_name = 'function_' . $function;
-        $use_tags[] = $tag_name;
-        $method = $p = isset( $functions[ $tag_name ] ) ? $functions[ $tag_name ][0] : '';
-        if ( $method )
-      {
-        if (!function_exists(!$method ) ) include( $functions[ $tag_name ][1] );
-        if ( $in_nocache ) $this->cache_includes[] = $functions[ $tag_name ][1];
-      }
-        if ( isset( $func_map[ $tag_name ] ) )
-      {
-        list( $class, $name ) = $this->func_map[ $tag_name ];
-        $method = '$this->component(\'' . get_class( $class ) . '\')->' . $name;
-      } elseif ( in_array( $function, $cores ) ) {
-        $method = "\$this->{$tag_name}";
-      }
-        if (!$method ) continue;
-        while ( $i > -1 )
-      {
-        $ele = $elements->item( $i );
-        $i -= 1;
-        list( $attrs, $t_args ) = $this->get_attributes( $ele, $function, $p );
-        if (!$adv && $function === 'var' ) $function = 'getvar';
-        if ( $function === 'getvar' ) {
-            $nm = addslashes( $attrs['name'] );
-            $out = "isset({$pid}local_vars['{$nm}'])?{$pid}local_vars['{$nm}']:"
-                 . "(isset({$pid}vars['{$nm}'])?{$pid}vars['{$nm}']:'')";
-        } else {
+            if ( stripos( $content, $block ) === false ) continue;
+            if ( $block === 'setvartemplate' || $block === 'nocache' ) continue;
+            $elements = $dom->getElementsByTagName( $prefix . $block );
+            if (!$elements->length ) continue;
+            if ( $block === 'capture' ) $block = 'setvarblock';
+            elseif ( $block === 'foreach' ) $block = 'loop';
+            elseif ( $block === 'section' ) $block = 'for';
+            elseif ( $block === 'assignvars' ) $block = 'setvars';
+            $i = $elements->length - 1;
+            $tag_name = 'block_' . $block;
+            $use_tags[] = $tag_name;
+            $method = $p = isset( $functions[ $tag_name ] ) ? $functions[ $tag_name ][0] : '';
+            if ( $method )
+          {
+            if (!function_exists(!$method ) ) include( $functions[ $tag_name ][1] );
+            if ( $in_nocache ) $this->cache_includes[] = $functions[ $tag_name ][1];
+          }
+            if ( isset( $func_map[ $tag_name ] ) )
+          {
+            list( $class, $name ) = $this->func_map[ $tag_name ];
+            $method = '$this->component(\'' . get_class( $class ) . '\')->' . $name;
+          } elseif ( in_array( $block, $cores ) || in_array( $block, $core_once ) )
+            $method = "\$this->{$tag_name}";
+          {
+          }
+            if (!$method ) continue;
+            while ( $i > -1 )
+          {
+            $ele = $elements->item( $i );
+            $i -= 1;
+            $bid = $this->magic( $content );
+            if ( $block === 'isinchild' )
+          {
+            $sta = "<?php {$pid}local_vars['__child_context__']=true;ob_start();?>";
+            $end = "<?php unset({$pid}local_vars['__child_context__']);ob_end_clean();?>";
+          } else
+          {
+            $restore = "{$pid}local_params={$pid}old_params['{$bid}'];"
+                     . "{$pid}local_vars={$pid}old_vars['{$bid}'];" . EP;
+            list ( $_args, $_content, $_repeat, $_params, $_param ) =
+                ['a' . $bid, 'c' . $bid, 'r' . $bid, 'ps' . $bid, 'p' . $bid ];
+            list( $attrs, $t_args ) = $this->get_attributes( $ele, $block, $p );
+            $out = $this->add_modifier( "\${$_content}",
+                $attrs, $modifiers, $modifier_funcs, $func_map, $requires, false );
+            list( $begin, $last ) = strpos( $out, '(' )
+                ? ['ob_start();', "\${$_content}=ob_get_clean();echo({$out});"] : ['', ''];
             $setup_args = $adv ? "\$this->setup_args({$t_args},null,\$this)" : $t_args;
-            $out = "{$method}({$setup_args},\$this)";
+            $sta = "<?php \${$_content}=null;{$begin}{$pid}old_params['{$bid}']="
+                 . "{$pid}local_params;{$pid}old_vars['{$bid}']={$pid}local_vars;"
+                 . "\${$_args}={$setup_args};";
+            if ( isset( $all_tags['block_once'][ $block ] ) )
+           {
+            $sta .= "ob_start();" . EP;
+            $end ="<?php \${$_content}=ob_get_clean();\${$_content}=$method(\${$_args},"
+                 . "\${$_content},\$this,\${$_repeat},1,'{$bid}');echo({$out});{$restore}";
+           } else
+           {
+            $cond = "while(\${$_repeat}===true):";
+            $sta .= "\${$bid}=-1;\${$_repeat}=true;${cond}\${$_repeat}=(\${$bid}!==-1)"
+                 .  "?false:true;echo $method(\${$_args},\${$_content},"
+                 .  "\$this,\${$_repeat},++\${$bid},'{$bid}');ob_start();" . EP;
+            // $sta .= "<?php if(isset(\$this->local_vars['__total__'])&&isset
+            // (\$this->local_vars['__index__'])&&\$this->local_vars['__total__']==
+            // \$this->local_vars['__index__'])break;" . EP;
+            $end = "<?php \${$_content}=ob_get_clean();endwhile;{$last}{$restore}";
+           }
+          }
+            $parent = $ele->parentNode;
+            if ( $block === 'ignore' )
+            {
+              $parent->removeChild( $ele );
+            } else {
+              if ( $block === 'literal' ) $ele->nodeValue = '';
+              $parent->insertBefore( $dom->createTextNode( $sta ), $ele );
+              $parent->insertBefore( $dom->createTextNode( $end ), $ele->nextSibling );
+            }
+          }
         }
-        $out = '<?php echo ' . $this->add_modifier( $out, $attrs, $modifiers,
-            $modifier_funcs, $func_map, $requires, $esc ) . EP;
-        $ele->parentNode->replaceChild( $dom->createTextNode( $out ), $ele );
-      }
-    }
-    if (!empty( $callbacks['dom_filter'] ) )
-        $dom = $this->call_filter( $dom, 'dom_filter' );
-    $out = mb_convert_encoding( $dom->saveHTML(), 'utf-8', 'HTML-ENTITIES' );
-    unset( $dom, $content );
-    $out = str_replace( $this->html_ldelim, '<', $out );
-    $out = str_replace( $this->html_rdelim, '>', $out );
-    $out = str_replace( $insert, '', $out );
-    if ( preg_match_all( "/{$h_sta}\\s*\\\${0,1}({$pfx}|\\\$):{0,1}\\s"
-        . "*\\\${0,1}(.*?)\\\${0,1}{$h_end}/is", $out, $mts ) )
-      { // Convert inline variables to 'var' tag.
-        list( $xml, $tag_cnt, $matches ) = [ new DOMDocument(), -1, $mts[2] ];
-        foreach ( $matches as $tag )
+            $cores = $core_tags['conditional'];
+            $conditional_tags = $tags['conditional'];
+            foreach ( $conditional_tags as $conditional )
         {
-          list( $v, $tag, $attrs ) = [ null, trim( $tag ), [] ];
-          if ( preg_match( "/(.{1,})\[.*?]$/", $tag, $_mts ) ) {
-              list( $v, $tag ) = [ $tag, trim( $_mts[2] ) ];
-        } elseif ( strpos( $tag, '.' ) !== false ) {
-          $parse_tag = preg_split( "/\s{1,}/", $tag );
-          if ( strpos( $parse_tag[0], '.' ) !== false )
-              list( $v, $tag ) = [ $parse_tag[0], 'dummy'];
+            if ( stripos( $content, $conditional ) === false ) continue;
+            $elements = $dom->getElementsByTagName( $prefix . $conditional );
+            if (!$elements->length ) continue;
+            $i = $elements->length - 1;
+            $tag_name = 'conditional_' . $conditional;
+            $use_tags[] = $tag_name;
+            $method = $p = isset( $functions[ $tag_name ] )? $functions[ $tag_name ][0] : '';
+            if ( $method )
+          {
+            if (!function_exists(!$method ) ) include( $functions[ $tag_name ][1] );
+            if ( $in_nocache ) $this->cache_includes[] = $functions[ $tag_name ][1];
+          }
+            if ( isset( $func_map[ $tag_name ] ) )
+          {
+            list( $class, $name ) = $this->func_map[ $tag_name ];
+            $method = '$this->component(\'' . get_class( $class ) . '\')->' . $name;
+          } elseif ( in_array( $conditional , $cores ) ) {
+            $method = $conditional === 'elseifgetvar' ? '$this->conditional_ifgetvar'
+                    : '$this->conditional_' . $conditional;
+          }
+            if (!$method ) continue;
+            while ( $i > -1 )
+          {
+            $ele = $elements->item( $i );
+            $i -= 1;
+            list( $attrs, $t_args ) = $this->get_attributes( $ele, $conditional, $p );
+            $bid = $this->magic( $content );
+            $_args = '_' . $bid;
+            $out = $this->add_modifier( "\${$bid}",
+                $attrs, $modifiers, $modifier_funcs, $func_map, $requires, false );
+            list( $begin, $last ) = strpos( $out, '(' )
+                ? ['ob_start();', "\${$bid}=ob_get_clean();echo {$out};"] : ['', ''];
+            $setup_args = $adv ? "\$this->setup_args({$t_args},null,\$this)" : $t_args;
+            if (!$adv && ( $conditional === 'ifgetvar' || $conditional === 'elseifgetvar' )
+                && isset( $attrs['name'] ) ) {
+                $nm = $attrs['name'];
+                $cond = "(isset({$pid}local_vars['${nm}'])&&{$pid}local_vars['${nm}'])||"
+                      . "(isset({$pid}vars['${nm}'])&&{$pid}vars['${nm}'])";
+            } else {
+                $cond = "{$method}({$setup_args},null,\$this,true,true)";
+            }
+            $parent = $ele->parentNode;
+            if ( $conditional === 'elseif' || $conditional === 'elseifgetvar' )
+            {
+              $parent->replaceChild( 
+                  $dom->createTextNode( '<?php elseif(' . $cond . '):' . EP ), $ele );
+            } elseif ( $conditional === 'else' ) {
+              $parent->replaceChild( $dom->createTextNode('<?php else:' . EP ), $ele );
+            } else {
+              $sta = "<?php $begin{$pid}old_params['{$bid}']={$pid}local_params;"
+                   . "{$pid}old_vars['{$bid}']={$pid}local_vars;if({$cond}):" . EP;
+              $end = "<?php endif;{$last}{$pid}local_params={$pid}old_params['{$bid}'];"
+                   . "{$pid}local_vars={$pid}old_vars['{$bid}'];" . EP;
+              $parent->insertBefore( $dom->createTextNode( $sta ), $ele );
+              $parent->insertBefore( $dom->createTextNode( $end ), $ele->nextSibling );
+            }
+          }
         }
-          $src = '<?xml version="1.0" encoding="UTF-8"?><root><' . $tag . ' /></root>';
-          if (!$xml->loadXML( $src ) ) continue;
-          $_tag = $xml->getElementsByTagName( 'root' )->item( 0 )->firstChild;
-          list( $_attrs, $nm ) = [ $_tag->attributes, $_tag->tagName ];
-          if (!preg_match( "/^[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*$/", $nm ) )
-              continue;
-          if ( isset( $v ) ) $nm = $v;
-          for ( $i = 0; $i < $_attrs->length; $i++ )
-              $attrs[ $_attrs->item( $i )->name ] = $_attrs->item( $i )->value;
-          $res = $adv ? "\$this->function_var(\$this->setup_args(['name'=>'{$nm}'],null,"
-               . "\$this),\$this)" : "isset({$pid}local_vars['{$nm}'])?{$pid}local_vars"
-               . "['{$nm}']:(isset({$pid}vars['{$nm}'])?{$pid}vars['{$nm}']:'')";
-          if ( isset( $attrs ) && !empty( $attrs ) )
-              $res = $this->add_modifier( $res, $attrs, $modifiers, $modifier_funcs,
-                  $func_map, $requires, $esc );
-          $out = str_replace( $mts[0][++$tag_cnt ], "<?php echo {$res}" . EP, $out );
-        } unset( $xml );
-      }
-        if (!empty( $callbacks['post_compile_filter'] ) )
-            $out = $this->call_filter( $out, 'post_compile_filter' );
-        $out = str_replace( ["<{$id}>", "</{$id}>"], '', $out );
-        $out = preg_replace( '/' . $h_sta . '(.*?)' . $h_end . '/si', '<$1>', $out );
-        $out = preg_replace( "/<\/{0,1}{$pfx}.*?>/si", '', $out );
-        if ( $compiled ) return $out;
-        $_pfx = $this->id . '_';
-        $vars = "<?php \${$_pfx}vars=&\$this->vars;\${$_pfx}old_params=&\$this->"
-              . "old_params;\${$_pfx}local_params=&\$this->local_params;\${$_pfx}"
-              . "old_vars=&\$this->old_vars;\${$_pfx}local_vars=&\$this->local_vars;?>";
-        $out = $vars . $out;
-        $require = '';
-        if (!$this->in_build && !$this->force_compile && $this->compile_key )
-      {
-        foreach ( $use_tags as $func )
-            if ( isset( $functions[ $func ] ) )
-                $require .= "include('" . $functions[ $func ][1] . "');";
-        if (!empty( $requires ) )
-      {
-        $requires = array_keys( $requires );
-        foreach ( $requires as $path ) $require .= "include('{$path}');";
-      }
-        if (!$this->re_compile ) $this->set_cache( $this->compile_key, $out,
-            $this->compile_path, $require, $nocache );
-        $this->nocache = false;
-      }
+            $function_tags = $tags['function'];
+            $cores = $core_tags['function'];
+            foreach ( $function_tags as $function )
+        {
+            if ( stripos( $content, $function ) === false ) continue;
+            $elements = $dom->getElementsByTagName( $prefix . $function );
+            if (!$elements->length ) continue;
+            $i = $elements->length - 1;
+            $tag_name = 'function_' . $function;
+            $use_tags[] = $tag_name;
+            $method = $p = isset( $functions[ $tag_name ] ) ? $functions[ $tag_name ][0] : '';
+            if ( $method )
+          {
+            if (!function_exists(!$method ) ) include( $functions[ $tag_name ][1] );
+            if ( $in_nocache ) $this->cache_includes[] = $functions[ $tag_name ][1];
+          }
+            if ( isset( $func_map[ $tag_name ] ) )
+          {
+            list( $class, $name ) = $this->func_map[ $tag_name ];
+            $method = '$this->component(\'' . get_class( $class ) . '\')->' . $name;
+          } elseif ( in_array( $function, $cores ) ) {
+            $method = "\$this->{$tag_name}";
+          }
+            if (!$method ) continue;
+            while ( $i > -1 )
+          {
+            $ele = $elements->item( $i );
+            $i -= 1;
+            list( $attrs, $t_args ) = $this->get_attributes( $ele, $function, $p );
+            if (!$adv && $function === 'var' ) $function = 'getvar';
+            if ( $function === 'getvar' ) {
+                $nm = addslashes( $attrs['name'] );
+                $out = "isset({$pid}local_vars['{$nm}'])?{$pid}local_vars['{$nm}']:"
+                     . "(isset({$pid}vars['{$nm}'])?{$pid}vars['{$nm}']:'')";
+            } else {
+                $setup_args = $adv ? "\$this->setup_args({$t_args},null,\$this)" : $t_args;
+                $out = "{$method}({$setup_args},\$this)";
+            }
+            $out = '<?php echo ' . $this->add_modifier( $out, $attrs, $modifiers,
+                $modifier_funcs, $func_map, $requires, $esc ) . EP;
+            $ele->parentNode->replaceChild( $dom->createTextNode( $out ), $ele );
+          }
+        }
+        if (!empty( $callbacks['dom_filter'] ) )
+            $dom = $this->call_filter( $dom, 'dom_filter' );
+        $out = mb_convert_encoding( $dom->saveHTML(), 'utf-8', 'HTML-ENTITIES' );
+        unset( $dom, $content );
+        $out = str_replace( $this->html_ldelim, '<', $out );
+        $out = str_replace( $this->html_rdelim, '>', $out );
+        $out = str_replace( $insert, '', $out );
+        if ( preg_match_all( "/{$h_sta}\\s*\\\${0,1}({$pfx}|\\\$):{0,1}\\s"
+            . "*\\\${0,1}(.*?)\\\${0,1}{$h_end}/is", $out, $mts ) )
+          { // Convert inline variables to 'var' tag.
+            list( $xml, $tag_cnt, $matches ) = [ new DOMDocument(), -1, $mts[2] ];
+            foreach ( $matches as $tag )
+            {
+              list( $v, $tag, $attrs ) = [ null, trim( $tag ), [] ];
+              if ( preg_match( "/(.{1,})\[.*?]$/", $tag, $_mts ) ) {
+                  list( $v, $tag ) = [ $tag, trim( $_mts[2] ) ];
+            } elseif ( strpos( $tag, '.' ) !== false ) {
+              $parse_tag = preg_split( "/\s{1,}/", $tag );
+              if ( strpos( $parse_tag[0], '.' ) !== false )
+                  list( $v, $tag ) = [ $parse_tag[0], 'dummy'];
+            }
+              $src = '<?xml version="1.0" encoding="UTF-8"?><root><' . $tag . ' /></root>';
+              if (!$xml->loadXML( $src ) ) continue;
+              $_tag = $xml->getElementsByTagName( 'root' )->item( 0 )->firstChild;
+              list( $_attrs, $nm ) = [ $_tag->attributes, $_tag->tagName ];
+              if (!preg_match( "/^[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*$/", $nm ) )
+                  continue;
+              if ( isset( $v ) ) $nm = $v;
+              for ( $i = 0; $i < $_attrs->length; $i++ )
+                  $attrs[ $_attrs->item( $i )->name ] = $_attrs->item( $i )->value;
+              $res = $adv ? "\$this->function_var(\$this->setup_args(['name'=>'{$nm}'],null,"
+                   . "\$this),\$this)" : "isset({$pid}local_vars['{$nm}'])?{$pid}local_vars"
+                   . "['{$nm}']:(isset({$pid}vars['{$nm}'])?{$pid}vars['{$nm}']:'')";
+              if ( isset( $attrs ) && !empty( $attrs ) )
+                  $res = $this->add_modifier( $res, $attrs, $modifiers, $modifier_funcs,
+                      $func_map, $requires, $esc );
+              $out = str_replace( $mts[0][++$tag_cnt ], "<?php echo {$res}" . EP, $out );
+            } unset( $xml );
+          }
+            if (!empty( $callbacks['post_compile_filter'] ) )
+                $out = $this->call_filter( $out, 'post_compile_filter' );
+            $out = str_replace( ["<{$id}>", "</{$id}>"], '', $out );
+            $out = preg_replace( '/' . $h_sta . '(.*?)' . $h_end . '/si', '<$1>', $out );
+            $out = preg_replace( "/<\/{0,1}{$pfx}.*?>/si", '', $out );
+            if ( $compiled ) return $out;
+            $_pfx = $this->id . '_';
+            $vars = "<?php \${$_pfx}vars=&\$this->vars;\${$_pfx}old_params=&\$this->"
+                  . "old_params;\${$_pfx}local_params=&\$this->local_params;\${$_pfx}"
+                  . "old_vars=&\$this->old_vars;\${$_pfx}local_vars=&\$this->local_vars;?>";
+            $out = $vars . $out;
+            $require = '';
+            if (!$this->in_build && !$this->force_compile && $this->compile_key )
+          {
+            foreach ( $use_tags as $func )
+                if ( isset( $functions[ $func ] ) )
+                    $require .= "include('" . $functions[ $func ][1] . "');";
+            if (!empty( $requires ) )
+          {
+            $requires = array_keys( $requires );
+            foreach ( $requires as $path ) $require .= "include('{$path}');";
+          }
+            if (!$this->re_compile ) $this->set_cache( $this->compile_key, $out,
+                $this->compile_path, $require, $nocache );
+            $this->nocache = false;
+          }
+            $this->compiled[ $orig_key ] = $out;
+        }
         return $this->finish( $out, $disp, $callbacks, $literals, $templates, $nocache );
     }
 
@@ -1839,6 +1925,7 @@ class PAML {
                 return $path;
             }
             $tpl_paths = $meta['template_paths'];
+            if (! $tpl_paths ) return $path;
             foreach( $tpl_paths as $tmpl => $mod ) {
                 if (!file_exists( $tmpl ) || filemtime( $tmpl ) > $mod ) {
                     $no_cache = true;
@@ -1944,6 +2031,13 @@ class PAML {
             $this->vars = [];
         } else {
             if ( $nocache ) $out = $this->_eval( $out );
+        }
+        if ( $this->unify_breaks ) {
+            if ( strpos( 'Win', PHP_OS ) === false ) {
+                $out = preg_replace( "/\r\n|\r|\n/", "\n", $out );
+            } else {
+                $out = preg_replace( "/\r\n|\r|\n/", "\r\n", $out );
+            }
         }
         $this->literal_vars = $lits;
         $this->template_paths = $tmpls;

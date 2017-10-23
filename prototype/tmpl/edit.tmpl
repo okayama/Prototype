@@ -1,4 +1,8 @@
 <mt:include file="include/header.tmpl">
+
+<mt:setvarblock name="include_path">include/edit/<mt:var name="model">/html_header.tmpl</mt:setvarblock>
+<mt:include file="$include_path">
+
 <mt:var name="model" setvar="_model">
 <mt:setvar name="_primary" value="">
 
@@ -24,6 +28,11 @@ $('#alert-saved').focus();
   <div id="alert-saved" class="alert alert-success" tabindex="0">
     <mt:var name="alert_close">
     <mt:trans phrase="Your changes have been saved.">
+    <mt:if name="request.rebuild_this_template">
+    <a href="<mt:var name="script_uri">?__mode=rebuild_phase&amp;_type=start_rebuild<mt:if name="workspace_id">&amp;workspace_id=<mt:var name="workspace_id">"</mt:if>" class="popup">
+    <mt:trans phrase="Publish your site to see these changes take effect.">
+    </a>
+    </mt:if>
   </div>
 <script>
 $('#alert-saved').focus();
@@ -53,11 +62,11 @@ $('#alert-saved').focus();
 <mt:if name="_revisable">
 <input type="hidden" name="_save_as_revision" id="_save_as_revision" value="">
 </mt:if>
+
+<span id="_start_fields"></span>
 <mt:objectcontext>
 <mt:objectcols type="edit">
-
 <mt:var name="name" setvar="_column_name">
-
 <mt:if name="type" ne="relation">
 <mt:objectvar name="$_column_name" escape setvar="value">
 </mt:if>
@@ -100,16 +109,12 @@ $('#alert-saved').focus();
     <mt:setvar name="readonly" value="1">
   </mt:if>
 </mt:if>
-
 <mt:includeparts screen="edit" type="column" name="$_column_name" model="$model" setvar="_include_column">
-
 <mt:if name="__col_name__" ne="id">
 <div id="<mt:var name="__col_name__">-wrapper">
 </mt:if>
-
 <mt:if name="_include_column">
   <mt:var name="_include_column">
-
 <mt:elseif name="edit" eq="hidden">
     <input id="<mt:var name="__col_name__">" type="hidden" name="<mt:var name="__col_name__">" value="<mt:var name="value">">
 <mt:elseif name="edit" eq="primary">
@@ -132,7 +137,7 @@ $('#alert-saved').focus();
   <input type="text" class="form-control form-control-sm clipboard-url" id="__permalink-clipboard"
   value="<mt:var name="permalink">">
   <button data-toggle="tooltip" data-placement="left" title="<mt:trans phrase="Copy to Clipboard">" type="button" class="input-group-addon copy-clipboard" data-clipboard-target="#__permalink-clipboard"><i class="fa fa-clipboard" aria-hidden="true" aria-label="<mt:trans phrase="Copy to Clipboard">"></i></button>
-  <button id="__view-permalink" data-toggle="tooltip" data-placement="left" title="<mt:trans phrase="View">" type="button" class="input-group-addon copy-clipboard"><i class="fa fa-external-link" aria-hidden="true" aria-label="<mt:trans phrase="View">"></i></button>
+  <button id="__view-permalink" data-toggle="tooltip" data-placement="left" title="<mt:trans phrase="View">" type="button" class="input-group-addon"><i class="fa fa-external-link" aria-hidden="true" aria-label="<mt:trans phrase="View">"></i></button>
   </div>
   <mt:setvar name="permalink" value="">
 <script>
@@ -243,7 +248,7 @@ $('#__view-permalink').click(function(){
 <i id="icon-<mt:var name="__col_name__">" class="btn fa <mt:if name="class" eq="image">fa-file-image-o<mt:elseif name="class" eq="pdf">fa-file-pdf-o<mt:elseif name="class" eq="video">fa-file-video-o<mt:elseif name="class" eq="audio">fa-file-audio-o<mt:else>fa-file-o</mt:if> fa-3x" aria-hidden="true"></i>
 
     <img class="<mt:unless name="class" eq="image">hidden</mt:unless>
-    <mt:unless name="file_name"> hidden</mt:unless>" id="image_preview-<mt:var name="__col_name__">" src="<mt:var name="thumbnail">" width="<mt:var name="preview_width">" alt="<mt:trans phrase="Preview">">
+    <mt:unless name="file_name"> hidden</mt:unless> preview-file-field" id="image_preview-<mt:var name="__col_name__">" src="<mt:var name="thumbnail">" width="<mt:var name="preview_width">" alt="<mt:trans phrase="Preview">">
     <a href="javascript:void(0);"
         id="popover-<mt:var name="__col_name__">"><i class="btn fa fa-info-circle fa-2x" aria-hidden="true" aria-label="<mt:trans phrase="Properties">"></i></a>
     <mt:objectvar name="$name" escape setvar="value">
@@ -263,6 +268,25 @@ $('#__view-permalink').click(function(){
             onfocus="$('#<mt:var name="__col_name__">-chooser').css('border','2px solid green');"
             onblur="$('#<mt:var name="__col_name__">-chooser').css('border','none');">
     </span>
+
+<mt:setvar name="_asset_file_col" value="0">
+<mt:if name="model" eq="asset">
+<mt:if name="__col_name__" eq="file">
+  <mt:setvar name="_asset_file_col" value="1">
+</mt:if>
+</mt:if>
+<mt:unless name="_asset_file_col">
+    <span class="form-inline-span-cb <mt:var name="__col_name__">-remove-wrapper hidden">
+    <input type="hidden" name="<mt:var name="__col_name__">-remove" value="0">
+    <label class="custom-control custom-checkbox">
+    <input id="<mt:var name="__col_name__">-remove" class="custom-control-input watch-changed"
+     type="checkbox" name="<mt:var name="__col_name__">-remove" value="1">
+        <span class="custom-control-indicator"></span>
+        <span class="custom-control-description"> 
+        <mt:trans phrase="Delete"></span>
+    </label>
+    </span>
+</mt:unless>
     <!-- The global progress bar -->
     <div id="progress-<mt:var name="__col_name__">" class="progress">
         <div class="progress-bar progress-bar-success"></div>
@@ -273,13 +297,17 @@ $('#__view-permalink').click(function(){
   <input type="text" class="form-control form-control-sm clipboard-url" id="clipboard-<mt:var name="__col_name__">"
   value="<mt:if name="asset_url"><mt:var name="asset_url"><mt:else><mt:var name="script_uri">?__mode=view&amp;_type=edit&amp;_model=<mt:var name="model">&amp;id=<mt:var name="request.id" escape>&amp;view=<mt:var name="__col_name__">&amp;_screen_id=<mt:var name="screen_id"><mt:if name="workspace_id">&amp;workspace_id=<mt:var name="workspace_id"></mt:if></mt:if>">
   <button data-toggle="tooltip" data-placement="left" title="<mt:trans phrase="Copy to Clipboard">" type="button" class="input-group-addon copy-clipboard" data-clipboard-target="#clipboard-<mt:var name="__col_name__">"><i class="fa fa-clipboard" aria-hidden="true" aria-label="<mt:trans phrase="Copy to Clipboard">"></i></button>
-  <button id="view-<mt:var name="__col_name__">" data-toggle="tooltip" data-placement="left" title="<mt:trans phrase="View">" type="button" class="input-group-addon copy-clipboard"><i class="fa fa-external-link" aria-hidden="true" aria-label="<mt:trans phrase="View">"></i></button>
+  <button id="view-<mt:var name="__col_name__">" data-toggle="tooltip" data-placement="left" title="<mt:trans phrase="View">" type="button" class="input-group-addon"><i class="fa fa-external-link" aria-hidden="true" aria-label="<mt:trans phrase="View">"></i></button>
 </div>
 </div>
 
 <script>
 var file_<mt:var name="__col_name__">_selected;
-<mt:if name="file_name">file_<mt:var name="__col_name__">_selected = true;</mt:if>
+var file_<mt:var name="__col_name__">_class = '<mt:var name="class">';
+<mt:if name="file_name">
+file_<mt:var name="__col_name__">_selected = true;
+$('.<mt:var name="__col_name__">-remove-wrapper').show();
+</mt:if>
 $('body').on('click', function (e) {
     //did not click a popover toggle or popover
     $('#popover-<mt:var name="__col_name__">').popover('hide');
@@ -298,10 +326,26 @@ $('#popover-<mt:var name="__col_name__">').popover({
     html: true
 });
 <mt:else>
-    $('#popover-<mt:var name="__col_name__">').hide();
-    $('#clipboard-<mt:var name="__col_name__">-wrapper').hide();
-    $('#image_preview-<mt:var name="__col_name__">').hide();
+$('#popover-<mt:var name="__col_name__">').hide();
+$('#clipboard-<mt:var name="__col_name__">-wrapper').hide();
+$('#image_preview-<mt:var name="__col_name__">').hide();
 </mt:if>
+$('#<mt:var name="__col_name__">-remove').change(function(){
+    if ( $(this).prop('checked') ) {
+        if (! confirm( '<mt:trans phrase="Are you sure you want to delete the file? Delete is reflected when saving this page.">' ) ) {
+            $(this).prop('checked',!$(this).prop('checked'));
+            return;
+        }
+    }
+    $('#popover-<mt:var name="__col_name__">').toggle();
+    $('#clipboard-<mt:var name="__col_name__">-wrapper').toggle();
+    $('#download-<mt:var name="__col_name__">').toggle();
+    $('#inline-<mt:var name="__col_name__">').toggle();
+    if ( file_<mt:var name="__col_name__">_class == 'image' ) {
+        $('#image_preview-<mt:var name="__col_name__">').toggle();
+        $('#edit-<mt:var name="__col_name__">').toggle();
+    }
+});
 var DropZone<mt:var name="__col_name__"> = document.getElementById('drop-<mt:var name="__col_name__">');
 DropZone<mt:var name="__col_name__">.addEventListener('dragover', function (event) {
     $('#drop-<mt:var name="__col_name__">').css('background-color','#ddf');
@@ -339,6 +383,7 @@ $(function () {
                 $('#<mt:var name="__col_name__">-magic').val(file.magic);
                 // alert(JSON.stringify(file));
                 $('<p/>').text(file.name).appendTo('#files-<mt:var name="__col_name__">');
+                file_<mt:var name="__col_name__">_class = file.class;
                 if (file.class == 'image') {
                     $('#image_preview-<mt:var name="__col_name__">').show();
                     $('#image_preview-<mt:var name="__col_name__">').prop('src','data:'+file.type+';base64,'+file.thumbnail);
@@ -416,6 +461,7 @@ $(function () {
                     'width', 0
                 );
                 $('#drop-<mt:var name="__col_name__">').css('background-color','#fff');
+                $('.<mt:var name="__col_name__">-remove-wrapper').show();
             });
         },
         progressall: function (e, data) {
@@ -463,7 +509,7 @@ $(function () {
   </div>
   <div class="col-lg-10">
     <input id="<mt:var name="__col_name__">" type="color" <mt:var name="ctrl_class">" name="<mt:var name="__col_name__">" value="<mt:var name="value">"
-      <mt:if name="readonly">readonly</mt:if> class="watch-changed">
+      <mt:if name="readonly">readonly</mt:if> class="watch-changed form-control color-picker">
     <mt:var name="_hint">
   </div>
 </div>
@@ -506,6 +552,56 @@ $(function () {
               </label>
               </mt:objectloop>
             </mt:if>
+          <mt:elseif name="edit" like="hierarchy">
+            <mt:setvarblock name="__rel_name__">object_<mt:var name="__col_name__"></mt:setvarblock>
+            <mt:if name="type" eq="relation">
+              <mt:setvartemplate name="nestable_obj_list">
+              <mt:nestableobjects model="$rel_model" parent_id="$_parent_id">
+                <mt:if name="__first__"><ul></mt:if>
+                  <li>
+                    <label class="custom-control custom-checkbox">
+                      <input type="checkbox" class="custom-control-input watch-changed" name="<mt:var name="__col_name__">[]" value="<mt:var name="id">" <mt:ifinarray array="$__rel_name__" value="$id">checked</mt:ifinarray>>
+                      <span class="custom-control-indicator"></span>
+                      <span class="custom-control-description"><mt:var name="$rel_col" escape></span>
+                    </label>
+                    <mt:if name="has_children">
+                      <mt:var name="id" setvar="_parent_id">
+                      <mt:var name="nestable_obj_list">
+                    </mt:if>
+                  </li>
+                <mt:if name="__last__"></ul></mt:if>
+              </mt:nestableobjects>
+              </mt:setvartemplate>
+            <mt:else>
+              <mt:setvartemplate name="nestable_obj_list">
+              <mt:nestableobjects model="$rel_model" parent_id="$_parent_id">
+                <mt:if name="__first__"><ul>
+                  <li>
+                  <label class="custom-control custom-radio">
+                    <input class="custom-control-input" type="radio" <mt:unless name="__col_value__">checked</mt:unless> name="<mt:var name="__col_name__">" value="0">
+                    <span class="custom-control-indicator"></span>
+                    <span class="custom-control-description"><mt:trans phrase="Unspecified"></span>
+                  </label>
+                  </li>
+                </mt:if>
+                  <li>
+                    <label class="custom-control custom-radio">
+                      <input class="custom-control-input watch-changed" type="radio" <mt:if name="__col_value__" eq="$id">checked</mt:if> name="<mt:var name="__col_name__">" value="<mt:var name="id">">
+                      <span class="custom-control-indicator"></span>
+                      <span class="custom-control-description"><mt:var name="$rel_col" escape></span>
+                    </label>
+                    <mt:if name="has_children">
+                      <mt:var name="id" setvar="_parent_id">
+                      <mt:var name="nestable_obj_list">
+                    </mt:if>
+                  </li>
+                <mt:if name="__last__"></ul></mt:if>
+              </mt:nestableobjects>
+              </mt:setvartemplate>
+            </mt:if>
+            <div class="relation_nestable_list">
+              <mt:var name="nestable_obj_list">
+            </div>
           <mt:elseif name="edit" like="select">
             <select class="form-control short watch-changed" name="<mt:var name="__col_name__">">
             <mt:objectloop model="$rel_model" sort_by="order" include_draft="1" workspace_id="$workspace_id">
@@ -545,11 +641,11 @@ $(function () {
               </mt:loop>
               </ul>
               <button type="button" id="select_<mt:var name="__col_name__">" class="btn btn-primary btn-sm dialog-chooser" data-toggle="modal" data-target="#modal"
-                data-href="<mt:var name="script_uri">?__mode=view&amp;_type=list&amp;_model=<mt:var name="rel_model" escape><mt:if name="workspace_id">&amp;workspace_id=<mt:var name="workspace_id"></mt:if>&amp;dialog_view=1&amp;target=<mt:var name="__col_name__">&amp;get_col=<mt:var name="rel_col" escape>&amp;selected_ids=<mt:var name="selected_ids" escape>"><mt:trans phrase="Select..."></button>
+                data-href="<mt:var name="script_uri">?__mode=view&amp;_type=list&amp;_model=<mt:var name="rel_model" escape><mt:ifworkspacemodel model="$rel_model"><mt:if name="workspace_id">&amp;workspace_id=<mt:var name="workspace_id"></mt:if></mt:ifworkspacemodel>&amp;dialog_view=1&amp;target=<mt:var name="__col_name__">&amp;get_col=<mt:var name="rel_col" escape>&amp;selected_ids=<mt:var name="selected_ids" escape>"><mt:trans phrase="Select..."></button>
               <button type="button" id="add_<mt:var name="__col_name__">" class="btn btn-primary btn-sm dialog-chooser" data-toggle="modal" data-target="#modal"
-                data-href="<mt:var name="script_uri">?__mode=view&amp;_type=list&amp;_model=<mt:var name="rel_model" escape><mt:if name="workspace_id">&amp;workspace_id=<mt:var name="workspace_id"></mt:if>&amp;dialog_view=1&amp;target=<mt:var name="__col_name__">&amp;get_col=<mt:var name="rel_col" escape>&amp;selected_ids=<mt:var name="selected_ids" escape>&amp;select_add=1"><mt:trans phrase="Add..."></button>
+                data-href="<mt:var name="script_uri">?__mode=view&amp;_type=list&amp;_model=<mt:var name="rel_model" escape><mt:ifworkspacemodel model="$rel_model"><mt:if name="workspace_id">&amp;workspace_id=<mt:var name="workspace_id"></mt:if></mt:ifworkspacemodel>&amp;dialog_view=1&amp;target=<mt:var name="__col_name__">&amp;get_col=<mt:var name="rel_col" escape>&amp;selected_ids=<mt:var name="selected_ids" escape>&amp;select_add=1"><mt:trans phrase="Add..."></button>
               <script>
-                    var dialog_url_<mt:var name="__col_name__"> = '<mt:var name="script_uri">?__mode=view&_type=list&_model=<mt:var name="rel_model" escape><mt:if name="workspace_id">&workspace_id=<mt:var name="workspace_id"></mt:if>&dialog_view=1&target=<mt:var name="__col_name__">&get_col=<mt:var name="rel_col" escape>';
+                    var dialog_url_<mt:var name="__col_name__"> = '<mt:var name="script_uri">?__mode=view&_type=list&_model=<mt:var name="rel_model" escape><mt:ifworkspacemodel model="$rel_model"><mt:if name="workspace_id">&workspace_id=<mt:var name="workspace_id"></mt:if></mt:ifworkspacemodel>&dialog_view=1&target=<mt:var name="__col_name__">&get_col=<mt:var name="rel_col" escape>';
                     $('#select_<mt:var name="__col_name__">').click(function(){
                         var selected_ids = [];
                         $("input[name='<mt:var name="__col_name__">[]']").each(function(){
@@ -780,6 +876,7 @@ $(function () {
       </mt:if>
     </mt:loop>
     <mt:elseif name="disp_edit" eq="select">
+    
     <select class="form-control short watch-changed" name="<mt:var name="__col_name__">">
     <mt:loop name="_options_loop">
       <mt:if name="__first__">
@@ -800,13 +897,24 @@ $(function () {
 <mt:if name="__col_name__" ne="id">
 </div>
 </mt:if>
+
 <mt:if name="__last__">
+<mt:setvar name="field__exists" value="0">
 <mt:fieldloop workspace_id="$workspace_id" model="$model" id="$object_id">
 <mt:if name="__first__">
 <mt:fieldloop workspace_id="$workspace_id" model="$model" id="$object_id" build_field="1">
 <mt:if name="field__display"><mt:var name="field__html"></mt:if>
 </mt:fieldloop>
 <div id="_field_html_area"></div>
+<mt:fieldloop workspace_id="$workspace_id" model="$model" id="$object_id">
+<mt:if name="field__menu"><mt:setvar name="field__exists" value="1"></mt:if>
+</mt:fieldloop>
+</mt:if>
+</mt:fieldloop>
+
+<mt:if name="field__exists">
+<mt:fieldloop workspace_id="$workspace_id" model="$model" id="$object_id">
+<mt:if name="__first__">
 <div class="row form-group">
   <div class="col-lg-2">
     <label for="_field_selector">
@@ -817,11 +925,10 @@ $(function () {
     <select id="_field_selector" class="form-control">
       <option value=""><mt:trans phrase="(None selected)"></option>
 </mt:if>
-      <mt:if name="field__menu"><option id="_selector-field-<mt:var name="field__id" escape>" data-multiple="<mt:var name="field__multiple" escape>" class="<mt:var name="field__basename" escape>" value="<mt:var name="field__id" escape>"><mt:var name="field__name" trans="1" escape></option></mt:if>
+      <mt:if name="field__menu"><option id="_selector-field-<mt:var name="field__id" escape>" data-multiple="<mt:var name="field__multiple" escape>" class="<mt:var name="field__basename" escape> field-<mt:var name="field__basename" escape>-option" value="<mt:var name="field__id" escape>"><mt:var name="field__name" trans="1" escape></option></mt:if>
 <mt:if name="__last__">
     </select>
     <button type="button" id="_field_chooser" class="btn btn-primary btn-sm"><mt:trans phrase="Add"></button>
-    <mt:var name="_hint">
   </div>
 </div>
 <script>
@@ -830,6 +937,8 @@ $('#_field_chooser').click(function(){
     var wrapper_id;
     if ( field_id ) {
         var basename = $('#_field_selector option:selected').prop('class');
+        basename = basename.split(' ');
+        basename = basename[0];
         var str = '__mode=get_field_html<mt:if name="workspace_id">&workspace_id=<mt:var name="workspace_id"></mt:if>&_model=<mt:var name="model">';
         str += '&magic_token=<mt:var name="magic_token">&id=' + field_id;
         wrapper_id = '#field-' + basename + '-wrapper';
@@ -862,8 +971,8 @@ $('#_field_chooser').click(function(){
     }
 });
 </script>
-</mt:if>
 </mt:fieldloop>
+</mt:if>
 
 <mt:if name="_revisable">
 <mt:var name="object_rev_object_id" setvar="object_rev_object_id">
@@ -940,14 +1049,20 @@ $('#_field_chooser').click(function(){
 
 <div class="row form-group edit-action-bar">
   <div class="col-lg-12">
+    <button type="submit" id="__save" class="btn btn-primary"><mt:trans phrase="Save"></button>
   <mt:if name="request.id">
     <mt:if name="can_delete">
       <button type="submit" id="__delete" class="btn btn-secondary"><mt:trans phrase="Delete"></button>
     </mt:if>
   </mt:if>
-    <button type="submit" id="__save" class="btn btn-primary"><mt:trans phrase="Save"></button>
   <mt:if name="_has_mapping">
     <button type="submit" id="__preview" class="btn btn-secondary"><mt:trans phrase="Preview"></button>
+    <mt:if name="model" eq="template">
+    <mt:if name="__can_rebuild_this_template">
+      <input type="hidden" name="__can_rebuild_this_template" value="1">
+      <button type="submit" name="__save_and_publish" id="__save_and_publish" value="1" class="btn btn-secondary btn-sm"><mt:trans phrase="Save & Publish"></button>
+    </mt:if>
+    </mt:if>
   </mt:if>
 <mt:if name="_revisable">
   <mt:if name="request.edit_revision">
@@ -967,6 +1082,9 @@ $('#_field_chooser').click(function(){
 
 <script>
 var editContentChanged = false;
+<mt:if name="forward_params">
+editContentChanged = true;
+</mt:if>
 $('.watch-changed').change(function(){
     editContentChanged = true;
 });
@@ -999,6 +1117,12 @@ $('#__save').click(function(){
     $('#edit-form-main').submit();
 });
 </mt:if>
+$('#__save_and_publish').click(function(){
+    $('#_preview').val('');
+    $('#edit-form-main').removeAttr('target');
+    $(window).off('beforeunload');
+    //$('#edit-form-main').submit();
+});
 $('#__delete').click(function(){
     $('#_preview').val('');
     $('#edit-form-main').removeAttr('target');
@@ -1149,6 +1273,19 @@ $('#modal').on('shown.bs.modal', function(event) {
 <!-- The basic File Upload plugin -->
 <script src="assets/js/jquery.fileupload.js"></script>
 <script>
+<mt:if name="_field_sort_order">
+$(function() {
+    var field_sort_order = '<mt:var name="_field_sort_order" escape>';
+    var field_loop = field_sort_order.split(',');
+    var options_objects = [];
+    for ( var i = 0;  i < field_loop.length; i++ ) {
+        var label_name = 'label-' + field_loop[i];
+        options_objects.push( $('#' + label_name ) );
+    }
+    $('#_start_options').after(options_objects);
+    reorder_fields();
+});
+</mt:if>
 <mt:objectcontext>
 <mt:objectcols type="edit">
   <mt:if name="name" ne="id">
@@ -1164,6 +1301,7 @@ $('#<mt:var name="name">-wrapper').hide();
 </mt:objectcols>
 </mt:objectcontext>
 <mt:fieldloop workspace_id="$workspace_id" model="$model" id="$object_id">
+<mt:setvar name="_field_display" value="0">
 <mt:setvarblock name="_fieldbasename">field-<mt:var name="field__basename" escape></mt:setvarblock>
 <mt:ifinarray array="$display_options" value="$_fieldbasename">
 <mt:setvar name="_field_display" value="1">
@@ -1173,6 +1311,7 @@ $('#<mt:var name="name">-wrapper').hide();
 </mt:if>
 <mt:unless name="_field_display">
 $('#field-<mt:var name="field__basename">-wrapper').hide();
+$('.' + 'field-<mt:var name="field__basename" escape>-option' ).hide();
 </mt:unless>
 </mt:fieldloop>
 </script>

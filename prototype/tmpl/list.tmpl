@@ -62,9 +62,6 @@ $(".search-btn").click(function(){
 });
 $(".alt-search-button").click(function(){
     query = prompt('<mt:trans phrase="Please enter keyword for search.">', '<mt:var name="query" escape>');
-    if (! query ) {
-        return false;
-    }
     $(".query-box").val(query);
     $(".query-box").show();
     $("#__mode").prop('value','view');
@@ -85,7 +82,7 @@ $(".query-box").keypress(function(e){
 </mt:setvarblock>
 <mt:setvarblock name="current_filter">
 <mt:unless name="request._fix_filter">
-<mt:if name="current_filter_name"><span class="current-filter"><span class="hidden apply-filter-separator"><br><br></span> ( <mt:trans phrase="Current Filter"> : <a href="javascript:void(0);" data-toggle="modal" data-target="#filterOptions"><mt:var name="current_filter_name" escape></a> - <a href="<mt:var name="this_url">&amp;_detach_filter=1<mt:var name="query_cond"><mt:var name="dialog_param"><mt:if name="workspace_id">&amp;workspace_id=<mt:var name="workspace_id"></mt:if><mt:var name="selecter_param"><mt:var name="insert_cond" strip_linefeeds="1">"><mt:trans phrase="Detach"></a> )</span></mt:if>
+<mt:if name="current_filter_name">( <mt:trans phrase="Current Filter"> :&nbsp;<a href="javascript:void(0);" data-toggle="modal" data-target="#filterOptions"><mt:var name="current_filter_name" escape></a> <span> - </span> <a href="<mt:var name="this_url">&amp;_detach_filter=1<mt:var name="query_cond"><mt:var name="dialog_param"><mt:if name="workspace_id">&amp;workspace_id=<mt:var name="workspace_id"></mt:if><mt:var name="selecter_param"><mt:var name="insert_cond" strip_linefeeds="1">"><mt:trans phrase="Detach"></a> &nbsp;)</span></mt:if>
 </mt:unless>
 </mt:setvarblock>
 
@@ -208,7 +205,6 @@ $('#dialog-cancel-btn').click(function(){
 <mt:if name="_per_page">
   <mt:var name="search_box">
 </mt:if>
-  <mt:var name="current_filter">
 </td>
 <td class="pagination-col">
 <mt:if name="_per_page">
@@ -236,6 +232,9 @@ $('#dialog-cancel-btn').click(function(){
 </mt:if>
 </td>
 </tr>
+<tr><td colspan="3">
+  <mt:var name="current_filter">
+</td></tr>
 </table>
 </mt:setvarblock>
 
@@ -297,7 +296,7 @@ $('#dialog-cancel-btn').click(function(){
 <mt:var name="list_nav">
 <mt:loop name="list_items">
 <mt:if name="__first__">
-<table class="table table-striped table-sm listing-table table-hover">
+<table class="table table-striped table-sm listing-table table-hover <mt:if name="_sortable">listing-table_sortable</mt:if>">
 <thead>
 <mt:var name="table_header">
 </thead>
@@ -357,11 +356,23 @@ $('#dialog-cancel-btn').click(function(){
       </mt:if>
       </mt:if>
       <mt:if name="_list" eq="primary">
-        <mt:ifusercan action="edit" model="$this_model" id="$id" workspace_id="$workspace_id"><a <mt:if name="request.dialog_view">target="_blank"</mt:if> href="<mt:var name="script_uri">?__mode=view&amp;_type=edit&amp;_model=<mt:var name="this_model" escape>&amp;id=<mt:var name="id" escape><mt:if name="workspace_id">&amp;workspace_id=<mt:var name="workspace_id"></mt:if><mt:if name="model" eq="workspace">&amp;workspace_id=<mt:objectvar name="id"></mt:if><mt:if name="request.revision_select">&amp;edit_revision=1</mt:if>"></mt:ifusercan>
+        <mt:ifusercan action="edit" model="$this_model" id="$id" workspace_id="$workspace_id">
           <mt:if name="_has_file">
             <mt:if name="_icon">
             <div class="list-icon">
-              <img src="<mt:var name="_icon">" width="32" alt="<mt:trans phrase="$_icon_class">"> 
+            <a href="javascript:void(0);" id="popover-list-<mt:var name="id">">
+            <img src="<mt:var name="_icon">" width="32" alt="<mt:trans phrase="$_icon_class">"> 
+            </a>
+            <script>
+            $('#popover-list-<mt:var name="id">').popover({
+                content: "<img src='<mt:var name="_icon_large">' alt='<mt:trans phrase="Preview">' width='150'> ",
+                placement: "right",
+                html: true
+            });
+            $('body').on('click', function (e) {
+                $('#popover-list-<mt:var name="id">').popover('hide');
+            });
+            </script>
               <mt:if name="_get_col">
               <input type="hidden" id="_get_col_img_<mt:var name="id">" value="<mt:var name="_icon">">
               </mt:if>
@@ -371,6 +382,7 @@ $('#dialog-cancel-btn').click(function(){
               <span class="sr-only"><mt:trans phrase="$_icon_class"></span>
             </mt:if>
           </mt:if>
+          <a <mt:if name="request.dialog_view">target="_blank"</mt:if> href="<mt:var name="script_uri">?__mode=view&amp;_type=edit&amp;_model=<mt:var name="this_model" escape>&amp;id=<mt:var name="id" escape><mt:if name="workspace_id">&amp;workspace_id=<mt:var name="workspace_id"></mt:if><mt:if name="model" eq="workspace">&amp;workspace_id=<mt:var name="id" escape></mt:if><mt:if name="request.revision_select">&amp;edit_revision=1</mt:if>"></mt:ifusercan>
           <mt:unless name="$_name">
             <mt:trans phrase="null">
           <mt:else>
@@ -400,7 +412,7 @@ $('#dialog-cancel-btn').click(function(){
       <mt:elseif name="_list" like=":">
         <mt:if name="_name" eq="workspace_id">
           <mt:unless name="workspace_scope">
-            <a href="<mt:var name="this_url"><mt:var name="sort_cond"><mt:var name="query_cond">&amp;workspace_id=<mt:var name="workspace_id"><mt:var name="dialog_param">"><mt:var name="workspace_name" escape></a>
+            <a href="<mt:var name="this_url"><mt:var name="sort_cond"><mt:var name="query_cond"><mt:if name="workspace_id">&amp;workspace_id=<mt:var name="workspace_id"></mt:if><mt:var name="dialog_param">"><mt:var name="workspace_name" escape></a>
           </mt:unless>
         <mt:else>
           <mt:var name="$_name" escape>
@@ -674,6 +686,9 @@ $('#list_body').sortable({
     stop: function( evt, ui ) {
         reorder();
     }
+});
+$('#list_body input').bind('click.sortable mousedown.sortable',function(ev){
+    ev.target.focus();
 });
 function reorder(){
     var i = 0;

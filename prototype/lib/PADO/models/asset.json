@@ -14,6 +14,8 @@
     "display_space": 1,
     "display_dashboard": 1,
     "has_status": 1,
+    "assign_user": 1,
+    "has_uuid": 1,
     "column_defs": {
         "id": {
             "type": "int",
@@ -123,6 +125,15 @@
         "rev_changed": {
             "type": "string",
             "size": 255
+        },
+        "user_id": {
+            "type": "int",
+            "size": 11
+        },
+        "uuid": {
+            "type": "string",
+            "size": 255,
+            "default": null
         }
     },
     "indexes": {
@@ -134,18 +145,20 @@
         "mime_type": "mime_type",
         "size": "size",
         "class": "class",
-        "created_on": "created_on",
-        "modified_on": "modified_on",
         "status": "status",
         "created_by": "created_by",
         "rev_note": "rev_note",
         "modified_by": "modified_by",
+        "created_on": "created_on",
+        "modified_on": "modified_on",
         "workspace_id": "workspace_id",
         "has_deadline": "has_deadline",
         "published_on": "published_on",
         "unpublished_on": "unpublished_on",
         "rev_type": "rev_type",
-        "rev_object_id": "rev_object_id"
+        "rev_object_id": "rev_object_id",
+        "user_id": "user_id",
+        "uuid": "uuid"
     },
     "list_properties": {
         "id": "number",
@@ -153,25 +166,24 @@
         "file_name": "text",
         "tags": "reference:tag:name",
         "class": "text",
-        "created_on": "date",
         "status": "number",
-        "rev_diff": "popover",
-        "rev_note": "text",
-        "rev_changed": "text",
         "created_by": "reference:user:nickname",
+        "rev_note": "text",
         "modified_by": "reference:user:nickname",
+        "rev_diff": "popover",
+        "created_on": "date",
         "workspace_id": "reference:workspace:name",
         "has_deadline": "checkbox",
         "published_on": "date",
-        "unpublished_on": "date"
+        "unpublished_on": "date",
+        "rev_changed": "text",
+        "user_id": "reference:user:nickname"
     },
     "default_list_items" : [
-        "id",
         "label",
         "file_name",
         "class",
         "status",
-        "created_by",
         "published_on",
         "workspace_id"
     ],
@@ -182,6 +194,9 @@
         "rev_object_id",
         "rev_changed"
     ],
+    "unchangeable": [
+        "uuid"
+    ],
     "sort_by": {
         "created_on": "descend"
     },
@@ -189,7 +204,7 @@
         "tags": "tag"
     },
     "options": {
-        "status": "Draft,Review,Reserved,Publish,Unpublished (End)"
+        "status": "Draft,Review,Reserved,Publish,Ended"
     },
     "edit_properties": {
         "id": "hidden",

@@ -1,112 +1,114 @@
-      <div class="text-right disp-option">
-        <button type="button" class="btn btn-outline-primary btn-sm disp-option-button" data-toggle="modal" data-target="#dispOptions">
-          <mt:trans phrase="Display Options">
-        </button>
-        <button data-toggle="modal" data-target="#dispOptions" class="hidden btn btn-secondary alt-disp-option-button btn-sm" type="button">
-        <i class="fa fa-television" aria-hidden="true"></i><span class="sr-only"><mt:trans phrase="Display Options"></span>
-        </button>
-      </div>
-      <div class="modal fade" id="dispOptions" tabindex="-1" role="dialog" aria-labelledby="dispOptionsTitle" aria-hidden="true">
-        <div class="modal-dialog modal-lg" role="document">
-          <div class="modal-content">
-            <div class="modal-header">
-              <h5 class="modal-title" id="dispOptionsTitle"><mt:trans phrase="Display Options"></h5>
-              <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                <span aria-hidden="true">&times;</span>
-              </button>
-            </div>
-          <form action="<mt:var name="script_uri">" method="POST">
-            <input type="hidden" name="__mode" value="display_options">
-            <input type="hidden" name="_model" value="<mt:var name="model">">
-            <input type="hidden" name="_type" value="list">
-            <input type="hidden" name="magic_token" value="<mt:var name="magic_token">">
-          <mt:if name="workspace_id">
-            <input type="hidden" name="workspace_id" value="<mt:var name="workspace_id">">
+<mt:unless trim_space="3">
+  <div class="text-right disp-option">
+    <button type="button" class="btn btn-outline-primary btn-sm disp-option-button" data-toggle="modal" data-target="#dispOptions">
+      <mt:trans phrase="Display Options">
+    </button>
+    <button data-toggle="modal" data-target="#dispOptions" class="hidden btn btn-secondary alt-disp-option-button btn-sm" type="button">
+    <i class="fa fa-television" aria-hidden="true"></i><span class="sr-only"><mt:trans phrase="Display Options"></span>
+    </button>
+  </div>
+  <div class="modal fade" id="dispOptions" tabindex="-1" role="dialog" aria-labelledby="dispOptionsTitle" aria-hidden="true">
+    <div class="modal-dialog modal-lg" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="dispOptionsTitle"><mt:trans phrase="Display Options"></h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+      <form action="<mt:var name="script_uri">" method="POST">
+        <input type="hidden" name="__mode" value="display_options">
+        <input type="hidden" name="_model" value="<mt:var name="model">">
+        <input type="hidden" name="_type" value="list">
+        <input type="hidden" name="magic_token" value="<mt:var name="magic_token">">
+      <mt:if name="workspace_id">
+        <input type="hidden" name="workspace_id" value="<mt:var name="workspace_id">">
+      </mt:if>
+        <mt:if name="request.dialog_view">
+          <input type="hidden" name="dialog_view" value="1">
+          <mt:if name="request.single_select">
+            <input type="hidden" name="single_select" value="1">
           </mt:if>
-            <mt:if name="request.dialog_view">
-              <input type="hidden" name="dialog_view" value="1">
-              <mt:if name="request.single_select">
-                <input type="hidden" name="single_select" value="1">
-              </mt:if>
-                <input type="hidden" name="target" value="<mt:var name="request.target" escape>">
-                <input type="hidden" name="get_col" value="<mt:var name="request.get_col" escape>">
-            </mt:if>
-                <input type="hidden" name="return_args" value="<mt:var name="filter_cond" strip_linefeeds="1"><mt:var name="insert_cond" strip_linefeeds="1"><mt:var name="selected_ids_cond" strip_linefeeds="1">">
-            <div class="modal-body">
-              <div class="container-fluid">
-                <div class="row form-group">
-                  <div class="col-md-2"><b><mt:trans phrase="Columns"></b></div>
-                  <div class="col-md-10">
-                  <mt:loop name="disp_options">
-                    <mt:setvar name="__display" value="1">
-                    <mt:if name="workspace_id">
-                      <mt:if name="__key__" eq="workspace_id">
-                        <mt:setvar name="__display" value="0">
-                      </mt:if>
-                    </mt:if>
-                    <mt:if name="__display">
-                    <label class="custom-control custom-checkbox">
-                      <mt:var name="__value__[1]" setvar="_checked">
-                      <mt:var name="__value__[2]" setvar="_type">
-                      <mt:if name="_type" eq="primary"><input type="hidden" name="_d_<mt:var name="__key__" escape>" value="1"></mt:if>
-                      <input<mt:if name="_type" eq="primary"> disabled</mt:if><mt:if name="_no_primary"><mt:if name="__counter__" eq="1"> disabled</mt:if></mt:if><mt:if name="_checked"> checked</mt:if> type="checkbox" class="custom-control-input" name="_d_<mt:var name="__key__" escape>" value="1">
-                      <span class="custom-control-indicator"></span>
-                      <span class="custom-control-description"> <mt:var name="__value__[0]"></span>
-                    </label>
-                    </mt:if>
-                  </mt:loop>
-                  </div>
-                </div>
-                <div class="row form-group">
-                  <div class="col-md-2"><label for="_per_page"><b><mt:trans phrase="Paging"></b></div>
-                  <div class="col-md-4">
-                    <input id="_per_page" step="1" list="per_page_complete" type="number" class="form-control form-control-sm" name="_per_page" value="<mt:var name="_per_page">">
-                  </div>
-                  <div class="col-md-6">
-                    <mt:trans phrase="items per Page">
-                  </div>
-                </div>
-                <div class="row form-group">
-                  <div class="col-md-2"><b><mt:trans phrase="Search"></b></div>
-                  <div class="col-md-10">
-                    <mt:loop name="search_options">
-                      <label class="custom-control custom-checkbox">
-                        <mt:var name="__value__[1]" setvar="_checked">
-                        <input<mt:if name="_checked"> checked</mt:if> type="checkbox" class="custom-control-input" name="_s_<mt:var name="__key__" escape>" value="1">
-                        <span class="custom-control-indicator"></span>
-                        <span class="custom-control-description"> <mt:var name="__value__[0]"></span>
-                      </label>
-                    </mt:loop>
-                  </div>
-                </div>
-                <div class="row form-group">
-                  <div class="col-md-2"><b><mt:trans phrase="Sort"></b></div>
-                  <div class="col-md-7">
-                    <mt:loop name="sort_options">
-                      <mt:var name="__value__[1]" setvar="_checked">
-                      <label class="custom-control custom-radio">
-                        <input class="custom-control-input" type="radio" <mt:if name="_checked">checked</mt:if> name="_user_sort_by" value="<mt:var name="__key__">">
-                        <span class="custom-control-indicator"></span>
-                        <span class="custom-control-description"><mt:var name="__value__[0]"></span>
-                      </label>
-                    </mt:loop>
-                  </div>
-                  <div class="col-md-3">
-                    <select name="_user_sort_order" class="form-control">
-                      <mt:loop name="order_options">
-                      <mt:var name="__value__[1]" setvar="_checked">
-                      <option value="<mt:var name="__counter__">"<mt:if name="_checked"> selected</mt:if>><mt:var name="__value__[0]"></option>
-                      </mt:loop>
-                    </select>
-                  </div>
-                </div>
+            <input type="hidden" name="target" value="<mt:var name="request.target" escape>">
+            <input type="hidden" name="get_col" value="<mt:var name="request.get_col" escape>">
+        </mt:if>
+            <input type="hidden" name="return_args" value="<mt:var name="filter_cond" strip_linefeeds="1"><mt:var name="insert_cond" strip_linefeeds="1"><mt:var name="selected_ids_cond" strip_linefeeds="1">">
+        <div class="modal-body">
+          <div class="container-fluid">
+            <div class="row form-group">
+              <div class="col-md-2"><b><mt:trans phrase="Columns"></b></div>
+              <div class="col-md-10">
+              <mt:loop name="disp_options">
+                <mt:setvar name="__display" value="1">
+                <mt:if name="workspace_id">
+                  <mt:if name="__key__" eq="workspace_id">
+                    <mt:setvar name="__display" value="0">
+                  </mt:if>
+                </mt:if>
+                <mt:if name="__display">
+                <label class="custom-control custom-checkbox">
+                  <mt:var name="__value__[1]" setvar="_checked">
+                  <mt:var name="__value__[2]" setvar="_type">
+                  <mt:if name="_type" eq="primary"><input type="hidden" name="_d_<mt:var name="__key__" escape>" value="1"></mt:if>
+                  <input<mt:if name="_type" eq="primary"> disabled</mt:if><mt:if name="_no_primary"><mt:if name="__counter__" eq="1"> disabled</mt:if></mt:if><mt:if name="_checked"> checked</mt:if> type="checkbox" class="custom-control-input" name="_d_<mt:var name="__key__" escape>" value="1">
+                  <span class="custom-control-indicator"></span>
+                  <span class="custom-control-description"> <mt:var name="__value__[0]"></span>
+                </label>
+                </mt:if>
+              </mt:loop>
               </div>
             </div>
-            <div class="modal-footer">
-              <button type="button" class="btn btn-secondary" data-dismiss="modal"><mt:trans phrase="Cancel"></button>
-              <button type="submit" class="btn btn-primary"><mt:trans phrase="Save Changes"></button>
+            <div class="row form-group">
+              <div class="col-md-2"><label for="_per_page"><b><mt:trans phrase="Paging"></b></div>
+              <div class="col-md-4">
+                <input id="_per_page" step="1" list="per_page_complete" type="number" class="form-control form-control-sm" name="_per_page" value="<mt:var name="_per_page">">
+              </div>
+              <div class="col-md-6">
+                <mt:trans phrase="items per Page">
+              </div>
             </div>
-          </form>
+            <div class="row form-group">
+              <div class="col-md-2"><b><mt:trans phrase="Search"></b></div>
+              <div class="col-md-10">
+                <mt:loop name="search_options">
+                  <label class="custom-control custom-checkbox">
+                    <mt:var name="__value__[1]" setvar="_checked">
+                    <input<mt:if name="_checked"> checked</mt:if> type="checkbox" class="custom-control-input" name="_s_<mt:var name="__key__" escape>" value="1">
+                    <span class="custom-control-indicator"></span>
+                    <span class="custom-control-description"> <mt:var name="__value__[0]"></span>
+                  </label>
+                </mt:loop>
+              </div>
+            </div>
+            <div class="row form-group">
+              <div class="col-md-2"><b><mt:trans phrase="Sort"></b></div>
+              <div class="col-md-7">
+                <mt:loop name="sort_options">
+                  <mt:var name="__value__[1]" setvar="_checked">
+                  <label class="custom-control custom-radio">
+                    <input class="custom-control-input" type="radio" <mt:if name="_checked">checked</mt:if> name="_user_sort_by" value="<mt:var name="__key__">">
+                    <span class="custom-control-indicator"></span>
+                    <span class="custom-control-description"><mt:var name="__value__[0]"></span>
+                  </label>
+                </mt:loop>
+              </div>
+              <div class="col-md-3">
+                <select name="_user_sort_order" class="form-control">
+                  <mt:loop name="order_options">
+                  <mt:var name="__value__[1]" setvar="_checked">
+                  <option value="<mt:var name="__counter__">"<mt:if name="_checked"> selected</mt:if>><mt:var name="__value__[0]"></option>
+                  </mt:loop>
+                </select>
+              </div>
+            </div>
           </div>
         </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-dismiss="modal"><mt:trans phrase="Cancel"></button>
+          <button type="submit" class="btn btn-primary"><mt:trans phrase="Save Changes"></button>
+        </div>
+      </form>
       </div>
+    </div>
+  </div>
+</mt:unless>

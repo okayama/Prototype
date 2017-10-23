@@ -11,6 +11,7 @@
     "revisable": 1,
     "child_of" : "workspace",
     "start_end": 1,
+    "has_uuid" : 1,
     "template_tags": 1,
     "display_space": 1,
     "has_basename": 1,
@@ -127,6 +128,10 @@
         "rev_object_id": {
             "type": "int",
             "size": 11
+        },
+        "uuid": {
+            "type": "string",
+            "size": 255
         }
     },
     "indexes": {
@@ -147,7 +152,8 @@
         "created_by": "created_by",
         "modified_by": "modified_by",
         "workspace_id": "workspace_id",
-        "rev_object_id": "rev_object_id"
+        "rev_object_id": "rev_object_id",
+        "uuid": "uuid"
     },
     "sort_by": {
         "published_on": "descend"
@@ -166,10 +172,12 @@
         "created_by",
         "modified_by",
         "workspace_id",
-        "rev_object_id"
+        "rev_object_id",
+        "uuid"
     ],
     "unchangeable": [
-        "workspace_id"
+        "workspace_id",
+        "uuid"
     ],
     "edit_properties": {
         "id": "hidden",
@@ -179,14 +187,15 @@
         "text_more": "textarea",
         "excerpt": "textarea",
         "keywords": "text",
-        "categories": "relation:category:label:dialog",
+        "categories": "relation:category:label:hierarchy",
         "tags": "relation:tag:name:dialog",
         "basename": "text_short",
         "status": "selection",
-        "allow_comment": "checkbox",
         "published_on": "datetime",
         "unpublished_on": "datetime",
-        "user_id": "relation:user:nickname:dialog"
+        "user_id": "relation:user:nickname:dialog",
+        "allow_comment": "checkbox",
+        "uuid": "text_short"
     },
     "list_properties": {
         "id": "number",
@@ -209,7 +218,6 @@
         "workspace_id": "reference:workspace:name"
     },
     "default_list_items" : [
-        "id",
         "title",
         "status",
         "published_on",
@@ -218,6 +226,6 @@
     ],
     "options": {
         "text_more": "3",
-        "status": "Draft,Review,Reserved,Publish,Unpublished (End)"
+        "status": "Draft,Review,Reserved,Publish,Ended"
     }
 }

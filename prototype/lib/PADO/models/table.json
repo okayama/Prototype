@@ -8,6 +8,7 @@
     "order"    : 10,
     "auditing" : 1,
     "menu_type": 2,
+    "has_uuid" : 1,
     "template_tags": 1,
     "column_defs": {
         "id": {
@@ -164,27 +165,40 @@
         "modified_by": {
             "type": "int",
             "size": 11
+        },
+        "has_uuid": {
+            "type": "tinyint",
+            "size": 4
+        },
+        "uuid": {
+            "type": "string",
+            "size": 255
         }
     },
     "indexes": {
         "PRIMARY": "id",
-        "display_system": "display_system",
-        "sortable": "sortable",
         "version": "version",
+        "display_system": "display_system",
+        "space_child": "space_child",
         "display_space": "display_space",
         "menu_type": "menu_type",
         "display_dashboard": "display_dashboard",
-        "space_child": "space_child",
-        "order": "order",
+        "sortable": "sortable",
         "api": "api",
+        "template_tags": "template_tags",
         "hierarchy": "hierarchy",
-        "template_tags": "template_tags"
+        "order": "order",
+        "uuid": "uuid"
     },
     "unique": [
         "name"
     ],
     "unchangeable": [
-        "name"
+        "name",
+        "uuid"
+    ],
+    "autoset": [
+        "uuid"
     ],
     "sort_by": {
         "order": "ascend"
@@ -206,7 +220,8 @@
         "space_child": "checkbox",
         "not_delete": "checkbox",
         "created_on": "date",
-        "modified_on": "date"
+        "modified_on": "date",
+        "has_uuid": "checkbox"
     },
     "edit_properties": {
         "id": "hidden",
@@ -221,6 +236,7 @@
         "display_space": "checkbox",
         "space_child": "checkbox",
         "order" : "number",
-        "sort_by": "text_short"
+        "sort_by": "text_short",
+        "uuid": "text_short"
     }
 }

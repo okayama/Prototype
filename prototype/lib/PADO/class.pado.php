@@ -29,7 +29,7 @@ class PADO {
     public  $dbcharset   = 'utf8mb4';
     public  $db;
     public  $dsn         = '';
-    public  $max_packet  = 16777216;
+    public  $max_packet  = null;
     public  $charset     = 'utf-8';
     public  $default_ts  = 'CURRENT_TIMESTAMP';
 /**
@@ -60,7 +60,9 @@ class PADO {
  * If specified migrate db from $pado->scheme[$model].
  */
     public  $upgrader    = false;
-    public  $persistent  = true;
+
+    public  $persistent  = false;
+
     public  $logging     = false;
     public  $caching     = true;
     public  $log_path;
@@ -74,8 +76,17 @@ class PADO {
     public  $cache       = [];
     public  $app         = null;
     public  $queries     = [];
+    public  $query_cnt   = 0;
+    public  $retry_cnt   = 0;
+    public  $max_queries = 1500;
+    public  $max_retries = 4;
+    public  $retry_sleep = 2;
     public  $errors      = [];
+    public  $errstr      = '';
     public  $blob_type   = 'LONGBLOB';
+    public  $timeout     = 360;
+    public  $models_json = [];
+    public  $txn_active  = false;
 
     public  $callbacks   = [
           'pre_save'     => [], 'post_save'   => [],
@@ -100,7 +111,16 @@ class PADO {
 
     function __destruct() {
         if (! $this->persistent ) {
-            $this->db = null;
+            try {
+                $this->db = null;
+                unset( $this->db );
+            } catch ( PDOException $e ) {
+                $message = 'Connection close failed: ' . $e->getMessage();
+                $this->errors[] = $message;
+                $this->errstr = $message;
+                trigger_error( $message );
+                exit();
+            }
         }
     }
 
@@ -109,32 +129,40 @@ class PADO {
  *
  * @param array $config: Array for set class properties.
  */
-    function init ( $config = [] ) {
-        foreach ( $config as $key => $value ) $this->$key = $value;
-        if ( $this->debug ) error_reporting( E_ALL );
+    function init ( $config = [], $retry = false ) {
+        if (! $retry ) {
+            foreach ( $config as $key => $value ) $this->$key = $value;
+            if ( $this->debug ) error_reporting( E_ALL );
+        }
         $dsn = $this->dsn;
+        $driver = '';
         if (! $dsn ) {
             $driver    = $this->driver;
             $dbname    = $this->dbname;
             $dbhost    = $this->dbhost;
-            $dbuser    = $this->dbuser;
-            $dbpasswd  = $this->dbpasswd;
             $dbport    = $this->dbport;
             $dbcharset = $this->dbcharset;
             $dsn = "{$driver}:host={$dbhost};dbname={$dbname};"
                  . "charset={$dbcharset};port={$dbport}";
+            $this->dsn = $dsn;
         } else {
             list( $driver ) = explode( ':', $dsn );
             $this->driver = $driver;
         }
+        $dbuser    = $this->dbuser;
+        $dbpasswd  = $this->dbpasswd;
         if (! $driver ) return;
         $sql = '';
         try {
             $this->db = null;
-            $persistent = $this->persistent ? [ PDO::ATTR_PERSISTENT => true ] : null;
-            $pdo = new PDO( $dsn, $dbuser, $dbpasswd, $persistent );
+            unset( $this->db );
+            $options = $this->persistent ? [ PDO::ATTR_PERSISTENT => true ] : [];
+            $options[ PDO::ATTR_TIMEOUT ] = $this->timeout;
+            $pdo = new PDO( $dsn, $dbuser, $dbpasswd, $options );
             $pdo->setAttribute( PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION );
             $this->db = $pdo;
+            $this->retry_cnt = 0;
+            $this->query_cnt = 0;
             if ( class_exists( 'PADO' . $driver ) ) {
                 if ( $driver === 'mysql' && $this->max_packet ) {
                     $max_packet = (int) $this->max_packet;
@@ -143,34 +171,94 @@ class PADO {
                         $sth = $pdo->prepare( $sql );
                         $sth->execute();
                         $this->queries[] = $sql;
+                        $sth = null;
                     }
                 }
-                $class = 'PADO' . $driver;
-                $base_model = new $class;
-                $class = get_class( $base_model );
-                $this->base_model = $base_model;
-                $reflection = new ReflectionClass( $base_model );
-                $get_methods = $reflection->getMethods();
-                $methods = [];
-                foreach ( $get_methods as $method )
-                    if ( $method->class === $class )
-                        $methods[ $method->name ] = true;
-                $this->methods = $methods;
+                if (! $retry ) {
+                    $class = 'PADO' . $driver;
+                    $base_model = new $class;
+                    $class = get_class( $base_model );
+                    $this->base_model = $base_model;
+                    $reflection = new ReflectionClass( $base_model );
+                    $get_methods = $reflection->getMethods();
+                    $methods = [];
+                    foreach ( $get_methods as $method )
+                        if ( $method->class === $class )
+                            $methods[ $method->name ] = true;
+                    $this->methods = $methods;
+                }
             }
         } catch ( PDOException $e ) {
-            $message = 'Connection failed: ' . $e->getMessage() . ", {$sql}";
+            $message = 'Connection failed: ' . $e->getMessage();
             $this->errors[] = $message;
+            $this->errstr = $message;
             trigger_error( $message );
+            $this->db = null;
+            unset( $this->db );
+            $this->retry_sleep = pow( $this->retry_sleep, 2 );
+            sleep( $this->retry_sleep );
+            if ( $this->retry_cnt > $this->max_retries ) {
+                return die( 'Connection failed: ' . $e->getMessage() );
+            }
+            ++$this->retry_cnt;
+            return $this->reconnect();
         }
         self::$pado = $this;
+        return true;
+    }
+
+/**
+ * Reconnect to db.
+ *
+ * @return bool   $success : true or false.
+ */
+    public function reconnect () {
+        if ( $this->init( [], true ) ) {
+            $this->query_cnt = 0;
+            return $this->ping();
+        }
+        return false;
+    }
+
+    public function keep_connect ( $force = false ) {
+        if ( $force ||
+            ( $this->query_cnt > $this->max_queries && ! $this->txn_active ) ) {
+            return $this->reconnect();
+        }
+    }
+
+/**
+ * Connect to db with minimum query.
+ *
+ * @param  string $sql     : SQL statement.
+ * @return bool   $success : true or false.
+ */
+    public function ping ( $sql = 'SELECT 1' ) {
+        try {
+            $this->db->query( $sql );
+            $this->queries[] = $sql;
+            return true;
+        } catch ( PDOException $e ) {
+            $message =  'PDOException: ' . $e->getMessage() . ", {$sql}";
+            $this->errors[] = $message;
+            $this->errstr = $message;
+            trigger_error( $message );
+            sleep( 1 );
+            if ( $this->retry_cnt > $this->max_retries ) {
+                return false;
+            }
+            ++$this->retry_cnt;
+            $this->reconnect();
+            return;
+        }
     }
 
 /**
  * Get instance of class PADO($pado = PADO::get_instance();)
  * 
  * @return object $pado : Object class PADO.
- */ 
-    static function get_instance() {
+ */
+    static function get_instance () {
         return self::$pado;
     }
 
@@ -228,19 +316,63 @@ class PADO {
         } else if ( $model && $create ) {
             $sql = "SHOW CREATE TABLE {$model}";
         }
-        $sth = $this->db->prepare( $sql );
+        if ( $this->query_cnt > $this->max_queries && ! $this->txn_active ) {
+            $this->reconnect();
+        }
+        $pdo = $this->db;
+        if (! $pdo ) {
+            $this->init();
+        }
+        $sth = $pdo->prepare( $sql );
         if ( $model && ! $create ) {
             $sth->bindValue( ':model', $model, PDO::PARAM_STR );
         }
         try {
             $sth->execute();
-            $this->queries[] = $sql;
+            $this->queries[] = $model ? $sql . ' / values = ' . $model : $sql;
+            ++$this->query_cnt;
         } catch ( PDOException $e ) {
             $message = 'PDOException: ' . $e->getMessage() . ", {$sql}";
             $this->errors[] = $message;
+            $this->errstr = $message;
             trigger_error( $message );
         }
         return $sth;
+    }
+
+/**
+ * Begin transaction.
+ */
+    function begin_work () {
+        if ( $this->txn_active ) return;
+        $this->txn_active = true;
+        $this->db->beginTransaction();
+    }
+
+/**
+ * Commit.
+ */
+    function commit () {
+        try {
+            $this->db->commit();
+            $this->txn_active = false;
+            return true;
+        } catch ( Exception $e ) {
+            $message = 'PADOException: ' . $e->getMessage();
+            $this->errors[] = $message;
+            $this->errstr = $message;
+            trigger_error( $message );
+            $this->rollback();
+            return false;
+        }
+    }
+
+/**
+ * Rollback.
+ */
+    function rollback () {
+        $this->db->rollBack();
+        $this->txn_active = false;
     }
 
 /**
@@ -269,8 +401,15 @@ class PADO {
  */
     function run_callbacks ( &$cb, $model, &$obj, $needle = false ) {
         $cb_name = $cb['name'];
+        $all_callbacks = [];
         if ( isset( $this->callbacks[ $cb_name ][ $model ] ) ) {
             $all_callbacks = $this->callbacks[ $cb_name ][ $model ];
+        }
+        if ( isset( $this->callbacks[ $cb_name ]['__any__'] ) ) {
+            $all_callbacks =
+                array_merge( $all_callbacks, $this->callbacks[ $cb_name ]['__any__'] );
+        }
+        if (! empty( $all_callbacks ) ) {
             ksort( $all_callbacks );
             foreach ( $all_callbacks as $callbacks ) {
                 foreach ( $callbacks as $callback ) {
@@ -309,7 +448,7 @@ class PADO {
  * 
  * @param  string $str    : String to quote.
  * @return string $quoted : Quoted string.
-*/
+ */
     function quote ( $str ) {
         return $this->db->quote( $str );
     }
@@ -334,7 +473,7 @@ class PADO {
  * @param  bool   $start  : Add '%' before $str.
  * @param  bool   $end    : Add '%' after $str.
  * @return string $quoted : Quoted string.
-*/
+ */
     function escape_like ( $str, $start = false, $end = false ) {
         $str = str_replace( '%', '\\%', $str );
         $str = str_replace( '_', '\\_', $str );
@@ -368,7 +507,7 @@ class PADO {
  * Clear cached objects or valiable. If model is omitted, all caches are cleared.
  * 
  * @param  string $model : Name of model.
-*/
+ */
     function clear_cache ( $model = null ) {
         if ( $model ) {
             $this->cache[ $model ] = [];
@@ -382,22 +521,29 @@ class PADO {
  * Drop Table
  * 
  * @param  string $model : Name of model.
-*/
+ */
     function drop ( $model ) {
         if (! $this->can_drop ) return;
         $table = $this->prefix . $model;
         $_model = $this->model( $model )->new();
-        if ( is_array( $this->scheme[ $model ] ) && count( $this->scheme[ $model ] ) ) {
+        if ( isset( $this->scheme[ $model ] )
+            && is_array( $this->scheme[ $model ] ) && count( $this->scheme[ $model ] ) ) {
             $sql = "DROP TABLE {$table}";
+            if ( $this->query_cnt > $this->max_queries && ! $this->txn_active ) {
+                $this->reconnect();
+            }
             $sth = $this->db->prepare( $sql );
             try {
                 return $sth->execute();
                 $this->queries[] = $sql;
+                ++$this->query_cnt;
             } catch ( PDOException $e ) {
                 $message = 'PDOException: ' . $e->getMessage() . ", {$sql}";
                 $this->errors[] = $message;
+                $this->errstr = $message;
                 trigger_error( $message );
             }
+            $sth = null;
         }
     }
 
@@ -446,7 +592,7 @@ class PADOBaseModel {
     public static $_Scheme    = [];
     public static $_Driver    = null;
 
-    const ILLEGALS = ['+', '*', '/', '-', "'", ':', ';', '"', '\\', '|'];
+    const ILLEGALS = ["`" ,'+', '*', '/', '-', "'", ':', ';', '"', '\\', '|', "\0", "\x00"];
     const RESERVED = [
                        '_model'     => true, '_table'     => true,
                        '_pado'      => true, '_id_column' => true,
@@ -490,8 +636,9 @@ class PADOBaseModel {
             }
             if ( $pado->upgrader ) {
                 $upgrade = $class->check_upgrade( $model, $this->_table, $colprefix );
-                if ( $upgrade !== false )
+                if ( $upgrade !== false ) {
                     $class->upgrade( $this->_table, $upgrade, $colprefix );
+                }
             }
         }
         $scheme = isset( $pado->scheme[ $model ] ) ? $pado->scheme[ $model ] : null;
@@ -562,7 +709,7 @@ class PADOBaseModel {
  * @param  array  $params : An array for column names and values for assign.
  * @return object $object : New object.
  */
-    function __new ( $params = [] ) {
+    function __new ( $params = [], &$changed = false ) {
         $class = get_class( $this );
         if ( $class === 'PADOBaseModel' && $this->_driver ) {
             $model = $this->_driver;
@@ -573,7 +720,10 @@ class PADOBaseModel {
         foreach ( $params as $key => $value ) {
             if ( $colprefix && strpos( $key, $colprefix ) !== 0 )
                 $key = $colprefix . $key;
-            $model->$key = $value;
+            if ( $model->$key !== $value ) {
+                $model->$key = $value;
+                $changed = true;
+            }
         }
         return $model;
     }
@@ -609,7 +759,7 @@ class PADOBaseModel {
         }
         $table = $this->_table;
         $colprefix = $this->_colprefix;
-        if (! $pado->upgrader ) {
+        if (! $pado->upgrader && ! isset( $pado->scheme[ $model ] ) ) {
             $this->get_scheme( $model, $table, $colprefix );
         }
         $scheme = isset( $pado->scheme[ $model ] ) ?
@@ -635,6 +785,7 @@ class PADOBaseModel {
         } else {
             $cols = str_replace( $illegals, '', $cols );
         }
+        if ( $pado->debug == 3 ) var_dump( $scheme );
         if (! $cols ) return is_numeric( $terms ) ? null : [];
         if ( $cols !== '*' ) {
             $columns = explode( ',', $cols );
@@ -660,6 +811,7 @@ class PADOBaseModel {
             }
             if (! $cols ) $cols = '*';
         }
+        if ( $pado->debug == 3 ) var_dump( $cols );
         $distinct = '';
         $count = '';
         $count_group_by = '';
@@ -681,7 +833,7 @@ class PADOBaseModel {
                     $count = "COUNT(DISTINCT {$id_column}) ";
                     $distinct = '';
                 } else {
-                    $count = 'COUNT(*) ';
+                    $count = "COUNT({$id_column}) ";
                 }
                 $method = isset( $args['count'] ) ? 'count' : 'count_group_by';
             }
@@ -714,13 +866,16 @@ class PADOBaseModel {
                 }
                 $join_scheme = isset( $pado->scheme[ $join ] ) ?
                     $pado->scheme[ $join ][ 'column_defs' ] : null;
-                if ( $join_scheme && !isset( $join_scheme[ $col ] ) ) {
+                if ( $join_scheme && !isset( $join_scheme[ $col2 ] ) ) {
                     $message =
-                    "PADOBaseModelException: unknown column '{$col}' for model '{$join}'";
+                    "PADOBaseModelException: unknown column '{$col2}' for model '{$join}'";
                     $pado->errors[] = $message;
+                    $pado->errstr = $message;
                     trigger_error( $message );
                     return false;
                 }
+                if ( strpos( $col, $colprefix ) !== 0 )
+                    $col = $colprefix . $col;
                 if ( $cols !== '*' ) {
                     if ( isset( $columns ) ) {
                         array_walk( $columns, function( &$v, $num, $table = null ){
@@ -741,6 +896,9 @@ class PADOBaseModel {
                         str_replace( '<table>', $pado->prefix . $join, $join_prefix );
                 if ( $pado->prefix && strpos( $join, $pado->prefix ) !== 0 )
                     $join = $pado->prefix . $join;
+                if ( $join && $cols ) {
+                    $cols .= ',' . $join . '.*';
+                }
                 if ( $cols ) $cols .= ' ';
                 $sql = "SELECT {$count_group_by}{$count}{$distinct}{$cols}FROM {$table}"
                      . " JOIN $join ON {$table}.{$col}={$join}.{$join_prefix}{$col2} ";
@@ -780,6 +938,7 @@ class PADOBaseModel {
                     $op = key( $cond );
                     $v  = $cond[ $op ];
                 }
+                if ( $cond === null ) $cond = '';
                 if ( count( $cond ) === 1 
                     || ( stripos( $op, 'BETWEEN' ) !== false || $op === 'IN' ) ) {
                     if ( preg_match( $regex, $op, $matchs ) ) {
@@ -856,8 +1015,18 @@ class PADOBaseModel {
                                     $_and_or = 'AND';
                                 }
                                 if ( $stm ) $stm .= $_and_or;
-                                $stm .= " {$key} {$op} ? ";
-                                $vals[] = $var;
+                                if ( stripos( $op, 'NULL' ) !== false ) {
+                                    $stm .= " {$key} {$op}";
+                                } elseif ( is_array( $var ) &&
+                                    stripos( $op, 'BETWEEN' ) !== false ) {
+                                    list( $start, $end ) = $var;
+                                    $stm .= " {$key} {$op} ? AND ? ";
+                                    $vals[] = $start;
+                                    $vals[] = $end;
+                                } else {
+                                    $stm .= " {$key} {$op} ? ";
+                                    $vals[] = $var;
+                                }
                             }
                         }
                         if ( $stm ) {
@@ -868,7 +1037,7 @@ class PADOBaseModel {
                 }
             }
             if ( count( $stms ) ) {
-                if ( $in_join ) $sql .= ' AND ';
+                // if ( $in_join ) $sql .= ' AND ';
                 $sql .= 'WHERE (' . join( " {$and_or} ", $stms ) . ')';
                 $add_where = true;
             }
@@ -888,7 +1057,7 @@ class PADOBaseModel {
             $sql = $terms;
         }
         $sql .= $group_by;
-        if ( $extra ) $sql .= $extra . ' ';
+        if ( $extra ) $sql .= " {$extra} ";
         if (!$count || ( isset( $args['count_group_by'] ) && $args['count_group_by'] ) ) {
             $opt = '';
             if ( is_array( $args ) && !empty( $args ) ) {
@@ -914,19 +1083,22 @@ class PADOBaseModel {
                 }
                 if ( isset( $limit ) ) {
                     if (! isset( $offset ) ) $offset = 0;
-                    $opt .= "LIMIT $limit OFFSET $offset";
+                    $opt .= " LIMIT $limit OFFSET $offset ";
                 }
             }
             $sql .= $opt;
         }
         if ( $pado->debug === 3 ) $pado->debugPrint( $sql );
         if ( $pado->debug === 3 ) var_dump( $vals );
-        $db = $pado->db;
+        if ( $pado->query_cnt > $pado->max_queries && ! $pado->txn_active ) {
+            $pado->reconnect();
+        }
+        $pdo = $pado->db;
         $callback = ['name' => 'pre_load', 'sql' => $sql,
                      'values' => $vals, 'method' => $method ];
         $pado->run_callbacks( $callback, $model, $this );
         $sql = $callback['sql'];
-        $sth = $db->prepare( $sql );
+        $sth = $pdo->prepare( $sql );
         if (! $count_group_by ) {
             $class = class_exists( $model ) ? $model
             : ( $this->_driver
@@ -943,6 +1115,7 @@ class PADOBaseModel {
             $pado->queries[] = !empty( $vals )
                              ? $sql . ' / values = ' . join( ', ', $vals )
                              : $sql;
+            ++$pado->query_cnt;
             if ( $count && !$count_group_by ) {
                 $count = (int) $sth->fetchColumn();
                 if ( $pado->caching ) {
@@ -967,12 +1140,26 @@ class PADOBaseModel {
             if ( $pado->caching ) {
                 $pado->cache[ $model ][ $cache_key ] = $objects;
             }
+            $sth = null;
             return $objects;
         } catch ( PDOException $e ) {
             $message =  'PDOException: ' . $e->getMessage() . ", {$sql}";
             $pado->errors[] = $message;
+            $pado->errstr = $message;
             trigger_error( $message );
+            return $this->retry( $pado, $sth, $message, 'load', $terms, $args, $cols, $extra );
         }
+    }
+
+    function retry ( $pado, &$sth, $message, $meth,
+            $params1 = null, $params2 = null, $params3 = null, $params4 = null ) {
+        if ( $pado->driver === 'mysql' && strpos( $message, 'has gone away' ) !== false ) {
+            $sth = null;
+            if ( $pado->reconnect() ) {
+                return $this->$meth( $terms, $args, $cols, $extra );
+            }
+        }
+        return false;
     }
 
 /**
@@ -1010,7 +1197,6 @@ class PADOBaseModel {
         if ( $obj && is_array( $obj ) ) $obj = $obj[ 0 ];
         if (! $obj ) {
             $pado = $this->pado();
-            file_put_contents('11.txt',$pado->last_cache_key."\n", FILE_APPEND);
             $obj = $this->__new( $params );
             if ( isset( $pado->cache[ $obj->_model ] ) ) {
                 if ( isset( $pado->cache[ $obj->_model ][ $pado->last_cache_key ] ) ) {
@@ -1078,7 +1264,6 @@ class PADOBaseModel {
         $pado = $this->pado();
         if ( isset( $pado->methods['save'] ) )
             return $this->_driver->save();
-        $pdo = $pado->db;
         $table = $this->_table;
         $model = $this->_model;
         $id_column = $this->_id_column;
@@ -1129,10 +1314,15 @@ class PADOBaseModel {
         $vals = $callback['values'];
         $pado->run_callbacks( $callback, $model, $this, true );
         if ( $pado->debug === 3 ) $pado->debugPrint( $sql );
+        if ( $pado->query_cnt > $pado->max_queries && ! $pado->txn_active ) {
+            $pado->reconnect();
+        }
+        $pdo = $pado->db;
         $sth = $pdo->prepare( $sql );
         try {
             $res = $sth->execute( $vals );
             $pado->queries[] = $sql;
+            ++$pado->query_cnt;
             $this->$id_column = isset( $object_id )
                               ? $object_id : (int) $pdo->lastInsertId( $id_column );
             if ( $pado->caching ) {
@@ -1144,8 +1334,38 @@ class PADOBaseModel {
         } catch ( PDOException $e ) {
             $message = 'PDOException: ' . $e->getMessage() . ", {$sql}";
             $pado->errors[] = $message;
+            $pado->errstr = $message;
             trigger_error( $message );
+            return $this->retry( $pado, $sth, $message, 'save' );
         }
+        $sth = null;
+    }
+
+/**
+ * BULK INSERT or UPDATE the objects.
+ *
+ * @param array $objects : An array of objects.
+ * @param bool  $update  : If specify false, BULK INSERT.
+ * @return bool $success : Returns true if it succeeds.
+ */
+    function update_multi ( $objects, $update = true ) {
+        if ( empty( $objects ) ) return;
+        $pado = $this->pado();
+        if ( isset( $pado->methods['update_multi'] ) )
+            return $this->_driver->update_multi( $objects );
+    }
+
+/**
+ * BULK Remove the objects.
+ *
+ * @param array $objects : An array of objects.
+ * @return bool $success : Returns true if it succeeds.
+ */
+    function remove_multi ( $objects ) {
+        if ( empty( $objects ) ) return;
+        $pado = $this->pado();
+        if ( isset( $pado->methods['remove_multi'] ) )
+            return $this->_driver->remove_multi( $objects );
     }
 
 /**
@@ -1173,6 +1393,9 @@ class PADOBaseModel {
         $callback = ['name' => 'delete_filter' ];
         $delete_filter = $pado->run_callbacks( $callback, $model, $this, true );
         if (! $delete_filter ) return false;
+        if ( $pado->query_cnt > $pado->max_queries && ! $pado->txn_active ) {
+            $pado->reconnect();
+        }
         $pdo = $pado->db;
         $sql = "DELETE FROM {$table} WHERE {$id_column}=:object_id";
         if ( $pado->debug === 3 ) $pado->debugPrint( $sql );
@@ -1183,6 +1406,7 @@ class PADOBaseModel {
         try {
             $res = $sth->execute();
             $pado->queries[] = $sql;
+            ++$pado->query_cnt;
             if ( $pado->caching ) {
                 unset ( $pado->cache[ $model ][ $id ] );
             }
@@ -1192,9 +1416,11 @@ class PADOBaseModel {
         } catch ( PDOException $e ) {
             $message = 'PDOException: ' . $e->getMessage() . ", {$sql}";
             $pado->errors[] = $message;
+            $pado->errstr = $message;
             trigger_error( $message );
-            return false;
+            return $this->retry( $pado, $sth, $message, 'remove' );
         }
+        $sth = null;
     }
 
 /**
@@ -1212,6 +1438,12 @@ class PADOBaseModel {
  */
     function set_scheme_from_json ( $model, $json = '' ) {
         $json = $json ? $json : PADODIR . 'models' . DS . $model . '.json';
+        $pado = $this->pado();
+        if (! file_exists( $json ) ) {
+            if ( isset( $pado->models_json[ $model ] ) ) {
+                $json = $pado->models_json[ $model ];
+            }
+        }
         if ( file_exists( $json ) ) {
             $scheme = json_decode( file_get_contents( $json ), true );
             if ( isset( $scheme['indexes'] ) && isset( $scheme['indexes']['PRIMARY'] ) ) {
@@ -1294,8 +1526,8 @@ class PADOBaseModel {
  * 
  * @param array $params : The hash for assign.
  */
-    function set_values ( $params = [] ) {
-        $this->__new( $params );
+    function set_values ( $params = [], &$changed = false ) {
+        $this->__new( $params, $changed );
     }
 
 /**
@@ -1400,7 +1632,7 @@ class PADOBaseModel {
                     $upgrade_cols = $this->get_diff( $column_defs, $compare );
                     $upgrade_idxs = $this->get_diff( $indexes, $compare_idx );
                     $upgrade = ['column_defs' => $upgrade_cols, 'indexes' => $upgrade_idxs ];
-              }
+                }
             }
         }
         return $upgrade;
@@ -1643,11 +1875,15 @@ class PADOMySQL extends PADOBaseModel {
             $this->_scheme = $scheme;
             return;
         }
+        if ( $pado->query_cnt > $pado->max_queries && ! $pado->txn_active ) {
+            $pado->reconnect();
+        }
         $sql = "DESCRIBE {$table}";
         $sth = $pado->db->prepare( $sql );
         try {
             $sth->execute();
             $pado->queries[] = $sql;
+            ++$pado->query_cnt;
             $fields = $sth->fetchAll();
             $scheme = [];
             foreach ( $fields as $field ) {
@@ -1695,10 +1931,14 @@ class PADOMySQL extends PADOBaseModel {
             }
             $scheme = ['column_defs' => $scheme ];
             $sql = "SHOW INDEX FROM {$table}";
+            if ( $pado->query_cnt > $pado->max_queries && ! $pado->txn_active ) {
+                $pado->reconnect();
+            }
             $sth = $pado->db->prepare( $sql );
             try {
                 $sth->execute();
                 $pado->queries[] = $sql;
+                ++$pado->query_cnt;
                 $fields = $sth->fetchAll();
                 $indexes = [];
                 $idxprefix = $pado->idxprefix;
@@ -1735,6 +1975,7 @@ class PADOMySQL extends PADOBaseModel {
             } catch ( PDOException $e ) {
                 $message = 'PDOException: ' . $e->getMessage() . ", {$sql}";
                 $pado->errors[] = $message;
+                $pado->errstr = $message;
                 trigger_error( $message );
             }
             if ( $pado->json_model && $pado->save_json ) {
@@ -1759,8 +2000,12 @@ class PADOMySQL extends PADOBaseModel {
             }
             $message = 'PDOException: ' . $msg . ", {$sql}";
             $pado->errors[] = $message;
+            $pado->errstr = $message;
             trigger_error( $message );
+            return $this->retry( $pado, $sth, $message, 'get_scheme',
+                $model, $table, $colprefix, $needle );
         }
+        $sth = null;
     }
 
 /**
@@ -1768,7 +2013,10 @@ class PADOMySQL extends PADOBaseModel {
  */
     function upgrade ( $table, $upgrade, $colprefix ) {
         $pado = $this->pado();
-        $db = $pado->db;
+        if ( $pado->query_cnt > $pado->max_queries && ! $pado->txn_active ) {
+            $pado->reconnect();
+        }
+        $pdo = $pado->db;
         $column_defs = $upgrade['column_defs'];
         $prefix = $pado->prefix ? $pado->prefix : '';
         $model = $prefix ? preg_replace( "/^$prefix/", '', $table ) : $table;
@@ -1824,6 +2072,7 @@ class PADOMySQL extends PADOBaseModel {
                             $message = 'PADOBaseModelException: unknown type('
                                      . $props['type'] . ')';
                             $pado->errors[] = $message;
+                            $pado->errstr = $message;
                             trigger_error( $message );
                         }
                         continue;
@@ -1844,17 +2093,20 @@ class PADOMySQL extends PADOBaseModel {
                             if (! empty( $indexes ) && isset( $indexes[ $name ] ) ) {
                                 $sql = "ALTER TABLE {$table} DROP INDEX {$prefix}{$col_name}";
                                 if ( $pado->debug === 3 ) $pado->debugPrint( $sql );
-                                $sth = $db->prepare( $sql );
+                                $sth = $pdo->prepare( $sql );
                                 try {
                                     $res = $sth->execute();
                                     $pado->queries[] = $sql;
+                                    ++$pado->query_cnt;
                                     $pado->stash( $sql, 1 );
                                 } catch ( PDOException $e ) {
                                     $message = 'PDOException: ' . $e->getMessage() . ", {$sql}";
                                     $pado->errors[] = $message;
+                                    $pado->errstr = $message;
                                     trigger_error( $message );
                                     return false;
                                 }
+                                $sth = null;
                             } 
                         }
                     }
@@ -1863,19 +2115,22 @@ class PADOMySQL extends PADOBaseModel {
                     $sql = "ALTER TABLE {$table} {$statement} {$col_name} {$type}";
                     if ( $pado->stash( $sql ) ) continue;
                     if ( $pado->debug === 3 ) $pado->debugPrint( $sql );
-                    $sth = $db->prepare( $sql );
+                    $sth = $pdo->prepare( $sql );
                     try {
                         $res = $sth->execute( $vals );
                         $pado->queries[] = !empty( $vals )
                                          ? $sql . ' / values = ' . join( ', ', $vals )
                                          : $sql;
+                        ++$pado->query_cnt;
                         $pado->stash( $sql, 1 );
                     } catch ( PDOException $e ) {
                         $message = 'PDOException: ' . $e->getMessage() . ", {$sql}";
                         $pado->errors[] = $message;
+                        $pado->errstr = $message;
                         trigger_error( $message );
                         return false;
                     }
+                    $sth = null;
                 }
             }
             if ( $pado->can_drop ) {
@@ -1885,16 +2140,19 @@ class PADOMySQL extends PADOBaseModel {
                         $sql = "ALTER TABLE {$table} DROP {$colprefix}{$name}";
                         if ( $pado->stash( $sql ) ) continue;
                         if ( $pado->debug === 3 ) $pado->debugPrint( $sql );
-                        $sth = $db->prepare( $sql );
+                        $sth = $pdo->prepare( $sql );
                         try {
                             $res = $sth->execute();
                             $pado->queries[] = $sql;
+                            ++$pado->query_cnt;
                             $pado->stash( $sql, 1 );
                         } catch ( PDOException $e ) {
                             $message = 'PDOException: ' . $e->getMessage() . ", {$sql}";
                             $pado->errors[] = $message;
+                            $pado->errstr = $message;
                             trigger_error( $message );
                         }
+                        $sth = null;
                     }
                 }
             }
@@ -1907,6 +2165,7 @@ class PADOMySQL extends PADOBaseModel {
                     if ( $name === 'PRIMARY' ) {
                         $message = 'PADOBaseModelException: PRIMARY KEY could not be changed.';
                         $pado->errors[] = $message;
+                        $pado->errstr = $message;
                         trigger_error( $message );
                         continue;
                     }
@@ -1914,16 +2173,19 @@ class PADOMySQL extends PADOBaseModel {
                         if ( isset( $sql ) ) {
                             if ( $pado->stash( $sql ) ) continue;
                             if ( $pado->debug === 3 ) $pado->debugPrint( $sql );
-                            $sth = $db->prepare( $sql );
+                            $sth = $pdo->prepare( $sql );
                             try {
                                 $res = $sth->execute();
                                 $pado->queries[] = $sql;
+                                ++$pado->query_cnt;
                                 $pado->stash( $sql, 1 );
                             } catch ( PDOException $e ) {
                                 $message = 'PDOException: ' . $e->getMessage() . ", {$sql}";
                                 $pado->errors[] = $message;
+                                $pado->errstr = $message;
                                 trigger_error( $message );
                             }
+                            $sth = null;
                         }
                     }
                 }
@@ -1948,15 +2210,17 @@ class PADOMySQL extends PADOBaseModel {
                         if ( $pado->stash( $sql ) ) continue;
                         if ( $pado->debug === 3 ) $pado->debugPrint( $sql );
                     }
-                    $sth = $db->prepare( $sql );
+                    $sth = $pdo->prepare( $sql );
                     try {
                         $res = $sth->execute();
                         $pado->queries[] = $sql;
+                        ++$pado->query_cnt;
                         $pado->stash( $sql, 1 );
                     } catch ( PDOException $e ) {
                         trigger_error( 'PDOException: ' . $e->getMessage() . ", {$sql}" );
                         return false;
                     }
+                    $sth = null;
                 }
             }
         }
@@ -1964,9 +2228,166 @@ class PADOMySQL extends PADOBaseModel {
     }
 
 /**
+ * BULK INSERT or UPDATE the objects.
+ */
+    function update_multi ( $objects, $update = true, $unique_key = '', $cols = '*' ) {
+        // todo bulk_update_per = 1000?
+        if ( empty( $objects ) ) return;
+        $pado = $this->pado();
+        $i = 0;
+        $object_keys = '';
+        $vals = [];
+        $stmts = [];
+        $unique_keys = [];
+        $update_stmt = '';
+        list( $id_column, $colprefix, $table ) = ['', '', ''];
+        foreach ( $objects as $obj ) {
+            if (! $i ) {
+                $id_column = $obj->_id_column;
+                $colprefix = $obj->_colprefix;
+                $table = $obj->_table;
+            }
+            if ( $this->_model != $obj->_model ) {
+                $message = 'PADOBaseModelException: Wrong model in objects.';
+                $pado->errors[] = $message;
+                $pado->errstr = $message;
+                trigger_error( $message );
+                return;
+            }
+            $i++;
+            $callback = ['name' => 'save_filter'];
+            $save_filter = $pado->run_callbacks( $callback, $obj->_model, $obj, true );
+            if (! $save_filter ) continue;
+            $arr = $obj->get_values();
+            $id = $obj->$id_column;
+            $arr = $obj->validation( $arr, $update );
+            ksort( $arr );
+            unset( $arr[ $id_column ] );
+            $keys = array_keys( $arr );
+            array_unshift( $keys, $id_column );
+            if (! $object_keys ) {
+                $object_keys = join( ',', $keys );
+                $updates = [];
+                foreach ( $keys as $key ) {
+                    $updates[] = "{$key}=VALUES({$key})";
+                }
+                $update_stmt = join( ',', $updates );
+            } else {
+                if ( $object_keys !== join( ',', $keys ) ) {
+                    $message = 'PADOBaseModelException: Unequal column designation.';
+                    $pado->errors[] = $message;
+                    $pado->errstr = $message;
+                    trigger_error( $message );
+                    return;
+                }
+            }
+            $values = array_values( $arr );
+            if (! $id ) $id = "''";
+            $stmt = "({$id},";
+            foreach ( $values as $v ) {
+                $stmt .= '?,';
+            }
+            $stmt = rtrim( $stmt, ',' );
+            $stmt .= ')';
+            $stmts[] = $stmt;
+            $vals = array_merge( $vals, $values );
+            $callback = ['name' => 'pre_save'];
+            $pado->run_callbacks( $callback, $obj->_model, $obj );
+            if ( $unique_key && $obj->has_column( $unique_key ) ) {
+                $unique_keys[] = $obj->$unique_key;
+            }
+        }
+        $sql = "INSERT INTO {$table} ($object_keys) VALUES ";
+        $sql .= join( ',', $stmts );
+        $sql .= "ON DUPLICATE KEY UPDATE {$update_stmt}";
+        if ( $pado->query_cnt > $pado->max_queries && ! $pado->txn_active ) {
+            $pado->reconnect();
+        }
+        $pdo = $pado->db;
+        $sth = $pdo->prepare( $sql );
+        try {
+            $res = $sth->execute( $vals );
+            if ( $pado->debug === 3 ) $pado->debugPrint( $sql );
+            $pado->queries[] = !empty( $vals )
+                             ? $sql . ' / values = ' . join( ', ', $vals )
+                             : $sql;
+            ++$pado->query_cnt;
+        } catch ( PDOException $e ) {
+            $message = 'PDOException: ' . $e->getMessage() . ", {$sql}";
+            $pado->errors[] = $message;
+            $pado->errstr = $message;
+            trigger_error( $message );
+            return $this->retry( $pado, $sth, $message, 'update_multi', $objects, $update );
+        }
+        $sth = null;
+        if ( $unique_key ) {
+            if (! empty( $unique_keys ) ) {
+                $terms = [ $unique_key => ['IN' => $unique_keys ] ];
+                return $this->load( $terms, null, $cols );
+            }
+            return [];
+        }
+        return true;
+    }
+
+/**
+ * BULK Remove the objects.
+ */
+    function remove_multi ( $objects ) {
+        if ( empty( $objects ) ) return;
+        $pado = $this->pado();
+        $i = 0;
+        $ids = [];
+        list( $id_column, $colprefix, $table ) = ['', '', ''];
+        foreach ( $objects as $obj ) {
+            if (! $i ) {
+                $id_column = $obj->_id_column;
+                $table = $obj->_table;
+                $colprefix = $obj->_colprefix;
+            }
+            if ( $this->_model != $obj->_model ) {
+                $message = 'PADOBaseModelException: Wrong model in objects.';
+                $pado->errors[] = $message;
+                $pado->errstr = $message;
+                trigger_error( $message );
+                return;
+            }
+            $i++;
+            $callback = ['name' => 'delete_filter'];
+            $delete_filter = $pado->run_callbacks( $callback, $obj->_model, $obj, true );
+            if (! $delete_filter ) continue;
+            $id = (int) $obj->$id_column;
+            if (! $id ) continue;
+            $ids[] = $id;
+        }
+        if ( empty( $ids ) ) return;
+        $ids = join( ',', $ids );
+        $sql = "DELETE FROM {$table} WHERE {$colprefix}id IN ({$ids})";
+        if ( $pado->query_cnt > $pado->max_queries && ! $pado->txn_active ) {
+            $pado->reconnect();
+        }
+        $pdo = $pado->db;
+        $sth = $pdo->prepare( $sql );
+        try {
+            $res = $sth->execute();
+            if ( $pado->debug === 3 ) $pado->debugPrint( $sql );
+            $pado->queries[] = $sql;
+            ++$pado->query_cnt;
+            $sth = null;
+            return true;
+        } catch ( PDOException $e ) {
+            $message = 'PDOException: ' . $e->getMessage() . ", {$sql}";
+            $pado->errors[] = $message;
+            $pado->errstr = $message;
+            trigger_error( $message );
+            return $this->retry( $pado, $sth, $message, 'remove_multi', $objects );
+        }
+    }
+
+/**
  * Create a new table.
  */
-    function create_table ( $model, $table, $colprefix, $scheme ) {
+    function create_table ( $model, $table, $colprefix, $scheme, $set_scheme = false ) {
         $column_defs = $scheme['column_defs'];
         $indexes = $scheme['indexes'];
         $primary = $indexes['PRIMARY'];
@@ -1989,22 +2410,30 @@ class PADOMySQL extends PADOBaseModel {
         $pado = $this->pado();
         $charset = $pado->dbcharset;
         if ( $charset ) $sql .= ' DEFAULT CHARSET=' . $charset;
-        // DEFAULT CHARSET=utf8mb4
         if ( $pado->debug === 3 ) $pado->debugPrint( $sql );
+        if ( $pado->query_cnt > $pado->max_queries && ! $pado->txn_active ) {
+            $pado->reconnect();
+        }
         $sth = $pado->db->prepare( $sql );
         try {
             $res = $sth->execute( $vals );
             $pado->queries[] = $sql;
+            ++$pado->query_cnt;
             if ( $pado->upgrader ) {
+                if ( $set_scheme ) $this->_scheme = $scheme;
                 $upgrade = $this->check_upgrade( $model, $table, $colprefix );
                 if ( $upgrade !== false )
                     return $this->upgrade( $table, $upgrade, $colprefix );
             }
+            $sth = null;
             return $res;
         } catch ( PDOException $e ) {
             $message = 'PDOException: ' . $e->getMessage() . ", {$sql}";
             $pado->errors[] = $message;
+            $pado->errstr = $message;
             trigger_error( $message );
+            return $this->retry( $pado, $sth, $message, 'create_table', 
+                $model, $table, $colprefix, $scheme );
         }
     }
 }

@@ -1,5 +1,5 @@
-<div class="col-lg-10 input-group-lg">
-<div id="field-wrapper-<mt:var name="field_uniqueid">">
+<div class="col-lg-10 input-group-lg custom-field-content-wrapper">
+<div id="field-wrapper-<mt:var name="field_uniqueid">" <mt:if name="field_content_html" like="checkbox">style="padding-top:6px;"</mt:if> class="custom-field-content-inner <mt:if name="field__display">field__display</mt:if>">
 <mt:var name="field_content_html">
 <script>
 var values_<mt:var name="field_uniqueid"> = {};
@@ -12,7 +12,14 @@ $('#edit-form-main').submit(function(){
             if (type && (type == 'radio' || type == 'checkbox')) {
                 input = $('#field-wrapper-<mt:var name="field_uniqueid"> [name=' + input_key + ']:checked');
             }
-            if ( input.val() ) {
+            if ( input_key.match( /_multi$/ ) ) {
+                var current_value = [];
+                if ( input_key in values_<mt:var name="field_uniqueid"> ) {
+                    current_value = values_<mt:var name="field_uniqueid">[ input_key ];
+                }
+                current_value.push( input.val() );
+                values_<mt:var name="field_uniqueid">[ input_key ] = current_value;
+            } else {
                 values_<mt:var name="field_uniqueid">[ input_key ] = input.val();
             }
             $(this).removeAttr('name');
@@ -23,9 +30,12 @@ $('#edit-form-main').submit(function(){
     return true;
 });
 </script>
-<button type="button" class="close close-sm btn btn-sm btn-secondary detach-field" data-basename="<mt:var name="field_basename">" aria-label="<mt:trans phrase="Delete">">
-<span aria-hidden="true">&times;</span>
+<span class="<mt:if name="field__not_delete">hidden</mt:if> detach-button-wrapper">
+<button type="button" class="close close-sm btn btn-sm btn-secondary detach-field cf-detach-btn" data-basename="<mt:var name="field_basename">" aria-label="<mt:trans phrase="Delete">">
+<i class="fa fa-times" aria-hidden="true"></i>
+<span class="sr-only">&times;</span>
 </button>
+</span>
 </div>
 <input type="hidden" value="" id="values_<mt:var name="field_uniqueid">" name="<mt:var name="field_basename">__c<mt:if name="field__multiple">[]</mt:if>">
 <input type="hidden" name="field-unique_id-<mt:var name="field_basename"><mt:if name="field__multiple">[]</mt:if>" value="<mt:var name="field_uniqueid">"></div>

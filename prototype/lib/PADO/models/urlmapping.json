@@ -113,6 +113,9 @@
         "container",
         "date_based"
     ],
+    "child_tables": [
+        "urlinfo"
+    ],
     "edit_properties": {
         "id": "hidden",
         "name": "primary",
