@@ -172,7 +172,7 @@ class PAML {
 
     function init () {
         if ( isset( $this->inited ) ) return;
-        if (!$this->language )
+        if (!$this->language && isset( $_SERVER['HTTP_ACCEPT_LANGUAGE'] ) )
             $this->language = substr( $_SERVER['HTTP_ACCEPT_LANGUAGE'], 0, 2 );
         if ( $this->debug ) error_reporting( E_ALL );
         $this->tags['modifier'] = array_merge(

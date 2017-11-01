@@ -49,8 +49,8 @@
             "default": null
         },
         "publish_file": {
-            "type": "tinyint",
-            "size": 4
+            "type": "int",
+            "size": 11
         },
         "link_status": {
             "type": "tinyint",
@@ -100,7 +100,8 @@
         "id": "ascend"
     },
     "options" : {
-        "date_based" : "Yearly,Fiscal-Yearly,Monthly"
+        "date_based" : "Yearly,Fiscal-Yearly,Monthly",
+        "publish_file": "Dynamic,Static,Static(Delayed),On-Demand,Queue,Manually"
     },
     "autoset": [
         "created_on",

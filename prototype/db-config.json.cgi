@@ -1,5 +1,5 @@
 {
-    "dbname"    : "prototype5",
+    "dbname"    : "prototypex",
     "dbhost"    : "localhost",
     "dbuser"    : "root",
     "dbpasswd"  : "oDasaf1a.",

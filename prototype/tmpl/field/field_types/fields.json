@@ -1,46 +1,46 @@
 {
     "text": {
         "name": "Input Text",
-        "order": 1
+        "ordder": 1
     },
     "input_text_multi": {
         "name": "Input Text (Multiple)",
-        "order": 2
+        "ordder": 2
     },
     "textarea": {
         "name": "Textarea",
-        "order": 3
+        "ordder": 3
     },
     "richtext": {
         "name": "RichText",
-        "order": 4
+        "ordder": 4
     },
     "checkbox": {
         "name": "Checkbox",
-        "order": 5
+        "ordder": 5
     },
     "checkboxes": {
         "name": "Multiple Checkboxes",
-        "order": 6
+        "ordder": 6
     },
     "radio": {
         "name": "Radio Buttons",
-        "order": 7
+        "ordder": 7
     },
     "dropdown": {
         "name": "Dropdown",
-        "order": 8
+        "ordder": 8
     },
     "tel": {
         "name": "Tel",
-        "order": 9
+        "ordder": 9
     },
     "tel_separated": {
         "name": "Tel (Separated)",
-        "order": 10
+        "ordder": 10
     },
     "datetime": {
         "name": "DateTime",
-        "order": 11
+        "ordder": 11
     }
 }

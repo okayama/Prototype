@@ -570,7 +570,7 @@ class PTUtil {
                                 if ( in_array( $key, $translates ) ) {
                                     $vars[ $key ] = $app->translate( $vars[ $key ] );
                                 }
-                                $vars[ $key ] = self::trim_to( $vars[ $key ], 12 );
+                                $vars[ $key ] = self::trim_to( $vars[ $key ], 22 );
                                 break;
                             case $prop === 'password':
                                 $vars[ $key ] = $vars[ $key ] ? '**********...' : '';
@@ -644,14 +644,15 @@ class PTUtil {
                         if ( $type === 'api' ) {
                             $relation_vars[] = self::object_to_resource( $rel_obj );
                         } else {
-                            $rel_value = $type === 'list' 
-                                       ? self::trim_to( $rel_obj->$rel_col, 8 )
-                                       : $rel_obj->$rel_col;
+                            $rel_value = $rel_obj->$rel_col;
                             if ( $type === 'list' ) {
                                 if ( in_array( $name, $translates ) ) {
                                     $rel_value = $app->translate( $rel_value );
                                 }
                             }
+                            $rel_value = $type === 'list' 
+                                       ? self::trim_to( $rel_value, 22 )
+                                       : $rel_value;
                             $relation_vars[] = $rel_value;
                         }
                     }

@@ -56,7 +56,7 @@ class PAMLCacheFile extends PAMLCache {
         return false;
     }
 
-    function delete ( $key ) {
+    function delete ( $key, $no_prefix = false ) {
         $file = ( strpos( $key, $this->_prefix . 'c__' ) === 0 )
                 ? $this->cache_dir . $key : $this->compile_dir . $key . '.php';
         if ( file_exists( $file ) && is_writable( $file ) ) {

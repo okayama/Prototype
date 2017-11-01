@@ -66,8 +66,8 @@ class Prototype {
     public    $cfg_settings  = [];
     public    $plugin_switch = [];
     public    $modules       = [];
-    // public    $cache_driver  = 'Memcached';
-    public    $cache_driver  = null;
+    public    $cache_driver  = 'Memcached';
+    // public    $cache_driver  = null;
     public    $caching       = true;
     public    $remote_ip;
     public    $user;
@@ -93,6 +93,7 @@ class Prototype {
     public    $temp_dir      = '/tmp';
     protected $errors        = [];
     public    $tmpl_markup   = 'mt';
+    public    $delayed       = [];
 
     public    $registry      = [];
 
@@ -133,19 +134,24 @@ class Prototype {
 
     function __construct () {
         $this->start_time = microtime( true );
-        ini_set( 'memory_limit', '-1' );
-        $this->request_method = $_SERVER['REQUEST_METHOD'];
-        $this->protocol  = $_SERVER['SERVER_PROTOCOL'];
+        ini_set( 'memory_limit', -1 );
+        $this->request_method = isset( $_SERVER['REQUEST_METHOD'] )
+            ? $_SERVER['REQUEST_METHOD'] : '';
+        $this->protocol  = isset( $_SERVER['SERVER_PROTOCOL'] )
+            ? $_SERVER['SERVER_PROTOCOL'] : '';
         if ( isset( $_SERVER[ 'HTTP_X_FORWARDED_FOR' ] ) ) {
             $this->remote_ip = $_SERVER[ 'HTTP_X_FORWARDED_FOR' ];
-        } else {
+        } else if ( isset( $_SERVER[ 'REMOTE_ADDR' ] ) ) {
             $this->remote_ip = $_SERVER[ 'REMOTE_ADDR' ];
+        } else {
+            $this->remote_ip = 'localhost';
         }
         $secure = !empty( $_SERVER['HTTPS'] ) &&
             strtolower( $_SERVER['HTTPS'] ) !== 'off' ? 's' : '';
         $this->is_secure = $secure ? true : false;
-        $base = "http{$secure}://{$_SERVER['SERVER_NAME']}";
-        $port = ( int ) $_SERVER['SERVER_PORT'];
+        $base = isset( $_SERVER['SERVER_NAME'] ) 
+            ? "http{$secure}://{$_SERVER['SERVER_NAME']}" : null;
+        $port = isset( $_SERVER['SERVER_PORT'] ) ? ( int ) $_SERVER['SERVER_PORT'] : null;
         if (! empty( $port ) &&
             $port !== ( $secure === '' ? 80 : 443 ) ) $base .= ":{$port}";
         $request_uri = NULL;
@@ -192,11 +198,22 @@ class Prototype {
     }
 
     function init() {
+        $this->log_path = __DIR__ . DS . 'log' . DS;
         if ( $this->timezone ) date_default_timezone_set( $this->timezone );
         require_once( LIB_DIR . 'PADO' . DS . 'class.pado.php' );
         require_once( LIB_DIR . 'PAML' . DS .'class.paml.php' );
         $cfg = __DIR__ . DS . 'db-config.json.cgi';
         $db = new PADO();
+        $ctx = new PAML();
+        if ( $this->mode !== 'upgrade' ) {
+            $db->logging = true;
+            $ctx->logging = true;
+        }
+        if ( $this->debug ) {
+            error_reporting( E_ALL );
+        }
+        $db->max_packet = 16777216;
+        set_error_handler( [ $this, 'errorHandler'] );
         $db->configure_from_json( $cfg );
         $prefix = $this->dbprefix;
         $db->prefix = $this->dbprefix;
@@ -212,7 +229,6 @@ class Prototype {
         $db->register_callback( '__any__', 'post_save', 'flush_cache', 100, $this );
         $db->register_callback( '__any__', 'post_delete', 'flush_cache', 100, $this );
         $this->db = $db;
-        $ctx = new PAML();
         $ctx->include_paths[ ALT_TMPL ] = true;
         $ctx->include_paths[ TMPL_DIR ] = true;
         $ctx->prefix = 'mt';
@@ -332,15 +348,6 @@ class Prototype {
             $ctx->vars['site_path'] = $this->site_path;
         }
         $this->stash( 'configs', $configs );
-        if ( $this->mode !== 'upgrade' ) {
-            $db->logging = true;
-            $ctx->logging = true;
-        }
-        if ( $this->debug ) {
-            error_reporting( E_ALL );
-        }
-        set_error_handler( [ $this, 'errorHandler'] );
-        $this->log_path = __DIR__ . DS . 'log' . DS;
         $this->components['core'] = $this;
         $this->configure_from_json( __DIR__ . DS . 'config.json' );
         if ( $this->use_plugin ) {
@@ -1403,7 +1410,7 @@ class Prototype {
                 array_walk( $all_fields, function( &$field ) { $field = 'field-' . $field; } );
                 $field_sort_order = array_merge( $display_options, $all_fields );
                 $display_options = array_merge( $display_options, $fields );
-                $field_sort_order = array_diff( $field_sort_order, ['id'] );
+                $field_sort_order = array_unique( array_diff( $field_sort_order, ['id'] ) );
                 $ctx->vars['_field_sort_order'] = join( ',', $field_sort_order );
             } else {
                 $display_options = explode( ',', $user_option->option );
@@ -3269,11 +3276,6 @@ class Prototype {
             }
             // todo bulk
         }
-        if (!$as_revision ) {
-            if ( $model !== 'template' || $app->param( '__save_and_publish' ) ) {
-                $app->publish_obj( $obj, $original );
-            }
-        }
         $callback = ['name' => 'post_save', 'is_new' => $is_new,
                      'changed_cols' => $changed_cols, 'orig_relations' => $orig_relations,
                      'orig_metadata' => $orig_metadata ];
@@ -3348,6 +3350,11 @@ class Prototype {
             return $app->rollback( join( ',', $errors ) );
         }
         $db->commit();
+        if (!$as_revision ) {
+            if ( $model !== 'template' || $app->param( '__save_and_publish' ) ) {
+                $app->publish_obj( $obj, $original );
+            }
+        }
         $app->redirect( $app->admin_url . '?__mode=view&_type=edit&_model=' . $model .
             '&id=' . $id . '&saved=1' . $app->workspace_param . $add_return_args );
     }

@@ -608,9 +608,6 @@ class PTUpgrader {
             exit();
         }
         if (! $obj->id ) {
-            $app->db->logging = false;
-            $app->ctx->logging = false;
-            $app->logging = false;
             $name = strtolower( $app->param( 'name' ) );
             if (! $app->is_valid_property( $name, $msg, true ) ) {
                 $cb['error'] = $msg;
@@ -1088,7 +1085,7 @@ class PTUpgrader {
             $app->get_scheme_from_db( $obj->name, true );
             $_model = $db->model( $obj->name )->new();
             $terms = ['uuid' => ['IS NULL' => 1]];
-            $objects = $db->model( $obj->name )->load( $terms, null, 'id,uuid', ' OR ' .
+            $objects = $db->model( $obj->name )->load( $terms, null, '*', ' OR ' .
                 $_model->_colprefix . 'uuid=\'\'' );
             if (! empty( $objects ) ) $_model->update_multi( $objects );
         }

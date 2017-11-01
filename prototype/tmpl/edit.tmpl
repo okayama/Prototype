@@ -105,9 +105,7 @@ $('#alert-saved').focus();
 </mt:if>
 
 <mt:if name="unchangeable">
-  <mt:if name="request.id">
-    <mt:setvar name="readonly" value="1">
-  </mt:if>
+  <mt:setvar name="readonly" value="1">
 </mt:if>
 <mt:includeparts screen="edit" type="column" name="$_column_name" model="$model" setvar="_include_column">
 <mt:if name="__col_name__" ne="id">

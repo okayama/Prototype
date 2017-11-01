@@ -51,7 +51,7 @@ class PAMLCacheMemcached extends PAMLCache {
         }
     }
 
-    function delete ( $key ) {
+    function delete ( $key, $no_prefix = false ) {
         $this->instance->delete( $key );
     }
 

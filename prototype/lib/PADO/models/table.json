@@ -197,9 +197,6 @@
         "name",
         "uuid"
     ],
-    "autoset": [
-        "uuid"
-    ],
     "sort_by": {
         "order": "ascend"
     },

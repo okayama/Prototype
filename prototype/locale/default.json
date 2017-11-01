@@ -21,6 +21,7 @@
     "allow"         : "Allow",
     "info"          : "Info",
     "version"       : "Version",
+    "publish_type"  : "Publish Type",
     "role"          : "Role",
     "kind"          : "Kind",
     "group"         : "Group",

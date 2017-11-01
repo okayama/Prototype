@@ -288,7 +288,7 @@ class PTListActions {
             $files[] = $content;
             $config[ $basename ] = [
                 'name' => $obj->name,
-                'order' => (int) $obj->order ];
+                'ordder' => (int) $obj->order ];
         }
         $config = json_encode( $config, JSON_UNESCAPED_UNICODE|JSON_PRETTY_PRINT );
         file_put_contents( $temp_dir . DS ."fields.json", $config );

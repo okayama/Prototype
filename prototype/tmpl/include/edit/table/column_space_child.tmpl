@@ -19,60 +19,6 @@
         <span class="custom-control-description"> 
         <mt:var name="label" escape></span>
     </label>
-
-<span id="workspace-row-more-wrapper" class="hidden">
-    <input type="hidden" name="display_space" value="0">
-    <label class="custom-control custom-checkbox">
-    <input id="display_space" class="custom-control-input"
-     type="checkbox" name="display_space" value="1" <mt:if name="object_display_space">checked</mt:if>>
-        <span class="custom-control-indicator"></span>
-        <span class="custom-control-description"> 
-        <mt:trans phrase="Display in WorkSpace"></span>
-    </label>
-    
-    <input type="hidden" name="display_dashboard" value="0">
-    <label id="display_dashboard-wrapper" class="custom-control custom-checkbox">
-    <input id="display_dashboard" class="custom-control-input"
-      <mt:if name="object_display_dashboard">checked</mt:if>
-     type="checkbox" name="display_dashboard" value="1">
-        <span class="custom-control-indicator"></span>
-        <span class="custom-control-description"> 
-        <mt:trans phrase="Display in Dashboard"></span>
-    </label>
-
-    <input type="hidden" name="allow_comment" value="0">
-    <label id="display_dashboard-wrapper" class="custom-control custom-checkbox">
-    <input id="display_dashboard" class="custom-control-input"
-      <mt:if name="object_allow_comment">checked</mt:if>
-     type="checkbox" name="allow_comment" value="1">
-        <span class="custom-control-indicator"></span>
-        <span class="custom-control-description"> 
-        <mt:trans phrase="Accept Comments"></span>
-    </label>
-</span>
-<script>
-$("#space_child").click(function(){
-    if ( $(this).prop('checked') == false ) {
-        $("#workspace-row-more-wrapper").hide();
-    } else {
-        $("#workspace-row-more-wrapper").show();
-    }
-});
-$("#display_space").click(function(){
-    if ( $(this).prop('checked') == false ) {
-        $("#display_dashboard").prop('checked',false);
-        $("#display_dashboard-wrapper").hide();
-    } else {
-        $("#display_dashboard-wrapper").show();
-    }
-});
-<mt:if name="object_space_child">
-$("#workspace-row-more-wrapper").show();
-</mt:if>
-<mt:unless name="object_display_space">
-$("#display_dashboard-wrapper").hide();
-</mt:unless>
-</script>
   </div>
 </div>
 </mt:if>

@@ -79,12 +79,11 @@ class PADO {
     public  $query_cnt   = 0;
     public  $retry_cnt   = 0;
     public  $max_queries = 1500;
-    public  $max_retries = 4;
-    public  $retry_sleep = 2;
+    public  $max_retries = 10;
+    public  $retry_sleep = 1;
     public  $errors      = [];
-    public  $errstr      = '';
     public  $blob_type   = 'LONGBLOB';
-    public  $timeout     = 360;
+    public  $timeout     = 30;
     public  $models_json = [];
     public  $txn_active  = false;
 
@@ -117,7 +116,6 @@ class PADO {
             } catch ( PDOException $e ) {
                 $message = 'Connection close failed: ' . $e->getMessage();
                 $this->errors[] = $message;
-                $this->errstr = $message;
                 trigger_error( $message );
                 exit();
             }
@@ -191,11 +189,10 @@ class PADO {
         } catch ( PDOException $e ) {
             $message = 'Connection failed: ' . $e->getMessage();
             $this->errors[] = $message;
-            $this->errstr = $message;
             trigger_error( $message );
             $this->db = null;
             unset( $this->db );
-            $this->retry_sleep = pow( $this->retry_sleep, 2 );
+            $this->retry_sleep = $this->retry_sleep * 2;
             sleep( $this->retry_sleep );
             if ( $this->retry_cnt > $this->max_retries ) {
                 return die( 'Connection failed: ' . $e->getMessage() );
@@ -239,9 +236,8 @@ class PADO {
             $this->queries[] = $sql;
             return true;
         } catch ( PDOException $e ) {
-            $message =  'PDOException: ' . $e->getMessage() . ", {$sql}";
+            $message = 'PDOException: ' . $e->getMessage() . ", {$sql}";
             $this->errors[] = $message;
-            $this->errstr = $message;
             trigger_error( $message );
             sleep( 1 );
             if ( $this->retry_cnt > $this->max_retries ) {
@@ -334,7 +330,6 @@ class PADO {
         } catch ( PDOException $e ) {
             $message = 'PDOException: ' . $e->getMessage() . ", {$sql}";
             $this->errors[] = $message;
-            $this->errstr = $message;
             trigger_error( $message );
         }
         return $sth;
@@ -346,7 +341,14 @@ class PADO {
     function begin_work () {
         if ( $this->txn_active ) return;
         $this->txn_active = true;
-        $this->db->beginTransaction();
+        try {
+            $this->db->beginTransaction();
+        } catch ( Exception $e ) {
+            $message = 'PADOException: ' . $e->getMessage();
+            $this->errors[] = $message;
+            trigger_error( $message );
+            return false;
+        }
     }
 
 /**
@@ -360,9 +362,7 @@ class PADO {
         } catch ( Exception $e ) {
             $message = 'PADOException: ' . $e->getMessage();
             $this->errors[] = $message;
-            $this->errstr = $message;
             trigger_error( $message );
-            $this->rollback();
             return false;
         }
     }
@@ -540,7 +540,6 @@ class PADO {
             } catch ( PDOException $e ) {
                 $message = 'PDOException: ' . $e->getMessage() . ", {$sql}";
                 $this->errors[] = $message;
-                $this->errstr = $message;
                 trigger_error( $message );
             }
             $sth = null;
@@ -870,7 +869,6 @@ class PADOBaseModel {
                     $message =
                     "PADOBaseModelException: unknown column '{$col2}' for model '{$join}'";
                     $pado->errors[] = $message;
-                    $pado->errstr = $message;
                     trigger_error( $message );
                     return false;
                 }
@@ -1145,7 +1143,6 @@ class PADOBaseModel {
         } catch ( PDOException $e ) {
             $message =  'PDOException: ' . $e->getMessage() . ", {$sql}";
             $pado->errors[] = $message;
-            $pado->errstr = $message;
             trigger_error( $message );
             return $this->retry( $pado, $sth, $message, 'load', $terms, $args, $cols, $extra );
         }
@@ -1334,7 +1331,6 @@ class PADOBaseModel {
         } catch ( PDOException $e ) {
             $message = 'PDOException: ' . $e->getMessage() . ", {$sql}";
             $pado->errors[] = $message;
-            $pado->errstr = $message;
             trigger_error( $message );
             return $this->retry( $pado, $sth, $message, 'save' );
         }
@@ -1416,7 +1412,6 @@ class PADOBaseModel {
         } catch ( PDOException $e ) {
             $message = 'PDOException: ' . $e->getMessage() . ", {$sql}";
             $pado->errors[] = $message;
-            $pado->errstr = $message;
             trigger_error( $message );
             return $this->retry( $pado, $sth, $message, 'remove' );
         }
@@ -1975,7 +1970,6 @@ class PADOMySQL extends PADOBaseModel {
             } catch ( PDOException $e ) {
                 $message = 'PDOException: ' . $e->getMessage() . ", {$sql}";
                 $pado->errors[] = $message;
-                $pado->errstr = $message;
                 trigger_error( $message );
             }
             if ( $pado->json_model && $pado->save_json ) {
@@ -2000,7 +1994,6 @@ class PADOMySQL extends PADOBaseModel {
             }
             $message = 'PDOException: ' . $msg . ", {$sql}";
             $pado->errors[] = $message;
-            $pado->errstr = $message;
             trigger_error( $message );
             return $this->retry( $pado, $sth, $message, 'get_scheme',
                 $model, $table, $colprefix, $needle );
@@ -2072,7 +2065,6 @@ class PADOMySQL extends PADOBaseModel {
                             $message = 'PADOBaseModelException: unknown type('
                                      . $props['type'] . ')';
                             $pado->errors[] = $message;
-                            $pado->errstr = $message;
                             trigger_error( $message );
                         }
                         continue;
@@ -2102,7 +2094,6 @@ class PADOMySQL extends PADOBaseModel {
                                 } catch ( PDOException $e ) {
                                     $message = 'PDOException: ' . $e->getMessage() . ", {$sql}";
                                     $pado->errors[] = $message;
-                                    $pado->errstr = $message;
                                     trigger_error( $message );
                                     return false;
                                 }
@@ -2126,7 +2117,6 @@ class PADOMySQL extends PADOBaseModel {
                     } catch ( PDOException $e ) {
                         $message = 'PDOException: ' . $e->getMessage() . ", {$sql}";
                         $pado->errors[] = $message;
-                        $pado->errstr = $message;
                         trigger_error( $message );
                         return false;
                     }
@@ -2149,7 +2139,6 @@ class PADOMySQL extends PADOBaseModel {
                         } catch ( PDOException $e ) {
                             $message = 'PDOException: ' . $e->getMessage() . ", {$sql}";
                             $pado->errors[] = $message;
-                            $pado->errstr = $message;
                             trigger_error( $message );
                         }
                         $sth = null;
@@ -2165,7 +2154,6 @@ class PADOMySQL extends PADOBaseModel {
                     if ( $name === 'PRIMARY' ) {
                         $message = 'PADOBaseModelException: PRIMARY KEY could not be changed.';
                         $pado->errors[] = $message;
-                        $pado->errstr = $message;
                         trigger_error( $message );
                         continue;
                     }
@@ -2182,7 +2170,6 @@ class PADOMySQL extends PADOBaseModel {
                             } catch ( PDOException $e ) {
                                 $message = 'PDOException: ' . $e->getMessage() . ", {$sql}";
                                 $pado->errors[] = $message;
-                                $pado->errstr = $message;
                                 trigger_error( $message );
                             }
                             $sth = null;
@@ -2250,7 +2237,6 @@ class PADOMySQL extends PADOBaseModel {
             if ( $this->_model != $obj->_model ) {
                 $message = 'PADOBaseModelException: Wrong model in objects.';
                 $pado->errors[] = $message;
-                $pado->errstr = $message;
                 trigger_error( $message );
                 return;
             }
@@ -2276,7 +2262,6 @@ class PADOMySQL extends PADOBaseModel {
                 if ( $object_keys !== join( ',', $keys ) ) {
                     $message = 'PADOBaseModelException: Unequal column designation.';
                     $pado->errors[] = $message;
-                    $pado->errstr = $message;
                     trigger_error( $message );
                     return;
                 }
@@ -2315,7 +2300,6 @@ class PADOMySQL extends PADOBaseModel {
         } catch ( PDOException $e ) {
             $message = 'PDOException: ' . $e->getMessage() . ", {$sql}";
             $pado->errors[] = $message;
-            $pado->errstr = $message;
             trigger_error( $message );
             return $this->retry( $pado, $sth, $message, 'update_multi', $objects, $update );
         }
@@ -2348,7 +2332,6 @@ class PADOMySQL extends PADOBaseModel {
             if ( $this->_model != $obj->_model ) {
                 $message = 'PADOBaseModelException: Wrong model in objects.';
                 $pado->errors[] = $message;
-                $pado->errstr = $message;
                 trigger_error( $message );
                 return;
             }
@@ -2378,7 +2361,6 @@ class PADOMySQL extends PADOBaseModel {
         } catch ( PDOException $e ) {
             $message = 'PDOException: ' . $e->getMessage() . ", {$sql}";
             $pado->errors[] = $message;
-            $pado->errstr = $message;
             trigger_error( $message );
             return $this->retry( $pado, $sth, $message, 'remove_multi', $objects );
         }
@@ -2430,7 +2412,6 @@ class PADOMySQL extends PADOBaseModel {
         } catch ( PDOException $e ) {
             $message = 'PDOException: ' . $e->getMessage() . ", {$sql}";
             $pado->errors[] = $message;
-            $pado->errstr = $message;
             trigger_error( $message );
             return $this->retry( $pado, $sth, $message, 'create_table', 
                 $model, $table, $colprefix, $scheme );
