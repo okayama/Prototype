@@ -9,7 +9,13 @@
   <div class="col-lg-3">
     <select class="form-control short watch-changed" name="<mt:var name="__col_name__">">
     <mt:loop name="_options_loop">
+  <mt:if name="__index__" ne="2">
+    <mt:if name="__index__" eq="0">
+        <option <mt:if name="__col_value__" eq="6">selected</mt:if> value="6"><mt:trans phrase="$__value__" escape></option>
+    <mt:else>
         <option <mt:if name="__index__" eq="$__col_value__">selected</mt:if> value="<mt:var name="__index__" escape>"><mt:trans phrase="$__value__" escape></option>
+    </mt:if>
+  </mt:if>
     </mt:loop>
     </select>
     <mt:var name="_hint">

@@ -16,6 +16,7 @@
     "has_status": 1,
     "assign_user": 1,
     "has_uuid": 1,
+    "default_status": 4,
     "column_defs": {
         "id": {
             "type": "int",

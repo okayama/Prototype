@@ -50,7 +50,7 @@ class Prototype {
     public    $cache_expires = 86400;
     public    $cookie_path   = '/';
     public    $languages     = ['ja', 'en'];
-    public    $debug         = true;
+    public    $debug         = false;
     public    $logging       = false;
     public    $stash         = [];
     public    $installed     = false;
@@ -68,6 +68,7 @@ class Prototype {
     public    $modules       = [];
     public    $cache_driver  = 'Memcached';
     // public    $cache_driver  = null;
+    public    $worker_period = 600;
     public    $caching       = true;
     public    $remote_ip;
     public    $user;
@@ -278,6 +279,8 @@ class Prototype {
         $ctx->vars['request_method'] = $this->request_method;
         $ctx->vars['prototype_path'] = $this->path;
         $ctx->vars['developer_mode'] = $this->developer_mode;
+        $lang = $this->language;
+        $ctx->language = $lang;
         $this->ctx = $ctx;
         self::$app = $this;
         if ( $this->installed && $this->user() ) {
@@ -295,7 +298,6 @@ class Prototype {
             }
         }
         $this->dictionary['default'] = $dict ? $dict : [];
-        $lang = $this->language;
         // if ( $this->param( 'setup_db' ) ) {
             // $upgrader = new PTUpgrader;
             // $upgrader->setup_db( true );
@@ -2454,6 +2456,7 @@ class Prototype {
     function rebuild_phase ( $app, $start = false, $counter = 0, $dependencies = false ) {
         $ctx = $app->ctx;
         $per_rebuild = $app->per_rebuild;
+        $app->get_scheme_from_db( 'urlinfo' );
         $tmpl = 'rebuild_phase.tmpl';
         $model = $app->param( '_model' );
         if ( $app->param( '_type' ) && $app->param( '_type' ) == 'start_rebuild' ) {
@@ -2859,6 +2862,7 @@ class Prototype {
         require_once( 'class.PTUtil.php' );
         $db = $app->db;
         $callbacks = $app->callbacks;
+        $app->get_scheme_from_db( 'urlinfo' );
         $model = $app->param( '_model' );
         $app->validate_magic();
         if (!$model ) return $app->error( 'Invalid request.' );
@@ -4968,6 +4972,7 @@ class Prototype {
             if ( $urlmapping->date_based ) $archive_date = $type;
             $type = $urlmapping->template_id ? 'archive' : 'model';
             $publish = $urlmapping->publish_file;
+            $ui->publish_file( $publish );
             $template = $urlmapping->template;
             if ( $template && $template->status != 2 ) {
                 $unlink = true;
@@ -5075,11 +5080,14 @@ class Prototype {
                             'object_id' => $obj->id, 'model' => $obj->_model ], $args );
                         foreach ( $thumbnails as $thumb ) {
                             $thumb_path = $thumb->urlinfo_file_path;
+                            $md5 = $thumb->urlinfo_md5;
                             $data = $thumb->data;
                             $thumb_update = false;
+                            $hash = md5( base64_encode( $data ) );
                             if ( file_exists( $thumb_path ) ) {
-                                $old = file_get_contents( $thumb_path );
-                                if ( md5( $old ) !== md5( $data ) ) {
+                                $old = $md5 ? $md5 :
+                                md5( base64_encode( file_get_contents( $thumb_path ) ) );
+                                if ( $old !== $hash ) {
                                     $thumb_update = true;
                                 }
                             } else {
@@ -5088,18 +5096,29 @@ class Prototype {
                             if ( $thumb_update ) {
                                 file_put_contents( $thumb_path, $data );
                             }
-                        }
-                        $data = $obj->$key;
-                        if ( file_exists( $file_path ) ) {
-                            $old = file_get_contents( $file_path );
-                            if ( md5( $old ) === md5( $data ) ) {
-                                if ( $ui->is_published != 1 ) {
-                                    $ui->is_published( 1 );
-                                    $ui->save();
-                                }
-                                return $file_path;
+                            if (! $md5 || $thumb_update ) {
+                                $uid = (int) $thumb->urlinfo_id;
+                                $uinfo = $db->model( 'urlinfo' )->load( $uid );
+                                $uinfo->md5( $hash );
+                                $uinfo->save();
                             }
                         }
+                        $data = $obj->$key;
+                        $md5 = $ui->md5;
+                        $hash = md5( base64_encode( $data ) );
+                        $file_saved = false;
+                        if ( !$md5 && file_exists( $file_path ) ) {
+                            $md5 = md5( base64_encode( file_get_contents( $file_path ) ) );
+                        }
+                        if ( $md5 && $md5 == $hash ) {
+                            if ( $ui->is_published != 1 || !$ui->md5 ) {
+                                $ui->md5( $hash );
+                                $ui->is_published( 1 );
+                                $ui->save();
+                            }
+                            return $file_path;
+                        }
+                        $ui->md5( $hash );
                         if ( file_put_contents( $file_path, $data ) ) {
                             $ui->is_published( 1 );
                         } else {
@@ -5148,22 +5167,61 @@ class Prototype {
                             $ctx->stash( 'current_archive_type' );
                         $ctx->vars['current_archive_url'] = $url;
                         $ctx->local_vars = [];
-                        $data = $app->tmpl_markup === 'mt' ? $ctx->build( $tmpl )
-                                                           : $app->build( $tmpl, $ctx );
-                        $app->ctx->vars = $cache_vars;
-                        $app->ctx->local_vars = $cache_local_vars;
-                        $app->ctx->__stash = $cache_stash;
-                        if ( file_exists( $file_path ) ) {
-                            $old = file_get_contents( $file_path );
-                            if ( md5( $old ) === md5( $data ) ) {
-                                $ui->is_published( 1 );
-                                $updated = false;
-                                return $file_path;
+                        if ( $publish != $ui->publish_file ) {
+                            $ui->publish_file( $publish );
+                            if ( $publish != 1 ) {
+                                $ui->is_published( 0 );
                             }
+                            $ui->save();
                         }
-                        if ( $updated ) {
-                            if ( file_put_contents( $file_path, $data ) ) {
-                                $ui->is_published( 1 );
+                        $continue = false;
+                        if ( $publish == 5 && $app->param( '__save_and_publish' ) ) {
+                            $continue = true;
+                        }
+                        if ( !$continue && $publish != 1 ) {
+                            if ( $publish == 2 ) {
+                                if ( $ui->id ) {
+                                    $app->delayed[] = $ui->id;
+                                } else {
+                                    $continue = true;
+                                }
+                            } elseif ( $publish == 3 || $publish == 6 ) {
+                                // on-demand or dynamic
+                                if ( file_exists( $file_path ) ) {
+                                    unlink( $file_path );
+                                }
+                                if (! $ui->id ) {
+                                    $continue = true;
+                                }
+                            } elseif ( $publish == 4 && $ui->is_published ) {
+                                $ui->is_published( 0 );
+                                $ui->save();
+                            }
+                            if (! $continue ) return $file_path;
+                        } else {
+                            $data = $app->tmpl_markup === 'mt' ? $ctx->build( $tmpl )
+                                                               : $app->build( $tmpl, $ctx );
+                            $old_hash = $ui->md5;
+                            $hash = md5( $data );
+                            $ui->md5( $hash );
+                            $app->ctx->vars = $cache_vars;
+                            $app->ctx->local_vars = $cache_local_vars;
+                            $app->ctx->__stash = $cache_stash;
+                            if ( file_exists( $file_path ) ) {
+                                $old = $old_hash
+                                     ? $old_hash : md5( file_get_contents( $file_path ) );
+                                if ( $old === $hash ) {
+                                    if (! $ui->is_published ) {
+                                        $ui->is_published( 1 );
+                                        $ui->save();
+                                    }
+                                    return $file_path;
+                                }
+                            }
+                            if ( $updated ) {
+                                if ( file_put_contents( $file_path, $data ) ) {
+                                    $ui->is_published( 1 );
+                                }
                             }
                         }
                     }
@@ -5186,14 +5244,8 @@ class Prototype {
                 $ui->archive_date = null;
             }
             $ui->archive_type( $ctx->stash( 'current_archive_type' ) );
-            if (!$ui->mime_type ) {
-                if ( file_exists( $file_path ) ) {
-                    $mime_type = mime_content_type( $file_path );
-                    $ui->mime_type( $mime_type );
-                } else {
-                    $mime_type = PTUtil::get_mime_type( pathinfo( $file_path )['extension'] );
-                }
-            }
+            $mime_type = PTUtil::get_mime_type( pathinfo( $file_path )['extension'] );
+            $ui->mime_type( $mime_type );
             if (!$ui_exists ) {
                 $terms = ['model' => $ui->model, 'key' => $ui->key,
                           'object_id' => $ui->object_id,
@@ -5214,6 +5266,9 @@ class Prototype {
                 }
             }
             $ui->save();
+        }
+        if ( $publish == 2 ) {
+            $app->delayed[] = $ui->id;
         }
         PTUtil::remove_empty_dirs( $remove_dirs );
         return $file_path;

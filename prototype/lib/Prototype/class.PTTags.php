@@ -475,13 +475,13 @@ class PTTags {
             $fmt = '';
             $ts = $title;
             if ( $at === 'monthly' ) {
-                $fmt = $app->translate( 'F, Y' );
+                $fmt = $app->translate( '\F, \Y' );
                 $ts .= '01000000';
             } else if ( $at === 'yearly' ) {
-                $fmt = $app->translate( 'Y' );
+                $fmt = $app->translate( '\Y' );
                 $ts .= '0101000000';
             } else if ( $at === 'fiscal-yearly' ) {
-                $fmt = $app->translate( 'Fiscal Y' );
+                $fmt = $app->translate( '\F\i\s\c\a\l Y' );
                 $ts .= '0101000000';
             }
             if ( $fmt ) {

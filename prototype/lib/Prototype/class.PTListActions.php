@@ -55,6 +55,13 @@ class PTListActions {
                                'component' => $this,
                                'method' => 'publish_assets'];
         }
+        if ( $table->name === 'template' ) {
+            $list_actions[] = ['name' => 'recompile_cache', 'input' => 0,
+                               'label' => $app->translate( 'Re-Compile Cache' ),
+                               'component' => $this,
+                               'columns' => ['id', 'text', 'compiled', 'cache_key'],
+                               'method' => 'recompile_cache'];
+        }
         if ( $table->name === 'fieldtype' ) {
             $list_actions[] = ['name' => 'export_fieldtypes', 'input' => 0,
                                'label' => $app->translate( 'Export' ),
@@ -249,7 +256,6 @@ class PTListActions {
     }
 
     function publish_assets ( $app, $objects, $action ) {
-        $model = $app->param( '_model' );
         $counter = 0;
         $callback = ['name' => 'post_save', 'is_new' => false ];
         foreach ( $objects as $obj ) {
@@ -260,7 +266,29 @@ class PTListActions {
                 if ( $res ) $counter++;
             }
         }
-        $return_args = "does_act=1&__mode=view&_type=list&_model={$model}&"
+        $return_args = "does_act=1&__mode=view&_type=list&_model=asset&"
+                     ."apply_actions={$counter}" . $app->workspace_param;
+        $app->redirect( $app->admin_url . '?' . $return_args );
+    }
+
+    function recompile_cache ( $app, $objects, $action ) {
+        $counter = 0;
+        $db = $app->db;
+        $db->begin_work();
+        foreach ( $objects as $obj ) {
+            $counter++;
+            $obj->compiled('');
+            $obj->cache_key('');
+            $obj->save();
+        }
+        if ( !empty( $db->errors ) ) {
+            $errstr = $app->translate( 'An error occurred while saving %s.',
+                      $app->translate( 'Model' ) );
+            return $app->rollback( $errstr );
+        } else {
+            $db->commit();
+        }
+        $return_args = "does_act=1&__mode=view&_type=list&_model=template&"
                      ."apply_actions={$counter}" . $app->workspace_param;
         $app->redirect( $app->admin_url . '?' . $return_args );
     }

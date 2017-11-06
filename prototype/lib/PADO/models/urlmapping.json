@@ -103,6 +103,9 @@
         "date_based" : "Yearly,Fiscal-Yearly,Monthly",
         "publish_file": "Dynamic,Static,Static(Delayed),On-Demand,Queue,Manually"
     },
+    "disp_edit": {
+        "publish_file": "select"
+    },
     "autoset": [
         "created_on",
         "modified_on",
@@ -125,7 +128,7 @@
         "container": "text",
         "template_id": "relation:template:name:dialog",
         "date_based": "selection",
-        "publish_file": "checkbox",
+        "publish_file": "selection",
         "link_status": "checkbox",
         "order": "number"
     },
@@ -137,7 +140,7 @@
         "container": "text",
         "template_id": "reference:template:name",
         "date_based": "text",
-        "publish_file": "checkbox",
+        "publish_file": "text",
         "link_status": "checkbox",
         "modified_on": "datetime",
         "modified_by": "reference:user:name",

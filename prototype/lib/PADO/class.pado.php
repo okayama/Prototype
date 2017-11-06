@@ -784,7 +784,6 @@ class PADOBaseModel {
         } else {
             $cols = str_replace( $illegals, '', $cols );
         }
-        if ( $pado->debug == 3 ) var_dump( $scheme );
         if (! $cols ) return is_numeric( $terms ) ? null : [];
         if ( $cols !== '*' ) {
             $columns = explode( ',', $cols );
@@ -810,7 +809,6 @@ class PADOBaseModel {
             }
             if (! $cols ) $cols = '*';
         }
-        if ( $pado->debug == 3 ) var_dump( $cols );
         $distinct = '';
         $count = '';
         $count_group_by = '';
@@ -1547,6 +1545,32 @@ class PADOBaseModel {
     }
 
 /**
+ * Next or Previous Object.
+ * 
+ * @param  string $direction : 'next' or 'previous'.
+ * @param  string $column    : Column for compare.
+ * @param  array  $terms     : $terms for load.
+ * @param  string $cols      : $cols for load.
+ * @param  string $extra     : $extra for load. 
+ * @return object $next_prev : Returns one object or null.
+ */
+    function next_prev ( $direction = 'next', $column = 'id', $terms = [], $cols = '*', $extra = '' ) {
+        $pado = $this->pado();
+        $model = $this->_model;
+        $colprefix = $this->_colprefix;
+        $id_column = $pado->id_column;
+        $id = $this->$id_column;
+        $op = $direction === 'next' ? '>=' : '<=';
+        $terms[ $column ] = [ $op => $this->$column ]; 
+        $extra .= " AND {$colprefix}{$column} !={$id} ";
+        $args = ['limit' => 1];
+        $next_prev = $this->load( $terms, $args, $cols, $extra );
+        if (! empty( $next_prev ) ) {
+            return $next_prev[0];
+        }
+    }
+
+/**
  * Upgrade database scheme.
  * 
  * @param  string $table     : Name of table.
@@ -2221,20 +2245,23 @@ class PADOMySQL extends PADOBaseModel {
         // todo bulk_update_per = 1000?
         if ( empty( $objects ) ) return;
         $pado = $this->pado();
+        $model = $this->_model;
         $i = 0;
         $object_keys = '';
         $vals = [];
         $stmts = [];
         $unique_keys = [];
         $update_stmt = '';
+        $model = '';
         list( $id_column, $colprefix, $table ) = ['', '', ''];
         foreach ( $objects as $obj ) {
             if (! $i ) {
                 $id_column = $obj->_id_column;
                 $colprefix = $obj->_colprefix;
                 $table = $obj->_table;
+                $model = $obj->_model;
             }
-            if ( $this->_model != $obj->_model ) {
+            if ( $model && $model != $obj->_model ) {
                 $message = 'PADOBaseModelException: Wrong model in objects.';
                 $pado->errors[] = $message;
                 trigger_error( $message );
@@ -2323,13 +2350,15 @@ class PADOMySQL extends PADOBaseModel {
         $i = 0;
         $ids = [];
         list( $id_column, $colprefix, $table ) = ['', '', ''];
+        $model = '';
         foreach ( $objects as $obj ) {
             if (! $i ) {
                 $id_column = $obj->_id_column;
                 $table = $obj->_table;
                 $colprefix = $obj->_colprefix;
+                $model = $obj->_model;
             }
-            if ( $this->_model != $obj->_model ) {
+            if ( $model && $model != $obj->_model ) {
                 $message = 'PADOBaseModelException: Wrong model in objects.';
                 $pado->errors[] = $message;
                 trigger_error( $message );

@@ -223,6 +223,7 @@ class PTUtil {
             $uploaded = $thumb_props['uploaded'];
             $uploaded = $obj->db2ts( $uploaded );
         }
+        $hash = '';
         if (! $metadata->id || $modified_on > $uploaded ) {
             $ctx->stash( 'current_context', $model );
             $ctx->stash( $model, $obj );
@@ -265,6 +266,7 @@ class PTUtil {
             $t_property['uploaded'] = date( 'Y-m-d H:i:s' );
             $t_property['user_id'] = $app->user()->id;
             $metadata->data( $thumb );
+            $hash = md5( base64_encode( $thumb ) );
             $t_property = json_encode( $t_property );
             $metadata->text( $t_property );
             $metadata->save();
@@ -300,11 +302,12 @@ class PTUtil {
             }
         } else {
             if ( file_exists( $asset_path ) ) {
-                $comp = base64_encode( file_get_contents( $asset_path ) );
-                $data = base64_encode( $thumb );
+                $comp = md5( base64_encode( file_get_contents( $asset_path ) ) );
+                $data = md5( base64_encode( $thumb ) );
                 if ( $comp != $data ) {
                     $publish = true;
                 }
+                $hash = $data;
             } else {
                 $publish = true;
             }
@@ -313,6 +316,9 @@ class PTUtil {
         if ( $publish ) {
             self::mkpath( dirname( $asset_path ) );
             file_put_contents( $asset_path, $thumb );
+        }
+        if ( $hash ) {
+            $info->md5( $hash );
         }
         $info->save();
         return $asset_url;

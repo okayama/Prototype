@@ -23,6 +23,7 @@
     "version"       : "Version",
     "publish_type"  : "Publish Type",
     "role"          : "Role",
+    "md5"           : "MD5",
     "kind"          : "Kind",
     "group"         : "Group",
     "log"           : "Log",

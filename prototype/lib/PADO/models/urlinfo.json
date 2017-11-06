@@ -67,9 +67,18 @@
             "size": "255",
             "not_null": 1
         },
+        "md5": {
+            "type": "string",
+            "size": 255,
+            "default": null
+        },
         "is_published": {
             "type": "tinyint",
             "size": "4"
+        },
+        "publish_file": {
+            "type": "int",
+            "size": 11
         },
         "mime_type": {
             "type": "string",
@@ -97,6 +106,7 @@
         "is_published": "is_published",
         "url": "url",
         "mime_type": "mime_type",
+        "publish_file": "publish_file",
         "workspace_id": "workspace_id"
     },
     "sort_by": {
@@ -120,7 +130,9 @@
         "archive_date",
         "urlmapping_id",
         "file_path",
+        "md5",
         "is_published",
+        "publish_file",
         "mime_type",
         "workspace_id"
     ],
@@ -128,6 +140,12 @@
         "model",
         "archive_type"
     ],
+    "options": {
+        "publish_file": "Dynamic,Static,Static(Delayed),On-Demand,Queue,Manually"
+    },
+    "disp_edit": {
+        "publish_file": "select"
+    },
     "edit_properties": {
         "id": "hidden",
         "url": "primary",
@@ -142,7 +160,9 @@
         "archive_date": "datetime",
         "urlmapping_id": "reference:urlmapping:name",
         "file_path": "text",
+        "md5": "text",
         "is_published": "checkbox",
+        "publish_file": "selection",
         "mime_type": "text_short",
         "workspace_id": "reference:workspace:name"
     },
@@ -156,6 +176,7 @@
         "archive_type": "text",
         "urlmapping_id": "reference:urlmapping:name",
         "is_published": "checkbox",
+        "publish_file": "text",
         "mime_type": "text_short",
         "workspace_id": "reference:workspace:name"
     }

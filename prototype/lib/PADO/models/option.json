@@ -47,7 +47,6 @@
     "indexes": {
         "PRIMARY": "id",
         "key": "key",
-        "value": "value",
         "extra": "extra",
         "number": "number",
         "object_id": "object_id",

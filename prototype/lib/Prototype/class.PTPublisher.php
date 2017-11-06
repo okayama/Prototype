@@ -2,6 +2,36 @@
 
 class PTPublisher {
 
+    function publish_queue () {
+        $app = Prototype::get_instance();
+        $db = $app->db;
+        $app->get_scheme_from_db( 'urlinfo' );
+        $sth = $db->model( 'urlinfo' )->load_iter( ['publish_file' => 4, 'is_published' => 0] );
+        while( $result = $sth->fetch( PDO::FETCH_ASSOC ) ) {
+            $obj = $db->model( 'urlinfo' )->new( $result );
+            $data = $this->publish( $obj );
+            $hash = md5( $data );
+            $publish = false;
+            $file_path = $obj->file_path;
+            $md5 = $obj->md5;
+            if ( !$md5 && file_exists( $file_path ) ) {
+                $md5 = md5( file_get_contents( $file_path ) );
+            }
+            if ( !$md5 || $md5 !== $hash ) {
+                $publish = true;
+            }
+            if ( $publish ) {
+                file_put_contents( $file_path, $data );
+            }
+            $mime_type = mime_content_type( $file_path );
+            $obj->mime_type( $mime_type );
+            $obj->is_published( 1 );
+            $obj->save();
+            usleep( 300000 );
+            $app->db->reconnect();
+        }
+    }
+
     function publish ( $url ) {
         $app = Prototype::get_instance();
         $ctx = $app->ctx;
@@ -54,15 +84,13 @@ class PTPublisher {
                 if ( $mapping->date_based && $ts ) {
                     $ts = $mapping->db2ts( $ts );
                     $at = $mapping->date_based;
+                    $container = $mapping->container;
+                    if ( $container ) {
+                        $obj = $app->db->model( $container )->new();
+                    }
                     $ctx->stash( 'archive_date_based', $obj->_model );
                     list( $title, $start, $end ) =
                         $app->title_start_end( $at, $ts, $mapping );
-                    $y = substr( $title, 0, 4 );
-                    $map_path = str_replace( '%y', $y, $map_path );
-                    if ( $title != $y ) {
-                        $m = substr( $title, 4, 2 );
-                        $map_path = str_replace( '%m', $m, $map_path );
-                    }
                     $ctx->stash( 'current_timestamp', $start );
                     $ctx->stash( 'current_timestamp_end', $end );
                     $ctx->stash( 'current_archive_title', $title );
@@ -77,6 +105,7 @@ class PTPublisher {
                         $ctx->stash( 'current_archive_title', $obj->$primary );
                     }
                 }
+                $ctx->vars['current_archive_url'] = $url->url;
                 $data = $ctx->build( $tmpl );
             }
             return $data;

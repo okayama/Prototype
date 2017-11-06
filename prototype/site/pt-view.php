@@ -65,6 +65,9 @@ if ( $url->class === 'file' ) {
     require_once( $pt_path . 'lib' . DIRECTORY_SEPARATOR . 'Prototype' . DIRECTORY_SEPARATOR . 'class.PTPublisher.php' );
     $pub = new PTPublisher;
     $data = $pub->publish( $url );
+    if ( $url->publish_file == 3 ) {
+        file_put_contents( $url->file_path, $data );
+    }
     pt_view_print_html( $data, $mime_type );
 }
 
