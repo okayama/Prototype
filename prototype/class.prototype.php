@@ -3971,7 +3971,6 @@ class Prototype {
                 $status_published = $app->status_published( $obj->_model );
             }
             $error = false;
-            $db->begin_work();
             if (!$obj->has_column( 'rev_type' ) || ( $obj->has_column( 'rev_type' ) &&
                 $obj->rev_type == 0 ) ) {
                 if ( count( $objects ) == 1 ) {
@@ -3992,6 +3991,7 @@ class Prototype {
                     }
                 }
             }
+            $db->begin_work();
             $app->remove_object( $obj, $table, $error );
             if ( $error ) {
                 return $app->rollback( $errstr );
