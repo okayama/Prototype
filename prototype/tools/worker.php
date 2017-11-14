@@ -18,7 +18,7 @@ if ( file_exists( $pid ) ) {
 touch( $pid );
 require_once( 'lib' . DS . 'Prototype' . DS . 'class.PTPublisher.php' );
 $pub = new PTPublisher;
-$pub->publish_queue();
+$pub->publish_queue( 300000 );
 $ts = time();
 $objects = [];
 $sth = $app->db->model( 'session' )->load_iter( ['expires' => ['<' => $ts ] ] );
@@ -27,10 +27,12 @@ while( $result = $sth->fetch( PDO::FETCH_ASSOC ) ) {
     $objects[] = $obj;
     if ( count( $objects ) >= $bulk_remove_per ) {
         $app->db->model( 'session' )->remove_multi( $objects );
+        unset( $objects );
         $objects = [];
     }
 }
 if (! empty( $objects ) ) {
     $app->db->model( 'session' )->remove_multi( $objects );
+    unset( $objects );
 }
 unlink( $pid );

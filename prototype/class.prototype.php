@@ -39,6 +39,7 @@ class Prototype {
     public    $timezone      = 'Asia/Tokyo';
     public    $list_limit    = 25;
     public    $per_rebuild   = 40;
+    public    $rebuild_interval = 200;
     public    $basename_len  = 40;
     public    $passwd_min    = 8;
     public    $passwd_rule   = false;
@@ -68,6 +69,8 @@ class Prototype {
     public    $modules       = [];
     public    $cache_driver  = 'Memcached';
     // public    $cache_driver  = null;
+    public    $file_mgr      = 'PTFileMgr';
+    public    $fmgr;
     public    $worker_period = 600;
     public    $caching       = true;
     public    $remote_ip;
@@ -127,7 +130,7 @@ class Prototype {
     public    $core_tags;
     private   $encrypt_key   = 'prototype-default-encrypt-key';
     public    $dynamic_view  = false;
-    public    $resetdb_per_rebuild = true;
+    public    $resetdb_per_rebuild = false;
 
     static function get_instance() {
         return self::$app;
@@ -198,7 +201,7 @@ class Prototype {
         unset( $this->db );
     }
 
-    function init() {
+    function init () {
         $this->log_path = __DIR__ . DS . 'log' . DS;
         if ( $this->timezone ) date_default_timezone_set( $this->timezone );
         require_once( LIB_DIR . 'PADO' . DS . 'class.pado.php' );
@@ -243,6 +246,7 @@ class Prototype {
             $driver->_prefix = $db->dbname . '__';
         }
         $ctx->esc_trans = true;
+        require_once( 'class.PTUtil.php' );
         require_once( 'class.PTTags.php' );
         $core_tags = new PTTags;
         $tags = [
@@ -260,6 +264,8 @@ class Prototype {
                 $ctx->register_tag( $tag, $kind, $tag_prefix . $tag, $core_tags );
             }
         }
+        require_once( 'class.' . $this->file_mgr . '.php' );
+        $this->fmgr = new $this->file_mgr;
         $sth = $db->show_tables( 'table' );
         $table = $sth->fetchColumn();
         $sth = null;
@@ -286,6 +292,7 @@ class Prototype {
         if ( $this->installed && $this->user() ) {
             $this->language = $this->user()->language;
             $ctx->vars['user_language'] = $this->language;
+            $ctx->vars['user_control_border'] = $this->user()->control_border;
         }
         $locale_dir = __DIR__ . DS . 'locale';
         $locale__c = 'phrase' . DS . 'locale_default__c';
@@ -506,7 +513,6 @@ class Prototype {
         }
         if ( isset( $app->registry['menus'] ) ) {
             $menus = $app->registry['menus'];
-            require_once( 'class.PTUtil.php' );
             PTUtil::sort_by_order( $menus );
             $system_menus = [];
             $workspace_menus = [];
@@ -725,7 +731,6 @@ class Prototype {
                             'object_id'=> $faild_user->id,
                             'metadata' => json_encode( $metadata, JSON_UNESCAPED_UNICODE ),
                             'level'    => 'security'] );
-                require_once( 'class.PTUtil.php' );
                 $cfgs = $app->stash( 'configs' );
                 $limit = isset( $cfgs['lockout_limit'] )
                      ? $cfgs['lockout_limit']->value : 0;
@@ -899,7 +904,6 @@ class Prototype {
                             $tmpl = 'email' . DS . 'recover_password.tmpl';
                             $app->ctx->vars['confirmation_code'] = $token;
                             $body = $app->build_page( $tmpl, [], false );
-                            require_once( 'class.PTUtil.php' );
                             if (! PTUtil::send_mail(
                                 $user->email, $subject, $body, $headers, $error ) ) {
                                 $app->ctx->vars['error'] = $error;
@@ -963,7 +967,6 @@ class Prototype {
         $model = $model ? $model : $app->param( '_model' );
         if (!$model ) return;
         $db = $app->db;
-        require_once( 'class.PTUtil.php' );
         $table = $app->get_table( $model );
         $workspace = $app->workspace();
         $workspace_id = $workspace ? $workspace->id : 0;
@@ -2008,7 +2011,6 @@ class Prototype {
                         $height = (int) $height;
                         $use_thumb = $app->param( 'use-thumb-' . $id );
                         if ( $use_thumb ) {
-                            require_once( 'class.PTUtil.php' );
                             $args = ['width' => $width ];
                             $url = PTUtil::thumbnail_url( $obj, $args, $assetproperty );
                         }
@@ -2039,6 +2041,7 @@ class Prototype {
     function edit_image ( $app ) {
         $db = $app->db;
         $user = $app->user();
+        $fmgr = $app->fmgr;
         $model = $app->param( '_model' );
         $id = (int) $app->param( 'id' );
         $obj = $db->model( $model )->new();
@@ -2090,14 +2093,14 @@ class Prototype {
                 $extension = $meta[1];
                 $upload_dir = $app->upload_dir();
                 $file = $upload_dir . DS . 'tmpimg.' . $extension;
-                file_put_contents( $file, $image_data );
+                $fmgr->put( $file, $image_data );
                 list( $width, $height ) = getimagesize( $file );
                 $width--;
                 $height--;
                 $orig_width = $app->param( 'orig_width' );
                 $orig_height = $app->param( 'orig_height' );
-                $image_data = file_get_contents( $file );
-                $size = filesize( $file );
+                $image_data = $fmgr->get( $file );
+                $size = filesize( $file ); // TODO $fmgr is not local
                 list( $width, $height ) = getimagesize( $file );
                 $_FILES = [];
                 $_FILES['files'] = ['name' => basename( $file ), 'type' => $mime_type,
@@ -2112,10 +2115,10 @@ class Prototype {
                 $_SERVER['CONTENT_LENGTH'] = filesize( $file );
                 $upload_handler->post( false );
                 $thumbnail = $upload_dir . DS . 'thumbnail' . DS . basename( $file );
-                $image_data_thumb = file_get_contents( $thumbnail );
+                $image_data_thumb = $fmgr->get( $thumbnail );
                 $max_scale = $max_scale / 2;
                 $file = preg_replace( "/\.$extension$/", "-square.{$extension}", $file );
-                file_put_contents( $file, $image_data );
+                $fmgr->put( $file, $image_data );
                 $_FILES['files'] = ['name' => basename( $file ), 'type' => $mime_type,
                         'tmp_name' => $file, 'error' => 0, 'size' => filesize( $file ) ];
                 $image_versions = [
@@ -2129,7 +2132,7 @@ class Prototype {
                 $_SERVER['CONTENT_LENGTH'] = filesize( $file );
                 $upload_handler->post( false );
                 $thumbnail_square = $upload_dir . DS . 'thumbnail' . DS . basename( $file );
-                $image_data_square = file_get_contents( $thumbnail_square );
+                $image_data_square = $fmgr->get( $thumbnail_square );
                 $screen_id .= '-' . $key;
                 $session = $db->model( 'session' )->get_by_key(
                     ['name' => $screen_id, 'user_id' => $user->id, 'kind' => 'UP' ]
@@ -2139,10 +2142,10 @@ class Prototype {
                 $session->metadata( $image_data_thumb );
                 $session->extradata( $image_data_square );
                 $thumb_dir = dirname( $thumbnail );
-                unlink( $thumbnail );
-                unlink( $thumbnail_square );
-                rmdir( $thumb_dir );
-                rmdir( $upload_dir );
+                $fmgr->unlink( $thumbnail );
+                $fmgr->unlink( $thumbnail_square );
+                $fmgr->delete( $thumb_dir );
+                $fmgr->delete( $upload_dir );
                 $props = [];
                 if ( $session->id ) {
                     $props = $session->text;
@@ -2212,7 +2215,6 @@ class Prototype {
 
     function display_options ( $app ) {
         $model = $app->param( '_model' );
-        require_once( 'class.PTUtil.php' );
         $app->validate_magic();
         $workspace_id = $app->param( 'workspace_id' );
         $scheme = $app->get_scheme_from_db( $model );
@@ -2442,7 +2444,6 @@ class Prototype {
         $ctx->local_vars['field_label_html'] = $field_label;
         $ctx->local_vars['field_content_html'] = $field_content;
         $html = $app->build_page( 'field' . DS . 'wrapper.tmpl', $param, false );
-        require_once( 'class.PTUtil.php' );
         PTUtil::add_id_to_field( $html, $uniqueid, $basename );
         if (!$app->param( 'field__out' ) ) {
             $html = "<div id=\"field-{$basename}-wrapper\">{$html}</div>";
@@ -2472,6 +2473,7 @@ class Prototype {
             $app->param( 'start_time', $start_time );
         }
         $ctx->vars['request_id'] = $app->request_id;
+        $ctx->vars['rebuild_interval'] = $app->rebuild_interval;
         $sess_terms = ['value' => $app->request_id ];
         $next_model = '';
         $next_models = [];
@@ -2859,7 +2861,6 @@ class Prototype {
     }
 
     function save ( $app ) {
-        require_once( 'class.PTUtil.php' );
         $db = $app->db;
         $callbacks = $app->callbacks;
         $app->get_scheme_from_db( 'urlinfo' );
@@ -3179,8 +3180,8 @@ class Prototype {
                              'object_id' => $obj->id,'model' => $obj->_model ] );
                         foreach ( $urls as $url ) {
                             $file_path = $url->file_path;
-                            if ( file_exists( $file_path ) ) {
-                                unlink( $file_path );
+                            if ( $app->fmgr->exists( $file_path ) ) {
+                                $app->fmgr->unlink( $file_path );
                             }
                             if (! $url->remove() ) {
                                 return $app->rollback(
@@ -3366,6 +3367,7 @@ class Prototype {
     function publish_obj ( $obj, $original = null, $dependencies = true ) {
         $app = $this;
         $db = $app->db;
+        $fmgr = $app->fmgr;
         $model = $obj->_model;
         $table = $app->get_table( $model );
         $scheme = $app->get_scheme_from_db( $model );
@@ -3402,7 +3404,7 @@ class Prototype {
                 $url = $base_url . '/'. $extra_path . $file;
                 if (!$table->revisable || !$obj->rev_type ) {
                     if ( file_exists( $file_path ) ) {
-                        $comp = base64_encode( file_get_contents( $file_path ) );
+                        $comp = base64_encode( $fmgr->get( $file_path ) );
                         $data = base64_encode( $obj->$key );
                         if ( $comp === $data ) continue;
                         unset( $comp, $data );
@@ -3699,7 +3701,6 @@ class Prototype {
         $parts = explode( '.', $mapping );
         $extIndex = count( $parts ) - 1;
         $extension = strtolower( @$parts[ $extIndex ] );
-        require_once( 'class.PTUtil.php' );
         $mime_type = PTUtil::get_mime_type( $extension );
         $key = $app->encrypt( $user->id, $magic );
         $session = $db->model( 'session' )->get_by_key( $terms );
@@ -3802,7 +3803,6 @@ class Prototype {
 
     function title_start_end ( $archive_type, $ts, $mapping = null ) {
         $app = $this;
-        require_once( 'class.PTUtil.php' );
         list( $title, $start, $end ) = ['', '', ''];
         $archive_type = strtolower( $archive_type );
         if ( $archive_type == 'yearly' ) {
@@ -4239,11 +4239,7 @@ class Prototype {
         }
         if (! is_string( $data ) ) $data = serialize( $data );
         $cache_path = __DIR__ . DS . 'cache' . DS . $id;
-        if (! is_dir( $cache_path ) ) {
-            require_once( 'class.PTUtil.php' );
-            PTUtil::mkpath( dirname( $cache_path ) );
-        }
-        file_put_contents( $cache_path, $data );
+        $app->fmgr->put( $cache_path, $data );
     }
 
     function get_cache ( $id, $model = null, $multiple = false ) {
@@ -4304,7 +4300,6 @@ class Prototype {
         $cache_path = $this->path() . DS . 'cache' . DS . $id;
         if ( is_dir( $cache_path ) ) {
             $cache_path = rtrim( $cache_path, DS );
-            require_once( 'class.PTUtil.php' );
             return PTUtil::remove_dir( $cache_path );
         } else if ( file_exists( $cache_path ) ) {
             return unlink( $cache_path );
@@ -4863,7 +4858,6 @@ class Prototype {
         } else {
             $urls = $app->db->model( 'urlinfo' )->load();
         }
-        require_once( 'class.PTUtil.php' );
         $dirs = [];
         $update_info = [];
         foreach ( $urls as $url_info ) {
@@ -4883,12 +4877,12 @@ class Prototype {
                     if ( file_exists( $url_info->file_path ) ) {
                         if ( file_exists( $url_path ) ) {
                             $dirs[ dirname( $url_path ) ] = true;
-                            rename( $url_path, "{$url_path}.bk" );
+                            $app->fmgr->rename( $url_path, "{$url_path}.bk" );
                         }
-                        PTUtil::mkpath( dirname( $url_path ) );
-                        rename( $url_info->file_path, $url_path );
-                        if ( file_exists( "{$url_path}.bk" ) ) {
-                            unlink( "{$url_path}.bk" );
+                        $app->fmgr->mkpath( dirname( $url_path ) );
+                        $app->fmgr->rename( $url_info->file_path, $url_path );
+                        if ( $app->fmgr->exists( "{$url_path}.bk" ) ) {
+                            $app->fmgr->unlink( "{$url_path}.bk" );
                         }
                     }
                 }
@@ -4899,7 +4893,7 @@ class Prototype {
             }
         }
         $app->db->model( 'urlinfo' )->update_multi( $update_info );
-        PTUtil::remove_empty_dirs( $dirs );
+        $app->fmgr->remove_empty_dirs( $dirs );
     }
 
     function post_save_table ( $cb, $app, $obj, $original ) {
@@ -4938,8 +4932,8 @@ class Prototype {
 
     function publish ( $file_path, $obj, $key,
                        $mime_type = 'text/html', $type = 'file' ) {
-        require_once( 'class.PTUtil.php' );
         $app = $this;
+        $fmgr = $app->fmgr;
         $cache_vars = $app->ctx->vars;
         $cache_local_vars = $app->ctx->local_vars;
         $cache_stash = $app->ctx->__stash;
@@ -4948,7 +4942,6 @@ class Prototype {
         if (!$table ) return;
         $db = $app->db;
         $ctx = clone $app->ctx;
-        $ui = $db->model( 'urlinfo' )->get_by_key( ['file_path' => $file_path ] );
         $ui_exists = false;
         $urlmapping_id = 0;
         $old_path = '';
@@ -4972,6 +4965,10 @@ class Prototype {
             if ( $urlmapping->date_based ) $archive_date = $type;
             $type = $urlmapping->template_id ? 'archive' : 'model';
             $publish = $urlmapping->publish_file;
+            $ui = $db->model( 'urlinfo' )->get_by_key(
+                ['urlmapping_id' => $urlmapping->id, 'class' => 'archive',
+                 'object_id' => $obj->id, 'model' => $obj->_model ] );
+            $ui->file_path( $file_path );
             $ui->publish_file( $publish );
             $template = $urlmapping->template;
             if ( $template && $template->status != 2 ) {
@@ -4988,6 +4985,8 @@ class Prototype {
             $link_status = $urlmapping->link_status;
             $key = '';
             $ctx->stash( 'current_urlmapping', $urlmapping );
+        } else {
+            $ui = $db->model( 'urlinfo' )->get_by_key( ['file_path' => $file_path ] );
         }
         if ( $ui->id ) {
             if ( $key == $ui->key && $ui->model == $table->name &&
@@ -5064,13 +5063,10 @@ class Prototype {
         $updated = true;
         if ( $type === 'file' || $publish ) {
             if ( $asset_publish || $publish ) {
-                if (!$unlink ) {
-                    PTUtil::mkpath( dirname( $file_path ) );
-                }
                 if ( $type === 'file' ) {
                     if ( $unlink ) {
-                        if ( file_exists( $file_path ) ) {
-                            unlink( $file_path );
+                        if ( $fmgr->exists( $file_path ) ) {
+                            $fmgr->unlink( $file_path );
                             $remove_dirs[ dirname( $file_path ) ] = true;
                         }
                         $ui->is_published( 0 );
@@ -5086,7 +5082,7 @@ class Prototype {
                             $hash = md5( base64_encode( $data ) );
                             if ( file_exists( $thumb_path ) ) {
                                 $old = $md5 ? $md5 :
-                                md5( base64_encode( file_get_contents( $thumb_path ) ) );
+                                md5( base64_encode( $fmgr->get( $thumb_path ) ) );
                                 if ( $old !== $hash ) {
                                     $thumb_update = true;
                                 }
@@ -5094,7 +5090,7 @@ class Prototype {
                                 $thumb_update = true;
                             }
                             if ( $thumb_update ) {
-                                file_put_contents( $thumb_path, $data );
+                                $fmgr->put( $thumb_path, $data );
                             }
                             if (! $md5 || $thumb_update ) {
                                 $uid = (int) $thumb->urlinfo_id;
@@ -5108,7 +5104,7 @@ class Prototype {
                         $hash = md5( base64_encode( $data ) );
                         $file_saved = false;
                         if ( !$md5 && file_exists( $file_path ) ) {
-                            $md5 = md5( base64_encode( file_get_contents( $file_path ) ) );
+                            $md5 = md5( base64_encode( $fmgr->get( $file_path ) ) );
                         }
                         if ( $md5 && $md5 == $hash ) {
                             if ( $ui->is_published != 1 || !$ui->md5 ) {
@@ -5119,7 +5115,7 @@ class Prototype {
                             return $file_path;
                         }
                         $ui->md5( $hash );
-                        if ( file_put_contents( $file_path, $data ) ) {
+                        if ( $fmgr->put( $file_path, $data ) !== false ) {
                             $ui->is_published( 1 );
                         } else {
                             $ui->is_published( 0 );
@@ -5127,8 +5123,8 @@ class Prototype {
                     }
                 } else {
                     if ( $unlink ) {
-                        if ( file_exists( $file_path ) ) {
-                            unlink( $file_path );
+                        if ( $fmgr->exists( $file_path ) ) {
+                            $fmgr->unlink( $file_path );
                             $remove_dirs[ dirname( $file_path ) ] = true;
                         }
                         $ui->is_published( 0 );
@@ -5187,8 +5183,8 @@ class Prototype {
                                 }
                             } elseif ( $publish == 3 || $publish == 6 ) {
                                 // on-demand or dynamic
-                                if ( file_exists( $file_path ) ) {
-                                    unlink( $file_path );
+                                if ( $fmgr->exists( $file_path ) ) {
+                                    $fmgr->unlink( $file_path );
                                 }
                                 if (! $ui->id ) {
                                     $continue = true;
@@ -5207,9 +5203,9 @@ class Prototype {
                             $app->ctx->vars = $cache_vars;
                             $app->ctx->local_vars = $cache_local_vars;
                             $app->ctx->__stash = $cache_stash;
-                            if ( file_exists( $file_path ) ) {
+                            if ( $fmgr->exists( $file_path ) ) {
                                 $old = $old_hash
-                                     ? $old_hash : md5( file_get_contents( $file_path ) );
+                                     ? $old_hash : md5( $fmgr->get( $file_path ) );
                                 if ( $old === $hash ) {
                                     if (! $ui->is_published ) {
                                         $ui->is_published( 1 );
@@ -5219,7 +5215,7 @@ class Prototype {
                                 }
                             }
                             if ( $updated ) {
-                                if ( file_put_contents( $file_path, $data ) ) {
+                                if ( $fmgr->put( $file_path, $data )!== false ) {
                                     $ui->is_published( 1 );
                                 }
                             }
@@ -5228,8 +5224,8 @@ class Prototype {
                 }
             } else {
                 $ui->is_published( 0 );
-                if ( file_exists( $file_path ) ) {
-                    unlink( $file_path );
+                if ( $fmgr->exists( $file_path ) ) {
+                    $fmgr->unlink( $file_path );
                     $remove_dirs[ dirname( $file_path ) ] = true;
                 }
             }
@@ -5259,8 +5255,8 @@ class Prototype {
                     $old_path = $old->file_path;
                     $old_path = str_replace( '/', DS, $old_path );
                     if ( $old_path && $old_path
-                        !== $file_path && file_exists( $old_path ) ) {
-                        unlink( $old_path );
+                        !== $file_path && $fmgr->exists( $old_path ) ) {
+                        $fmgr->unlink( $old_path );
                         $remove_dirs[ dirname( $old_path ) ] = true;
                     }
                 }
@@ -5270,7 +5266,7 @@ class Prototype {
         if ( $publish == 2 ) {
             $app->delayed[] = $ui->id;
         }
-        PTUtil::remove_empty_dirs( $remove_dirs );
+        $fmgr->remove_empty_dirs( $remove_dirs );
         return $file_path;
     }
 
@@ -5589,7 +5585,6 @@ class Prototype {
                     }
                     $headers = ['From' => $system_email->value ];
                     $subject = $app->translate( 'Password Recovery' );
-                    require_once( 'class.PTUtil.php' );
                     if (! PTUtil::send_mail( $email, $subject, $body, $headers, $error ) ) {
                         $app->ctx->vars['error'] = $error;
                         return $app->__mode( 'start_recover' );

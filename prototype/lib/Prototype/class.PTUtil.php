@@ -790,6 +790,16 @@ class PTUtil {
         echo file_get_contents( $path );
     }
 
+    public static function get_extension ( $path ) {
+        if ( strpos( $path, '.' ) === false ) {
+            return '';
+        }
+        $parts = explode( '.', $path );
+        $extIndex = count( $parts ) - 1;
+        $extension = strtolower( @$parts[ $extIndex ] );
+        return $extension;
+    }
+
     public static function get_mime_type ( $extension, $default = '' ) {
         $extension = strtolower( $extension );
         $extension = ltrim( $extension, '.' );
