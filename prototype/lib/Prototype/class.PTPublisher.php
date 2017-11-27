@@ -2,8 +2,9 @@
 
 class PTPublisher {
 
-    function publish_queue () {
+    function publish_queue ( $interval = 300000 ) {
         $app = Prototype::get_instance();
+        require_once( 'class.PTUtil.php' );
         $db = $app->db;
         $app->get_scheme_from_db( 'urlinfo' );
         $sth = $db->model( 'urlinfo' )->load_iter( ['publish_file' => 4, 'is_published' => 0] );
@@ -23,12 +24,15 @@ class PTPublisher {
             if ( $publish ) {
                 file_put_contents( $file_path, $data );
             }
-            $mime_type = mime_content_type( $file_path );
+            $extension = PTUtil::get_extension( $file_path );
+            $mime_type = PTUtil::get_mime_type( $extension );
             $obj->mime_type( $mime_type );
             $obj->is_published( 1 );
             $obj->save();
-            usleep( 300000 );
-            $app->db->reconnect();
+            unset( $obj );
+            if ( $interval ) {
+                usleep( $interval );
+            }
         }
     }
 
