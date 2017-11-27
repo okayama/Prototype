@@ -226,8 +226,7 @@ class EntryImporter extends PTPlugin {
                             $tags = array_unique( $tags );
                             $to_ids = [];
                             foreach ( $tags as $tag ) {
-                                $normalize = preg_replace( '/\s+/', '',
-                                                    trim( strtolower( $tag ) ) );
+                                $normalize = str_replace( ' ', '', trim( mb_strtolower( $tag ) ) );
                                 if (! $tag ) continue;
                                 $terms = ['normalize' => $normalize ];
                                 $terms['workspace_id'] = $workspace_id;
@@ -271,8 +270,6 @@ class EntryImporter extends PTPlugin {
                         } else {
                             $app->db->rollback();
                         }
-                        // usleep( 50000 );
-                        // $app->db->reconnect();
                         $context = '';
                         $entry = $app->db->model( 'entry' )->new();
                         $categories = [];

@@ -1862,7 +1862,7 @@ class PADOBaseModel {
         if ( isset( $pado->methods['db2ts'] ) )
             return $this->_driver->db2ts( $ts );
         $ts = preg_replace( '/[^0-9]/', '', $ts );
-        $ts = (int) $ts;
+        // $ts = (int) $ts;
         return $ts;
     }
 }
@@ -2277,7 +2277,9 @@ class PADOMySQL extends PADOBaseModel {
             ksort( $arr );
             unset( $arr[ $id_column ] );
             $keys = array_keys( $arr );
-            array_unshift( $keys, $id_column );
+            if ( $id ) {
+                array_unshift( $keys, $id_column );
+            }
             if (! $object_keys ) {
                 $object_keys = join( ',', $keys );
                 $updates = [];
@@ -2294,8 +2296,7 @@ class PADOMySQL extends PADOBaseModel {
                 }
             }
             $values = array_values( $arr );
-            if (! $id ) $id = "''";
-            $stmt = "({$id},";
+            $stmt = $id ? "({$id}," : '(';
             foreach ( $values as $v ) {
                 $stmt .= '?,';
             }
@@ -2326,6 +2327,7 @@ class PADOMySQL extends PADOBaseModel {
             ++$pado->query_cnt;
         } catch ( PDOException $e ) {
             $message = 'PDOException: ' . $e->getMessage() . ", {$sql}";
+            if (!empty( $vals ) ) $message .= ' / values = ' . join( ', ', $vals );
             $pado->errors[] = $message;
             trigger_error( $message );
             return $this->retry( $pado, $sth, $message, 'update_multi', $objects, $update );

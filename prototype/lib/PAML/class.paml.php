@@ -182,9 +182,7 @@ class PAML {
             $this->all_tags[ $kind ] = array_flip( $tags_arr );
         if ( debug_backtrace()[0] && $f = debug_backtrace()[0]['file'] )
             $this->include_paths[ dirname( $f ) ] = true;
-        if ( $this->cache_driver ) {
-            $this->init_cache( $this->cache_driver );
-        }
+        $this->init_cache( $this->cache_driver );
         if ( $this->use_plugin ) {
             if ( ( $plugin_d = PAMLDIR . 'plugins' ) && is_dir( $plugin_d ) )
                 $this->plugin_paths[] = $plugin_d;

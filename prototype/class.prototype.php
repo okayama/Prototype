@@ -201,7 +201,7 @@ class Prototype {
         unset( $this->db );
     }
 
-    function init () {
+    function init ( $dsn = null, $dbuser = null, $dbpasswd = null ) {
         $this->log_path = __DIR__ . DS . 'log' . DS;
         if ( $this->timezone ) date_default_timezone_set( $this->timezone );
         require_once( LIB_DIR . 'PADO' . DS . 'class.pado.php' );
@@ -218,7 +218,15 @@ class Prototype {
         }
         $db->max_packet = 16777216;
         set_error_handler( [ $this, 'errorHandler'] );
-        $db->configure_from_json( $cfg );
+        if ( ! $dsn && file_exists( $cfg ) ) {
+            $db->configure_from_json( $cfg );
+        } else {
+            $db->dsn = $dsn;
+            if ( $dbuser && $dbpasswd ) {
+                $db->dbuser = $dbuser;
+                $db->dbpasswd = $dbpasswd;
+            }
+        }
         $prefix = $this->dbprefix;
         $db->prefix = $this->dbprefix;
         $db->idxprefix = '<table>_';
@@ -3122,7 +3130,10 @@ class Prototype {
             $workspace_id = (int) $app->param( 'workspace_id' );
             $props = $placements['tags']['tag'];
             foreach ( $add_tags as $tag ) {
-                $normalize = preg_replace( '/\s+/', '', trim( strtolower( $tag ) ) );
+                // if ( function_exists( 'normalizer_normalize' ) ) {
+                //     $normalize = normalizer_normalize( $normalize, Normalizer::NFKD );
+                // }
+                $normalize = str_replace( ' ', '', trim( mb_strtolower( $tag ) ) );
                 if (!$tag ) continue;
                 $terms = ['normalize' => $normalize ];
                 if ( $workspace_id )
@@ -4237,7 +4248,10 @@ class Prototype {
         if ( $driver = $ctx->cachedriver ) {
             return $driver->set( $id, $data, $app->cache_expires );
         }
-        if (! is_string( $data ) ) $data = serialize( $data );
+        if (! is_string( $data ) ) {
+            $data = serialize( $data );
+            $id .= '.ser';
+        }
         $cache_path = __DIR__ . DS . 'cache' . DS . $id;
         $app->fmgr->put( $cache_path, $data );
     }
@@ -4261,6 +4275,9 @@ class Prototype {
             return null;
         }
         $cache_path = __DIR__ . DS . 'cache' . DS . $id;
+        if (! file_exists( $cache_path ) && file_exists( $cache_path . '.ser' ) ) {
+            $cache_path = $cache_path . '.ser';
+        }
         if ( file_exists( $cache_path ) && filemtime( $cache_path ) >
             ( time() - $app->cache_expires ) ) {
             if ( $multiple && $model ) {
@@ -4272,8 +4289,10 @@ class Prototype {
                 return $objs;
             } else {
                 $data = file_get_contents( $cache_path );
-                $data = ( $unserialized = @unserialize( $data ) )
+                if ( preg_match( "/\.ser$/", $cache_path ) ) {
+                    $data = ( $unserialized = @unserialize( $data ) )
                       !== false ? $unserialized : $data;
+                }
                 return $model ? $app->db->model( $model )->__new( $data ) : $data;
             }
         }
