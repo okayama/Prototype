@@ -27,7 +27,7 @@
 <script>
 setTimeout(function(){
     window.location.href = "<mt:var name="next_url">";
-} , 200);
+} , <mt:var name="rebuild_interval">);
 </script>
 
 <mt:elseif name="rebuild_end">
@@ -77,7 +77,7 @@ $('#header-alert-message').focus();
 if ( $('#next_models').val() ) {
     setTimeout(function(){
         $('#rebuild_next').submit();
-    } , 200);
+    } , <mt:var name="rebuild_interval">);
 }
 </script>
 
@@ -112,7 +112,7 @@ if ( $('#next_models').val() ) {
 <script>
 setTimeout(function(){
     $('#rebuild_next').submit();
-} , 200);
+} , <mt:var name="rebuild_interval">);
 </script>
 
 <mt:else>

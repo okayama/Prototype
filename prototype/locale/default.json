@@ -22,6 +22,7 @@
     "info"          : "Info",
     "version"       : "Version",
     "publish_type"  : "Publish Type",
+    "control_border": "Control Border",
     "role"          : "Role",
     "md5"           : "MD5",
     "kind"          : "Kind",

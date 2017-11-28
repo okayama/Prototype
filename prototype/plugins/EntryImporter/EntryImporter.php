@@ -227,7 +227,7 @@ class EntryImporter extends PTPlugin {
                             $to_ids = [];
                             foreach ( $tags as $tag ) {
                                 $normalize = str_replace( ' ', '', trim( mb_strtolower( $tag ) ) );
-                                if (! $tag ) continue;
+                                if (! $normalize ) continue;
                                 $terms = ['normalize' => $normalize ];
                                 $terms['workspace_id'] = $workspace_id;
                                 $tag_obj = $app->db->model( 'tag' )->get_by_key( $terms );

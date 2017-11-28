@@ -118,7 +118,6 @@ $('#alert-saved').focus();
 <mt:elseif name="edit" eq="primary">
 
 <mt:setvar name="_primary" value="$value">
-<mt:setvar name="_languages" value="$languages">
 
 <div class="row form-group">
   <div class="col-lg-2">
@@ -159,11 +158,11 @@ $('#__view-permalink').click(function(){
     </label>
   </div>
   <div class="col-lg-2">
-    <mt:loop name="_languages">
+    <mt:loop name="languages">
     <mt:if name="__first__">
     <select class="form-control short" id="<mt:var name="__col_name__">" name="<mt:var name="__col_name__">" <mt:if name="readonly">readonly onmousedown="return false;" onkeydown="return false;"</mt:if>>
     </mt:if>
-      <option value="<mt:var name="__value__">" <mt:if name="value" eq="$__value__">selected</mt:if>><mt:var name="__value__"></option>
+      <option value="<mt:var name="__value__">" <mt:if name="value" eq="$__value__">selected</mt:if>><mt:var name="__value__" translate="1"></option>
     <mt:if name="__last__">
     </select>
     </mt:if>
@@ -351,7 +350,7 @@ DropZone<mt:var name="__col_name__">.addEventListener('dragover', function (even
 DropZone<mt:var name="__col_name__">.addEventListener('dragleave', function (event) {
     $('#drop-<mt:var name="__col_name__">').css('background-color','#fff');
 });
-$('#drop-<mt:var name="__col_name__">').css('border','3px dashed #ccc');
+$('#drop-<mt:var name="__col_name__">').css('border','3px dashed <mt:if name="user_control_border"><mt:var name="user_control_border" escape><mt:else>#ccc</mt:if>');
 $('#drop-<mt:var name="__col_name__">').css('margin','1px');
 $('#drop-<mt:var name="__col_name__">').css('padding','8px');
 /*jslint unparam: true */

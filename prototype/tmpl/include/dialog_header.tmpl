@@ -24,6 +24,9 @@
     <link rel="stylesheet" href="<mt:var name="prototype_path">assets/css/jquery.fileupload.css">
     <style type="text/css">
         .nav-top,.brand-prototype{ background-color: <mt:getoption key="barcolor"> !important; color: <mt:getoption key="bartextcolor"> !important; }
+      <mt:if name="user_control_border">
+       .form-control, .relation_nestable_list, .custom-control-indicator, .mce-tinymce, .btn-secondary { border: 1px solid <mt:var name="user_control_border" escape> !important }
+      </mt:if>
     </style>
   </head>
 

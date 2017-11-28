@@ -3134,7 +3134,7 @@ class Prototype {
                 //     $normalize = normalizer_normalize( $normalize, Normalizer::NFKD );
                 // }
                 $normalize = str_replace( ' ', '', trim( mb_strtolower( $tag ) ) );
-                if (!$tag ) continue;
+                if (!$normalize ) continue;
                 $terms = ['normalize' => $normalize ];
                 if ( $workspace_id )
                     $terms['workspace_id'] = $workspace_id;

@@ -41,6 +41,11 @@
             "type": "string",
             "size": 255
         },
+        "control_border": {
+            "type": "string",
+            "size": 255,
+            "default": null
+        },
         "is_superuser": {
             "type": "tinyint",
             "size": 4,
@@ -140,6 +145,7 @@
         "nickname": "text",
         "photo": "file",
         "language": "languages",
+        "control_border": "text",
         "is_superuser": "checkbox",
         "status": "selection",
         "lock_out": "checkbox",

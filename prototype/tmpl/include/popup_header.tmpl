@@ -28,6 +28,9 @@
       .brand-workspace, .workspace-bar{ background-color: <mt:var name="workspace_barcolor"> !important; color: <mt:var name="workspace_bartextcolor"> !important; }
       </mt:if>
       </mt:if>
+      <mt:if name="user_control_border">
+      .form-control, .relation_nestable_list, .custom-control-indicator, .mce-tinymce, .btn-secondary { border: 1px solid <mt:var name="user_control_border" escape> !important }
+      </mt:if>
     </style>
   </head>
   <body class="popup">
