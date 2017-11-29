@@ -1214,7 +1214,7 @@ $(document).on('click','.close-sm', function() {
         }
         var basename = $(this).attr('data-basename');
         var fieldLabel = $('#field-' + basename + '-wrapper .row .col-label:first').html();
-        $(this).parent().parent().parent().remove();
+        $(this).parent().parent().parent().parent().remove();
         $('#field-' + basename + '-wrapper .row .col-label:first').html(fieldLabel);
         $('#field-' + basename + '-wrapper .row:first').removeClass('multiple-field');
         if ( $('#field-' + basename + '-wrapper .row').length == 0 ) {
