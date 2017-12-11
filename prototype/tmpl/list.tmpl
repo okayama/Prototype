@@ -264,8 +264,10 @@ $('#dialog-cancel-btn').click(function(){
         <mt:setvar name="class_desc" value="1">
       </mt:if>
     </mt:if>
+  <mt:unless name="request.revision_select">
     <a aria-label="<mt:trans phrase="Sort by %s in %s" params="'$_label','$order_asc'" escape><mt:if name="class_asc">(<mt:trans phrase="Selected">)</mt:if>" class="<mt:if name="class_asc">current-cnd</mt:if>" href="<mt:var name="this_url">&amp;sort=<mt:var name="_name">&amp;direction=asc<mt:var name="query_cond"><mt:var name="workspace_param"><mt:var name="dialog_param"><mt:var name="filter_cond" strip_linefeeds="1"><mt:var name="insert_cond" strip_linefeeds="1"><mt:var name="selected_ids_cond" strip_linefeeds="1"><mt:if name="workspace_id">&amp;workspace_id=<mt:var name="workspace_id"></mt:if>">&#9650;</a>
     <a aria-label="<mt:trans phrase="Sort by %s in %s" params="'$_label','$order_desc'" escape><mt:if name="class_asc">(<mt:trans phrase="Selected">)</mt:if>" class="<mt:if name="class_desc">current-cnd</mt:if>" href="<mt:var name="this_url">&amp;sort=<mt:var name="_name">&amp;direction=desc<mt:var name="query_cond"><mt:var name="workspace_param"><mt:var name="dialog_param"><mt:var name="filter_cond" strip_linefeeds="1"><mt:var name="insert_cond" strip_linefeeds="1"><mt:var name="selected_ids_cond" strip_linefeeds="1"><mt:if name="workspace_id">&amp;workspace_id=<mt:var name="workspace_id"></mt:if>">&#9660;</a></span>
+  </mt:unless>
   </mt:if>
 </th>
 </mt:ifinarray>
@@ -389,14 +391,12 @@ $('#dialog-cancel-btn').click(function(){
             <mt:var name="$_name" escape>
           </mt:unless>
         <mt:ifusercan action="edit" model="$this_model" id="$id" workspace_id="$workspace_id"></a></mt:ifusercan>
-        <mt:if name="_has_mapping">
-          <mt:if name="_permalink">
+        <mt:if name="_permalink">
           &nbsp; 
           <a href="<mt:var name="_permalink">" target="_blank">
           <i class="fa fa-external-link" aria-hidden="true"></i>
           <span class="sr-only"><mt:trans phrase="View"></span>
           </a>
-          </mt:if>
         </mt:if>
           <a class="btn toggle-infobox hidden"
             id="toggle_<mt:var name="id">" href="javascript:void(0);">

@@ -1641,6 +1641,15 @@ class Prototype {
     function get_permalink ( $obj, $has_map = false, $rebuild = true ) {
         $app = $this;
         $table = $app->get_table( $obj->_model );
+        if ( $obj->_model == 'asset' ) {
+            $url = $app->db->model( 'urlinfo' )->load( [
+                'model' => 'asset', 'object_id' => $obj->id, 'class' => 'file'] );
+            if ( is_array( $url ) ) {
+                $url = $url[0];
+                return $url->url;
+            }
+            return false;
+        }
         $terms = ['model' => $obj->_model ];
         if ( $has_map && $obj->_model === 'template' ) {
             $terms['template_id'] = $obj->id;
