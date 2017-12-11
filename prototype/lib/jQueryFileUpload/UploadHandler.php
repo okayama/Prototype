@@ -1354,6 +1354,16 @@ class UploadHandler
     }
 
     protected function get_upload_data($id) {
+        $name = $_FILES[$id]['name'];
+        if ( is_array( $name ) ) {
+            $new_names = array();
+            foreach ( $name as $n ) {
+                $new_names[] = urlencode( $n );
+            }
+            $_FILES[$id]['name'] = $new_names;
+        } else {
+            $_FILES[$id]['name'] = urlencode( $name );
+        }
         return @$_FILES[$id];
     }
 
