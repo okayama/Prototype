@@ -123,7 +123,7 @@ class PAML {
       'conditional' => ['else', 'elseif', 'if', 'unless', 'ifgetvar', 'elseifgetvar',
                         'ifinarray', 'isarray'],
       'modifier'    => ['escape' ,'setvar', 'format_ts', 'zero_pad', 'trim_to', 'eval',
-                        'strip_linefeeds', 'sprintf', 'encode_js', 'truncate', 'wrap',
+                        'strip_linefeeds', 'sprintf', 'encode_js', 'truncate', 'wrap', 'encode_url',
                         'trim_space', 'regex_replace', 'setvartemplate', 'replace', 'translate',
                         'to_json', 'from_json', 'nocache', 'split', 'join', 'format_size'],
       'function'    => ['getvar', 'trans', 'setvar', 'property', 'ldelim', 'include', 'math',
@@ -136,7 +136,8 @@ class PAML {
     public    $modifier_funcs = [
       'lower_case'  => 'strtolower', 'upper_case' => 'strtoupper', 'trim' => 'trim',
       'ltrim'       => 'ltrim',  'remove_html' => 'strip_tags', 'rtrim' => 'rtrim',
-      'nl2br'       => 'nl2br', 'base64_encode' => 'base64_encode' ];
+      'nl2br'       => 'nl2br', 'base64_encode' => 'base64_encode',
+      'strtotime'   => 'strtotime' ];
 
 /**
  * $callbacks: Array of Callbacks.
@@ -182,7 +183,9 @@ class PAML {
             $this->all_tags[ $kind ] = array_flip( $tags_arr );
         if ( debug_backtrace()[0] && $f = debug_backtrace()[0]['file'] )
             $this->include_paths[ dirname( $f ) ] = true;
-        $this->init_cache( $this->cache_driver );
+        if ( $this->cache_driver ) {
+            $this->init_cache( $this->cache_driver );
+        }
         if ( $this->use_plugin ) {
             if ( ( $plugin_d = PAMLDIR . 'plugins' ) && is_dir( $plugin_d ) )
                 $this->plugin_paths[] = $plugin_d;
@@ -1224,6 +1227,10 @@ class PAML {
     function modifier_encode_js ( $str, $arg ) {
         $str = json_encode( $str, JSON_UNESCAPED_UNICODE );
         if ( preg_match( '/^"(.*)"$/', $str, $matches ) ) return $matches[1];
+    }
+
+    function modifier_encode_url ( $str, $arg ) {
+        return rawurlencode( $str );
     }
 
     function modifier_sprintf ( $str, $arg ) {
