@@ -105,9 +105,11 @@ $('#alert-saved').focus();
 </mt:if>
 
 <mt:if name="unchangeable">
-  <mt:setvar name="readonly" value="1">
+  <mt:if name="request.id">
+    <mt:setvar name="readonly" value="1">
+  </mt:if>
 </mt:if>
-<mt:includeparts screen="edit" type="column" name="$_column_name" model="$model" setvar="_include_column">
+<mt:includeparts screen="edit" type="column" name="$_column_name" model="$model" trim="1" setvar="_include_column">
 <mt:if name="__col_name__" ne="id">
 <div id="<mt:var name="__col_name__">-wrapper">
 </mt:if>
@@ -128,7 +130,7 @@ $('#alert-saved').focus();
   </div>
   <div class="col-lg-10 input-group-lg">
     <input id="<mt:var name="__col_name__">" type="text" class="form-control watch-changed" name="<mt:var name="__col_name__">" value="<mt:var name="value">"
-      aria-label="<mt:var name="label" escape>" placeholder="<mt:var name="label" escape>" <mt:if name="readonly">readonly</mt:if>>
+      aria-label="<mt:var name="label" escape>" <mt:if name="readonly">readonly</mt:if>>
   <mt:if name="permalink">
   <div class="input-group copy-url copy-url-permalink">
   <input type="text" class="form-control form-control-sm clipboard-url" id="__permalink-clipboard"
@@ -1000,6 +1002,13 @@ $('#_field_chooser').click(function(){
   </div>
 </mt:setvarblock>
 
+<mt:if name="model" eq="user">
+<mt:isadmin>
+<mt:else>
+  <mt:setvar name="_auditing" value="0">
+</mt:isadmin>
+</mt:if>
+
 <mt:if name="_auditing">
 <div class="row form-group">
   <div class="col-lg-2">
@@ -1048,9 +1057,11 @@ $('#_field_chooser').click(function(){
   <div class="col-lg-12">
     <button type="submit" id="__save" class="btn btn-primary"><mt:trans phrase="Save"></button>
   <mt:if name="request.id">
+    <mt:unless name="model" eq="user">
     <mt:if name="can_delete">
       <button type="submit" id="__delete" class="btn btn-secondary"><mt:trans phrase="Delete"></button>
     </mt:if>
+    </mt:unless>
   </mt:if>
   <mt:if name="_has_mapping">
     <button type="submit" id="__preview" class="btn btn-secondary"><mt:trans phrase="Preview"></button>

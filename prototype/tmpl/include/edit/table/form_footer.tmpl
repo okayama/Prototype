@@ -897,11 +897,16 @@ function set_column_names( model, type, column ) {
     $('#_detail_' + type + '_column option').remove();
     $.getJSON('<mt:var name="script_uri">?magic_token=<mt:var name="magic_token">&__mode=get_columns_json&_model=' + model, function( data ) {
         $.each( data.labels, function( key, val ) {
+            var locale = data.locale.<mt:var name="user_language">;
             var sele = false;
             if ( key == column ) {
                 sele = true;
             }
-            option = $('<option>').val( key ).text( val ).prop('selected', sele );
+            var label = val;
+            if ( locale && locale[val] ) {
+                label = locale[val];
+            }
+            option = $('<option>').val( key ).text( label ).prop('selected', sele );
             $('#_detail_' + type + '_column').append( option );
         });
     });
