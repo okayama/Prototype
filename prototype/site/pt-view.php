@@ -1,18 +1,18 @@
 <?php
-
 $pt_path = dirname( __DIR__ ) . DIRECTORY_SEPARATOR . 'prototype' . DIRECTORY_SEPARATOR;
 $workspace_id = 1;
 require_once( $pt_path . 'class.Prototype.php' );
 $app = new Prototype();
-// $app->debug = true;
+$app->in_dynamic = true;
 $app->init();
-$url = $app->db->model( 'urlinfo' )->get_by_key( ['relative_url' => $app->request_uri ] );
+list( $request, $param ) = explode( '?', $app->request_uri );
+$url = $app->db->model( 'urlinfo' )->get_by_key( ['relative_url' => $request ] );
 if (! $url->id ) {
     if ( $workspace_id ) {
         $workspace_id = (int) $workspace_id;
         $workspace = $app->db->model( 'workspace' )->load( $workspace_id );
     } else {
-        $request_uri = $app->base . $app->request_uri;
+        $request_uri = $app->base . $request;
         $workspace = pt_get_workspace_from_url( $app, $request_uri );
     }
     pt_page_not_found( $app, $workspace );
@@ -21,11 +21,6 @@ if (! $url->id ) {
 $ctx = $app->ctx;
 $workspace_id = (int) $url->workspace_id;
 $workspace = $url->workspace;
-if (! $app->user() ) {
-    if (! $app->dynamic_view ) {
-        pt_page_not_found( $app, $workspace );
-    }
-}
 $object_id = (int) $url->object_id;
 $model = $url->model;
 $table = $app->db->model( 'table' )->load(['name' => $model ] );
@@ -33,6 +28,28 @@ if ( empty( $table ) ) {
     exit();
 }
 $table = $table[0];
+$publish_status = null;
+$can_view = false;
+if ( $table->has_status ) {
+    $publish_status = $table->has_deadline ? 4 : 2;
+    $obj_id = (int) $url->object_id;
+    $url_obj = $app->db->model( $model )->load( $obj_id );
+    if ( $url_obj->status != $publish_status ) {
+        if (! $app->user() ) {
+            if (! $app->dynamic_view ) {
+                pt_page_not_found( $app, $workspace );
+            }
+        }
+    } else {
+        $can_view = true;
+    }
+} else {
+    if (! $app->user() ) {
+        if (! $app->dynamic_view ) {
+            pt_page_not_found( $app, $workspace );
+        }
+    }
+}
 $model = $table->name;
 $workspace = null;
 $key = $url->key;
@@ -47,9 +64,11 @@ if ( $object_id && $model ) {
         if ( $obj->has_column( 'workspace_id' ) && $obj->workspace ) {
             $workspace = $obj->workspace;
         }
-        if (! $app->dynamic_view ) {
-            if (! $app->can_do( $model, 'edit', $obj, $workspace ) ) {
-                pt_page_not_found( $app, $workspace, $app->translate( 'Permission denied.' ) );
+        if (! $can_view ) {
+            if (! $app->dynamic_view ) {
+                if (! $app->can_do( $model, 'edit', $obj, $workspace ) ) {
+                    pt_page_not_found( $app, $workspace, $app->translate( 'Permission denied.' ) );
+                }
             }
         }
     }
@@ -88,14 +107,17 @@ function pt_page_not_found ( $app, $workspace, $error = null, $mime_type = 'text
     if ( $tmpl ) {
         $app->ctx->stash( 'current_template', $tmpl );
         $data = $app->ctx->build( $tmpl->text );
-        pt_view_print_html( $data, $mime_type );
+        pt_view_print_html( $data, $mime_type, 404 );
     } else {
         echo htmlspecialchars( $error );
     }
     exit();
 }
 
-function pt_view_print_html ( $data, $mime_type = 'text/html' ) {
+function pt_view_print_html ( $data, $mime_type = 'text/html', $status = 200 ) {
+    if ( $status == 200 ) {
+        header( 'HTTP/1.1 200 OK' );
+    }
     header( "Content-Type: {$mime_type}" );
     $file_size = strlen( bin2hex( $data ) ) / 2;
     header( "Content-Length: {$file_size}" );
