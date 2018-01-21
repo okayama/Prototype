@@ -615,9 +615,11 @@ class PTTags {
                            'value' => $request_id,
                            'key'   => $cache_key ] );
             $session->start( time() );
-            $session->expires( time() + $app->token_expires );
+            $session->expires( time() + $app->bcache_expires );
             $session->data( $build );
+            // if (! $app->in_dynamic ) {
             $session->save();
+            // }
         }
         return $build;
     }
@@ -1533,9 +1535,11 @@ class PTTags {
                     $time_stamp = array_keys( $time_stamp );
                     $ser = serialize( $time_stamp );
                     $session->start( time() );
-                    $session->expires( time() + $app->token_expires );
+                    $session->expires( time() + $app->bcache_expires );
                     $session->data( $ser );
+                    // if (! $app->in_dynamic ) {
                     $session->save();
+                    // }
                 }
                 $template = $urlmapping->template;
                 $limit = 0;
@@ -1670,6 +1674,9 @@ class PTTags {
                 if (! empty( $models ) ) {
                     $models = array_keys( $models );
                     $terms['name'] = ['IN' => $models ];
+                } else {
+                    $repeat = false;
+                    return;
                 }
             }
             $args = ['sort' => 'order'];

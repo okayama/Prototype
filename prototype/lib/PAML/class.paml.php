@@ -722,7 +722,9 @@ class PAML {
                     ? $this->old_vars[ $var ] : null;
             }
         }
-        $this->vars = $this->restore_vars;
+        if ( empty( $vars ) ) {
+            $this->vars = $this->restore_vars;
+        }
     }
 
 /**
@@ -1656,7 +1658,7 @@ class PAML {
             $method = $p = isset( $functions[ $tag_name ] ) ? $functions[ $tag_name ][0] : '';
             if ( $method )
           {
-            if (!function_exists(!$method ) ) include( $functions[ $tag_name ][1] );
+            if (!function_exists( $method ) ) include( $functions[ $tag_name ][1] );
             if ( $in_nocache ) $this->cache_includes[] = $functions[ $tag_name ][1];
           }
             if ( isset( $func_map[ $tag_name ] ) )

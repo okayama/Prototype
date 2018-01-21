@@ -38,8 +38,8 @@ class Prototype {
     public    $mode          = 'dashboard';
     public    $timezone      = 'Asia/Tokyo';
     public    $list_limit    = 25;
-    public    $per_rebuild   = 40;
-    public    $rebuild_interval = 200;
+    public    $per_rebuild   = 120;
+    public    $rebuild_interval = 0;
     public    $basename_len  = 40;
     public    $passwd_min    = 8;
     public    $passwd_rule   = false;
@@ -49,6 +49,7 @@ class Prototype {
     public    $auth_expires  = 600;
     public    $perm_expires  = 86400;
     public    $cache_expires = 86400;
+    public    $bcache_expires= 600;
     public    $cookie_path   = '/';
     public    $languages     = ['ja', 'en'];
     public    $debug         = false;
@@ -98,6 +99,7 @@ class Prototype {
     protected $errors        = [];
     public    $tmpl_markup   = 'mt';
     public    $delayed       = [];
+    public    $hooks         = [];
 
     public    $registry      = [];
 
@@ -130,6 +132,7 @@ class Prototype {
     public    $core_tags;
     private   $encrypt_key   = 'prototype-default-encrypt-key';
     public    $dynamic_view  = false;
+    public    $in_dynamic    = false;
     public    $resetdb_per_rebuild = false;
 
     static function get_instance() {
@@ -172,6 +175,13 @@ class Prototype {
                 $request_uri .= '?' . $_SERVER['QUERY_STRING'];
             }
         }
+        if ( isset( $_SERVER['REDIRECT_QUERY_STRING'] ) ) {
+            $redirect_query = $_SERVER['REDIRECT_QUERY_STRING'];
+            parse_str( $redirect_query, $params );
+            foreach ( $params as $key => $value ) {
+                $_REQUEST[ $key ] = $value;
+            }
+        }
         $this->base = $base;
         $this->request_uri = $request_uri;
         $request = $request_uri;
@@ -195,6 +205,9 @@ class Prototype {
     }
 
     function __destruct() {
+        if (! empty( $this->hooks ) ) {
+            $this->run_hooks( 'post_run' );
+        }
         $this->db->db = null;
         unset( $this->db->db );
         $this->db = null;
@@ -247,7 +260,7 @@ class Prototype {
         $ctx->app = $this;
         $ctx->default_component = $this;
         $ctx->csv_delimiter = ',';
-        $ctx->force_compile = false;
+        $ctx->force_compile = true;
         $ctx->cache_driver = $this->cache_driver;
         $ctx->init();
         if ( $driver = $ctx->cachedriver ) {
@@ -429,16 +442,57 @@ class Prototype {
                 if ( $register ) $this->plugin_dirs[] = $plugin;
             }
         }
+        // registry hooks and tags.
+        $registry = $this->registry;
+        if ( isset( $registry['hooks'] ) ) {
+            $hooks = $registry['hooks'];
+            $plugin_hooks = [];
+            foreach ( $hooks as $key => $hook ) {
+                $event = key( $hook );
+                $regi = $hook[ $event ];
+                $priority = isset( $regi['priority'] ) ? (int) $regi['priority'] : 5;
+                $event_hooks = isset( $plugin_hooks[ $event ] )
+                    ? $plugin_hooks[ $event ] : [];
+                $event_hooks[ $priority ] = isset( $event_hooks[ $priority ] )
+                                          ? $event_hooks[ $priority ] : [];
+                unset( $regi['priority'] );
+                $event_hooks[ $priority ][] = $regi;
+                $plugin_hooks[ $event ] = $event_hooks;
+            }
+            $this->hooks = $plugin_hooks;
+            unset( $plugin_hooks );
+        }
+        if ( isset( $registry['tags'] ) ) {
+            $tags = $registry['tags'];
+            $ctx = $this->ctx;
+            foreach ( $tags as $kind => $props ) {
+                foreach ( $props as $tag => $func ) {
+                    $component = $this->component( $func['component'] );
+                    $method = $func['method'];
+                    if ( $component && method_exists( $component, $method ) ) {
+                        $ctx->register_tag( $tag, $kind, $method, $component );
+                    }
+                }
+            }
+        }
     }
 
     function configure_from_json ( $file, $r = null ) {
-        $r = $r ? $r : json_decode( file_get_contents( $file ), true );
+        $r = $r !== null ? $r : json_decode( file_get_contents( $file ), true );
         foreach ( $r as $key => $props ) {
             $methods = $r[ $key ];
             if ( $key === 'settings' ) continue;
             if ( is_array( $methods ) ) {
-                foreach ( $methods as $meth => $prop ) {
-                    $this->registry[ $key ][ $meth ] = $prop;
+                if ( $key === 'tags' ) {
+                    foreach ( $methods as $kind => $props ) {
+                        foreach ( $props as $tag => $prop ) {
+                            $this->registry['tags'][ $kind ][ $tag ] = $prop;
+                        }
+                    }
+                } else {
+                    foreach ( $methods as $meth => $prop ) {
+                        $this->registry[ $key ][ $meth ] = $prop;
+                    }
                 }
             }
         }
@@ -457,7 +511,7 @@ class Prototype {
             $callback = $callback[ $model ];
             if ( strpos( key( $callback ), $action ) !== false ) {
                 $kind = key( $callback );
-                $callback = $callback[ key( $callback ) ];
+                $callback = $callback[ $kind ];
                 $component_name = strtolower( $callback['component'] );
                 if ( isset( $components[ $component_name ] ) ) {
                     $_plugin = $components[ $component_name ];
@@ -487,22 +541,13 @@ class Prototype {
             $upgrader = new PTUpgrader;
             return $upgrader->upgrade();
         }
-        if ( $app->mode !== 'start_recover' 
-             && $app->mode !== 'recover_password' && ! $app->is_login() )
-            return $app->__mode( 'login' );
         $mode = $app->mode;
-        if ( $model = $app->param( '_model' ) ) {
-            $table = $app->get_table( $model );
+        $registry = $app->registry;
+        if (! empty( $app->hooks ) ) {
+            $app->run_hooks( 'pre_run' );
         }
-        $request_id = $app->param( 'request_id' );
-        if (!$request_id ) {
-            $request_id = $app->magic();
-            $app->param( 'request_id', $request_id );
-        }
-        $app->request_id = $request_id;
         $workspace_id = null;
         $workspace = $app->workspace();
-        $user = $app->user();
         if ( $workspace ) {
             $workspace_id = $workspace->id;
             $ctx->vars['workspace_scope'] = 1;
@@ -512,6 +557,42 @@ class Prototype {
             $ctx->vars['workspace_bartextcolor'] = $workspace->bartextcolor;
             $ctx->vars['workspace_extra_path'] = $workspace->extra_path;
             $ctx->vars['workspace_id'] = $workspace_id;
+        }
+        $user = $app->user();
+        if ( isset( $registry['methods'] ) && isset( $registry['methods'][ $mode ] ) ) {
+            $meth = $registry['methods'][ $mode ];
+            $plugin = $meth['component'];
+            $method = $meth['method'];
+            $requires_login = isset( $meth['requires_login'] )
+                ? $meth['requires_login'] : true;
+            if ( $requires_login && ! $app->is_login() ) {
+                return $app->__mode( 'login' );
+            }
+            $component = $app->component( $plugin );
+            if (!$component ) $component = $app->autoload_component( $plugin );
+            if ( method_exists( $component, $method ) ) {
+                if ( isset( $meth['permission'] ) && $meth['permission'] ) {
+                    if (!$app->can_do( $meth['permission'],
+                                        null, null, $workspace ) ) {
+                        $app->error( 'Permission denied.' );
+                    }
+                }
+                return $component->$method( $app );
+            }
+        }
+        if ( $app->mode !== 'start_recover' 
+             && $app->mode !== 'recover_password' && ! $app->is_login() )
+            return $app->__mode( 'login' );
+        if ( $model = $app->param( '_model' ) ) {
+            $table = $app->get_table( $model );
+        }
+        $request_id = $app->param( 'request_id' );
+        if (!$request_id ) {
+            $request_id = $app->magic();
+            $app->param( 'request_id', $request_id );
+        }
+        $app->request_id = $request_id;
+        if ( $workspace ) {
             if (!$user->is_superuser ) {
                 $permissions = array_keys( $app->permissions() );
                 if (! in_array( $workspace_id, $permissions ) ) {
@@ -575,23 +656,6 @@ class Prototype {
         }
         if ( in_array( $mode, $app->methods ) ) {
             return $app->$mode( $app );
-        }
-        $registry = $app->registry;
-        if ( isset( $registry['methods'] ) && isset( $registry['methods'][ $mode ] ) ) {
-            $meth = $registry['methods'][ $mode ];
-            $plugin = $meth['component'];
-            $method = $meth['method'];
-            $component = $app->component( $plugin );
-            if (!$component ) $component = $app->autoload_component( $plugin );
-            if ( method_exists( $component, $method ) ) {
-                if ( isset( $meth['permission'] ) && $meth['permission'] ) {
-                    if (!$app->can_do( $meth['permission'],
-                                        null, null, $workspace ) ) {
-                        $app->error( 'Permission denied.' );
-                    }
-                }
-                return $component->$method( $app );
-            }
         }
         return $app->__mode( $mode );
     }
@@ -687,6 +751,7 @@ class Prototype {
                     $plugin = $prop['component'];
                     $_plugin = $components[ strtolower( $plugin ) ];
                     $meth = $prop['method'];
+                    $columns = isset( $prop['columns'] ) ? $prop['columns'] : null;
                     if (!include_once( $_plugin ) )
                         trigger_error( "Plugin '{$_plugin}' load failed!" );
                     if ( class_exists( $plugin ) ) {
@@ -699,13 +764,15 @@ class Prototype {
                             }
                         }
                         $label = $app->translate( $label, null, $component );
-                        $registries[] = ['name'  => $method_name,
+                        $reg = ['name'  => $method_name,
                                          'input' => $input,
                                          'input_options' => $input_options,
                                          'label' => $label,
                                          'component' => $component,
                                          'component_name' => $plugin,
                                          'method' => $meth ];
+                        if ( $columns !== null ) $reg['columns'] = $columns;
+                        $registries[] = $reg;
                     }
                 }
             }
@@ -826,6 +893,7 @@ class Prototype {
 
     function login ( $get = false ) {
         $app = $this;
+        $user = null;
         if ( $app->request_method === 'POST' ) {
             $banned_ip = $app->db->model( 'remote_ip' )->get_by_key(
                 ['ip_address' => $app->remote_ip, 'class' => 'banned'] );
@@ -834,6 +902,7 @@ class Prototype {
             }
             $return_args = $app->param( 'return_args' );
             if ( strpos( $return_args, '__mode=logout' ) !== false ) $return_args = '';
+            if ( strpos( $return_args, '__mode=login' ) !== false ) $return_args = '';
             $two_factor_auth = $app->get_config( 'two_factor_auth' );
             $two_factor_auth = $two_factor_auth ? $two_factor_auth->value : false;
             $token = $app->param( 'token' );
@@ -948,11 +1017,15 @@ class Prototype {
             $sess->expires( time() + $expires );
             $sess->start = ( time() );
             $sess->save();
+            if ( $user ) {
+                $user->last_login_on( date( 'YmdHis' ) );
+                $user->save();
+            }
             $path = $app->cookie_path ? $app->cookie_path : $app->path;
             $name = $app->cookie_name;
             $app->bake_cookie( $name, $token, $expires, $path, $remember );
             $return_args = $return_args ? '?' . $return_args : '';
-            $app->redirect( $app->admin_url . $return_args );
+            $app->redirect( $app->admin_url . $return_args. '#__login=1' );
         }
     }
 
@@ -1344,6 +1417,9 @@ class Prototype {
                 }
             }
             $select_cols = join( ',', $select_cols );
+            if ( $app->param( 'revision_select' ) && $obj->has_column( 'modified_on' ) ) {
+                $args['sort'] = 'modified_on';
+            }
             if ( $app->list_async && !$app->param( 'to_json' ) ) {
                 $objects = [ $obj ];
             } else {
@@ -1719,6 +1795,7 @@ class Prototype {
     function can_do ( $model, $action = null, $obj = null, $workspace = null  ) {
         $app = $this;
         $user = $app->user();
+        $workspace = $app->workspace();
         if (!$user ) return false;
         $orig_action = $action;
         if (!$action && strpos( $model, '_' ) !== false )
@@ -1762,7 +1839,7 @@ class Prototype {
             $perms = isset( $permissions[0] ) ? $permissions[0] : [];
         }
         $_perms = $app->permissions;
-        if ( in_array( $orig_action, $_perms ) ) {
+        if ( $orig_action && in_array( $orig_action, $_perms ) ) {
             if ( $workspace ) {
                 return in_array( $orig_action, $perms );
             } else {
@@ -1780,10 +1857,14 @@ class Prototype {
                     }
                 }
             }
-        } else if ( $action === 'edit' || $action === 'save' || $action === 'delete' ) {
+        } else if ( $action === 'create'
+                || $action === 'edit' || $action === 'save' || $action === 'delete' ) {
             list( $name, $range ) = ['', ''];
             if (!$obj || ! $obj->id ) {
                 $name = 'can_create_' . $model;
+                if ( in_array( $name, $perms ) ) {
+                    return true;
+                }
             } else {
                 $range = 'can_update_all_' . $model;
                 if ( $obj->has_column( 'status' ) ) {
@@ -2903,12 +2984,12 @@ class Prototype {
                 return $app->error( 'Cannot load %s (ID:%s)', [ $table->label, $id ] );
         }
         if (!$app->can_do( $model, $action, $obj ) ) {
-            $app->error( 'Permission denied.' );
+            $app->error( 'Permission denied.!' );
         }
         $callbacks = ['save_filter_table', 'save_filter_urlmapping',
                       'save_filter_workspace', 'post_save_workspace', 'post_save_role',
                       'post_save_permission', 'post_save_table', 'post_save_field',
-                      'post_save_asset', 'save_filter_tag'];
+                      'post_save_asset', 'save_filter_tag', 'pre_save_user'];
         foreach ( $callbacks as $meth ) {
             $cb = explode( '_', $meth );
             $app->register_callback( $cb[2], $cb[0] . '_' . $cb[1], $meth, 1, $app );
@@ -2938,6 +3019,9 @@ class Prototype {
         $renderer = null;
         if ( $app->param( '_save_as_revision' ) ) {
             $as_revision = true;
+        }
+        if ( $model == 'user' ) {
+            $app->user = clone $app->user();
         }
         foreach( $columns as $col => $props ) {
             if ( $col === $primary ) continue;
@@ -3301,10 +3385,6 @@ class Prototype {
             }
             // todo bulk
         }
-        $callback = ['name' => 'post_save', 'is_new' => $is_new,
-                     'changed_cols' => $changed_cols, 'orig_relations' => $orig_relations,
-                     'orig_metadata' => $orig_metadata ];
-        $app->run_callbacks( $callback, $model, $obj, $original );
         if ( $as_revision ) {
             $is_changed = true;
             $original = $obj;
@@ -3351,7 +3431,10 @@ class Prototype {
             }
         }
         if ( $is_changed ) {
-            // TODO touch
+            if ( $ws = $obj->workspace ) {
+                $ws->last_update( time() );
+                $ws->save();
+            }
         }
         $nickname = $app->user()->nickname;
         $label = $app->translate( $table->label );
@@ -3375,6 +3458,11 @@ class Prototype {
             return $app->rollback( join( ',', $errors ) );
         }
         $db->commit();
+        $db->caching = false;
+        $callback = ['name' => 'post_save', 'is_new' => $is_new,
+                     'changed_cols' => $changed_cols, 'orig_relations' => $orig_relations,
+                     'orig_metadata' => $orig_metadata ];
+        $app->run_callbacks( $callback, $model, $obj, $original );
         if (!$as_revision ) {
             if ( $model !== 'template' || $app->param( '__save_and_publish' ) ) {
                 $app->publish_obj( $obj, $original );
@@ -3933,6 +4021,26 @@ class Prototype {
         return true;
     }
 
+    function run_hooks ( $name ) {
+        $app = $this;
+        $_hooks = $app->hooks;
+        $_hooks = isset( $_hooks[ $name ] ) ? $_hooks[ $name ] : null;
+        if (! $_hooks ) return;
+        $components = $app->class_paths;
+        foreach ( $_hooks as $hooks ) {
+            foreach ( $hooks as $hook ) {
+                $plugin = strtolower( $hook['component'] );
+                $component = $app->component( $plugin );
+                if (!$component ) $component = $app->autoload_component( $plugin );
+                if (! $component ) continue;
+                $method = $hook['method'];
+                if ( method_exists( $component, $method ) ) {
+                    $component->$method( $app );
+                }
+            }
+        }
+    }
+
     function delete ( $app ) {
         $model = $app->param( '_model' );
         $app->validate_magic();
@@ -4257,10 +4365,7 @@ class Prototype {
         if ( $driver = $ctx->cachedriver ) {
             return $driver->set( $id, $data, $app->cache_expires );
         }
-        if (! is_string( $data ) ) {
-            $data = serialize( $data );
-            $id .= '.ser';
-        }
+        if (! is_string( $data ) ) $data = serialize( $data );
         $cache_path = __DIR__ . DS . 'cache' . DS . $id;
         $app->fmgr->put( $cache_path, $data );
     }
@@ -4284,9 +4389,6 @@ class Prototype {
             return null;
         }
         $cache_path = __DIR__ . DS . 'cache' . DS . $id;
-        if (! file_exists( $cache_path ) && file_exists( $cache_path . '.ser' ) ) {
-            $cache_path = $cache_path . '.ser';
-        }
         if ( file_exists( $cache_path ) && filemtime( $cache_path ) >
             ( time() - $app->cache_expires ) ) {
             if ( $multiple && $model ) {
@@ -4298,10 +4400,8 @@ class Prototype {
                 return $objs;
             } else {
                 $data = file_get_contents( $cache_path );
-                if ( preg_match( "/\.ser$/", $cache_path ) ) {
-                    $data = ( $unserialized = @unserialize( $data ) )
+                $data = ( $unserialized = @unserialize( $data ) )
                       !== false ? $unserialized : $data;
-                }
                 return $model ? $app->db->model( $model )->__new( $data ) : $data;
             }
         }
@@ -4804,6 +4904,18 @@ class Prototype {
         if ( $original->site_url !== $obj->site_url ||
             $original->site_path !== $obj->site_path ) {
             $app->rebuild_urlinfo( $obj->site_url, $obj->site_path, $obj );
+        }
+        return true;
+    }
+
+    function pre_save_user ( $cb, $app, &$obj, $original ) {
+        if ( $app->user()->is_superuser ) {
+            return true;
+        }
+        $not_changes = ['is_superuser', 'status', 'lock_out', 'last_login_on',
+            'uuid', 'name', 'lock_out_on', 'created_on'];
+        foreach ( $not_changes as $col ) {
+            $obj->$col( $original->$col );
         }
         return true;
     }
@@ -6096,7 +6208,7 @@ class Prototype {
 
     function is_valid_url ( $url, &$msg ) {
         if (
-          preg_match( '/^https?(:\/\/[-_.!~*\'()a-zA-Z0-9;\/?:\@&=+\$,%#]+)$/',
+            preg_match( '/^https?(:\/\/[-_.!~*\'()a-zA-Z0-9;\/?:\@&=+\$,%#]+)$/',
                 $url ) ) {
             return true;
         } else {
@@ -6115,16 +6227,16 @@ class Prototype {
         }
         $min = $app->passwd_min;
         $rule = $app->passwd_rule;
+        $len = mb_strlen( $pass );
         if ( $min && $rule ) {
-            $len = strlen( $pass );
-            $pass = preg_replace( '/[0-9a-zA-Z]/', '', $pass );
-            if (!$len >= $min || !$pass ) {
+            // $pass = preg_replace( '/[0-9a-zA-Z]/', '', $pass );
+            if (! $len >= $min || !$pass ) {
                 $msg = $app->translate(
               'Password should be longer than %s characters and contain symbols.', $min );
                 return false;
             }
-        } else {
-            if (! strlen( $pass ) >= $min ) {
+        } else if ( $min ) {
+            if (! $len >= $min ) {
                 $msg = $app->translate(
                 'Password should be longer than %s characters.', $min );
                 return false;
