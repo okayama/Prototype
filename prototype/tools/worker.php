@@ -44,7 +44,7 @@ foreach ( $tasks as $key => $regi ) {
     $event_tasks[ $priority ][] = $regi;
 }
 ksort( $event_tasks );
-$lavels = [];
+$labels = [];
 foreach ( $event_tasks as $tasks ) {
     foreach ( $tasks as $task ) {
         $component = $app->component( $task['component'] );
@@ -65,7 +65,7 @@ foreach ( $event_tasks as $tasks ) {
             try {
                 $start = time();
                 $component->$meth( $app );
-                $lavels[] = $label;
+                $labels[] = $label;
                 $session->start( $start );
                 $session->expires( $start + $frequency + 3600 );
                 $session->save();
