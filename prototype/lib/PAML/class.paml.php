@@ -125,7 +125,7 @@ class PAML {
       'modifier'    => ['escape' ,'setvar', 'format_ts', 'zero_pad', 'trim_to', 'eval',
                         'strip_linefeeds', 'sprintf', 'encode_js', 'truncate', 'wrap', 'encode_url',
                         'trim_space', 'regex_replace', 'setvartemplate', 'replace', 'translate',
-                        'to_json', 'from_json', 'nocache', 'split', 'join', 'format_size'],
+                        'to_json', 'from_json', 'nocache', 'split', 'join', 'format_size', 'encode_xml'],
       'function'    => ['getvar', 'trans', 'setvar', 'property', 'ldelim', 'include', 'math',
                         'rdelim', 'fetch', 'var', 'date', 'assign', 'count', 'vardump'],
       'include'     => ['include', 'includeblock', 'extends'] ];
@@ -1233,6 +1233,10 @@ class PAML {
 
     function modifier_encode_url ( $str, $arg ) {
         return rawurlencode( $str );
+    }
+
+    function encode_xml ( $str, $arg ) {
+        return xmlrpc_encode( $str );
     }
 
     function modifier_sprintf ( $str, $arg ) {
