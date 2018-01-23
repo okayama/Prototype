@@ -155,4 +155,23 @@ class PTPlugin {
         $ctx->local_vars['plugins_loop'] = $plugins_loop;
         return $app->__mode( 'manage_plugins' );
     }
+
+    function get_config_value ( $name, $ws_id = 0 ) {
+        $app = Prototype::get_instance();
+        $plugin_id = strtolower( get_class( $this ) );
+        $terms = ['extra' => $plugin_id, 'key' => $name, 'workspace_id' => $ws_id ];
+        $setting_obj = $app->db->model( 'option' )->get_by_key( $terms );
+        if ( $setting_obj->id ) {
+            return $setting_obj->value;
+        }
+        $cfg_settings = $app->cfg_settings;
+        if ( isset( $cfg_settings[ $plugin_id ] ) ) {
+            $cfg_settings = $cfg_settings[ $plugin_id ];
+            if ( isset( $cfg_settings['settings'] ) ) {
+                if ( isset( $cfg_settings['settings'][ $name ] ) ) {
+                    return $cfg_settings['settings'][ $name ];
+                }
+            }
+        }
+    }
 }
