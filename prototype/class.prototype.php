@@ -3107,7 +3107,7 @@ class Prototype {
                     if ( is_array( $compare ) && !empty( $compare ) ) {
                         $errors[] = $app->translate(
                             'A %1$s with the same %2$s already exists.',
-                                [ $value, $labels[ $col ] ] );
+                                [ $value, $app->translate( $labels[ $col ] ) ] );
                     }
                 }
             }
@@ -3139,7 +3139,8 @@ class Prototype {
                             $value += 0;
                         } else {
                             $value = '';
-                            $errors[] = $app->translate( '%s is required.', $labels[ $col ] );
+                            $errors[] = $app->translate( '%s is required.',
+                                        $app->translate( $labels[ $col ] ) );
                         }
                     }
                 }
