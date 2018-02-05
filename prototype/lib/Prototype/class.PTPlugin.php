@@ -19,7 +19,16 @@ class PTPlugin {
         $class_name = strtolower( get_class( $this ) );
         $app->components[ $class_name ] = $this;
         $app->ctx->components[ $class_name ] = $this;
+        $app->ctx->include_paths[ dirname( $path ) . DS . 'alt-tmpl' ] = true;
         $app->ctx->include_paths[ dirname( $path ) . DS . 'tmpl' ] = true;
+        $paths = array_keys( $app->ctx->include_paths );
+        usort( $paths, function( $a, $b ) {
+            return strlen( $b ) - strlen( $a );
+        });
+        $app->ctx->include_paths = [];
+        foreach( $paths as $path ) {
+            $app->ctx->include_paths[ $path ] = true;
+        }
     }
 
     function translate ( $phrase, $params = '', $lang = null ) {

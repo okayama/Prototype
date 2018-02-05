@@ -7,10 +7,10 @@ if (! defined( 'LIB_DIR' ) ) {
     define( 'LIB_DIR', __DIR__ . DS . 'lib' . DS );
 }
 if (! defined( 'TMPL_DIR' ) ) {
-    define( 'TMPL_DIR', __DIR__ . DS . 'tmpl' . DS );
+    define( 'TMPL_DIR', __DIR__ . DS . 'tmpl' );
 }
 if (! defined( 'ALT_TMPL' ) ) {
-    define( 'ALT_TMPL', __DIR__ . DS . 'alt-tmpl' . DS );
+    define( 'ALT_TMPL', __DIR__ . DS . 'alt-tmpl' );
 }
 ini_set( 'include_path', ini_get( 'include_path' ) . PATH_SEPARATOR
          . __DIR__ . DS . 'lib' . PATH_SEPARATOR . LIB_DIR . 'Prototype' );

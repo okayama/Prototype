@@ -589,17 +589,19 @@ class PAML {
         $tmpl_paths = array_keys( $this->template_paths );
         $incl_paths = array_keys( $this->include_paths );
         if (!file_exists( $path ) ) {
-            foreach ( $tmpl_paths as $tmpl ) {
-                if (! $tmpl ) continue;
-                $f = dirname( $tmpl ) . DS . $path;
-                if ( file_exists( $f ) ) {
-                    $path = $f;
-                    $continue = true; break;
-                }
-            }
             if (!$continue ) {
                 foreach ( $incl_paths as $tmpl ) {
                     if ( ( $f = $tmpl . DS . $path ) && file_exists( $f ) ) {
+                        $path = $f;
+                        $continue = true; break;
+                    }
+                }
+            }
+            if (!$continue ) {
+                foreach ( $tmpl_paths as $tmpl ) {
+                    if (! $tmpl ) continue;
+                    $f = dirname( $tmpl ) . DS . $path;
+                    if ( file_exists( $f ) ) {
                         $path = $f;
                         $continue = true; break;
                     }
