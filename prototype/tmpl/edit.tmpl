@@ -539,13 +539,13 @@ $(function () {
               <mt:objectloop model="$rel_model" sort_by="order" include_draft="1" workspace_id="$workspace_id">
               <mt:if name="__first__">
               <label class="custom-control custom-radio">
-                <input class="custom-control-input" type="radio" <mt:unless name="__col_value__">checked</mt:unless> name="<mt:var name="__col_name__">" value="0">
+                <input class="custom-control-input" type="radio" <mt:unless name="__col_value__">checked</mt:unless> name="<mt:var name="__col_name__">" value="">
                 <span class="custom-control-indicator"></span>
                 <span class="custom-control-description"><mt:trans phrase="Unspecified"></span>
               </label>
               </mt:if>
               <label class="custom-control custom-radio">
-                <input class="custom-control-input watch-changed" type="radio" <mt:if name="__col_value__" eq="$id">checked</mt:if> name="<mt:var name="__col_name__">" value="<mt:var name="id">">
+                <input class="custom-control-input watch-changed" type="radio" <mt:if name="__col_value__" eq="$id">checked </mt:if>name="<mt:var name="__col_name__">" value="<mt:var name="id">">
                 <span class="custom-control-indicator"></span>
                 <span class="custom-control-description"><mt:var name="$rel_col" escape></span>
               </label>
