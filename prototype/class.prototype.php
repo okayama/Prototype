@@ -6162,6 +6162,8 @@ class Prototype {
                 return $_GET[ $param ];
             } else if ( isset ( $_POST[ $param ] ) ) {
                 return $_POST[ $param ];
+            } else if ( isset ( $_REQUEST[ $param ] ) ) {
+                return $_REQUEST[ $param ];
             }
         } else {
             $vars = $_REQUEST;
