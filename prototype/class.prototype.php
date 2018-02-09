@@ -2861,6 +2861,7 @@ class Prototype {
         $table = $app->get_table( $model );
         $scheme['label'] = $table->label;
         unset( $scheme['labels'] );
+        header( 'Content-type: application/json' );
         header( "Content-Disposition: attachment;"
             . " filename=\"{$model}.json\"" );
         header( "Pragma: " );
