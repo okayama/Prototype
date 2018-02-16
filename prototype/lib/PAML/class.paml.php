@@ -1149,7 +1149,7 @@ class PAML {
     function function_trans ( $args, $ctx ) {
         $phrase = ! isset( $args['phrase'] ) ? '' : $args['phrase'];
         $lang = isset( $args['language'] ) ? $args['language'] : $ctx->language;
-        if (!$phrase ) return;
+        if ( $phrase === null || $phrase === '' ) return;
         $component = isset( $args['component'] )
                    ? $ctx->component( $args['component'] ) : $ctx->default_component;
         if (! $component ) $component = $ctx;
@@ -1169,8 +1169,8 @@ class PAML {
             && isset( $dict[ $lang ] )
             && ( $dict = $dict[ $lang ] ) )
             $phrase = isset( $dict[ $phrase ] ) ? $dict[ $phrase ] : $phrase;
-        if ( $phrase && ( $params = isset( $args['params'] )
-            ? $args['params'] : '' ) ) return ! is_array( $params )
+        $params = isset( $args['params'] ) ? $args['params'] : '';
+        $phrase = ! is_array( $params )
             ? sprintf( $phrase, $params ) : vsprintf( $phrase, $params );
         return $ctx->esc_trans ? htmlspecialchars( $phrase ) : $phrase;
     }
