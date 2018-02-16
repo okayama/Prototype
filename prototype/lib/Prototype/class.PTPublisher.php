@@ -46,7 +46,7 @@ class PTPublisher {
             return;
         }
         $model = $table->name;
-        $workspace = null;
+        $workspace = $ctx->stash( 'workspace' ) ? $ctx->stash( 'workspace' ) : null;
         $key = $url->key;
         $obj = null;
         if ( $object_id && $model ) {
