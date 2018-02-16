@@ -439,9 +439,22 @@ class Prototype {
                         $component = strtolower( pathinfo( $_plugin )['filename'] );
                     $this->class_paths[ $component ] = $_plugin;
                 }
-                if ( $register ) $this->plugin_dirs[] = $plugin;
+                if ( $register ) {
+                    $this->plugin_dirs[] = $plugin;
+                    if ( file_exists( $plugin . DS . 'tmpl' ) ) {
+                        $this->template_paths[] = $plugin . DS . 'tmpl';
+                    }
+                    if ( file_exists( $plugin . DS . 'alt-tmpl' ) ) {
+                        $this->template_paths[] = $plugin . DS . 'alt-tmpl';
+                    }
+                }
             }
         }
+        $template_paths = $this->template_paths;
+        usort( $template_paths, function( $a, $b ) {
+            return strlen( $b ) - strlen( $a );
+        });
+        $this->template_paths = $template_paths;
         // registry hooks and tags.
         $registry = $this->registry;
         if ( isset( $registry['hooks'] ) ) {
