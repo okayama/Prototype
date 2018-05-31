@@ -1,0 +1,7 @@
+    <mt:loop name="field_options">
+      <label class="custom-control custom-radio">
+        <input class="custom-control-input watch-changed" type="radio" <mt:if name="field.value" eq="$field_option">checked</mt:if> name="value" <mt:if name="__first__">id="field.<mt:var name="field_uniqueid">"</mt:if> value="<mt:var name="field_option" escape>">
+        <span class="custom-control-indicator"></span>
+        <span class="custom-control-description"><mt:trans phrase="$field_label" escape></span>
+      </label>
+    </mt:loop>

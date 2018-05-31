@@ -1,0 +1,121 @@
+{
+    "label"    : "Log",
+    "plural"   : "Logs",
+    "primary"  : "message",
+    "version"  : "1.0",
+    "order"    : 150,
+    "menu_type": 3,
+    "display_system": 1,
+    "display_space": 1,
+    "column_defs": {
+        "id": {
+            "type": "int",
+            "size": 11,
+            "not_null": 1
+        },
+        "message": {
+            "type": "string",
+            "size": 255,
+            "not_null": 1
+        },
+        "category": {
+            "type": "string",
+            "size": 255,
+            "not_null": 1
+        },
+        "level": {
+            "type": "int",
+            "size": 11,
+            "not_null": 1
+        },
+        "model": {
+            "type": "string",
+            "size": 255
+        },
+        "metadata": {
+            "type": "text"
+        },
+        "remote_ip": {
+            "type": "string",
+            "size": 255,
+            "not_null": 1
+        },
+        "object_id": {
+            "type": "int",
+            "size": 11
+        },
+        "created_on": {
+            "type": "datetime"
+        },
+        "created_by": {
+            "type": "int",
+            "size": 11
+        },
+        "workspace_id": {
+            "type": "int",
+            "size": 11
+        }
+    },
+    "indexes": {
+        "PRIMARY": "id",
+        "id": "id",
+        "message": "message",
+        "category": "category",
+        "level": "level",
+        "model": "model",
+        "remote_ip": "remote_ip",
+        "object_id": "object_id",
+        "created_on": "created_on",
+        "created_by": "created_by",
+        "workspace_id": "workspace_id"
+    },
+    "sort_by": {
+        "id": "descend"
+    },
+    "autoset": [
+        "message",
+        "category",
+        "level",
+        "metadata",
+        "model",
+        "remote_ip",
+        "object_id",
+        "created_on",
+        "created_by",
+        "workspace_id"
+    ],
+    "unchangeable": [
+        "message",
+        "category",
+        "level",
+        "metadata",
+        "remote_ip",
+        "object_id",
+        "created_on",
+        "created_by",
+        "workspace_id"
+    ],
+    "edit_properties": {
+        "id": "hidden",
+        "message": "primary",
+        "category": "text",
+        "level": "text",
+        "model": "text",
+        "metadata": "textarea",
+        "remote_ip": "text",
+        "object_id": "number"
+    },
+    "list_properties": {
+        "id": "number",
+        "message": "primary",
+        "category": "text",
+        "level": "text",
+        "model": "text",
+        "metadata": "text",
+        "remote_ip": "text",
+        "object_id": "number",
+        "created_on": "datetime",
+        "created_by": "reference:user:nickname",
+        "workspace_id": "reference:workspace:name"
+    }
+}

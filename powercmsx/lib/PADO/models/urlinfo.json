@@ -1,0 +1,183 @@
+{
+    "label"    : "URL",
+    "plural"   : "URLs",
+    "version"  : "1.0",
+    "display_system": 1,
+    "order"    : 110,
+    "primary"  : "relative_path",
+    "menu_type": 3,
+    "display_space": 1,
+    "column_defs": {
+        "id": {
+            "type": "int",
+            "size": "11",
+            "not_null": 1
+        },
+        "url": {
+            "type": "string",
+            "size": "255",
+            "not_null": 1
+        },
+        "relative_url": {
+            "type": "string",
+            "size": "255",
+            "not_null": 1
+        },
+        "relative_path": {
+            "type": "string",
+            "size": "255",
+            "not_null": 1
+        },
+        "class": {
+            "type": "string",
+            "size": "255"
+        },
+        "model": {
+            "type": "string",
+            "size": 255
+        },
+        "key": {
+            "type": "string",
+            "size": "255"
+        },
+        "object_id": {
+            "type": "int",
+            "size": "11"
+        },
+        "meta_id": {
+            "type": "int",
+            "size": 11,
+            "default": null
+        },
+        "archive_type": {
+            "type": "string",
+            "size": 255,
+            "default": null
+        },
+        "archive_date": {
+            "type": "datetime"
+        },
+        "urlmapping_id": {
+            "type": "int",
+            "size": "11",
+            "not_null": 1
+        },
+        "file_path": {
+            "type": "string",
+            "size": "255",
+            "not_null": 1
+        },
+        "md5": {
+            "type": "string",
+            "size": 255,
+            "default": null
+        },
+        "is_published": {
+            "type": "tinyint",
+            "size": "4"
+        },
+        "publish_file": {
+            "type": "int",
+            "size": 11
+        },
+        "mime_type": {
+            "type": "string",
+            "size": "255"
+        },
+        "workspace_id": {
+            "type": "int",
+            "size": "11",
+            "not_null": 1
+        }
+    },
+    "indexes": {
+        "PRIMARY": "id",
+        "relative_path": "relative_path",
+        "class": "class",
+        "relative_url": "relative_url",
+        "model": "model",
+        "key": "key",
+        "object_id": "object_id",
+        "meta_id": "meta_id",
+        "archive_type": "archive_type",
+        "archive_date": "archive_date",
+        "urlmapping_id": "urlmapping_id",
+        "file_path": "file_path",
+        "is_published": "is_published",
+        "url": "url",
+        "mime_type": "mime_type",
+        "publish_file": "publish_file",
+        "workspace_id": "workspace_id"
+    },
+    "sort_by": {
+        "id": "ascend"
+    },
+    "unique": [
+        "file_path",
+        "url"
+    ],
+    "autoset": [
+        "id",
+        "url",
+        "relative_url",
+        "relative_path",
+        "class",
+        "model",
+        "key",
+        "object_id",
+        "meta_id",
+        "archive_type",
+        "archive_date",
+        "urlmapping_id",
+        "file_path",
+        "md5",
+        "is_published",
+        "publish_file",
+        "mime_type",
+        "workspace_id"
+    ],
+    "translate": [
+        "model",
+        "archive_type"
+    ],
+    "options": {
+        "publish_file": "Dynamic,Static,Static(Delayed),On-Demand,Queue,Manually"
+    },
+    "disp_edit": {
+        "publish_file": "select"
+    },
+    "edit_properties": {
+        "id": "hidden",
+        "url": "primary",
+        "class": "text_short",
+        "relative_url": "text",
+        "relative_path": "primary",
+        "model": "text",
+        "key": "text_short",
+        "object_id": "number",
+        "meta_id": "number",
+        "archive_type": "text_short",
+        "archive_date": "datetime",
+        "urlmapping_id": "reference:urlmapping:name",
+        "file_path": "text",
+        "md5": "text",
+        "is_published": "checkbox",
+        "publish_file": "selection",
+        "mime_type": "text_short",
+        "workspace_id": "reference:workspace:name"
+    },
+    "list_properties": {
+        "id": "number",
+        "url": "primary",
+        "class": "text_short",
+        "model": "text",
+        "object_id": "number",
+        "meta_id": "number",
+        "archive_type": "text",
+        "urlmapping_id": "reference:urlmapping:name",
+        "is_published": "checkbox",
+        "publish_file": "text",
+        "mime_type": "text_short",
+        "workspace_id": "reference:workspace:name"
+    }
+}

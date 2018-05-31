@@ -1,0 +1,150 @@
+{
+    "label"    : "View",
+    "plural"   : "Views",
+    "version"  : "1.0",
+    "auditing" : 1,
+    "display_system": 1,
+    "order"    : 130,
+    "primary"  : "name",
+    "menu_type": 1,
+    "revisable": 1,
+    "template_tags": 1,
+    "display_space": 1,
+    "has_basename": 1,
+    "has_status": 1,
+    "default_status": 2,
+    "column_defs": {
+        "id": {
+            "type": "int",
+            "size": "11",
+            "not_null": 1
+        },
+        "name": {
+            "type": "string",
+            "size": "255",
+            "not_null": 1
+        },
+        "text": {
+            "type": "text"
+        },
+        "status": {
+            "type": "int",
+            "size": 11,
+            "default": "1"
+        },
+        "basename": {
+            "type": "string",
+            "size": 255,
+            "not_null": 1
+        },
+        "rev_note": {
+            "type": "string",
+            "size": 255
+        },
+        "rev_diff": {
+            "type": "text"
+        },
+        "created_on": {
+            "type": "datetime"
+        },
+        "modified_on": {
+            "type": "datetime"
+        },
+        "created_by": {
+            "type": "int",
+            "size": "11"
+        },
+        "modified_by": {
+            "type": "int",
+            "size": "11"
+        },
+        "workspace_id": {
+            "type": "int",
+            "size": "11"
+        },
+        "rev_type": {
+            "type": "int",
+            "size": 11,
+            "not_null": 1,
+            "default": "0"
+        },
+        "rev_object_id": {
+            "type": "int",
+            "size": 11
+        },
+        "rev_changed": {
+            "type": "string",
+            "size": 255
+        },
+        "compiled": {
+            "type": "text"
+        },
+        "cache_key": {
+            "type": "string",
+            "size": 255,
+            "default": null
+        },
+        "uuid": {
+            "type": "string",
+            "size": 255,
+            "default": null
+        }
+    },
+    "indexes": {
+        "PRIMARY": "id",
+        "name": "name",
+        "status": "status",
+        "basename": "basename",
+        "rev_note": "rev_note",
+        "created_on": "created_on",
+        "modified_on": "modified_on",
+        "created_by": "created_by",
+        "modified_by": "modified_by",
+        "workspace_id": "workspace_id",
+        "rev_type": "rev_type",
+        "rev_object_id": "rev_object_id",
+        "cache_key": "cache_key",
+        "uuid": "uuid"
+    },
+    "sort_by": {
+        "id": "ascend"
+    },
+    "unchangeable": [
+        "workspace_id",
+        "uuid"
+    ],
+    "disp_edit": {
+        "status": "select"
+    },
+    "autoset": [
+        "created_on",
+        "modified_on",
+        "created_by",
+        "modified_by",
+        "rev_type",
+        "rev_object_id",
+        "rev_changed"
+    ],
+    "edit_properties": {
+        "id": "hidden",
+        "name": "primary",
+        "text": "textarea",
+        "status": "selection",
+        "basename": "text_short",
+        "uuid": "text_short"
+    },
+    "list_properties": {
+        "id": "number",
+        "name": "primary",
+        "status": "number",
+        "rev_diff": "popover",
+        "rev_note": "text",
+        "rev_changed": "text",
+        "modified_on": "datetime",
+        "modified_by": "reference:user:name",
+        "workspace_id": "reference:workspace:name"
+    },
+    "options": {
+        "status": "Disable,Enable"
+    }
+}

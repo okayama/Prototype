@@ -1,0 +1,14 @@
+<div class="row form-group">
+  <div class="col-lg-2">
+    <mt:var name="label" escape="1">
+  </div>
+  <div class="col-lg-10">
+    <mt:if name="value">
+      <mt:objectcontext model="comment" id="$value">
+        <mt:var name="object_text" remove_html="1" trim_to="60+...">
+      </mt:objectcontext>
+    <mt:else>
+      <mt:trans phrase="Unspecified">
+    </mt:if>
+  </div>
+</div>

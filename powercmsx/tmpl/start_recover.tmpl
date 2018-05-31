@@ -1,0 +1,54 @@
+<mt:include file="include/header.tmpl">
+
+<div class="col-md-12 form-group">
+<mt:unless name="recovered">
+
+<form action="<mt:var name="script_uri">" method="POST" >
+  <input type="hidden" name="__mode" value="recover_password">
+
+<mt:if name="request._type" eq="recover">
+  <input type="hidden" name="_type" value="new_password">
+  <input type="hidden" name="token" value="<mt:var name="request.token" escape>">
+
+<div class="row form-group">
+  <div class="col-lg-2">
+    <label for="password">
+        <mt:trans phrase="New Password">
+    </label>
+  </div>
+  <div class="col-lg-5 input-group">
+    <input type="password" id="password" name="password" class="form-control" value="<mt:var name="password" escape>">
+  </div>
+</div>
+
+<div class="row form-group">
+  <div class="col-lg-2">
+    <label for="password-verify">
+        <mt:trans phrase="Password (Confirm)">
+    </label>
+  </div>
+  <div class="col-lg-5 input-group">
+    <input type="password" id="password-verify" name="password-verify" class="form-control" value="<mt:var name="password-verify" escape>">
+  </div>
+</div>
+
+<mt:else>
+<div class="form-group">
+  <label for="name"><mt:trans phrase="Email"> :</label>
+  <input id="email" type="text" class="form-control" name="email" value="<mt:var name="email">">
+</div>
+</mt:if>
+
+<div class="row form-group">
+  <button type="submit" class="btn btn-primary"><mt:trans phrase="Reset"></button>
+  <a href="<mt:var name="script_uri">?__mode=login" class="btn btn-secondary"><mt:trans phrase="Back"></a>
+</div>
+</form>
+
+<mt:else>
+<div class="row form-group">
+  <a href="<mt:var name="script_uri">?__mode=login" class="btn btn-secondary"><mt:trans phrase="Back"></a>
+</div>
+</mt:unless>
+</div>
+<mt:include file="include/footer.tmpl">

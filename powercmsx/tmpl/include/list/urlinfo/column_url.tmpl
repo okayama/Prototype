@@ -1,0 +1,26 @@
+<mt:ifusercan action="edit" model="$this_model" id="$id"><a <mt:if name="request.dialog_view">target="_blank"</mt:if> href="<mt:var name="script_uri">?__mode=view&amp;_type=edit&amp;_model=<mt:var name="this_model" escape>&amp;id=<mt:var name="id" escape><mt:if name="workspace_id">&amp;workspace_id=<mt:var name="workspace_id"></mt:if><mt:if name="model" eq="workspace">&amp;workspace_id=<mt:objectvar name="id"></mt:if><mt:if name="request.revision_select">&amp;edit_revision=1</mt:if>"></mt:ifusercan>
+  <mt:unless name="$_name">
+  <mt:setvarblock name="$_name">(<mt:trans phrase="null">)</mt:setvarblock>
+  </mt:unless>
+  <mt:var name="$_name" escape>
+<mt:ifusercan action="edit" model="$this_model" id="$id"></a></mt:ifusercan>
+<mt:if name="_has_mapping">
+  <mt:if name="permalink">
+  &nbsp; 
+  <a href="<mt:var name="permalink">" target="_blank">
+  <i class="fa fa-external-link" aria-hidden="true"></i>
+  <span class="sr-only"><mt:trans phrase="View"></span>
+  </a>
+  </mt:if>
+</mt:if>
+  <a class="btn toggle-infobox hidden"
+    id="toggle_<mt:var name="id">" href="javascript:void(0);">
+    <i id="toggle_icn_<mt:var name="id">" class="fa fa-caret-down toggle-icn" aria-hidden="true"></i>
+    <span class="sr-only"><mt:trans phrase="Toggle"></span>
+  </a>
+  <div id="infobox_<mt:var name="id">" class="hidden info-box"></div>
+&nbsp;
+  <a href="<mt:var name="$_name">" target="_blank">
+    <i class="fa fa-external-link" aria-hidden="true"></i>
+    <span class="sr-only"><mt:trans phrase="View"></span>
+  </a>

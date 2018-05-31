@@ -1,0 +1,151 @@
+<mt:unless trim_space="3">
+  <div class="text-right disp-option">
+    <button type="button" class="btn btn-outline-primary btn-sm disp-option-button" data-toggle="modal" data-target="#dispOptions">
+      <mt:trans phrase="Display Options">
+    </button>
+    <button data-toggle="modal" data-target="#dispOptions" class="hidden btn btn-secondary alt-disp-option-button btn-sm" type="button">
+      <i class="fa fa-television" aria-hidden="true"></i><span class="sr-only"><mt:trans phrase="Display Options"></span>
+    </button>
+  </div>
+  <div class="modal fade" id="dispOptions" tabindex="-1" role="dialog" aria-labelledby="LongTitle" aria-hidden="true">
+    <div class="modal-dialog modal-lg" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+        <mt:trans phrase="Display Options" setvar="options_title">
+          <h5 class="modal-title" id="LongTitle"><mt:var name="options_title"></h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+      <form action="<mt:var name="script_uri">" method="POST" id="disp_options_form">
+        <input type="hidden" name="__mode" value="display_options">
+        <input type="hidden" name="_model" value="<mt:var name="model">">
+        <input type="hidden" name="_type" value="edit">
+        <input type="hidden" name="magic_token" value="<mt:var name="magic_token">">
+        <input type="hidden" id="_field_sort_order" name="field_sort_order" value="<mt:var name="_field_sort_order" escape>">
+
+        <mt:if name="workspace_id">
+        <input type="hidden" name="workspace_id" value="<mt:var name="workspace_id">">
+        </mt:if>
+        <div class="modal-body">
+          <div class="container-fluid">
+            <div class="row form-group">
+              <div class="col-md-2"><b><mt:trans phrase="Columns"></b></div>
+              <div class="col-md-10" id="edit_options_loop">
+              <span id="_start_options"></span>
+          <mt:objectcontext>
+            <mt:objectcols type="edit">
+              <mt:if name="name" ne="id">
+                <mt:setvar name="_checked" value="0">
+                <mt:if name="edit" eq="primary"><mt:setvar name="_checked" value="1"></mt:if>
+                <mt:ifinarray array="$display_options" value="$name">
+                <mt:setvar name="_checked" value="1">
+                </mt:ifinarray>
+                <label class="custom-control custom-checkbox" id="label-<mt:var name="name" escape>">
+                  <mt:if name="edit" eq="primary">
+                  <input type="hidden" id="" name="_d_<mt:var name="__key__" escape>" value="1">
+                  </mt:if>
+                  <input<mt:if name="edit" eq="primary"> disabled</mt:if><mt:if name="_checked"> checked</mt:if> type="checkbox" class="custom-control-input disp_option disp_option-cb" id="<mt:var name="name" escape>-" name="_d_<mt:var name="name" escape>" value="1">
+                  <span class="custom-control-indicator"></span>
+                  <span class="custom-control-description"> 
+                  <mt:var name="label" escape></span>
+                </label>
+                </mt:if>
+            </mt:objectcols>
+          </mt:objectcontext>
+                <mt:fieldloop workspace_id="$workspace_id" model="$model" id="$object_id">
+                <mt:setvarblock name="_fieldbasename">field-<mt:var name="field__basename" escape></mt:setvarblock>
+                <label class="custom-control custom-checkbox" id="label-<mt:var name="_fieldbasename">">
+                  <input<mt:if name="field__required"> disabled</mt:if><mt:if name="field__required"> checked</mt:if> <mt:ifinarray array="$display_options" value="$_fieldbasename">checked</mt:ifinarray> type="checkbox" class="custom-control-input disp_option disp_option-cb" id="field-<mt:var name="field__basename" escape>-" name="_d_field-<mt:var name="field__basename" escape>" value="1">
+                  <span class="custom-control-indicator"></span>
+                  <span class="custom-control-description"> 
+                  <mt:var name="field__name" trans="1" escape></span>
+                </label>
+                </mt:fieldloop>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-dismiss="modal"><mt:trans phrase="Cancel"></button>
+          <button type="button" id="disp_options_save" class="btn btn-primary" data-dismiss="modal"><mt:trans phrase="Save Changes"></button>
+        </div>
+      </form>
+      </div>
+    </div>
+  </div>
+</mt:unless>
+
+<script>
+$('#edit_options_loop').sortable({
+    stop: function( evt, ui ) {
+        sort_fields();
+    }
+});
+function sort_fields(){
+    var editor_data = [];
+    if(tinymce && tinymce.editors){
+        for(var i = 0; i < tinymce.editors.length; i++){
+            var ed = tinymce.editors[i];
+            editor_data.push({
+                target  : ed.targetElm,
+                setting : ed.settings
+            });
+            ed.destroy();
+        }
+    }
+    var field_objects = [];
+    var field_names = [];
+    $('.disp_option-cb').each(function(){
+        var field_name = $(this).prop('name');
+        field_name = field_name.replace( /^_d_/, '' );
+        field_names.push( field_name );
+        field_objects.push( $('#' + field_name + '-wrapper' ) );
+        $('#' + field_name + '-wrapper' ).find('');
+    });
+    $('#_field_sort_order').val(field_names.join(','));
+    $('#_start_fields').after(field_objects);
+    for(var i = 0; i < editor_data.length; i++){
+        tinyMCE.execCommand('mceAddEditor', false, editor_data[i].target);
+    }
+}
+function reorder_fields(){
+    var field_objects = [];
+    var field_names = [];
+    $('.disp_option-cb').each(function(){
+        var field_name = $(this).prop('name');
+        field_name = field_name.replace( /^_d_/, '' );
+        field_names.push( field_name );
+        field_objects.push( $('#' + field_name + '-wrapper' ) );
+    });
+    $('#_field_sort_order').val(field_names.join(','));
+    $('#_start_fields').after(field_objects);
+}
+$("#disp_options_save").click(function(){
+    var str = $("#disp_options_form").serialize();
+    $.post("<mt:var name="script_uri">", str,
+    function ( data ) {
+        if( data.result == true ) {
+            disp_header_alert("<mt:trans phrase="%s's display options saved successfully." params="$label">");
+        } else {
+            disp_header_alert("<mt:trans phrase="An error occurred while saving %s." params="$options_title">", 'danger');
+        }
+    },
+    "json"
+    );
+});
+$(".disp_option").change(function(){
+    var colname = $(this).prop("id");
+    var wrapper_name = "#" + colname + 'wrapper';
+    var option_name = "." + colname + 'option';
+    var wrapper = $(wrapper_name);
+    var option  = $(option_name);
+    if($(this).prop("checked")) {
+        wrapper.show("fade");
+        option.show();
+    } else {
+        wrapper.hide("fade");
+        option.hide();
+    }
+});
+</script>

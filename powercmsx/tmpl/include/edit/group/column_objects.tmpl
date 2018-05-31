@@ -1,0 +1,155 @@
+<div class="row form-group">
+  <div class="col-lg-2">
+    <label for="<mt:var name="__col_name__">">
+      <mt:trans phrase="Model">
+      <mt:var name="field_required">
+    </label>
+  </div>
+  <div class="col-lg-10">
+    <mt:var name="edit" split=":" setvar="edit_props">
+    <mt:var name="edit_props[1]" setvar="rel_model">
+    <mt:var name="edit_props[2]" setvar="rel_col">
+    <mt:var name="edit_props[3]" setvar="rel_type">
+    <mt:setvarblock name="__rel_model__">object_<mt:var name="__col_name__">_model</mt:setvarblock>
+    <mt:var name="$__rel_model__" setvar="selected_model">
+    <mt:if name="object_model">
+      <mt:setvar name="selected_model" value="$object_model">
+    </mt:if>
+    <mt:if name="workspace_id">
+      <mt:setvar name="table_type" value="display_space">
+    <mt:else>
+      <mt:setvar name="table_type" value="display_system">
+    </mt:if>
+      <mt:tables menu_type="1" type="$table_type">
+      <mt:if name="__first__">
+      <select <mt:if name="object_model">readonly onmousedown="return false;" onkeydown="return false;"</mt:if> class="form-control short watch-changed short" name="_<mt:var name="__col_name__">_model" id="<mt:var name="__col_name__">-selector">
+        <mt:unless name="object_model">
+        <option value="" <mt:unless name="request.id">selected</mt:unless>>
+          <mt:trans phrase="Unspecified">
+        </option>
+        </mt:unless>
+      </mt:if>
+      <mt:if name="primary">
+        <mt:if name="menu_type" eq="1">
+          <mt:if name="object_model">
+            <mt:if name="name" eq="$object_model">
+            <option data-model="<mt:var name="name">" selected value="<mt:var name="name">"><mt:trans phrase="$label" escape></option>
+            </mt:if>
+          <mt:else>
+            <option data-model="<mt:var name="name">" value="<mt:var name="name">"><mt:trans phrase="$label" escape></option>
+          </mt:if>
+          <mt:setvars name="model_primary">
+            <mt:var name="name">=<mt:var name="primary" escape>
+          </mt:setvars>
+          <mt:if name="name" eq="$selected_model">
+            <mt:setvar name="model_primary_col" value="$primary">
+            <mt:setvar name="model_model" value="$name">
+          </mt:if>
+          <mt:var name="model_primary" to_json="1" setvar="model_primary_json">
+        </mt:if>
+      </mt:if>
+      <mt:if name="__last__">
+        </select>
+      </mt:if>
+      </mt:tables>
+      <mt:setvarblock name="__rel_name__">object_<mt:var name="__col_name__"></mt:setvarblock>
+      <input type="hidden" id="_group_model" name="model" value="<mt:var name="object_model" escape>">
+  </div>
+</div>
+<div class="row form-group">
+  <div class="col-lg-2">
+    <label for="<mt:var name="__col_name__">">
+      <mt:var name="label" escape>
+      <mt:if name="not_null"><mt:var name="field_required"></mt:if>
+    </label>
+  </div>
+  <div class="col-lg-10">
+    <ul id="<mt:var name="__col_name__">" class="group-relation-list">
+      <li class="card" <mt:if name="$__rel_name__">style="display:none" </mt:if> id="<mt:var name="__col_name__">-none">
+        <mt:trans phrase="(None selected)">
+      </li>
+      <li class="hidden card card-inverse group-item" id="<mt:var name="__col_name__">-tmpl">
+        <span><mt:trans phrase="Default"></span>
+        <button type="button" class="btn btn-secondary btn-sm close-sm" aria-label="<mt:trans phrase="Detach">" data-name="<mt:var name="__col_name__">">
+          <span aria-hidden="true">&times;</span>
+        </button>
+        <input type="hidden" name="<mt:var name="__col_name__">[]" value="">
+      </li>
+      <mt:setvarblock name="selected_ids"><mt:loop name="$__rel_name__" glue=","><mt:var name="__value__"></mt:loop></mt:setvarblock>
+    <mt:loop name="$__rel_name__">
+      <li class="<mt:var name="__col_name__">-child card card-inverse group-item">
+        <span>
+        <mt:getobjectname id="$__value__" wants="$model_primary_col" model="$model_model" escape>
+          <mt:getobjectname id="$__value__" wants="status" model="$model_model" escape setvar="__status__">
+          <mt:if name="__status__">
+           (<mt:statustext status="$__status__" model="$object_model" icon="1" text="1">)
+          </mt:if>
+        </span>
+        <button type="button" class="btn btn-secondary btn-sm close-sm" aria-label="<mt:trans phrase="Detach">" data-name="<mt:var name="__col_name__">">
+        <span aria-hidden="true">&times;</span>
+        </button>
+        <input type="hidden" name="<mt:var name="__col_name__">[]" value="<mt:var name="__value__" escape>">
+      </li>
+    </mt:loop>
+    </ul>
+      <button id="<mt:var name="__col_name__">-chooser" type="button" class="hidden btn btn-primary btn-sm dialog-chooser group-chooser" data-toggle="modal" data-target="#modal"
+        data-href="<mt:var name="script_uri">?__mode=view&amp;_type=list&amp;_model=<mt:var name="rel_model" escape><mt:if name="workspace_id">&amp;workspace_id=<mt:var name="workspace_id"></mt:if>&amp;dialog_view=1&amp;target=<mt:var name="__col_name__">&amp;get_col=<mt:var name="rel_col" escape>&amp;selected_ids=<mt:var name="selected_ids" escape>&amp;from_obj=group"><mt:trans phrase="Select..."></button>
+      <button id="<mt:var name="__col_name__">-add-chooser" type="button" class="hidden btn btn-primary btn-sm dialog-chooser group-chooser" data-toggle="modal" data-target="#modal"
+        data-href="<mt:var name="script_uri">?__mode=view&amp;_type=list&amp;_model=<mt:var name="rel_model" escape><mt:if name="workspace_id">&amp;workspace_id=<mt:var name="workspace_id"></mt:if>&amp;dialog_view=1&amp;target=<mt:var name="__col_name__">&amp;get_col=<mt:var name="rel_col" escape>&amp;selected_ids=<mt:var name="selected_ids" escape>&amp;from_obj=group&amp;select_add=1"><mt:trans phrase="Add..."></button>
+  </div>
+</div>
+<script>
+var dialog_url_<mt:var name="__col_name__"> = '<mt:var name="script_uri">?__mode=view&_type=list&_model=__any__<mt:if name="workspace_id">&workspace_id=<mt:var name="workspace_id"></mt:if>&dialog_view=1&target=<mt:var name="__col_name__">&get_col=<mt:var name="rel_col" escape>';
+var <mt:var name="__col_name__">_primary = <mt:var name="model_primary_json">;
+$('#<mt:var name="__col_name__">-chooser').click(function(){
+    var selected_ids = [];
+    $("input[name='<mt:var name="__col_name__">[]']").each(function(){
+        if ( $(this).val() ) {
+            selected_ids.push($(this).val());
+        }
+    });
+    var new_dialog_url_<mt:var name="__col_name__"> = dialog_url_<mt:var name="__col_name__"> + '&selected_ids=' + selected_ids.join(',');
+    var curr_model = $('#<mt:var name="__col_name__">-selector').val();
+    var primary_col = <mt:var name="__col_name__">_primary[curr_model];
+    new_dialog_url_<mt:var name="__col_name__"> = new_dialog_url_<mt:var name="__col_name__">.replace( /_model=__any__/, '_model=' + curr_model );
+    new_dialog_url_<mt:var name="__col_name__"> = new_dialog_url_<mt:var name="__col_name__">.replace( /get_col=__primary__/, 'get_col=' + primary_col );
+    new_dialog_url_<mt:var name="__col_name__"> += '&from_obj=group';
+    $(this).data('href',new_dialog_url_<mt:var name="__col_name__">);
+});
+$('#<mt:var name="__col_name__">-add-chooser').click(function(){
+    var selected_ids = [];
+    $("input[name='<mt:var name="__col_name__">[]']").each(function(){
+        if ( $(this).val() ) {
+            selected_ids.push($(this).val());
+        }
+    });
+    var new_dialog_url_<mt:var name="__col_name__"> = dialog_url_<mt:var name="__col_name__"> + '&select_add=1&selected_ids=' + selected_ids.join(',');
+    var curr_model = $('#<mt:var name="__col_name__">-selector').val();
+    var primary_col = <mt:var name="__col_name__">_primary[curr_model];
+    new_dialog_url_<mt:var name="__col_name__"> = new_dialog_url_<mt:var name="__col_name__">.replace( /_model=__any__/, '_model=' + curr_model );
+    new_dialog_url_<mt:var name="__col_name__"> = new_dialog_url_<mt:var name="__col_name__">.replace( /get_col=__primary__/, 'get_col=' + primary_col );
+    new_dialog_url_<mt:var name="__col_name__"> += '&from_obj=group';
+    $(this).data('href',new_dialog_url_<mt:var name="__col_name__">);
+});
+var <mt:var name="__col_name__">_data_href ='<mt:var name="script_uri">?__mode=view&amp;_type=list&amp;_model=<mt:var name="rel_model" escape><mt:if name="workspace_id">&amp;workspace_id=<mt:var name="workspace_id"></mt:if>&amp;dialog_view=1&amp;target=<mt:var name="__col_name__">&amp;get_col=<mt:var name="rel_col" escape>&amp;selected_ids=<mt:var name="selected_ids" escape>&amp;from_obj=group';
+$('#<mt:var name="__col_name__">-selector').change(function(){
+    if ( $(this).val() == '' ) {
+        $('#<mt:var name="__col_name__">-chooser').hide();
+        $('#<mt:var name="__col_name__">-add-chooser').hide();
+        return;
+    }
+    $('#<mt:var name="__col_name__">-chooser').show();
+    $('#<mt:var name="__col_name__">-add-chooser').show();
+    $('#_group_model').val( $('#<mt:var name="__col_name__">-selector option:selected').attr('data-model') );
+});
+$('#<mt:var name="__col_name__">-selector').trigger('change');
+$('#<mt:var name="__col_name__">').sortable ( {
+// TODO keyboard oparation
+    stop: function( evt, ui ) {
+        editContentChanged = true;
+    }
+});
+$('.group-item').mouseover(function() {
+    $(this).css('cursor','move');
+});
+</script>

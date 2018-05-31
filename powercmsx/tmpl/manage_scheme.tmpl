@@ -1,0 +1,177 @@
+<mt:include file="include/header.tmpl">
+
+<div class="table-screen">
+
+<mt:if name="request.saved_changes">
+  <div class="alert alert-success">
+    <mt:var name="request.saved_changes" setvar="upgraded_count">
+  <mt:if name="upgraded_count" eq="1">
+    <mt:trans phrase="Upgrade 1 scheme.">
+  <mt:else>
+    <mt:trans phrase="Upgrade %s schemes." params="$upgraded_count">
+  </mt:if>
+  </div>
+</mt:if>
+
+<mt:if name="upgrade_count">
+  <div class="alert alert-warning">
+    <mt:if name="upgrade_count" eq="1">
+      <mt:trans phrase="There is one upgrade.">
+    <mt:else>
+      <mt:trans phrase="There are %s upgrades." params="$upgrade_count">
+    </mt:if>
+  </div>
+<mt:else>
+  <div class="alert alert-success">
+    <mt:trans phrase="There is no upgrade.">
+  </div>
+</mt:if>
+
+<mt:setvarblock name="table_header">
+  <tr>
+  <mt:if name="upgrade_count">
+  <th class="all-selector cb-col">
+    <label class="custom-control custom-checkbox">
+      <input type="checkbox" class="selector custom-control-input">
+      <span class="custom-control-indicator"></span>
+      <span class="custom-control-description"></span>
+    </label>
+  </th>
+  </mt:if>
+  <th><mt:trans phrase="Name"></th>
+  <th><mt:trans phrase="Component"></th>
+  <th class="short-col"><mt:trans phrase="Version of Scheme"></th>
+  <th class="short-col"><mt:trans phrase="Version of Database"></th>
+  <mt:if name="upgrade_count">
+  <th class="short-col"><mt:trans phrase="Upgrade"></th>
+  </mt:if>
+</tr>
+</mt:setvarblock>
+
+<mt:if name="upgrade_count">
+<form action="<mt:var name="script_uri">" method="POST">
+<input type="hidden" name="__mode" value="manage_scheme">
+<input type="hidden" name="magic_token" value="<mt:var name="magic_token">">
+<input type="hidden" name="_type" value="upgrade">
+<div class="form-group">
+  <button type="submit" class="upgrade-btn btn btn-primary"><mt:trans phrase="Upgrade"></button>
+</div>
+</mt:if>
+
+<table class="table table-striped table-sm listing-table table-hover">
+<thead>
+  <mt:var name="table_header">
+</thead>
+<tbody id="list_body">
+<mt:loop name="schemes">
+<tr id="line_<mt:var name="model" escape>" <mt:if name="scheme_version" gt="$db_version">class="active-cell"</mt:if>>
+  <mt:if name="upgrade_count">
+  <th class="cb-col">
+  <mt:if name="scheme_version" gt="$db_version">
+    <label class="custom-control custom-checkbox">
+      <input id="box_<mt:var name="model" escape>" type="checkbox" class="custom-control-input" name="model[]" value="<mt:var name="model" escape>">
+      <span class="custom-control-indicator"></span>
+      <span class="custom-control-description"></span>
+    </label>
+  </mt:if>
+  </th>
+  </mt:if>
+  <td><mt:var name="model" escape></td>
+  <td><mt:if name="component" eq="core">prototype<mt:else><mt:var name="component" lower_case escape></mt:if></td>
+  <td><mt:var name="scheme_version" escape></td>
+  <td><mt:var name="db_version" escape></td>
+  <mt:if name="upgrade_count">
+  <td>
+  <mt:if name="scheme_version" gt="$db_version">
+    <i class="fa fa-check-square-o" aria-hidden="true"></i>
+    <span class="sr-only"><mt:trans phrase="Checked"></span>
+  </mt:if>
+  </td>
+  </mt:if>
+</tr>
+</mt:loop>
+</tbody>
+<tfoot>
+  <mt:var name="table_header">
+</tfoot>
+</table>
+<mt:if name="upgrade_count">
+<div class="form-group">
+  <button type="submit" class="upgrade-btn btn btn-primary"><mt:trans phrase="Upgrade"></button>
+</div>
+</form>
+</mt:if>
+</div>
+
+<script>
+var in_link = false;
+var is_all  = false;
+$('input').mouseover(function() {
+    in_link = true;
+});
+$('input').mouseout(function() {
+    in_link = false;
+});
+$('#list_body tr').click(function() {
+    if ( in_link ) {
+        return true;
+    }    
+    line_id = $(this).prop('id');
+    line = line_id.replace( /line_/, '' );
+    checked = $('#box_'+line).prop('checked');
+    if ( checked ) {
+        $('#box_'+line).prop('checked', false);
+    } else {
+        $('#box_'+line).prop('checked', true);
+    }
+    set_all_select();
+});
+function set_all_select () {
+    is_all = true;
+    $("input[name='model[]']").each(function(){
+        if ( $(this).prop('checked') == false ) {
+            is_all = false;
+            return false;
+        }
+    });
+    $('.selector').prop('checked', is_all );
+}
+$("input[name='model[]']").change(function(){
+    set_all_select();
+});
+$('.selector').click(function(){
+    checked = $(this).prop('checked');
+    $("input[name='model[]']").each(function(){
+        $(this).prop('checked', checked);
+    });
+    $('.selector').prop('checked', checked);
+});
+$('.upgrade-btn').click(function() {
+    if ( item_checked( true ) == 0 ) {
+        alert('<mt:trans phrase="You did not select any scheme.">');
+        return false;
+    }
+    if(! confirm('<mt:trans phrase="Are you sure you want to upgrade selected scheme(s)?">') ) {
+        return false;
+    }
+});
+var selected_item_count;
+function item_checked( count ) {
+    selected_item_count = 0;
+    var selected = false;
+    $("input[name='model[]']").each(function(){
+        if($(this).prop('checked') === true) {
+            selected = true;
+            if (! count ) {
+                return false;
+            }
+            selected_item_count++;
+        }
+    });
+    if ( count ) {
+        return selected_item_count;
+    }
+    return selected;
+}
+</script>
+<mt:include file="include/footer.tmpl">

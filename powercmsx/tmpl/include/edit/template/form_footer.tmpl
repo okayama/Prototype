@@ -1,0 +1,77 @@
+<mt:setvar name="__can_rebuild_this_template" value="0">
+
+<mt:var name="request.id" escape setvar="template_id">
+<mt:objectloop model="urlmapping" template_id="$template_id" sort_by="order" sort_order="ascend">
+<mt:if name="__first__">
+<div class="row form-group">
+<div class="col-lg-2 input-group-lg">
+<mt:trans phrase="Used in">
+</div>
+<div class="col-lg-10 input-group-lg">
+<table class="table table-sm table-bordered">
+<thead class="thead-default">
+<tr>
+<th><mt:trans phrase="URL Map"></th>
+<th><mt:trans phrase="Model"></th>
+<th><mt:trans phrase="Container"></th>
+<th style="width:25%"><mt:trans phrase="WorkSpace"></th>
+</tr>
+</thead>
+</mt:if>
+<tr>
+<td>
+<a target="_blank" href="<mt:var name="script_uri">?__mode=view&_type=edit&_model=urlmapping&id=<mt:var name="id">&workspace_id=<mt:if name="workspace_id"><mt:var name="workspace_id"></mt:if>">
+<mt:var name="name" escape>
+</a>
+</td>
+<td>
+<mt:trans phrase="$model" language="default" setvar="map_model">
+<mt:if name="map_model" eq="View"><mt:setvar name="__can_rebuild_this_template" value="1"></mt:if>
+<mt:trans phrase="$map_model">
+</td>
+<td>
+<mt:trans phrase="$container" language="default" setvar="map_container">
+<mt:trans phrase="$map_container">
+</td>
+<td>
+<mt:getobjectname id="$workspace_id" type="reference:workspace:name" escape>
+</td>
+</tr>
+<mt:if name="__last__">
+</table>
+</div>
+</div>
+</mt:if>
+</mt:objectloop>
+
+<mt:loop name="_include_modules">
+<mt:if name="__first__">
+<div class="row form-group">
+<div class="col-lg-2 input-group-lg">
+<mt:trans phrase="Include Modules">
+</div>
+<div class="col-lg-10 input-group-lg">
+<table class="table table-sm table-bordered">
+<thead class="thead-default">
+<tr>
+<th><mt:trans phrase="Name"></th>
+<th style="width:25%"><mt:trans phrase="WorkSpace"></th>
+</tr>
+</thead>
+</mt:if>
+<tr>
+<td>
+<a target="_blank" href="<mt:var name="script_uri">?__mode=view&_type=edit&_model=template&id=<mt:var name="template_id">&workspace_id=<mt:if name="template_workspace_id"><mt:var name="template_workspace_id"></mt:if>">
+<mt:var name="template_name" escape>
+</a>
+</td>
+<td>
+<mt:getobjectname id="$template_workspace_id" type="reference:workspace:name" escape>
+</td>
+</tr>
+<mt:if name="__last__">
+</table>
+</div>
+</div>
+</mt:if>
+</mt:loop>

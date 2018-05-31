@@ -1,0 +1,31 @@
+<div class="row form-group">
+  <div class="col-lg-2">
+    <label for="<mt:var name="name" escape>">
+    <mt:var name="label" escape="1">
+    <mt:var name="field_required">
+    </label>
+  </div>
+  <div class="col-lg-10">
+    <mt:objectvar name="class" setvar="__class__">
+    <mt:unless name="request.id">
+      <mt:if name="request.workspace_role">
+        <mt:setvar name="__class__" value="workspace">
+      <mt:else>
+        <mt:setvar name="__class__" value="system">
+      </mt:if>
+    </mt:unless>
+    <input type="hidden" name="class" value="<mt:var name="__class__" escape>">
+    <mt:if name="__class__" eq="workspace">
+      <mt:trans phrase="WorkSpace" escape>
+      &nbsp;
+    <label class="custom-control custom-checkbox">
+      <input name="workspace_admin" value="0" type="hidden">
+      <input type="checkbox" id="workspace_admin" class="custom-control-input watch-changed" name="workspace_admin" value="1" <mt:if name="object_workspace_admin">checked</mt:if>>
+      <span class="custom-control-indicator"></span>
+      <span class="custom-control-description"><mt:trans phrase="Workspace Administrator"></span>
+    </label>
+    <mt:else>
+      <mt:trans phrase="System" escape>
+    </mt:if>
+  </div>
+</div>

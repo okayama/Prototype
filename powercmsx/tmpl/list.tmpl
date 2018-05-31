@@ -1,0 +1,847 @@
+<mt:var name="model" setvar="this_model">
+<mt:var name="model" setvar="_this_model">
+<mt:var name="sort_cond" value="">
+<mt:if name="request.sort">
+<mt:if name="request.direction">
+<mt:setvarblock name="sort_cond">&amp;sort=<mt:var name="request.sort" escape>&amp;direction=<mt:var name="request.direction" escape></mt:setvarblock>
+</mt:if>
+</mt:if>
+<mt:if name="request.query">
+<mt:setvarblock name="query_cond">&amp;query=<mt:var name="query" escape></mt:setvarblock>
+</mt:if>
+<mt:if name="request.select_system_filters">
+<mt:setvarblock name="filter_cond">
+&amp;select_system_filters=<mt:var name="request.select_system_filters" escape>
+&amp;_system_filters_option=<mt:var name="request._system_filters_option" escape>
+&amp;_filter=1
+<mt:if name="request._fix_filter">&amp;_fix_filter=1</mt:if>
+</mt:setvarblock>
+</mt:if>
+<mt:if name="request.insert_editor">
+<mt:setvarblock name="insert_cond">
+&amp;insert_editor=1
+&amp;insert=<mt:var name="request.insert" escape>
+</mt:setvarblock>
+</mt:if>
+<mt:if name="request.target">
+<mt:setvarblock name="selected_ids_cond">
+&amp;selected_ids=<mt:var name="request.selected_ids" escape>
+&amp;target=<mt:var name="request.target" escape>
+&amp;get_col=<mt:var name="request.get_col" escape>
+<mt:if name="request.select_add">&amp;select_add=<mt:var name="request.select_add" escape></mt:if>
+</mt:setvarblock>
+</mt:if>
+
+<mt:setvar name="_single_select" value="0">
+<mt:setvar name="_get_col" value="">
+<mt:if name="request.dialog_view">
+<mt:if name="request.get_col">
+<mt:var name="request.get_col" setvar="_get_col">
+</mt:if>
+<mt:setvarblock name="dialog_param">&amp;dialog_view=1</mt:setvarblock>
+<mt:if name="request.single_select">
+<mt:setvar name="_single_select" value="1">
+</mt:if>
+</mt:if>
+<mt:setvar name="selecter_param" value="">
+<mt:if name="request.target">
+<mt:setvarblock name="selecter_param">&amp;target=<mt:var name="request.target" escape>&amp;get_col=<mt:var name="request.get_col" escape>&amp;selected_ids=<mt:var name="request.selected_ids" escape>&amp;from_obj=<mt:var name="request.from_obj" escape></mt:setvarblock>
+</mt:if>
+
+<mt:if name="request.dialog_view">
+<mt:include file="include/dialog_header.tmpl">
+<mt:setvar name="sortable" value="">
+<mt:else>
+<mt:include file="include/header.tmpl">
+</mt:if>
+<mt:setvarblock name="this_url"><mt:var name="script_uri">?__mode=view&amp;_type=list&amp;_model=<mt:var name="model"></mt:setvarblock>
+<mt:setvarblock name="setup_search">
+$(".search-btn").click(function(){
+    $("#__mode").prop('value','view');
+    return true;
+});
+$(".alt-search-button").click(function(){
+    query = prompt('<mt:trans phrase="Please enter keyword for search.">', '<mt:var name="query" escape>');
+    $(".query-box").val(query);
+    $(".query-box").show();
+    $("#__mode").prop('value','view');
+    return true;
+});
+$(".query-box").keypress(function(e){
+  if(e.which==13){
+    $("#__mode").prop('value','view');
+    in_search = true;
+    return true;
+  }
+});
+</mt:setvarblock>
+<mt:setvarblock name="search_box">
+  <input class="query-box form-control mb-2 mr-sm-2 mb-sm-0 form-control-sm" name="query" type="text" value="<mt:var name="query" escape>" placeholder="<mt:trans phrase="Keyword">">
+  <button class="search-btn btn btn-secondary search-button btn-sm" type="submit"><i class="fa fa-search" aria-hidden="true"></i><span class="sr-only"><mt:trans phrase="Search"></span></button>
+  <button class="hidden btn btn-secondary alt-search-button btn-sm" type="submit"><i class="fa fa-search" aria-hidden="true"></i><span class="sr-only"><mt:trans phrase="Search"></span></button>
+</mt:setvarblock>
+<mt:setvarblock name="current_filter">
+<mt:unless name="request._fix_filter">
+<mt:if name="current_filter_name">( <mt:trans phrase="Current Filter"> :&nbsp;<a href="javascript:void(0);" data-toggle="modal" data-target="#filterOptions"><mt:var name="current_filter_name" escape></a> <span> - </span> <a href="<mt:var name="this_url">&amp;_detach_filter=1<mt:var name="query_cond"><mt:var name="dialog_param"><mt:if name="workspace_id">&amp;workspace_id=<mt:var name="workspace_id"></mt:if><mt:var name="selecter_param"><mt:var name="insert_cond" strip_linefeeds="1">"><mt:trans phrase="Detach"></a> &nbsp;)</span></mt:if>
+</mt:unless>
+</mt:setvarblock>
+
+<mt:var name="sortable" setvar="_sortable">
+<mt:trans phrase="ascend" setvar="order_asc">
+<mt:trans phrase="descend" setvar="order_desc">
+
+<mt:if name="request.revision_select">
+<mt:trans phrase="Revisions" setvar="plural">
+</mt:if>
+
+    <mt:if name="request.deleted">
+  <div class="alert alert-success" tabindex="0">
+    <mt:var name="alert_close">
+    <mt:trans phrase="Removed %s." params="$plural">
+  </div>
+    <script>
+    $('.alert-success').focus();
+    </script>
+    </mt:if>
+
+    <mt:if name="request.saved_order">
+  <div class="alert alert-success" tabindex="0">
+    <mt:var name="alert_close">
+    <mt:trans phrase="%s's order saved successfully." params="$plural">
+  </div>
+    <script>
+    $('.alert-success').focus();
+    </script>
+    </mt:if>
+
+    <mt:if name="request.saved_props">
+  <div class="alert alert-success" tabindex="0">
+    <mt:var name="alert_close">
+    <mt:trans phrase="%s's display options saved successfully." params="$label">
+  </div>
+    <script>
+    $('.alert-success').focus();
+    </script>
+    </mt:if>
+
+<form action="<mt:var name="script_uri">" method="POST" class="form-inline" id="list-select-form">
+<input type="hidden" name="__mode" value="" id="__mode">
+<input type="hidden" name="_model" value="<mt:var name="model">">
+<input type="hidden" name="magic_token" value="<mt:var name="magic_token">">
+<input type="hidden" name="_type" value="list">
+<input type="hidden" name="sort" value="<mt:var name="request.sort" escape>">
+<input type="hidden" name="direction" value="<mt:var name="request.direction" escape>">
+<mt:if name="workspace_id">
+<input type="hidden" name="workspace_id" value="<mt:var name="workspace_id">">
+</mt:if>
+<input type="hidden" name="" value="" id="select_ids_tmpl">
+<input type="hidden" name="filter_params" value="<mt:var name="filter_params" escape>">
+<input type="hidden" name="return_args" value="<mt:var name="return_args" escape>">
+<mt:if name="request.dialog_view">
+<input type="hidden" name="target" value="<mt:var name="request.target" escape>">
+<input type="hidden" name="single_select" value="<mt:var name="request.single_select" escape>">
+<input type="hidden" name="get_col" value="<mt:var name="request.get_col" escape>">
+<input type="hidden" name="dialog_view" value="1">
+<mt:if name="request.insert_editor">
+<input type="hidden" name="select_system_filters" value="<mt:var name="request.select_system_filters" escape>">
+<input type="hidden" name="_system_filters_option" value="<mt:var name="request._system_filters_option" escape>">
+<input type="hidden" name="insert" value="<mt:var name="request.insert" escape>">
+<input type="hidden" name="insert_editor" value="<mt:var name="request.insert_editor" escape>">
+<input type="hidden" name="_filter" value="<mt:var name="request._filter" escape>">
+</mt:if>
+</mt:if>
+
+<mt:unless name="list_items">
+  <div class="alert alert-success full">
+    <mt:trans phrase="%s not found." params="$label">
+  </div>  
+<mt:if name="query">
+  <div class="full<mt:unless name="list_items"> box-no-list-items"</mt:unless>">
+  <mt:var name="search_box">
+  <mt:var name="current_filter">
+  </div>
+<script>
+var in_search = false;
+<mt:var name="setup_search">
+</script>
+  <mt:else>
+    <mt:if name="current_filter">
+      <mt:var name="current_filter">
+    </mt:if>
+</mt:if>
+</form>
+<mt:if name="request.dialog_view">
+  <button id="dialog-cancel-btn" class="btn btn-secondary" type="submit"><mt:trans phrase="Cancel"></button>
+<script>
+$('#dialog-cancel-btn').click(function(){
+    window.parent.$('#modal').modal('hide');
+    window.location.href = '<mt:var name="script_uri">?__mode=loading';
+    return false;
+});
+</script>
+</mt:if>
+
+<mt:else>
+<mt:setvarblock name="list_nav">
+<table class="full table-sm list-actions-table">
+<tr>
+<td class="list-actions-col">
+<mt:if name="can_action">
+<mt:unless name="request.dialog_view">
+  <button type="submit" class="__delete list-delete-btn btn btn-secondary btn-sm">
+  <i class="fa fa-trash" aria-hidden="true"></i>
+  <span class="sr-only"><mt:trans phrase="Delete"></span>
+  </button>
+</mt:unless>
+<mt:unless name="request.dialog_view">
+<mt:if name="list_actions">
+  <mt:include file="include/list_actions.tmpl">
+</mt:if>
+</mt:unless>
+<mt:if name="_sortable">
+  <button type="submit" class="__save_order save-order-btn btn btn-secondary btn-sm"><mt:trans phrase="Save Order"></button>
+</mt:if>
+</mt:if>
+<mt:if name="_per_page">
+  <mt:var name="search_box">
+</mt:if>
+</td>
+<td class="pagination-col">
+<mt:if name="_per_page">
+<nav aria-label="<mt:trans phrase="Page navigation">" class="pull-right">
+  <ul class="pagination pagination-sm">
+    <li class="page-item <mt:unless name="has_prev">disabled</mt:unless>">
+      <a class="page-link" href="<mt:if name="has_prev"><mt:var name="this_url">&amp;offset=<mt:var name="prev_offset"><mt:var name="sort_cond"><mt:var name="query_cond"><mt:var name="dialog_param"><mt:var name="filter_cond" strip_linefeeds="1"><mt:var name="selected_ids_cond" strip_linefeeds="1"><mt:if name="workspace_id">&amp;workspace_id=<mt:var name="workspace_id"></mt:if><mt:var name="filter_add_params"><mt:else>#</mt:if>" aria-label="<mt:trans phrase="Previous">">
+        <span aria-hidden="true">&laquo;</span>
+        <span class="sr-only"><mt:trans phrase="Previous"></span>
+      </a>
+    </li>
+    <li class="page-item <mt:unless name="next_offset">disabled</mt:unless>">
+      <a class="page-link" href="<mt:if name="next_offset"><mt:var name="this_url">&amp;offset=<mt:var name="next_offset"><mt:var name="sort_cond"><mt:var name="query_cond"><mt:var name="dialog_param"><mt:var name="filter_cond" strip_linefeeds="1"><mt:var name="selected_ids_cond" strip_linefeeds="1"><mt:if name="workspace_id">&amp;workspace_id=<mt:var name="workspace_id"></mt:if><mt:var name="filter_add_params"><mt:else>#</mt:if>" aria-label="<mt:trans phrase="Next">">
+        <span aria-hidden="true">&raquo;</span>
+        <span class="sr-only"><mt:trans phrase="Next"></span>
+      </a>
+    </li>
+  </ul>
+</nav>
+</mt:if>
+<mt:if name="_per_page">
+<div class="pull-right page-current">
+  <mt:trans phrase="%s - %s of %s Items" params="'$list_from','$list_to','$object_count'">
+</div>
+</mt:if>
+</td>
+</tr>
+<tr><td colspan="3">
+  <mt:var name="current_filter">
+</td></tr>
+</table>
+</mt:setvarblock>
+
+<mt:setvarblock name="table_header">
+<tr>
+<th class="id">
+<mt:unless name="_single_select">
+<label class="custom-control custom-checkbox">
+  <input type="checkbox" class="selector custom-control-input">
+  <span class="custom-control-indicator"></span>
+  <span class="custom-control-description"></span>
+</label>
+</mt:unless>
+</th>
+<mt:loop name="list_cols">
+<mt:ifinarray value="$_name" array="$show_cols">
+<th class="<mt:if name="_name" eq="id">id </mt:if><mt:if name="_list" eq="primary"> primary <mt:elseif name="_list" like="num"> num </mt:if><mt:if name="_list" ne="primary"> not-primary</mt:if>">
+  <mt:var name="_label" escape trim_to="10+...">
+  <mt:if name="_type" ne="relation">
+    <span class="text-sm toggle">
+    <mt:setvar name="class_asc" value="">
+    <mt:setvar name="class_desc" value="">
+    <mt:if name="request.sort" eq="$_name">
+      <mt:if name="request.direction" eq="asc">
+        <mt:setvar name="class_asc" value="1">
+      <mt:elseif name="request.direction" eq="desc">
+        <mt:setvar name="class_desc" value="1">
+      </mt:if>
+    </mt:if>
+  <mt:unless name="request.revision_select">
+    <a aria-label="<mt:trans phrase="Sort by %s in %s" params="'$_label','$order_asc'" escape><mt:if name="class_asc">(<mt:trans phrase="Selected">)</mt:if>" class="<mt:if name="class_asc">current-cnd</mt:if>" href="<mt:var name="this_url">&amp;sort=<mt:var name="_name">&amp;direction=asc<mt:var name="query_cond"><mt:var name="workspace_param"><mt:var name="dialog_param"><mt:var name="filter_cond" strip_linefeeds="1"><mt:var name="insert_cond" strip_linefeeds="1"><mt:var name="selected_ids_cond" strip_linefeeds="1"><mt:if name="workspace_id">&amp;workspace_id=<mt:var name="workspace_id"></mt:if><mt:var name="filter_add_params">">&#9650;</a>
+    <a aria-label="<mt:trans phrase="Sort by %s in %s" params="'$_label','$order_desc'" escape><mt:if name="class_asc">(<mt:trans phrase="Selected">)</mt:if>" class="<mt:if name="class_desc">current-cnd</mt:if>" href="<mt:var name="this_url">&amp;sort=<mt:var name="_name">&amp;direction=desc<mt:var name="query_cond"><mt:var name="workspace_param"><mt:var name="dialog_param"><mt:var name="filter_cond" strip_linefeeds="1"><mt:var name="insert_cond" strip_linefeeds="1"><mt:var name="selected_ids_cond" strip_linefeeds="1"><mt:if name="workspace_id">&amp;workspace_id=<mt:var name="workspace_id"></mt:if><mt:var name="filter_add_params">">&#9660;</a></span>
+  </mt:unless>
+  </mt:if>
+</th>
+</mt:ifinarray>
+</mt:loop>
+</tr>
+<mt:unless name="_single_select">
+  <mt:if name="list_from" ne="1">
+    <mt:setvar name="show_all_selected" value="1">
+  </mt:if>
+  <mt:if name="list_to" ne="$object_count">
+    <mt:setvar name="show_all_selected" value="1">
+  </mt:if>
+  <mt:if name="show_all_selected">
+  <tr>
+    <td colspan="<mt:var name="list_colspan">" class="all-selected-cell hidden">
+<label class="custom-control custom-checkbox" style="display:inline;">
+  <input type="checkbox" class="custom-control-input cb-all-selected" name="all_selected" value="1">
+  <span class="custom-control-indicator"></span>
+  <span class="custom-control-description"></span>
+    &nbsp; <mt:trans phrase="Select all %s items" params="$object_count">
+</label>
+    </td>
+  </tr>
+</mt:if>
+</mt:unless>
+</mt:setvarblock>
+
+<mt:var name="list_nav">
+<mt:loop name="list_items">
+<mt:if name="__first__">
+<table class="table table-striped table-sm listing-table table-hover <mt:if name="_sortable">listing-table_sortable</mt:if>">
+<thead>
+<mt:var name="table_header">
+</thead>
+<tbody id="list_body">
+</mt:if>
+<tr id="line_<mt:var name="id">">
+<mt:setvar name="column_vars" value="">
+<mt:loop name="list_cols">
+<mt:if name="__first__">
+<td>
+  <mt:unless name="_single_select">
+    <label class="custom-control custom-checkbox">
+      <input id="box_<mt:var name="id">" type="checkbox" name="id[]" value="<mt:var name="id">" class="custom-control-input">
+      <span class="custom-control-indicator"></span>
+      <span class="custom-control-description"></span>
+    </label>
+  <mt:else>
+    <label class="custom-control custom-radio">
+      <input type="radio" id="box_<mt:var name="id">" name="id" value="<mt:var name="id">" class="custom-control-input">
+      <span class="custom-control-indicator"></span>
+      <span class="custom-control-description"></span>
+    </label>
+  </mt:unless>
+</td>
+</mt:if>
+<mt:ifinarray value="$_name" array="$show_cols">
+<td <mt:if name="_list" eq="primary"><mt:if name="_icon">style="line-height:1.6em;"</mt:if></mt:if> class="<mt:if name="_name" eq="id">id </mt:if><mt:if name="_list" eq="number"><mt:unless name="sort_order"><mt:if name="_name" ne="status">num</mt:if></mt:unless></mt:if> list-col<mt:if name="_list" eq="primary">-primary primary<mt:else> not-primary</mt:if>">
+  <mt:if name="_list" eq="primary">
+  <mt:if name="_get_col">
+    <mt:var name="$_get_col" setvar="_get_col_value">
+    <mt:if name="request.from_obj" eq="group">
+        <mt:setvarblock name="_get_col_value" append="1">
+          (<mt:var name="_status_text">)
+        </mt:setvarblock>
+      </mt:if>
+    </mt:if>
+    <input type="hidden" id="_get_col_<mt:var name="id">" value="<mt:var name="_get_col_value" escape>">
+  </mt:if>
+  </mt:if>
+<mt:setvarblock name="col_content">
+  <mt:setvarblock name="include_path">include/list/<mt:var name="this_model">/column_<mt:var name="_name">.tmpl</mt:setvarblock>
+  <mt:include file="$include_path" setvar="alt_value">
+  <mt:unless name="alt_value">
+    <mt:setvarblock name="include_path">include/list/column_<mt:var name="_name">.tmpl</mt:setvarblock>
+    <mt:include file="$include_path" setvar="alt_value">
+  </mt:unless>
+  <mt:if name="alt_value">
+    <mt:var name="alt_value">
+  <mt:else>
+    <mt:isarray name="$_name">
+      <mt:var name="$_name" join=", " escape>
+    <mt:else>
+      <mt:setvar name="_can_sort" value="0">
+      <mt:if name="_name" eq="order">
+      <mt:if name="_sortable">
+        <mt:setvar name="_can_sort" value="1">
+      </mt:if>
+      </mt:if>
+      <mt:if name="_list" eq="primary">
+        <mt:ifusercan action="edit" model="$this_model" id="$id" workspace_id="$workspace_id">
+          <mt:if name="_has_file">
+            <mt:if name="_icon">
+            <div class="list-icon">
+            <a href="javascript:void(0);" id="popover-list-<mt:var name="id">">
+            <img src="<mt:var name="_icon">" width="32" alt="<mt:trans phrase="$_icon_class">"> 
+            </a>
+            <script>
+            $('#popover-list-<mt:var name="id">').popover({
+                content: "<img src='<mt:var name="_icon_large">' alt='<mt:trans phrase="Preview">' width='150'> ",
+                placement: "right",
+                html: true
+            });
+            $('body').on('click', function (e) {
+                $('#popover-list-<mt:var name="id">').popover('hide');
+            });
+            </script>
+              <mt:if name="_get_col">
+              <input type="hidden" id="_get_col_img_<mt:var name="id">" value="<mt:var name="_icon">">
+              </mt:if>
+            </div>
+            <mt:else>
+              <i class="list-small-icon btn fa <mt:if name="_icon_class" eq="image">fa-file-image-o<mt:elseif name="_icon_class" eq="pdf">fa-file-pdf-o<mt:elseif name="_icon_class" eq="video">fa-file-video-o<mt:elseif name="_icon_class" eq="audio">fa-file-audio-o<mt:else><mt:unless name="_icon_class">fa-minus<mt:else>fa-file-o</mt:unless></mt:if>" aria-hidden="true"></i>
+              <span class="sr-only"><mt:trans phrase="$_icon_class"></span>
+            </mt:if>
+          </mt:if>
+          <a <mt:if name="request.dialog_view">target="_blank"</mt:if> href="<mt:var name="script_uri">?__mode=view&amp;_type=edit&amp;_model=<mt:var name="this_model" escape>&amp;id=<mt:var name="id" escape><mt:if name="workspace_id">&amp;workspace_id=<mt:var name="workspace_id"></mt:if><mt:if name="model" eq="workspace">&amp;workspace_id=<mt:var name="id" escape></mt:if><mt:if name="request.revision_select">&amp;edit_revision=1</mt:if>"></mt:ifusercan>
+          <mt:unless name="$_name">
+            <mt:trans phrase="null">
+          <mt:else>
+            <mt:var name="$_name" escape>
+          </mt:unless>
+        <mt:ifusercan action="edit" model="$this_model" id="$id" workspace_id="$workspace_id"></a></mt:ifusercan>
+        <mt:if name="_permalink">
+          &nbsp; 
+          <a href="<mt:var name="_permalink">" target="_blank">
+          <i class="fa fa-external-link" aria-hidden="true"></i>
+          <span class="sr-only"><mt:trans phrase="View"></span>
+          </a>
+        </mt:if>
+          <a class="btn toggle-infobox hidden"
+            id="toggle_<mt:var name="id">" href="javascript:void(0);">
+            <i id="toggle_icn_<mt:var name="id">" class="fa fa-caret-down toggle-icn" aria-hidden="true"></i>
+            <span class="sr-only"><mt:trans phrase="Toggle"></span>
+          </a>
+          <div id="infobox_<mt:var name="id">" class="hidden info-box"></div>
+      <mt:elseif name="_list" eq="checkbox">
+        <mt:if name="$_name">
+          <i class="fa fa-check-square-o" aria-hidden="true"></i>
+          <span class="sr-only"><mt:trans phrase="Checked"></span>
+        </mt:if>
+      <mt:elseif name="_list" like=":">
+        <mt:if name="_name" eq="workspace_id">
+          <mt:unless name="workspace_scope">
+            <a href="<mt:var name="this_url"><mt:var name="sort_cond"><mt:var name="query_cond"><mt:if name="workspace_id">&amp;workspace_id=<mt:var name="workspace_id"></mt:if><mt:var name="dialog_param">"><mt:var name="workspace_name" escape></a>
+          </mt:unless>
+        <mt:else>
+          <mt:var name="$_name" escape>
+        </mt:if>
+      <mt:elseif name="_name" eq="status">
+        <mt:var name="$_name" setvar="status">
+        <mt:var name="_status_text">
+      <mt:elseif name="_list" eq="popover">
+        <button id="popover-<mt:var name="_name">-<mt:var name="id">" type="button" class="btn btn-secondary btn-sm" data-container="body" data-toggle="popover" data-placement="left">
+        <i class="fa fa-commenting-o" aria-hidden="true"></i>
+        <span class="sr-only"><mt:trans phrase="Toggle"></span>
+        </button>
+<script>
+$('#popover-<mt:var name="_name">-<mt:var name="id">').popover({
+    title: '<mt:var name="_label" escape trim_to="10+...">',
+    content: '<mt:var name="$_name" encode_js="1" trim_to="600+...">',
+    placement: "bottom",
+    html: true
+});
+</script>
+      <mt:elseif name="_can_sort">
+        <input name="order_<mt:var name="id">" type="number" class="form-control order_col form-control-sm" value="<mt:var name="$_name">">
+      <mt:else>
+        <mt:var name="$_name" escape>
+      </mt:if>
+    </mt:if>
+  </mt:isarray>
+</mt:setvarblock>
+<mt:var name="col_content">
+<mt:if name="_list" ne="primary">
+<mt:unless name="_can_sort">
+  <mt:if name="_name" ne="$__last_col__">
+    <mt:setvarblock name="column_vars" append="1">
+      <tr><th><mt:var name="_label"></th><td><mt:var name="col_content"></td></tr>
+    </mt:setvarblock>
+  </mt:if>
+</mt:unless>
+</mt:if>
+<mt:setvar name="__last_col__" value="$_name">
+<mt:if name="__counter__" eq="1">
+  <mt:if name="_no_primary">
+    <a <mt:if name="request.dialog_view">target="_blank"</mt:if> href="<mt:var name="script_uri">?__mode=view&amp;_type=edit&amp;_model=<mt:var name="model" escape>&amp;id=<mt:var name="id" escape><mt:if name="workspace_id">&amp;workspace_id=<mt:var name="workspace_id"></mt:if>">
+    (<mt:trans phrase="Edit">)
+    </a>
+  </mt:if>
+</mt:if>
+</td>
+</mt:ifinarray>
+</mt:loop>
+<td class="hidden" id="detail_<mt:var name="id">">
+  <table class="cell-detail table-sm">
+    <mt:var name="column_vars">
+  </table>
+</td>
+</tr>
+<mt:if name="__last__">
+</tbody>
+<tfoot>
+<mt:var name="table_header">
+</tfoot>
+</table>
+</mt:if>
+</mt:loop>
+<mt:var name="list_nav">
+
+<mt:if name="request.dialog_view">
+  <button id="dialog-cancel-btn" class="btn btn-secondary" type="submit"><mt:trans phrase="Cancel"></button>
+  <button id="dialog-selector-btn<mt:if name="request.insert_editor">-editor_insert</mt:if>" class="btn btn-primary" type="submit"><mt:trans phrase="Select"></button>
+</mt:if>
+</form>
+
+<script>
+var $win = $(window);
+$('.toggle-infobox').click(function(){
+    this_id = $(this).prop('id');
+    this_id = this_id.replace( /toggle_/, '' );
+    if (! $('#infobox_' + this_id).html() ) {
+        $('#infobox_' + this_id).html( $('#detail_' + this_id).html() );
+        $('#infobox_' + this_id).show();
+        $('#toggle_icn_' + this_id).removeClass('fa-caret-down');
+        $('#toggle_icn_' + this_id).addClass('fa-caret-up');
+    } else {
+        $('#infobox_' + this_id).html('');
+        $('#infobox_' + this_id).hide();
+        $('#toggle_icn_' + this_id).removeClass('fa-caret-up');
+        $('#toggle_icn_' + this_id).addClass('fa-caret-down');
+    }
+});
+<mt:if name="request.dialog_view">
+$(document).keydown(evnt_keydown);
+function evnt_keydown(e) {
+    if ( e.keyCode == 27 ) {
+        window.parent.$('#modal').modal('hide');
+        window.location.href = '<mt:var name="script_uri">?__mode=loading';
+    }
+}
+</mt:if>
+var in_link = false;
+$('a').mouseover(function() {
+    in_link = true;
+});
+$('a').click(function() {
+    in_link = true;
+});
+$('a').mouseout(function() {
+    in_link = false;
+});
+<mt:if name="_single_select">
+$('input').click(function() {
+    in_link = true;
+});
+</mt:if>
+$('input').mouseover(function() {
+    in_link = true;
+});
+$('input').mouseout(function() {
+    in_link = false;
+});
+$('#list_body tr').click(function() {
+    if ( in_link ) {
+        return true;
+    }
+    line_id = $(this).prop('id');
+    line = line_id.replace( /line_/, '' );
+    checked = $('#box_'+line).prop('checked');
+    if ( checked ) {
+        $('#box_'+line).prop('checked', false);
+    } else {
+        $('#box_'+line).prop('checked', true);
+    }
+    set_all_select();
+});
+<mt:if name="_sortable">
+$('#list_body tr').mouseover(function() {
+    $(this).css('cursor','move');
+});
+</mt:if>
+var in_search = false;
+var selected_ids = [];
+<mt:if name="request.dialog_view">
+var target_control;
+<mt:unless name="request.revision_select">
+    $(function(){
+        target_control = '<mt:var name="request.target" escape>';
+    <mt:if name="request.single_select">
+        var selected_id = window.parent.$('#'+target_control).val();
+        <mt:if name="request.selected_ids">
+        <mt:var name="request.selected_ids" split="," setvar="request_selected_ids">
+        <mt:loop name="request_selected_ids">
+            selected_id = '<mt:var name="__value__">';
+        </mt:loop>
+        </mt:if>
+        $("input[name='id']").each(function(){
+            if( $(this).val() == selected_id ) {
+                $(this).prop('checked', true);
+            }
+        });
+    <mt:else>
+        window.parent.$("input[name='"+target_control+"[]']").each(function(){
+            if ( $(this).val() ) {
+                selected_ids.push($(this).val());
+            }
+        });
+        <mt:if name="request.selected_ids">
+        <mt:var name="request.selected_ids" split="," setvar="request_selected_ids">
+        <mt:loop name="request_selected_ids">
+            if( $.inArray('<mt:var name="__value__">', selected_ids ) == -1 ) {
+                selected_ids.push('<mt:var name="__value__">');
+            }
+        </mt:loop>
+        </mt:if>
+        $("input[name='id[]']").each(function(){
+            if( $.inArray($(this).val(), selected_ids ) != -1 ) {
+                $(this).prop('checked', true );
+            }
+        });
+    </mt:if>
+    });
+</mt:unless>
+$('#dialog-selector-btn-editor_insert').click(function(){
+    if ( item_checked() == false ) {
+        alert('<mt:trans phrase="You did not select any %s." params="$label">');
+        return false;
+    }
+    $("#__mode").prop('value', 'insert_asset');
+});
+$('#dialog-cancel-btn').click(function(){
+    window.parent.$('#modal').modal('hide');
+    window.location.href = '<mt:var name="script_uri">?__mode=loading';
+    return false;
+});
+$('#dialog-selector-btn').click(function(){
+<mt:if name="request.single_select">
+    var selected = $('input[name=id]:checked').val();
+    selected = $( '<span/>' ).text(selected).html();
+    if (! selected ) {
+        alert('<mt:trans phrase="You did not select any %s." params="$label">');
+        return false;
+    }
+  <mt:unless name="request.revision_select">
+    var col_value = $('#_get_col_' + selected ).val();
+    col_value = $( '<span/>' ).text(col_value).html();
+    window.parent.$('#'+target_control).val(selected);
+    window.parent.$('#'+target_control+'-label').html(col_value);
+    window.parent.$('#'+target_control+'-close').show();
+    if ( $('#_get_col_img_' + selected ) ) {
+        var col_img = $('#_get_col_img_' + selected ).val();
+        if ( col_img ) {
+            // col_img = $( '<span/>' ).text(col_img).html();
+            window.parent.$('#'+target_control+'-img').prop('src',col_img);
+            window.parent.$('#'+target_control+'-img').show();
+        } else {
+            window.parent.$('#'+target_control+'-img').hide();
+        }
+    }
+  <mt:else>
+    next_url = '<mt:var name="script_uri">?__mode=view&_type=edit&_model=<mt:var name="model">&edit_revision=1&id='+selected<mt:if name="workspace_id">+'&workspace_id=<mt:var name="workspace_id">'</mt:if>;
+    window.parent.$('#modal').modal('hide');
+    window.parent.location.href = next_url;
+    return;
+  </mt:unless>
+<mt:else>
+    if ( in_search ) {
+        return true;
+    }
+    if ( item_checked() == false ) {
+        alert('<mt:trans phrase="You did not select any %s." params="$label">');
+        return false;
+    }
+    var checked_ids = [];
+    $("input[name='id[]']").each(function(){
+        if ( $(this).prop('checked') ) {
+            checked_ids.push( $(this).val() );
+        }
+    });
+    var count = checked_ids.length;
+  <mt:unless name="request.select_add">
+    window.parent.$('.'+target_control+'-child').each(function(){
+        $(this).remove();
+    });
+  </mt:unless>
+    for( var i = 0; i < count; i++ ) {
+        <mt:if name="request.select_add">
+        if( $.inArray(checked_ids[i], selected_ids ) != -1 ) {
+            continue;
+        }
+        </mt:if>
+        window.parent.$('#'+target_control+'-none').hide();
+        li = window.parent.$('#'+target_control+'-tmpl');
+        newli = li.clone( true ).appendTo('#'+target_control );
+        newli.removeClass('hidden');
+        var col_value = $('#_get_col_' + checked_ids[i] ).val();
+        newli.children('span').html( col_value );
+        newli.children('input').val( checked_ids[i] );
+        newli.removeAttr('id');
+        newli.addClass( target_control+'-child');
+        newli.show();
+    }
+</mt:if>
+<mt:unless name="request.revision_select">
+    window.parent.$('#modal').modal('hide');
+    window.parent.editContentChanged = true;
+    window.location.href = '<mt:var name="script_uri">?__mode=loading';
+    return false;
+</mt:unless>
+});
+</mt:if>
+<mt:if name="_sortable">
+<mt:unless name="request.dialog_view">
+$('#list_body').sortable({
+    stop: function( evt, ui ) {
+        reorder();
+    }
+});
+$('#list_body input').bind('click.sortable mousedown.sortable',function(ev){
+    ev.target.focus();
+});
+function reorder(){
+    var i = 0;
+    $('.order_col').each(function(){
+        i++;
+        $(this).prop('value',i<mt:if name="this_model" eq="table">*10</mt:if>);
+    });
+}
+</mt:unless>
+</mt:if>
+
+$('.query-box').change(function(){
+    $('.query-box').val( $(this).val() );
+});
+$("input[name='id[]']").change(function(){
+    set_all_select();
+});
+function set_all_select () {
+    is_all = true;
+    $("input[name='id[]']").each(function(){
+        if ( $(this).prop('checked') == false ) {
+            is_all = false;
+            $('.cb-all-selected').prop('checked', false);
+            $('.all-selected-cell').hide();
+            return false;
+        }
+    });
+    $('.selector').prop('checked', is_all );
+}
+$('.selector').click(function(){
+    checked = $(this).prop('checked');
+    $("input[name='id[]']").each(function(){
+        $(this).prop('checked', checked);
+    });
+    $('.selector').prop('checked', checked);
+<mt:if name="show_all_selected">
+    if ( checked ) {
+        $('.all-selected-cell').show();
+    } else {
+        $('.all-selected-cell').hide();
+        $('.cb-all-selected').prop('checked', false);
+    }
+</mt:if>
+});
+<mt:if name="list_actions">
+$('.cb-all-selected').change(function(){
+    $('.cb-all-selected').prop('checked', $(this).prop('checked'));
+});
+</mt:if>
+$('.__delete').click(function(){
+    if ( in_search ) {
+        return true;
+    }
+    if( item_checked() == false ) {
+        alert('<mt:trans phrase="You did not select any %s to delete." params="$label">');
+        return false;
+    }
+    var selected_items = item_checked( true );
+    var cfm_msg = '<mt:trans phrase="Are you sure you want to remove _1 %s?" params="$plural">';
+    cfm_msg = cfm_msg.replace( '_1', selected_items );
+    if(! confirm( cfm_msg ) ) {
+        return false;
+    }
+    $("#__mode").prop('value', 'delete');
+    return true;
+});
+$('.__action').click(function(){
+    if (! $('.select-action').val() ) {
+        alert('<mt:trans phrase="You did not select any action.">');
+        return false;
+    }
+    if( item_checked() == false ){
+        alert('<mt:trans phrase="You did not select any %s." params="$label">');
+        return false;
+    }
+    var cfm_msg = '<mt:trans phrase="Are you sure you want to process _1 _2?">';
+    var selected_items = item_checked( true );
+    cfm_msg = cfm_msg.replace( '_1', selected_items );
+    cfm_msg = cfm_msg.replace( '_2', '<mt:var name="plural">' );
+    if(! confirm(cfm_msg) ) {
+        return false;
+    }
+    if ( action_status_select ) {
+        $('.itemset-action-input').val( $('.action-status-select').val() );
+    }
+    $("#__mode").prop('value', 'list_action');
+    return true;
+});
+<mt:if name="_sortable">
+$('.__save_order').click(function(){
+    if ( in_search ) {
+        return true;
+    }
+    if ( item_checked() == false ) {
+        alert('<mt:trans phrase="You did not select any %s to save order." params="$label">');
+        return false;
+    }
+    if(! confirm('<mt:trans phrase="Are you sure you want to save order of selected %s?" params="$plural">') ) {
+        return false;
+    }
+    $('#__mode').prop('value', 'save_order');
+    return true;
+    });
+</mt:if>
+<mt:var name="setup_search">
+var selected_item_count;
+function item_checked( count ) {
+    if ( count && $('.cb-all-selected').prop('checked') ) {
+        return <mt:var name="object_count">;
+    }
+    selected_item_count = 0;
+    var selected = false;
+    $("input[name='id[]']").each(function(){
+        if($(this).prop('checked') === true) {
+            selected = true;
+            if (! count ) {
+                return false;
+            }
+            selected_item_count++;
+        }
+    });
+    if ( count ) {
+        return selected_item_count;
+    }
+    return selected;
+}
+</script>
+</mt:unless>
+
+<script>
+var $win = $(window);
+$win.on('load resize', function() {
+    var windowWidth = window.innerWidth;
+    if ( windowWidth > 768 ) {
+        $('.info-box').html('');
+        $('.info-box').hide();
+        $('.toggle-icn').removeClass('fa-caret-up');
+        $('.toggle-icn').addClass('fa-caret-down');
+        $('.alt-search-button').hide();
+        if( $('.create-new-button-icon').length ) {
+            $('.create-new-button-icon').removeClass('fa-plus-circle');
+        }
+    } else {
+        $('.alt-search-button').show();
+        if( $('.create-new-button-icon').length ) {
+            $('.create-new-button-icon').addClass('fa-plus-circle');
+        }
+    }
+});
+</script>
+
+<mt:if name="request.dialog_view">
+<mt:include file="include/dialog_footer.tmpl">
+<mt:else>
+<mt:include file="include/footer.tmpl">
+</mt:if>

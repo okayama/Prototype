@@ -1,0 +1,42 @@
+<mt:var name="edit" split=":" setvar="edit_props">
+<mt:var name="edit_props[1]" setvar="rel_model">
+<mt:var name="edit_props[2]" setvar="rel_col">
+<mt:var name="edit_props[3]" setvar="rel_type">
+<div class="row form-group">
+  <div class="col-lg-2">
+    <label for="<mt:var name="__col_name__">">
+      <mt:var name="label" escape>
+      <mt:if name="not_null"><mt:var name="field_required"></mt:if>
+    </label>
+  </div>
+  <div class="col-lg-5">
+    <mt:setvar name="thumbnail" value="">
+    <mt:getobjectname id="$__col_value__" type="$edit" wants="id" setvar="__col_value__">
+    <mt:assetthumbnail id="$__col_value__" type="default" square="1" model="$rel_model" data_uri="1" setvar="thumbnail">
+    <img src="<mt:var name="thumbnail">" id="<mt:var name="__col_name__">-img" class="<mt:unless name="thumbnail">hidden</mt:unless>" alt="<mt:trans phrase="Preview">" width="80">
+    <span class="badge badge-default badge-relation">
+    <span id="<mt:var name="__col_name__">-label">
+    <mt:if name="__col_value__">
+    <mt:getobjectname id="$__col_value__" type="$edit">
+    <mt:else>
+    <mt:trans phrase="(None selected)">
+    </mt:if>
+    </span>
+    </span>
+    <button id="user_id-chooser" type="button" class="<mt:if name="_assign_user">hidden </mt:if>btn btn-primary btn-sm dialog-chooser" data-toggle="modal" data-target="#modal"
+    data-href="<mt:var name="script_uri">?__mode=view&amp;_type=list&amp;_model=<mt:var name="rel_model" escape><mt:if name="workspace_id">&amp;workspace_id=<mt:var name="workspace_id"></mt:if>&amp;dialog_view=1&amp;single_select=1&amp;target=<mt:var name="__col_name__">&amp;get_col=<mt:var name="rel_col" escape>&amp;selected_ids=<mt:ignore>todo<mt:var name="__col_value__" escape></mt:ignore>"><mt:trans phrase="Select..."></button>
+    <input id="<mt:var name="__col_name__">" type="hidden" name="<mt:var name="__col_name__">" value="<mt:var name="__col_value__" escape>">
+    <mt:if name="_assign_user">
+    <a id="user_id-edit" href="javascript:void(0)"><i class="fa fa-pencil-square-o" aria-hidden="true"></i>
+    <span class="sr-only"><mt:trans phrase="Assign User"></span></a>
+    </mt:if>
+  </div>
+</div>
+<mt:if name="_assign_user">
+<script>
+$("#user_id-edit").click(function(){
+    $("#user_id-chooser").toggle();
+    
+});
+</script>
+</mt:if>

@@ -1,0 +1,22 @@
+img {
+  max-width: 100%;
+  height: auto;
+}
+iframe {
+  max-width: 100% !important;
+  height: auto !important;
+}
+blockquote {
+  background-color: #ddd;
+  padding: 1em 0.7em 0.7em 3em;
+  position: relative;
+}
+blockquote:before{
+  content:'"';
+  font-size: 520%;
+  line-height: 1em;
+  color: #999;
+  position: absolute;
+  left: 0;
+  top:0;
+}

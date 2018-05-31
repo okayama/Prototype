@@ -1,0 +1,112 @@
+{
+    "label"    : "Group",
+    "plural"   : "Groups",
+    "version"  : "1.0",
+    "primary"  : "name",
+    "display_system": 1,
+    "auditing" : 1,
+    "order"    : 140,
+    "menu_type": 1,
+    "template_tags": 1,
+    "display_space": 1,
+    "has_status": 1,
+    "has_basename": 1,
+    "column_defs": {
+        "id": {
+            "type": "int",
+            "size": 11,
+            "not_null": 1
+        },
+        "name": {
+            "type": "string",
+            "size": 255,
+            "not_null": 1
+        },
+        "objects": {
+            "type": "relation"
+        },
+        "model": {
+            "type": "string",
+            "size": 255,
+            "not_null": 1
+        },
+        "status": {
+            "type": "int",
+            "size": 11,
+            "default": "1"
+        },
+        "basename": {
+            "type": "string",
+            "size": 255,
+            "not_null": 1
+        },
+        "created_on": {
+            "type": "datetime"
+        },
+        "modified_on": {
+            "type": "datetime"
+        },
+        "created_by": {
+            "type": "int",
+            "size": 11
+        },
+        "modified_by": {
+            "type": "int",
+            "size": 11
+        },
+        "workspace_id": {
+            "type": "int",
+            "size": 11
+        }
+    },
+    "indexes": {
+        "PRIMARY": "id",
+        "id": "id",
+        "name": "name",
+        "model": "model",
+        "status": "status",
+        "basename": "basename",
+        "created_on": "created_on",
+        "modified_on": "modified_on",
+        "created_by": "created_by",
+        "modified_by": "modified_by",
+        "workspace_id": "workspace_id"
+    },
+    "sort_by": {
+        "id": "ascend"
+    },
+    "relations": {
+        "objects": "__any__"
+    },
+    "autoset": [
+        "created_on",
+        "modified_on",
+        "created_by",
+        "modified_by",
+        "workspace_id"
+    ],
+    "unchangeable": [
+        "workspace_id"
+    ],
+    "edit_properties": {
+        "id": "hidden",
+        "name": "primary",
+        "objects": "relation:__any__:__primary__:dialog",
+        "status": "selection"
+    },
+    "list_properties": {
+        "id": "number",
+        "name": "primary",
+        "model": "text",
+        "modified_on": "datetime",
+        "modified_by": "reference:user:name",
+        "workspace_id": "reference:workspace:name"
+    },
+    "options": {
+        "status": "Disable,Enable"
+    },
+    "default_status": 1,
+    "translate": [
+        "model"
+    ]
+}

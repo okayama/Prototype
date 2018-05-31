@@ -1,0 +1,319 @@
+      <div class="modal fade" id="filterOptions" tabindex="-1" role="dialog" aria-labelledby="listFiltersTitle" aria-hidden="true">
+        <div class="modal-dialog modal-lg" role="document">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title" id="listFiltersTitle"><mt:trans phrase="Filters"></h5>
+              <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+              </button>
+            </div>
+          <form id="list_filter_form" action="<mt:var name="script_uri">" method="POST">
+            <input type="hidden" name="__mode" value="view" id="this_mode">
+            <input type="hidden" name="_model" value="<mt:var name="model">">
+            <input type="hidden" name="_type" value="list">
+            <input type="hidden" name="_filter" value="1">
+            <input type="hidden" name="_filter_id" id="_filter_id" value="">
+            <input type="hidden" name="_save_filter_name" id="_save_filter_name" value="">
+            <input type="hidden" name="_detach_filter" id="_detach_filter" value="">
+            <input type="hidden" name="magic_token" value="<mt:var name="magic_token">">
+            <input type="hidden" name="_system_filters_option" value="" id="_system_filters_option">
+          <mt:if name="workspace_id">
+            <input type="hidden" name="workspace_id" value="<mt:var name="workspace_id">">
+          </mt:if>
+          <mt:if name="request.dialog_view">
+            <input type="hidden" name="dialog_view" value="1">
+          <mt:if name="request.select_system_filters">
+            <input type="hidden" name="select_system_filters" value="<mt:var name="request.select_system_filters" escape>">
+            <input type="hidden" name="_system_filters_option" value="<mt:var name="request._system_filters_option" escape>">
+            <input type="hidden" name="insert" value="<mt:var name="request.insert" escape>">
+            <input type="hidden" name="insert_editor" value="<mt:var name="request.insert_editor" escape>">
+            <input type="hidden" name="_filter" value="<mt:var name="request._filter" escape>">
+          </mt:if>
+          </mt:if>
+          <mt:if name="request.target">
+            <input type="hidden" name="target" value="<mt:var name="request.target" escape>">
+            <input type="hidden" name="get_col" value="<mt:var name="request.get_col" escape>">
+            <input type="hidden" name="selected_ids" value="<mt:var name="request.selected_ids" escape>">
+            <input type="hidden" name="from_obj" value="<mt:var name="request.from_obj" escape>">
+          <mt:if name="request.select_add">
+            <input type="hidden" name="select_add" value="1">
+          </mt:if>
+          </mt:if>
+            <div class="modal-body">
+              <div class="container-fluid">
+                <mt:if name="system_filters">
+                <div class="row form-group">
+                  <div class="col-md-3"><b><mt:trans phrase="System Filters"></b></div>
+                  <div class="col-md-9 form-inline">
+                    <mt:loop name="system_filters">
+                      <mt:if name="__first__">
+                      <select class="form-control form-control-sm filter-selecter-ctrl filter-selecter-ctrl-dd" name="select_system_filters" id="select_system_filters">
+                        <option value=""><mt:trans phrase="(None selected)"></option>
+                      </mt:if>
+                        <option data-option="<mt:var name="option">" <mt:if name="current_system_filter" eq="$name">selected</mt:if> value="<mt:var name="name" escape>"><mt:var name="label" escape></option>
+                      <mt:if name="__last__">
+                        </select>
+                      <button type="submit" class="btn btn-sm btn-primary filter-selecter-ctrl-apply" id="system_filter-apply-button"><mt:trans phrase="Apply"></button>
+                      </mt:if>
+                    </mt:loop>
+                  </div>
+                </div>
+                </mt:if>
+                <div class="row form-group">
+                  <div class="col-md-3"><b><mt:trans phrase="Your Filters"></b></div>
+                  <div class="col-md-9 form-inline">
+                      <select class="form-control form-control-sm filter-selecter-ctrl filter-selecter-ctrl-dd" name="select-user_filters" id="select-user_filters">
+                        <option value=""><mt:trans phrase="(None selected)"></option>
+                        <mt:objectloop model="option" kind="list_filter" key="$model" user_id="$user_id" workspace_id="$workspace_id">
+                        <mt:setvar name="has_filter" value="1">
+                        <option value="<mt:var name="id" escape>" <mt:if name="current_filter_id" eq="$id">selected</mt:if>><mt:var name="value" escape></option>
+                        </mt:objectloop>
+                        <option value="add_new_filter"><mt:trans phrase="Add New Filter"></option>
+                      </select>
+                    <mt:if name="has_filter">
+                    <button type="submit" class="btn btn-sm btn-primary filter-selecter-ctrl-apply" id="filter-select-apply-button"><mt:trans phrase="Apply"></button>
+                    <button type="button" class="delete-filter-elem hidden delete-bun-sm btn btn-secondary btn-sm filter-selecter-ctrl" id="filter-select-delete-button" class="close" data-dismiss="modal">
+                    <i class="fa fa-trash-o" aria-hidden="true"></i>
+                    <span class="sr-only"><mt:trans phrase="Delete"></span>
+                    </button>
+                    </mt:if>
+                  </div>
+                </div>
+                <div class="row form-group new-filter-elem hidden">
+                  <div class="col-md-3" style="float:left;"><b><mt:trans phrase="Columns"></b></div>
+                  <div class="col-md-9 form-inline">
+                    <select name="filters-selector" class="form-control form-control-sm filter-selecter-ctrl filter-selecter-ctrl-dd" id="filters-selector">
+                    <mt:loop name="filter_options">
+                    <mt:if name="__first__">
+                        <option><mt:trans phrase="(None selected)"></option>
+                    </mt:if>
+                      <option value="<mt:var name="name" escape>" class="coltype_<mt:var name="type" escape>"><mt:var name="label" escape></option>
+                    </mt:loop>
+                    </select>
+                   <button type="button" class="btn btn-sm btn-secondary filter-selecter-ctrl-apply" id="filter-add-button"><mt:trans phrase="Add"></button>
+                  </div>
+                </div>
+                <div class="row form-group new-filter-elem">
+                  <div class="col-md-12">
+                    <div class="card hidden" id="filter-parant-block">
+                      <ul class="list-group list-group-flush" id="filters-list">
+                        <li class="list-group-item hidden" id="selector-tmpl-int">
+                          <div class="form-inline">
+                            <span class="selector_col"></span> 
+                            &nbsp; <mt:trans phrase=" is ">
+                              <input type="number" class="form-control form-control-sm filter-selecter-ctrl filter-selecter-ctrl-sm" name="">
+                            <select name="" class="form-control form-control-sm filter-selecter-ctrl filter-selecter-ctrl-sm">
+                              <option value="eq"><mt:trans phrase="Equal"></option>
+                              <option value="lt"><mt:trans phrase="Less than"></option>
+                              <option value="gt"><mt:trans phrase="Grater than"></option>
+                              <option value="ne"><mt:trans phrase="Not Equal"></option>
+                              <option value="ge"><mt:trans phrase="Greater Equal"></option>
+                              <option value="le"><mt:trans phrase="Less Equal"></option>
+                            </select>
+                            <button type="button" class="btn btn-secondary btn-sm close-sm detach-filter detach-filter-btn" aria-label="<mt:trans phrase="Detach">">
+                              <span aria-hidden="true">&times;</span>
+                            </button>
+                          </div>
+                        </li>
+                        <li class="list-group-item hidden" id="selector-tmpl-text">
+                          <div class="form-inline">
+                            <span class="selector_col"></span> 
+                            &nbsp; <mt:trans phrase=" is ">
+                              <input type="text" class="form-control form-control-sm filter-selecter-ctrl filter-selecter-ctrl-sm" name="">
+                            <select name="" class="form-control form-control-sm filter-selecter-ctrl filter-selecter-ctrl-sm">
+                              <option value="ct"><mt:trans phrase="Contains"></option>
+                              <option value="nc"><mt:trans phrase="Not Contains"></option>
+                              <option value="eq"><mt:trans phrase="Equal"></option>
+                              <option value="ne"><mt:trans phrase="Not Equal"></option>
+                              <option value="bw"><mt:trans phrase="Begin with"></option>
+                              <option value="ew"><mt:trans phrase="End with"></option>
+                            </select>
+                            <button type="button" class="btn btn-secondary btn-sm close-sm detach-filter detach-filter-btn" aria-label="<mt:trans phrase="Detach">">
+                              <span aria-hidden="true">&times;</span>
+                            </button>
+                          </div>
+                        </li>
+                        <li class="list-group-item hidden" id="selector-tmpl-date">
+                          <div class="form-inline">
+                            <span class="selector_col"></span> 
+                            &nbsp; <mt:trans phrase=" is ">
+                              <input type="datetime-local" step="1" class="form-control form-control-sm filter-selecter-ctrl filter-selecter-ctrl-sm" name="">
+                            <select name="" class="form-control form-control-sm filter-selecter-ctrl filter-selecter-ctrl-sm">
+                              <option value="gt"><mt:trans phrase="Newer than"></option>
+                              <option value="lt"><mt:trans phrase="Older than"></option>
+                            </select>
+                            <button type="button" class="btn btn-secondary btn-sm close-sm detach-filter detach-filter-btn" aria-label="<mt:trans phrase="Detach">">
+                              <span aria-hidden="true">&times;</span>
+                            </button>
+                          </div>
+                        </li>
+                        <li class="list-group-item hidden" id="selector-tmpl-status">
+                          <div class="form-inline">
+                            <span class="selector_col"></span> 
+                            &nbsp; <mt:trans phrase=" is ">
+                            <mt:if name="status_published" eq="4">
+                            <mt:trans phrase="Draft,Review,Reserved,Publish,Ended" split="," setvar="status_label">
+                            <mt:else>
+                            <mt:trans phrase="Disable,Enable" split="," setvar="status_label">
+                            </mt:if>
+                            <select class="form-control form-control-sm short filter-selecter-ctrl filter-selecter-ctrl-sm" name="">
+                            <mt:loop name="status_label">
+                              <mt:if name="__counter__" le="$max_status">
+                                <option value="<mt:var name="__counter__">"><mt:var name="__value__"></option>
+                              </mt:if>
+                            </mt:loop>
+                            </select>
+                            <input type="hidden" name="" value="eq">
+                            <button type="button" class="btn btn-secondary btn-sm close-sm detach-filter detach-filter-btn" aria-label="<mt:trans phrase="Detach">">
+                              <span aria-hidden="true">&times;</span>
+                            </button>
+                          </div>
+                        </li>
+                      </ul>
+                    </div>
+                  </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+              <button type="submit" class="btn btn-secondary delete-filter-elem hidden" id="detach-filter-button"><mt:trans phrase="Detach Filter"></button>
+              <button type="button" class="btn btn-secondary" data-dismiss="modal"><mt:trans phrase="Cancel"></button>
+              <button type="submit" class="btn btn-primary new-filter-elem hidden" id="filter-apply"><mt:trans phrase="Apply"></button>
+              <button type="submit" class="btn btn-secondary new-filter-elem hidden" id="filter-save-apply"><mt:trans phrase="Save and Apply"></button>
+            </div>
+          </form>
+          </div>
+        </div>
+      </div>
+    </div>
+<script>
+$('#system_filter-apply-button').click(function(){
+    if (! $('[name=select_system_filters] option:selected').val() ) {
+        alert('<mt:trans phrase="Filter not specified.">');
+        return false;
+    }
+    $('#select-user_filters').val('');
+    var filter_option = $('[name=select_system_filters] option:selected').attr('data-option');
+    $('#_system_filters_option').val( filter_option );
+});
+$('#filter-select-delete-button').click(function(){
+    var filter_id = $('#select-user_filters').val();
+    if ( filter_id == 'add_new_filter' || filter_id == '' ) {
+        alert('<mt:trans phrase="Filter not specified.">');
+        return false;
+    }
+    if(!confirm('<mt:trans phrase="Are you sure you want to remove selected filter?">')){
+        return false;
+    }
+    $('#_filter_id').val( filter_id );
+    $('#this_mode').val( 'delete_filter' );
+    $('[name=select-user_filters] option:selected').remove();
+    var str = $("#list_filter_form").serialize();
+    $.post("<mt:var name="script_uri">", str,
+    function ( data ) {
+        if( data.result == true ) {
+            $("#header-alert-message").html('<mt:trans phrase="The Filter has successfully deleted.">');
+            $("#header-alert").removeClass("alert-danger");
+            $("#header-alert").addClass("alert-success");
+        } else {
+            $("#header-alert-message").html('<mt:trans phrase="An error occurred while removing the Filter.">');
+            $("#header-alert").removeClass("alert-success");
+            $("#header-alert").addClass("alert-danger");
+        }
+        $("#header-alert").show();
+        setTimeout(focus_header_dialog, 500);
+        $(".current-filter").hide();
+        $('#this_mode').val( 'list' );
+        $('#_filter_id').val('');
+        $('#filter-select-delete-button').hide();
+    },
+    "json"
+    );
+});
+function focus_header_dialog () {
+    $("#header-alert").focus();
+}
+$('#filter-select-apply-button').click(function(){
+    var filter_id = $('#select-user_filters').val();
+    if ( filter_id == 'add_new_filter' || filter_id == '' ) {
+        alert('<mt:trans phrase="Filter not specified.">');
+        return false;
+    }
+    $('#select_system_filters').val('');
+    $('#_filter_id').val( filter_id );
+    return true;
+});
+$('#select-user_filters').change(function(){
+    if ($(this).val() == 'add_new_filter' ) {
+        $('.new-filter-elem').show();
+        $('.delete-filter-elem').hide();
+    } else {
+        $('.new-filter-elem').hide();
+        if ( $(this).val() ) {
+            $('.delete-filter-elem').show();
+        }
+    }
+});
+var curr_user_filter = $('#select-user_filters').val();
+if ( curr_user_filter != 'add_new_filter' && curr_user_filter != '' ) {
+    $('.delete-filter-elem').show();
+}
+var filter_itemCount = 0;
+$('#filter-apply').click(function(){
+    if (! filter_itemCount ) {
+        alert('<mt:trans phrase="Filter not specified.">');
+        return false;
+    }
+});
+$('#filter-save-apply').click(function(){
+    if (! filter_itemCount ) {
+        alert('<mt:trans phrase="Filter not specified.">');
+        return false;
+    }
+    var filter_name = prompt('<mt:trans phrase="Please enter the Name of this Filter.">');
+    if (! filter_name ) {
+        alert('<mt:trans phrase="The Filter Name is required.">');
+        return false;
+    }
+    $('#_save_filter_name').val(filter_name);
+});
+$('#detach-filter-button').click(function(){
+    $('#filters-list').remove();
+    $('#_detach_filter').val(1);
+});
+$('#filter-add-button').click(function(){
+    var selected_col = $('#filters-selector').val();
+    var sel_class = $('[name=filters-selector] option:selected').attr('class');
+    var sel_label = $('[name=filters-selector] option:selected').text();
+    sel_class = sel_class.replace( 'coltype_', '' );
+    var filter_tmpl = $('#selector-tmpl-text');
+    if ( selected_col == 'status' ) {
+        filter_tmpl = $('#selector-tmpl-status');
+    } else if ( sel_class == 'int' || sel_class == 'tinyint' ) {
+        filter_tmpl = $('#selector-tmpl-int');
+    } else if ( sel_class == 'datetime' ) {
+        filter_tmpl = $('#selector-tmpl-date');
+    }
+    var addSelecter = filter_tmpl.clone( true ).appendTo('#filters-list');
+    addSelecter.removeClass('hidden');
+    addSelecter.removeAttr('id');
+    addSelecter.children('div').children('span').html(sel_label);
+    if ( selected_col == 'status' ) {
+        addSelecter.children('div').children('input').attr('name', '_filter_cond_' + selected_col + '[]');
+        addSelecter.children('div').children('select').attr('name', '_filter_value_' + selected_col + '[]');
+    } else {
+        addSelecter.children('div').children('input').attr('name', '_filter_value_' + selected_col + '[]');
+        addSelecter.children('div').children('select').attr('name', '_filter_cond_' + selected_col + '[]');
+    }
+    $('#filter-parant-block').show();
+    $('#filter-parant-block').css('border','none');
+    addSelecter.show();
+    filter_itemCount++;
+});
+$('.detach-filter').click(function(){
+    if(!confirm('<mt:trans phrase="Are you sure you want to remove this filter condition?">')){
+        return false;
+    }
+    $(this).parent().parent().remove();
+    filter_itemCount--;
+});
+</script>

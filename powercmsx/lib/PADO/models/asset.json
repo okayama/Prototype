@@ -1,0 +1,223 @@
+{
+    "label"    : "Asset",
+    "plural"   : "Assets",
+    "version"  : "1.0",
+    "primary"  : "label",
+    "display_system": 1,
+    "order"    : 80,
+    "auditing" : 1,
+    "menu_type": 1,
+    "taggable" : 1,
+    "revisable": 1,
+    "start_end": 1,
+    "template_tags": 1,
+    "display_space": 1,
+    "display_dashboard": 1,
+    "has_status": 1,
+    "assign_user": 1,
+    "has_uuid": 1,
+    "default_status": 4,
+    "column_defs": {
+        "id": {
+            "type": "int",
+            "size": 11,
+            "not_null": 1
+        },
+        "label": {
+            "type": "string",
+            "size": 255,
+            "not_null": 1
+        },
+        "description": {
+            "type": "string",
+            "size": 255
+        },
+        "file": {
+            "type": "blob",
+            "not_null": 1
+        },
+        "extra_path": {
+            "type": "string",
+            "size": 255
+        },
+        "file_name": {
+            "type": "string",
+            "size": 255,
+            "not_null": 1
+        },
+        "file_ext": {
+            "type": "string",
+            "size": 255
+        },
+        "mime_type": {
+            "type": "string",
+            "size": 255,
+            "not_null": 1
+        },
+        "tags": {
+            "type": "relation"
+        },
+        "size": {
+            "type": "int",
+            "size": 11
+        },
+        "image_width": {
+            "type": "int",
+            "size": 11
+        },
+        "image_height": {
+            "type": "int",
+            "size": 11
+        },
+        "class": {
+            "type": "string",
+            "size": 255,
+            "not_null": 1
+        },
+        "status": {
+            "type": "int",
+            "size": 11,
+            "default": "1"
+        },
+        "created_by": {
+            "type": "int",
+            "size": 11
+        },
+        "rev_note": {
+            "type": "string",
+            "size": 255
+        },
+        "modified_by": {
+            "type": "int",
+            "size": 11
+        },
+        "rev_diff": {
+            "type": "text"
+        },
+        "created_on": {
+            "type": "datetime"
+        },
+        "modified_on": {
+            "type": "datetime"
+        },
+        "workspace_id": {
+            "type": "int",
+            "size": 11
+        },
+        "has_deadline": {
+            "type": "datetime"
+        },
+        "published_on": {
+            "type": "datetime"
+        },
+        "unpublished_on": {
+            "type": "datetime"
+        },
+        "rev_type": {
+            "type": "int",
+            "size": 11,
+            "not_null": 1,
+            "default": "0"
+        },
+        "rev_object_id": {
+            "type": "int",
+            "size": 11
+        },
+        "rev_changed": {
+            "type": "string",
+            "size": 255
+        },
+        "user_id": {
+            "type": "int",
+            "size": 11
+        },
+        "uuid": {
+            "type": "string",
+            "size": 255,
+            "default": null
+        }
+    },
+    "indexes": {
+        "PRIMARY": "id",
+        "label": "label",
+        "extra_path": "extra_path",
+        "file_name": "file_name",
+        "file_ext": "file_ext",
+        "mime_type": "mime_type",
+        "size": "size",
+        "class": "class",
+        "status": "status",
+        "created_by": "created_by",
+        "rev_note": "rev_note",
+        "modified_by": "modified_by",
+        "created_on": "created_on",
+        "modified_on": "modified_on",
+        "workspace_id": "workspace_id",
+        "has_deadline": "has_deadline",
+        "published_on": "published_on",
+        "unpublished_on": "unpublished_on",
+        "rev_type": "rev_type",
+        "rev_object_id": "rev_object_id",
+        "user_id": "user_id",
+        "uuid": "uuid"
+    },
+    "list_properties": {
+        "id": "number",
+        "label": "primary",
+        "file_name": "text",
+        "tags": "reference:tag:name",
+        "class": "text",
+        "status": "number",
+        "created_by": "reference:user:nickname",
+        "rev_note": "text",
+        "modified_by": "reference:user:nickname",
+        "rev_diff": "popover",
+        "created_on": "date",
+        "workspace_id": "reference:workspace:name",
+        "has_deadline": "checkbox",
+        "published_on": "date",
+        "unpublished_on": "date",
+        "rev_changed": "text",
+        "user_id": "reference:user:nickname"
+    },
+    "default_list_items" : [
+        "label",
+        "file_name",
+        "class",
+        "status",
+        "published_on",
+        "workspace_id"
+    ],
+    "autoset": [
+        "rev_diff",
+        "workspace_id",
+        "rev_type",
+        "rev_object_id",
+        "rev_changed"
+    ],
+    "unchangeable": [
+        "uuid"
+    ],
+    "sort_by": {
+        "created_on": "descend"
+    },
+    "relations": {
+        "tags": "tag"
+    },
+    "options": {
+        "status": "Draft,Review,Reserved,Publish,Ended"
+    },
+    "edit_properties": {
+        "id": "hidden",
+        "label": "primary",
+        "description": "textarea",
+        "file": "file",
+        "extra_path": "text_short",
+        "file_name": "text_short",
+        "tags": "relation:tag:name:dialog",
+        "size": "number",
+        "status": "selection",
+        "published_on": "datetime",
+        "unpublished_on": "datetime"
+    }
+}

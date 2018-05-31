@@ -1,0 +1,73 @@
+<mt:var name="options" split="," setvar="_options_loop">
+<div class="row form-group">
+  <div class="col-lg-2">
+    <label for="<mt:var name="__col_name__">">
+      <mt:var name="label" escape="1">
+      <mt:if name="not_null"><mt:var name="field_required"></mt:if>
+    </label>
+  </div>
+  <div class="col-lg-10 form-inline">
+    <select class="form-control short" name="<mt:var name="__col_name__">">
+    <mt:loop name="_options_loop">
+      <mt:if name="__counter__" le="$max_status">
+        <option <mt:unless name="object_status"><mt:if name="_default_status" eq="$__counter__">selected</mt:if></mt:unless><mt:if name="object_status" eq="$__counter__">selected</mt:if> value="<mt:var name="__counter__">"><mt:trans phrase="$__value__" escape></option>
+      </mt:if>
+    </mt:loop>
+    </select>
+<mt:tablehascolumn column="published_on">
+    <input type="hidden" name="has_deadline" value="0">
+    <label class="custom-control custom-checkbox status-has_deadline-cb">
+    <input id="has_deadline" class="status-has_deadline-cb form-control custom-control-input" type="checkbox" name="has_deadline" value="1" <mt:if name="object_has_deadline">checked</mt:if>>
+        <span class="custom-control-indicator"></span>
+        <span class="custom-control-description"> 
+        <mt:trans phrase="Specify the Deadline">
+        </span>
+    </label>
+</mt:tablehascolumn>
+  </div>
+</div>
+<mt:tablehascolumn column="published_on">
+<div class="row form-group published_on-col">
+  <div class="col-lg-2">
+      <label for="published_on_date"><mt:trans phrase="Publish Date"></label>
+  </div>
+  <div class="col-lg-10 form-inline">
+    <span class="date-input">
+    <input id="published_on_date" type="date" class="form-control date" name="published_on_date" value="<mt:if name="object_published_on"><mt:var name="object_published_on" format_ts="Y-m-d"></mt:if>">
+    </span>
+    <span class="date-input">
+    <input id="published_on_time" type="time" step="1" class="form-control time" name="published_on_time" value="<mt:if name="object_published_on"><mt:var name="object_published_on" format_ts="H:i:s"></mt:if>">
+    </span>
+<mt:tablehascolumn column="unpublished_on">
+<span class="period-separator" class="unpublished-on-col">
+<i class="fa fa-arrows-h unpublished-on-col" aria-hidden="true"></i>
+  <label for="unpublished_on_date"><span class="sr-only"><mt:trans phrase="To"></span></label>
+</span>
+<span class="date-input">
+<span class="unpublished-on-col">
+    <input id="unpublished_on_date" type="date" class="form-control date" name="unpublished_on_date" value="<mt:if name="object_unpublished_on"><mt:var name="object_unpublished_on" format_ts="Y-m-d"></mt:if>">
+</span>
+</span>
+<span class="date-input">
+<span class="unpublished-on-col">
+    <input id="unpublished_on_time" type="time" step="1" class="form-control time" name="unpublished_on_time" value="<mt:if name="object_unpublished_on"><mt:var name="object_unpublished_on" format_ts="H:i:s"></mt:if>">
+</span>
+</span>
+</mt:tablehascolumn>
+  </div>
+</div>
+<script>
+$(function () {
+    if ( $('#has_deadline').prop('checked') == false ) {
+        $('.unpublished-on-col').hide();
+    }
+});
+$('#has_deadline').click(function(){
+    if ( $(this).prop('checked') ) {
+        $('.unpublished-on-col').show();
+    } else {
+        $('.unpublished-on-col').hide();
+    }
+});
+</script>
+</mt:tablehascolumn>
