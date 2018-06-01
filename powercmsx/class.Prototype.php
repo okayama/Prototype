@@ -1226,14 +1226,10 @@ class Prototype {
             }
             $app->disp_option = $user_options;
             $sorted_props = [];
-            $select_cols  = [];
             $relations = isset( $scheme['relations'] ) ? $scheme['relations'] : [];
             foreach ( $list_props as $col => $prop ) {
                 $user_opt = in_array( $col, $user_options ) ? 1 : 0;
                 $sorted_props[ $col ] = [ $app->translate( $labels[ $col ] ), $user_opt, $prop ];
-                if (! isset( $relations[ $col ] ) ) {
-                    $select_cols[] = $col;
-                }
             }
             $search_cols = explode( ',', $list_option->data );
             foreach ( $search_props as $col => $prop ) {
@@ -1453,6 +1449,11 @@ class Prototype {
             foreach ( $user_options as $_col ) {
                 if (! isset( $relations[ $_col ] ) ) {
                     $select_cols[] = $_col;
+                }
+            }
+            if ( $obj->has_column( 'workspace_id' ) ) {
+                if (! in_array( 'workspace_id', $select_cols ) ) {
+                    $select_cols[] = 'workspace_id';
                 }
             }
             $select_cols = join( ',', $select_cols );
@@ -1858,7 +1859,8 @@ class Prototype {
         $table = null;
         if ( $model !== 'rebuild' && $model !== 'plugins' && $model !== 'objects' ) {
             $table = $app->get_table( $model );
-            if (! $workspace && $obj && $obj->has_column( 'workspace_id' ) ) {
+            if (! $workspace && $obj && $obj->has_column( 'workspace_id' )
+                && ( $app->mode == 'view' && $app->param( '_type' ) != 'list' ) ) {
                 if ( $table->space_child ) {
                     return false;
                 }
@@ -3377,18 +3379,13 @@ class Prototype {
             $app->error( 'Permission denied.' );
         }
         $callback = ['name' => 'save_filter', 'error' => '',
-                     'changed_cols' => $changed_cols ];
+                     'changed_cols' => $changed_cols, 'errors' => $errors ];
         $save_filter = $app->run_callbacks( $callback, $model, $obj );
+        $errors = $callback['errors'];
         if ( $msg = $callback['error'] ) {
             $errors[] = $msg;
         }
         $is_new = $obj->id ? false : true;
-        $callback = ['name' => 'pre_save', 'error' => '', 'is_new' => $is_new,
-                     'changed_cols' => $changed_cols ];
-        $pre_save = $app->run_callbacks( $callback, $model, $obj, $original );
-        if ( $msg = $callback['error'] ) {
-            $errors[] = $msg;
-        }
         $required_fields = PTUtil::get_fields( $obj, 'requireds' );
         $required_basenames = array_keys( $required_fields );
         foreach ( $required_basenames as $fld ) {
@@ -3401,7 +3398,7 @@ class Prototype {
                 }
             }
         }
-        if (!empty( $errors ) || !$save_filter || !$pre_save ) {
+        if (!empty( $errors ) || !$save_filter ) {
             $error = join( "\n", $errors );
             if ( $app->param( '_preview' ) ) return $app->error( $error );
             return $app->forward( $model, $error );
@@ -3412,6 +3409,18 @@ class Prototype {
         $app->set_default( $obj );
         if ( $app->param( '_preview' ) ) {
             return $app->preview( $obj, $properties );
+        }
+        $callback = ['name' => 'pre_save', 'error' => '', 'is_new' => $is_new,
+                     'changed_cols' => $changed_cols, 'errors' => $errors ];
+        $pre_save = $app->run_callbacks( $callback, $model, $obj, $original );
+        $errors = $callback['errors'];
+        if ( $msg = $callback['error'] ) {
+            $errors[] = $msg;
+        }
+        if (!empty( $errors ) || !$pre_save ) {
+            $error = join( "\n", $errors );
+            if ( $app->param( '_preview' ) ) return $app->error( $error );
+            return $app->forward( $model, $error );
         }
         $db->begin_work();
         $errstr = $app->translate( 'An error occurred while saving %s.',
