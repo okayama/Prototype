@@ -2535,6 +2535,11 @@ class Prototype {
             echo json_encode( ['can_edit_object' => false ] );
             return;
         }
+        $table = $app->get_table( $model );
+        if (! $table ) {
+            echo json_encode( ['can_edit_object' => false ] );
+            return;
+        }
         $obj = $app->db->model( $model )->load( $id );
         if (! $obj ) {
             echo json_encode( ['can_edit_object' => false ] );
@@ -2544,7 +2549,11 @@ class Prototype {
             echo json_encode( ['can_edit_object' => false ] );
             return;
         }
-        echo json_encode( ['can_edit_object' => true ] );
+        $edit_link = $app->admin_url . "?__mode=view&_type=edit&_model={$model}&id={$id}";
+        if ( $obj->has_column( 'workspace_id' ) && $obj->workspace_id ) {
+            $edit_link .= '&workspace_id=' . $obj->workspace_id;
+        }
+        echo json_encode( ['can_edit_object' => true, 'edit_link' => $edit_link ] );
     }
 
     function get_thumbnail ( $app ) {
