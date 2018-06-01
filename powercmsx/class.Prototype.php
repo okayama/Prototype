@@ -117,7 +117,8 @@ class Prototype {
                                 'delete_filter', 'edit_image', 'insert_asset',
                                 'upload_multi', 'rebuild_phase', 'get_thumbnail',
                                 'get_field_html', 'manage_scheme', 'manage_plugins',
-                                'import_objects', 'upload_objects', 'preview', 'debug'];
+                                'import_objects', 'upload_objects', 'preview',
+                                'can_edit_object', 'debug'];
 
     public    $callbacks     = ['pre_save'     => [], 'post_save'   => [],
                                 'pre_delete'   => [], 'post_delete' => [],
@@ -2511,26 +2512,115 @@ class Prototype {
         $upload_handler = new UploadHandler( $options );
     }
 
+    function can_edit_object ( $app ) {
+        header( 'Content-type: application/json' );
+        $id = (int) $app->param( 'id' );
+        $model = $app->param( '_model' );
+        if (! $id || ! $model ) {
+            echo json_encode( ['can_edit_object' => false ] );
+            return;
+        }
+        $obj = $app->db->model( $model )->load( $id );
+        if (! $obj ) {
+            echo json_encode( ['can_edit_object' => false ] );
+            return;
+        }
+        if (!$app->can_do( $model, 'edit', $obj ) ) {
+            echo json_encode( ['can_edit_object' => false ] );
+            return;
+        }
+        echo json_encode( ['can_edit_object' => true ] );
+    }
+
     function get_thumbnail ( $app ) {
         $id = (int) $app->param( 'id' );
-        if (!$id ) return;
-        $meta = $app->db->model( 'meta' )->load( $id );
-        if (!$meta ) return;
+        $has_thumbnail = $app->param( 'has_thumbnail' );
+        $_model = $app->param( '_model' );
+        if ( $has_thumbnail ) {
+            header( 'Content-type: application/json' );
+            //__mode=get_thumbnail&square=1&_model=asset&has_thumbnail=1&id=n
+        }
+        if ( $_model && !$app->can_do( $_model, 'list' ) && $has_thumbnail ) {
+            echo json_encode( ['has_thumbnail' => false ] );
+            return;
+        }
+        if (!$id ) {
+            if ( $has_thumbnail && $_model ) {
+                if ( $_model == 'asset' ) {
+                    echo json_encode( ['has_thumbnail' => true ] );
+                    return;
+                }
+                $scheme = $app->get_scheme_from_db( $_model );
+                $props = $scheme['edit_properties'];
+                foreach ( $props as $prop => $type ) {
+                    if ( $type == 'file' ) {
+                        $options = isset( $scheme['options'] ) ? $scheme['options'] : [];
+                        if ( !empty( $options ) ) {
+                            if ( isset( $options[ $prop ] )
+                                && $options[ $prop ] == 'image' ) {
+                                echo json_encode( ['has_thumbnail' => true ] );
+                                return;
+                            } else {
+                                echo json_encode( ['has_thumbnail' => true ] );
+                                return;
+                            }
+                        } else {
+                            echo json_encode( ['has_thumbnail' => true ] );
+                            return;
+                        }
+                    }
+                }
+                echo json_encode( ['has_thumbnail' => false ] );
+            }
+            return;
+        }
+        $meta = null;
+        if ( $_model ) {
+            // __mode=get_thumbnail&square=1&_model=asset&id=n
+            $meta_objs = $app->db->model( 'meta' )
+                ->load( ['object_id' => $id, 'model' => $_model ] );
+            if (! is_array( $meta_objs ) || empty( $meta_objs ) ) {
+                if ( $has_thumbnail ) echo json_encode( ['has_thumbnail' => false ] );
+                return;
+            }
+            foreach ( $meta_objs as $m ) {
+                $md = json_decode( $m->text, true );
+                if ( isset( $md['class'] ) && $md['class'] == 'image' ) {
+                    $meta = $m;
+                    break;
+                }
+            }
+        } else {
+            $meta = $app->db->model( 'meta' )->load( $id );
+        }
+        if (!$meta ) {
+            if ( $has_thumbnail ) echo json_encode( ['has_thumbnail' => false ] );
+            return;
+        }
         $model = $meta->model;
         if (!$app->can_do( $model, 'list' ) ) {
+            if ( $has_thumbnail ) echo json_encode( ['has_thumbnail' => false ] );
             return;
         }
         $matadata = json_decode( $meta->text, true );
         $column = $app->param( 'square' ) ? 'metadata' : 'data';
         $mime_type = $matadata['mime_type'];
-        header( "Content-Type: {$mime_type}" );
         $column = $app->param( 'square' ) ? 'metadata' : 'data';
         $data = $meta->$column;
         if (! $data ) {
             $data = $app->param( 'square' ) ? $meta->data : $meta->metadata;
             // if (! $data ) // TODO Dummy icon
         }
+        if (! $data ) {
+            if ( $has_thumbnail ) echo json_encode( ['has_thumbnail' => false ] );
+            return;
+        }
+        if ( $has_thumbnail ) {
+            echo json_encode( ['has_thumbnail' => true ] );
+            return;
+        }
         $file_size = strlen( bin2hex( $data ) ) / 2;
+        header( "Content-Type: {$mime_type}" );
         header( "Content-Length: {$file_size}" );
         echo $data;
         unset( $data );
