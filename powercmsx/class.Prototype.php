@@ -1855,11 +1855,24 @@ class Prototype {
                 $workspace = $action;
             }
         }
+        $table = null;
+        if ( $model !== 'rebuild' && $model !== 'plugins' && $model !== 'objects' ) {
+            $table = $app->get_table( $model );
+            if (! $workspace && $obj && $obj->has_column( 'workspace_id' ) ) {
+                if ( $table->space_child ) {
+                    return false;
+                }
+            } else if ( $workspace && $obj && $obj->id &&
+                $obj->has_column( 'workspace_id' ) ) {
+                if ( $workspace->id != $obj->workspace_id ) {
+                    return false;
+                }
+            }
+        }
         if ( $model === 'superuser' ) return $app->user()->is_superuser;
             if ( $model !== 'rebuild' && $model !== 'plugins' && $model !== 'objects' ) {
-            $table = $app->get_table( $model );
             if ( $app->mode !== 'list_action' && $app->mode !== 'get_thumbnail' ) {
-                if (!$app->workspace() && ( $obj && ! $obj->workspace ) ) {
+                if (!$workspace && ( $obj && ! $obj->workspace ) ) {
                     if ( $table->space_child && $action === 'edit' ) {
                         return false;
                     } else if ( $action === 'list' && !$table->display_system ) {
@@ -2084,7 +2097,7 @@ class Prototype {
         $order = 1;
         $error = false;
         $db = $app->db;
-        // $db->begin_work();
+        $db->begin_work();
         $app->set_hierarchy( $model, $children, 0, $order, $error );
         if ( $error ) {
             $errstr = $app->translate( 'An error occurred while saving %s.',
@@ -2539,6 +2552,13 @@ class Prototype {
         if ( $has_thumbnail ) {
             header( 'Content-type: application/json' );
             //__mode=get_thumbnail&square=1&_model=asset&has_thumbnail=1&id=n
+        }
+        if ( $_model ) {
+            $table = $app->get_table( $_model );
+            if (! $table ) {
+                if ( $has_thumbnail ) echo json_encode( ['has_thumbnail' => false ] );
+                return;
+            }
         }
         if ( $_model && !$app->can_do( $_model, 'list' ) && $has_thumbnail ) {
             echo json_encode( ['has_thumbnail' => false ] );
@@ -3315,9 +3335,11 @@ class Prototype {
                         if ( strpos( $type, 'int' ) !== false ) {
                             $value = intval( $value );
                         } else {
-                            $value = '';
-                            $errors[] = $app->translate( '%s is required.',
-                                        $app->translate( $labels[ $col ] ) );
+                            if ( $type != 'blob' ) {
+                                $value = '';
+                                $errors[] = $app->translate( '%s is required.',
+                                            $app->translate( $labels[ $col ] ) );
+                            }
                         }
                     }
                 }
@@ -6467,6 +6489,9 @@ class Prototype {
     }
 
     function param ( $param = null, $value = null ) {
+        if (! isset( $_REQUEST ) ) {
+            return '';
+        }
         if ( $param && $value ) {
             if ( !isset( $_GET[ $param ] ) ) $_GET[ $param ] = $value;
             return $value;
@@ -6489,6 +6514,7 @@ class Prototype {
             }
             return $params;
         }
+        return '';
     }
 
     function is_valid_email ( $value, &$msg ) {
