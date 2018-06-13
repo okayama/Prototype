@@ -1770,7 +1770,7 @@ class Prototype {
         if ( $obj->_model == 'asset' ) {
             $url = $app->db->model( 'urlinfo' )->load( [
                 'model' => 'asset', 'object_id' => $obj->id, 'class' => 'file'] );
-            if ( is_array( $url ) ) {
+            if ( is_array( $url ) && ! empty( $url ) ) {
                 $url = $url[0];
                 return $url->url;
             }
@@ -3346,8 +3346,8 @@ class Prototype {
                         if ( strpos( $type, 'int' ) !== false ) {
                             $value = intval( $value );
                         } else {
+                            $value = '';
                             if ( $type != 'blob' ) {
-                                $value = '';
                                 $errors[] = $app->translate( '%s is required.',
                                             $app->translate( $labels[ $col ] ) );
                             }
@@ -3360,7 +3360,7 @@ class Prototype {
                     // Collision $obj->model( $model )->...
                     $obj->$col = $value;
                 } else {
-                    $obj->$col( $value );
+                    if ( $type != 'blob' ) $obj->$col( $value );
                 }
                 if ( $type != 'blob' && $obj->id ) {
                     if (! in_array( $col, $not_for_revision ) ) {
@@ -3529,6 +3529,16 @@ class Prototype {
             foreach ( $placements as $name => $props ) {
                 $to_obj = key( $props );
                 $to_ids = $props[ $to_obj ];
+                $_primary_id = $app->param( "{$name}_primary_id" );
+                if ( $_primary_id && !empty( $to_ids ) ) {
+                    $sorted_ids = [ $_primary_id ];
+                    foreach ( $to_ids as $to_id ) {
+                        if ( $to_id != $_primary_id ) {
+                            $sorted_ids[] = $to_id;
+                        }
+                    }
+                    $to_ids = $sorted_ids;
+                }
                 if ( $to_obj === '__any__' ) {
                     $to_obj = $app->param( "_{$name}_model" );
                 }
@@ -3669,6 +3679,10 @@ class Prototype {
             $is_changed = true;
             $original = $obj;
             $original->rev_object_id( null );
+            $changed = array_keys( $changed_cols );
+            $obj->rev_changed( join( ', ', $changed ) );
+            $obj->rev_diff( json_encode( $changed_cols,
+                                 JSON_UNESCAPED_UNICODE|JSON_PRETTY_PRINT ) );
         }
         if (!$is_new && $is_changed && $table->revisable && !$obj->rev_object_id ) {
             $changed = array_keys( $changed_cols );
@@ -3682,6 +3696,9 @@ class Prototype {
                 $original->rev_type( 1 );
             }
             $original->id( null );
+            if ( $original->has_column( 'basename' ) ) {
+                $original->basename( $obj->basename );
+            }
             if (! $original->save() ) return $app->rollback( $errstr );
             foreach ( $orig_relations as $relation ) {
                 $rel_rev = clone $relation;
@@ -4859,7 +4876,8 @@ class Prototype {
     }
 
     function pre_listing ( &$cb, $app, &$terms, &$args, &$extra ) {
-        $model = $app->param( '_model' );
+        $model = isset( $cb['model'] )
+               ? isset( $cb['model'] ) : $app->param( '_model' );
         $workspace_id = $app->workspace() ? $app->workspace()->id : 0;
         $user_id = $app->user()->id;
         $filter_primary = ['key' => $model, 'user_id' => $user_id,
@@ -4892,7 +4910,6 @@ class Prototype {
             $list_props = $scheme['list_properties'];
             $obj = $app->db->model( $model )->new();
             $system_filter = $app->param( 'select_system_filters' );
-            $apply_filter = false;
             if ( $system_filter ) {
                 $filters_option = $app->param( '_system_filters_option' );
                 $filters_class = new PTSystemFilters();
@@ -4931,7 +4948,6 @@ class Prototype {
                         if (!$app->param( 'dialog_view' ) ) {
                             $primary->save();
                         }
-                        $apply_filter = true;
                     }
                 }
             } else {
@@ -4964,7 +4980,7 @@ class Prototype {
                     }
                 }
             }
-            if (!$apply_filter ) {
+            if ( $app->param( '_filter' ) ) {
                 $filter_params = [];
                 $filter_and = false;
                 $filter_add_params = [];
@@ -4990,7 +5006,7 @@ class Prototype {
                             if ( $type == 'datetime' ) {
                                 $value = $obj->db2ts( $value );
                                 $value = $obj->ts2db( $value );
-                            } else if ( $op === 'LIKE' ) {
+                            } else if ( strpos( $op, 'LIKE' ) !== false ) {
                                 if ( $val === 'bw' ) {
                                     $value = $app->db->escape_like( $value, false, 1 );
                                 } elseif ( $val === 'ew' ) {
@@ -5008,12 +5024,12 @@ class Prototype {
                             $_cond = [];
                             list( $rel_model, $rel_col ) = ['', ''];
                             if (!$list_type ) {
-                                $col = $app->db->column( 'column' )->get_by_key(
+                                $col = $app->db->model( 'column' )->get_by_key(
                                                         ['name' => $key,
                                                          'table_id' => $table->id ] );
                                 if (!$col->id ) continue;
                                 $rel_model = $col->options;
-                                $_table = $app->db->column( 'table' )->get_by_key(
+                                $_table = $app->db->model( 'table' )->get_by_key(
                                                                 ['name' => $rel_model ] );
                                 if (!$_table->id ) continue;
                                 $rel_col = $_table->primary;
@@ -5042,11 +5058,15 @@ class Prototype {
                                 $rel_col = $rel_table->primary;
                             }
                             $rel_obj = $app->db->model( $rel_model )->new();
+                            $and_or = $app->param( "_filter_and_or_{$key}" )
+                                    ? $app->param( "_filter_and_or_{$key}" ) : 'AND';
+                            $and_or = strtoupper( $and_or );
+                            if ( $and_or != 'OR' ) $and_or = 'AND';
                             $i = 0;
                             foreach ( $conds as $val ) {
                                 $value = $values[ $i ];
-                                if ( count( $values ) > 2 ) {
-                                    $_cond[ $op ] = [ 'AND' => $value ];
+                                if ( count( $values ) > 1 ) {
+                                    $_cond[ $op ] = [ $and_or => $values ];
                                 } else {
                                     $_cond[ $op ] = $value;
                                 }
@@ -5111,7 +5131,11 @@ class Prototype {
                         '&' . http_build_query( $filter_add_params );
                 }
                 foreach ( $conditions as $col => $cond ) {
-                    $terms[ $col ] = ['AND' => $cond ];
+                    $and_or = $app->param( "_filter_and_or_{$col}" )
+                            ? $app->param( "_filter_and_or_{$col}" ) : 'AND';
+                    $and_or = strtoupper( $and_or );
+                    if ( $and_or != 'OR' ) $and_or = 'AND';
+                    $terms[ $col ] = [ $and_or => $cond ];
                 }
                 if ( $filter_name = $app->param( '_save_filter_name' ) ) {
                     $filter_terms = ['user_id' => $app->user()->id,
@@ -5566,7 +5590,7 @@ class Prototype {
                                 $thumb_update = true;
                             }
                             if ( $thumb_update ) {
-                                //$fmgr->put( $thumb_path, $data );
+                                $fmgr->put( $thumb_path, $data );
                             }
                             if (! $md5 || $thumb_update ) {
                                 $uid = (int) $thumb->urlinfo_id;
@@ -6275,6 +6299,12 @@ class Prototype {
                 $status_published = $app->status_published( $to_obj );
                 $terms['status'] = $status_published;
             }
+            unset( $get_args['published_only'] );
+        }
+        if (! empty( $get_args ) ) {
+            foreach ( $get_args as $arg => $v ) {
+                $args[ $arg ] = $v;
+            }
         }
         return $app->db->model( $to_obj )->load(
                                       $terms, $args, '*', $extra );
@@ -6569,9 +6599,9 @@ class Prototype {
 
     function is_valid_url ( $url, &$msg = '' ) {
         if (
-            preg_match( '/^https?(:\/\/[-_.!~*\'()a-zA-Z0-9;\/?:\@&=+\$,%#]+)$/',
+            preg_match( '/^https?:\/\/([-_.!~*\'()a-zA-Z0-9;\/?:\@&=+\$,%#]+)$/',
                 $url, $matches ) ) {
-            if ( strpos( '//', $matches[1] ) !== false ) {
+            if ( strpos( '//', $matches[1] ) === false ) {
                 return true;
             }
         }

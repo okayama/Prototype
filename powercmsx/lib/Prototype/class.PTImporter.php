@@ -88,7 +88,7 @@ class PTImporter {
             $images = $app->images;
             $videos = $app->videos;
             $audios = $app->audios;
-            list( $insert, $update, $skip ) = [0, 0, 0];
+            list( $insert, $update, $skip, $errors ) = [0, 0, 0, 0];
             $log_info = [];
             foreach ( $import_file as $file ) {
                 $extension = pathinfo( $file, PATHINFO_EXTENSION );
@@ -174,7 +174,19 @@ class PTImporter {
                                                     'basename'  => $pathdata['filename'],
                                                     'file_name' => $pathdata['basename'] ];
                                                 if ( in_array( $ext, $images ) ) {
-                                                    $info = getimagesize( $value );
+                                                    $error_msg = $app->translate
+                                                        ( 'An error occurred while processing the image.' );
+                                                    try {
+                                                        $info = getimagesize( $value );
+                                                    } catch ( Exception $e ) {
+                                                        $errors++;
+                                                        $app->log( ['message'  => $error_msg,
+                                                                    'category' => 'import',
+                                                                    'model'    => 'asset',
+                                                                    'metadata' => $e->getMessage(),
+                                                                    'level'    => 'error'] );
+                                                        continue;
+                                                    }
                                                     $w = $info[0];
                                                     $h = $info[1];
                                                     $metadata['image_width'] = $info[0];
@@ -183,7 +195,17 @@ class PTImporter {
                                                     $metadata['class'] = 'image';
                                                     $upload_dir = $app->upload_dir();
                                                     $imagine = new \Imagine\Gd\Imagine();
-                                                    $image = $imagine->open( $value );
+                                                    try {
+                                                        $image = $imagine->open( $value );
+                                                    } catch ( Exception $e ) {
+                                                        $errors++;
+                                                        $app->log( ['message'  => $error_msg,
+                                                                    'category' => 'import',
+                                                                    'model'    => 'asset',
+                                                                    'metadata' => $e->getMessage(),
+                                                                    'level'    => 'error'] );
+                                                        continue;
+                                                    }
                                                     $width = 128;
                                                     $height = 128;
                                                     $mode = Imagine\Image\ImageInterface::THUMBNAIL_OUTBOUND;
@@ -232,6 +254,10 @@ class PTImporter {
                             $app->set_default( $obj );
                             // TODO Callback
                             $is_new = $obj->id ? true : false;
+                            if ( $id && ! $obj->id ) {
+                                $obj->id( $id );
+                                $obj->_insert = true;
+                            }
                             $obj->save();
                             if (! $is_new ) {
                                 $insert++;
@@ -498,30 +524,32 @@ class PTImporter {
         $metadata['uploaded'] = date( 'Y-m-d H:i:s' );
         $metadata['user_id'] = $app->user()->id;
         $meta->text( json_encode( $metadata ) );
-        $upload_dir = $app->upload_dir();
-        $imagine = new \Imagine\Gd\Imagine();
-        $image = $imagine->open( $file );
-        $width = 128;
-        $height = 128;
-        $mode = Imagine\Image\ImageInterface::THUMBNAIL_OUTBOUND;
-        $thumbnail = $image->thumbnail( new Imagine\Image\Box( $width, $height ), $mode );
-        $thumbnail_square = $upload_dir . DS . "thumb-square.{$file_ext}";
-        $thumbnail->save( $thumbnail_square );
-        if ( $image_width > $image_height ) {
-            $width = 256;
-            $scale = $width / $image_width;
-            $height = round( $image_height * $scale );
-        } else {
-            $height = 256;
-            $scale = $height / $image_height;
-            $width = round( $image_width * $scale );
+        if ( $class == 'image' ) {
+            $upload_dir = $app->upload_dir();
+            $imagine = new \Imagine\Gd\Imagine();
+            $image = $imagine->open( $file );
+            $width = 128;
+            $height = 128;
+            $mode = Imagine\Image\ImageInterface::THUMBNAIL_OUTBOUND;
+            $thumbnail = $image->thumbnail( new Imagine\Image\Box( $width, $height ), $mode );
+            $thumbnail_square = $upload_dir . DS . "thumb-square.{$file_ext}";
+            $thumbnail->save( $thumbnail_square );
+            if ( $image_width > $image_height ) {
+                $width = 256;
+                $scale = $width / $image_width;
+                $height = round( $image_height * $scale );
+            } else {
+                $height = 256;
+                $scale = $height / $image_height;
+                $width = round( $image_width * $scale );
+            }
+            $image = $imagine->open( $file );
+            $thumbnail = $image->thumbnail( new Imagine\Image\Box( $width, $height ) );
+            $thumbnail_small = $upload_dir . DS . "thumb-small.{$file_ext}";
+            $thumbnail->save( $thumbnail_small );
+            $meta->metadata( file_get_contents( $thumbnail_square ) );
+            $meta->data( file_get_contents( $thumbnail_small ) );
         }
-        $image = $imagine->open( $file );
-        $thumbnail = $image->thumbnail( new Imagine\Image\Box( $width, $height ) );
-        $thumbnail_small = $upload_dir . DS . "thumb-small.{$file_ext}";
-        $thumbnail->save( $thumbnail_small );
-        $meta->metadata( file_get_contents( $thumbnail_square ) );
-        $meta->data( file_get_contents( $thumbnail_small ) );
         $meta->save();
         PTUtil::remove_dir( $upload_dir );
     }

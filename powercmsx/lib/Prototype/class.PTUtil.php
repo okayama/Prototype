@@ -923,6 +923,9 @@ class PTUtil {
     }
 
     public static function get_mime_type ( $extension, $default = '' ) {
+        if ( strpos( $extension, DS ) !== false ) {
+            $extension = self::get_extension( $extension );
+        }
         $extension = strtolower( $extension );
         $extension = ltrim( $extension, '.' );
         if ( isset( $_SERVER[ 'HTTP_USER_AGENT' ] ) ) {

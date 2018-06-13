@@ -274,6 +274,7 @@ $('#dialog-cancel-btn').click(function(){
 </mt:loop>
 </tr>
 <mt:unless name="_single_select">
+  <mt:unless name="request.dialog_view">
   <mt:if name="list_from" ne="1">
     <mt:setvar name="show_all_selected" value="1">
   </mt:if>
@@ -292,6 +293,7 @@ $('#dialog-cancel-btn').click(function(){
     </td>
   </tr>
 </mt:if>
+  </mt:unless>
 </mt:unless>
 </mt:setvarblock>
 
@@ -552,45 +554,80 @@ $('#list_body tr').mouseover(function() {
 </mt:if>
 var in_search = false;
 var selected_ids = [];
+var upload_ids = [];
 <mt:if name="request.dialog_view">
 var target_control;
 <mt:unless name="request.revision_select">
-    $(function(){
-        target_control = '<mt:var name="request.target" escape>';
-    <mt:if name="request.single_select">
-        var selected_id = window.parent.$('#'+target_control).val();
-        <mt:if name="request.selected_ids">
-        <mt:var name="request.selected_ids" split="," setvar="request_selected_ids">
-        <mt:loop name="request_selected_ids">
-            selected_id = '<mt:var name="__value__">';
-        </mt:loop>
-        </mt:if>
-        $("input[name='id']").each(function(){
-            if( $(this).val() == selected_id ) {
-                $(this).prop('checked', true);
-            }
-        });
-    <mt:else>
-        window.parent.$("input[name='"+target_control+"[]']").each(function(){
-            if ( $(this).val() ) {
-                selected_ids.push($(this).val());
-            }
-        });
-        <mt:if name="request.selected_ids">
-        <mt:var name="request.selected_ids" split="," setvar="request_selected_ids">
-        <mt:loop name="request_selected_ids">
-            if( $.inArray('<mt:var name="__value__">', selected_ids ) == -1 ) {
-                selected_ids.push('<mt:var name="__value__">');
-            }
-        </mt:loop>
-        </mt:if>
-        $("input[name='id[]']").each(function(){
-            if( $.inArray($(this).val(), selected_ids ) != -1 ) {
-                $(this).prop('checked', true );
-            }
-        });
+$(function(){
+    target_control = '<mt:var name="request.target" escape>';
+<mt:if name="request.single_select">
+    var selected_id = window.parent.$('#'+target_control).val();
+    <mt:if name="request.selected_ids">
+    <mt:var name="request.selected_ids" split="," setvar="request_selected_ids">
+    <mt:loop name="request_selected_ids">
+        selected_id = '<mt:var name="__value__">';
+    </mt:loop>
     </mt:if>
+    $("input[name='id']").each(function(){
+        if( $(this).val() == selected_id ) {
+            $(this).prop('checked', true);
+        }
     });
+<mt:else>
+    window.parent.$("input[name='"+target_control+"[]']").each(function(){
+        if ( $(this).val() ) {
+            selected_ids.push($(this).val());
+        }
+    });
+    <mt:if name="request.selected_ids">
+    <mt:var name="request.selected_ids" split="," setvar="request_selected_ids">
+    <mt:loop name="request_selected_ids">
+        if( $.inArray('<mt:var name="__value__">', selected_ids ) == -1 ) {
+            upload_ids.push('<mt:var name="__value__">');
+        }
+    </mt:loop>
+    </mt:if>
+    set_selected_cbs();
+</mt:if>
+});
+<mt:if name="request.dialog_view">
+  <mt:unless name="request.revision_select">
+    <mt:unless name="_single_select">
+function set_selected_cbs () {
+    $("input[name='id[]']").each(function(){
+        if( $.inArray($(this).val(), selected_ids ) != -1 ) {
+            $(this).prop('checked', true );
+            $('#line_' + $(this).val() ).css('background-color', '#ddd');
+            $('#line_' + $(this).val() ).on('click', function() {
+                var select_id = $(this).prop('id');
+                select_id = select_id.replace( 'line_', '' );
+                $("input[name='id[]']").each(function(){
+                    if ( $(this).val() == select_id ) {
+                        $(this).prop('checked', true );
+                    }
+                });
+            });
+        }
+        if( $.inArray($(this).val(), upload_ids ) != -1 ) {
+            $(this).prop('checked', true );
+        }
+    });
+}
+<mt:ignore>
+var add_objects = [];
+$("input[name='id[]']").change(function(){
+    if (! $(this).prop('checked') ) {
+        add_objects[$(this).val()] = $('#_get_col_' + $(this).val() ).val();
+    } else {
+        delete add_objects[$(this).val()];
+    }
+    window.parent.<mt:var name="request.target">_add_objects = add_objects;
+    // parent_add_objects = window.parent.<mt:var name="request.target">_add_objects;
+});
+</mt:ignore>
+    </mt:unless>
+  </mt:unless>
+</mt:if>
 </mt:unless>
 $('#dialog-selector-btn-editor_insert').click(function(){
     if ( item_checked() == false ) {
@@ -669,6 +706,7 @@ $('#dialog-selector-btn').click(function(){
         newli.children('input').val( checked_ids[i] );
         newli.removeAttr('id');
         newli.addClass( target_control+'-child');
+        newli.children('.assets-child-thumb').attr('data-id',checked_ids[i]).css('background-image','url(\'<mt:var name="script_uri">?__mode=get_thumbnail&square=1&_model=<mt:var name="model" escape>&id=' + checked_ids[i] + '\')');
         newli.show();
     }
 </mt:if>
@@ -699,7 +737,6 @@ function reorder(){
 }
 </mt:unless>
 </mt:if>
-
 $('.query-box').change(function(){
     $('.query-box').val( $(this).val() );
 });
@@ -731,6 +768,13 @@ $('.selector').click(function(){
         $('.all-selected-cell').hide();
         $('.cb-all-selected').prop('checked', false);
     }
+</mt:if>
+<mt:if name="request.dialog_view">
+  <mt:unless name="request.revision_select">
+    <mt:unless name="_single_select">
+    set_selected_cbs();
+    </mt:unless>
+  </mt:unless>
 </mt:if>
 });
 <mt:if name="list_actions">

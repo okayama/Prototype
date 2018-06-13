@@ -309,7 +309,8 @@ class PTTags {
         }
         foreach ( $vars as $col => $value ) {
             if ( $colprefix ) $col = preg_replace( "/^$colprefix/", '', $col );
-            if ( $column_defs[ $col ]['type'] === 'blob' ) {
+            if ( isset( $column_defs[ $col ]['type'] )
+                && $column_defs[ $col ]['type'] === 'blob' ) {
                 $value = $value ? 1 : '';
             }
             $ctx->local_vars['object_' . $col ] = $value;
@@ -863,6 +864,7 @@ class PTTags {
             }
             if ( $square ) {
                 $data = $metadata->metadata;
+                if (! $data ) $data = $metadata->data;
             } else {
                 $data = $metadata->data;
             }
@@ -1214,7 +1216,11 @@ class PTTags {
                         $terms['status'] = $status;
                     }
                 }
-                $objects = $app->db->model( $to_obj )->load( $terms );
+                $params = [];
+                if ( isset( $args['limit'] ) ) {
+                    $params['limit'] = (int) $args['limit'];
+                }
+                $objects = $app->db->model( $to_obj )->load( $terms, $params );
                 if ( empty( $objects ) ) {
                     $ctx->restore( [ $model, 'current_context', 'to_object'] );
                     $repeat = false;
@@ -1246,7 +1252,14 @@ class PTTags {
                     $repeat = false;
                     return;
                 }
-                $objects = $app->get_related_objs( $obj, $to_obj, $colname );
+                $params = [];
+                if (! $include_draft ) {
+                    $params['published_only'] = true;
+                }
+                if ( isset( $args['limit'] ) ) {
+                    $params['limit'] = (int) $args['limit'];
+                }
+                $objects = $app->get_related_objs( $obj, $to_obj, $colname, $params );
             }
             // Filter Status
             $scheme = $app->db->scheme;
@@ -1639,6 +1652,7 @@ class PTTags {
         }
         $local_vars = [ $model, 'current_context' ];
         if (! $counter ) {
+            $scheme = $app->get_scheme_from_db( $model );
             $obj = $app->db->model( $model );
             if (! $parent_id ) $parent_id = 0;
             $terms = ['parent_id' => $parent_id ];
@@ -1647,12 +1661,17 @@ class PTTags {
             if ( $workspace ) {
                 $terms['workspace_id'] = $workspace->id;
             }
-            /* // TODO for not admin screen
-            $status = $app->status_published( $to_obj );
-            if ( $status ) {
-                $terms['status'] = $status;
+            if ( $app->mode != 'view' ) {
+                if ( $obj->has_column( 'status' ) ) {
+                    $status = $app->status_published( $obj );
+                    if ( $status ) {
+                        $terms['status'] = $status;
+                    }
+                }
             }
-            */
+            if ( $obj->has_column( 'rev_type' ) ) {
+                $terms['rev_type'] = 0;
+            }
             $args = [];
             if ( $obj->has_column( 'order' ) ) {
                 $args = ['sort' => 'order', 'direction' => 'ascend'];
@@ -2004,7 +2023,33 @@ class PTTags {
                 }
                 unset( $args['sort_order'], $args['ignore_archive_context'],
                        $args['this_tag'], $args['options'], $args['table_id'] );
-                $loop_objects = $obj->load( $terms, $args );
+                $extra = '';
+                $cols = '*';
+                if ( $app->param( '_filter' ) ) {
+                    $table = $app->get_table( $model );
+                    $scheme = $app->get_scheme_from_db( $model );
+                    $app->register_callback( $model, 'pre_listing', 'pre_listing', 1, $app );
+                    $app->init_callbacks( $model, 'pre_listing' );
+                    $callback = ['name' => 'pre_listing', 'model' => $model,
+                                 'scheme' => $scheme, 'table' => $table ];
+                    $app->run_callbacks( $callback, $model, $terms, $args, $extra );
+                    /*
+                        _filter=1
+                        &_filter_value_rent[]=1000
+                        &_filter_value_rent[]=100000
+                        &_filter_cond_rent[]=gt
+                        &_filter_cond_rent[]=lt
+                        &_filter_value_name[]=東
+                        &_filter_cond_name[]=ct
+                        &_filter_and_or_rent=OR
+                    */
+                }
+                $count_args = $args;
+                unset( $count_args['limit'] );
+                unset( $count_args['offset'] );
+                $count_obj = $obj->count( $terms, $count_args, $cols, $extra );
+                $loop_objects = $obj->load( $terms, $args, $cols, $extra );
+                $ctx->stash( 'object_count', $count_obj );
             }
             $ctx->stash( 'current_archive_context', $obj->_model );
             if ( empty( $loop_objects ) ) {
@@ -2020,6 +2065,8 @@ class PTTags {
             $ctx->restore( $local_vars );
             return;
         }
+        $count_obj = $ctx->stash( 'object_count' );
+        $ctx->local_vars[ 'object_count' ] = $count_obj;
         $ctx->set_loop_vars( $counter, $params );
         if ( isset( $params[ $counter ] ) ) {
             $obj = $params[ $counter ];

@@ -1,7 +1,7 @@
 {
     "label"    : "Role",
     "plural"   : "Roles",
-    "version"  : "1.1",
+    "version"  : "1.2",
     "primary"  : "name",
     "auditing" : 1,
     "order"    : 160,
@@ -55,6 +55,16 @@
         "can_rebuild": {
             "type": "tinyint",
             "size": 4
+        },
+        "import_objects": {
+            "type": "tinyint",
+            "size": 4,
+            "default": null
+        },
+        "manage_plugins": {
+            "type": "tinyint",
+            "size": 4,
+            "default": null
         },
         "columns_data": {
             "type": "text"
@@ -118,7 +128,9 @@
         "can_review": "relation:table:label:checkbox",
         "can_activate": "relation:table:label:checkbox",
         "can_delete": "relation:table:label:checkbox",
-        "can_rebuild": "checkbox"
+        "can_rebuild": "checkbox",
+        "import_objects": "checkbox",
+        "manage_plugins": "checkbox"
     },
     "list_properties": {
         "id": "number",
@@ -134,6 +146,8 @@
         "can_activate": "reference:table:label",
         "can_delete": "reference:table:label",
         "can_rebuild": "checkbox",
+        "import_objects": "checkbox",
+        "manage_plugins": "checkbox",
         "modified_on": "datetime",
         "modified_by": "reference:user:name"
     }

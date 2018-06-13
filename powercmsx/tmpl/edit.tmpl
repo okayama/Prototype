@@ -567,13 +567,22 @@ $(function () {
             <mt:setvarblock name="__rel_name__">object_<mt:var name="__col_name__"></mt:setvarblock>
             <mt:if name="type" eq="relation">
               <mt:setvartemplate name="nestable_obj_list">
+              <mt:var name="$__rel_name__" index="0" setvar="relation_primary_id">
               <mt:nestableobjects model="$rel_model" parent_id="$_parent_id">
                 <mt:if name="__first__"><ul></mt:if>
                   <li>
+                    <button style="padding:0px 5px" id="<mt:var name="__col_name__">_id_<mt:var name="id">" type="button" class="<mt:var name="__col_name__">_primary_chooser btn btn-sm btn-outline-secondary">
+                      <i class="fa fa-check<mt:if name="id" eq="$relation_primary_id">-square</mt:if>" style="<mt:if name="id" eq="$relation_primary_id">color:#000;<mt:else>color:#777;font-size:70%</mt:if>" aria-hidden="true"></i>
+                      <span class="sr-only"><mt:trans phrase="Unspecified"></span>
+                    </button>
+                    &nbsp;
                     <label class="custom-control custom-checkbox">
-                      <input type="checkbox" class="custom-control-input watch-changed" name="<mt:var name="__col_name__">[]" value="<mt:var name="id">" <mt:ifinarray array="$__rel_name__" value="$id">checked</mt:ifinarray>>
+                      <input type="checkbox"
+                        id="<mt:var name="__col_name__">_cb_<mt:var name="id">"
+                        class="custom-control-input watch-changed" name="<mt:var name="__col_name__">[]" value="<mt:var name="id">" <mt:ifinarray array="$__rel_name__" value="$id">checked</mt:ifinarray>>
                       <span class="custom-control-indicator"></span>
-                      <span class="custom-control-description"><mt:var name="$rel_col" escape></span>
+                      <span class="custom-control-description"><mt:var name="$rel_col" escape>
+                      </span>
                     </label>
                     <mt:if name="has_children">
                       <mt:var name="id" setvar="_parent_id">
@@ -582,6 +591,68 @@ $(function () {
                   </li>
                 <mt:if name="__last__"></ul></mt:if>
               </mt:nestableobjects>
+                <script>
+                var orig_selected_id;
+                var selected_id = '<mt:var name="relation_primary_id" escape>';
+                $('.<mt:var name="__col_name__">_primary_chooser').click(function(){
+                    orig_selected_id = $(this).attr('id');
+                    selected_id = orig_selected_id.replace( '<mt:var name="__col_name__">_id_', '' );
+                    $('#<mt:var name="__col_name__">_primary_id').val( selected_id );
+                    $('.<mt:var name="__col_name__">_primary_chooser').each(function(){
+                        if ( $(this).prop('id') == orig_selected_id ) {
+                            $(this).children('i').css('color', '#000');
+                            $(this).children('i').css('font-size', '100%');
+                            $(this).children('i').prop('class', 'fa fa-check-square');
+                            $(this).children('span').css('color', '#000');
+                            $(this).children('span').html('<mt:trans phrase="Specified">');
+                        } else {
+                            $(this).children('i').css('color', '#777');
+                            $(this).children('i').css('font-size', '70%');
+                            $(this).children('i').prop('class', 'fa fa-check');
+                            $(this).children('span').css('color', '#777');
+                            $(this).children('span').html('<mt:trans phrase="Unspecified">');
+                        }
+                    });
+                    $('#<mt:var name="__col_name__">_cb_' + selected_id ).prop('checked', true );
+                    return false;
+                });
+                $('input[name="<mt:var name="__col_name__">[]"]').change(function(){
+                    if ( $(this).prop('checked') == false ) {
+                        if ( selected_id == $(this).val() ) {
+                            $('#<mt:var name="__col_name__">_id_' + $(this).val()).children('i').css('color', '#777');
+                            $('#<mt:var name="__col_name__">_id_' + $(this).val()).children('i').css('font-size', '70%');
+                            $('#<mt:var name="__col_name__">_id_' + $(this).val()).children('i').prop('class', 'fa fa-check');
+                            $('#<mt:var name="__col_name__">_id_' + $(this).val()).children('span').css('color', '#777');
+                            $('#<mt:var name="__col_name__">_id_' + $(this).val()).children('span').html('<mt:trans phrase="Unspecified">');
+                            $('#<mt:var name="__col_name__">_primary_id').val('');
+                            selected_id = null;
+                            $('.<mt:var name="__col_name__">_primary_chooser').each(function(){
+                                var cBox_id = $(this).attr('id');
+                                cBox_id = cBox_id.replace( '<mt:var name="__col_name__">_id_', '' );
+                                if ( $('#<mt:var name="__col_name__">_cb_' + cBox_id).prop('checked') ) {
+                                    if (! selected_id ) {
+                                        $('#<mt:var name="__col_name__">_primary_id').val(cBox_id);
+                                        selected_id = cBox_id;
+                                        $('#<mt:var name="__col_name__">_id_' + cBox_id).children('i').css('color', '#000');
+                                        $('#<mt:var name="__col_name__">_id_' + cBox_id).children('i').css('font-size', '100%');
+                                        $('#<mt:var name="__col_name__">_id_' + cBox_id).children('i').prop('class', 'fa fa-check-square');
+                                        $('#<mt:var name="__col_name__">_id_' + cBox_id).children('span').css('color', '#000');
+                                        $('#<mt:var name="__col_name__">_id_' + cBox_id).children('span').html('<mt:trans phrase="Specified">');
+                                    }
+                                }
+                            });
+                        }
+                    } else if (! selected_id ) {
+                        $('#<mt:var name="__col_name__">_primary_id').val($(this).val());
+                        selected_id = $(this).val();
+                        $('#<mt:var name="__col_name__">_id_' + $(this).val()).children('i').css('color', '#000');
+                        $('#<mt:var name="__col_name__">_id_' + $(this).val()).children('i').css('font-size', '100%');
+                        $('#<mt:var name="__col_name__">_id_' + $(this).val()).children('i').prop('class', 'fa fa-check-square');
+                        $('#<mt:var name="__col_name__">_id_' + $(this).val()).children('span').css('color', '#000');
+                        $('#<mt:var name="__col_name__">_id_' + $(this).val()).children('span').html('<mt:trans phrase="Specified">');
+                    }
+                });
+                </script>
               </mt:setvartemplate>
             <mt:else>
               <mt:setvartemplate name="nestable_obj_list">
@@ -612,6 +683,7 @@ $(function () {
             </mt:if>
             <div class="relation_nestable_list">
               <mt:var name="nestable_obj_list">
+              <input type="hidden" value="<mt:var name="relation_primary_id" escape>" id="<mt:var name="__col_name__">_primary_id" name="<mt:var name="__col_name__">_primary_id">
             </div>
           <mt:elseif name="edit" like="select">
             <select id="<mt:var name="__col_name__">" class="form-control short watch-changed" name="<mt:var name="__col_name__">">
@@ -632,6 +704,9 @@ $(function () {
                 <mt:trans phrase="(None selected)">
                 </li>
                 <li class="hidden badge badge-default badge-relation badge-draggable" id="<mt:var name="__col_name__">-tmpl">
+                <mt:if name="__rel_name__" eq="object_assets">
+                <div class="assets-child-thumb"></div>
+                </mt:if>
                 <span><mt:trans phrase="Default"></span>
                 <button type="button" class="btn btn-secondary btn-sm close-sm detach-relation" aria-label="<mt:trans phrase="Detach">" data-name="<mt:var name="__col_name__">">
                   <span aria-hidden="true">&times;</span>
@@ -641,6 +716,9 @@ $(function () {
               <mt:setvarblock name="selected_ids"><mt:loop name="$__rel_name__" glue=","><mt:var name="__value__"></mt:loop></mt:setvarblock>
               <mt:loop name="$__rel_name__">
                 <li class="<mt:var name="__col_name__">-child badge badge-default badge-relation badge-draggable">
+                <mt:if name="__rel_name__" eq="object_assets">
+                <div class="assets-child-thumb" data-id="<mt:var name="__value__" escape>" style="background-image:url('<mt:var name="script_uri">?__mode=get_thumbnail&amp;square=1&amp;_model=<mt:var name="rel_model" escape>&amp;id=<mt:var name="__value__" escape>')"></div>
+                </mt:if>
                 <span>
                   <mt:getobjectname id="$__value__" type="$edit" escape setvar="_related_object">
                   <mt:var name="_related_object" trans="$translate">
@@ -651,38 +729,16 @@ $(function () {
                 <input type="hidden" name="<mt:var name="__col_name__">[]" value="<mt:var name="__value__" escape>"></li>
               </mt:loop>
               </ul>
-              <button type="button" id="select_<mt:var name="__col_name__">" class="btn btn-primary btn-sm dialog-chooser" data-toggle="modal" data-target="#modal"
-                data-href="<mt:var name="script_uri">?__mode=view&amp;_type=list&amp;_model=<mt:var name="rel_model" escape><mt:ifworkspacemodel model="$rel_model"><mt:if name="workspace_id">&amp;workspace_id=<mt:var name="workspace_id"></mt:if></mt:ifworkspacemodel>&amp;dialog_view=1&amp;target=<mt:var name="__col_name__">&amp;get_col=<mt:var name="rel_col" escape>&amp;selected_ids=<mt:var name="selected_ids" escape>"><mt:trans phrase="Select..."></button>
               <button type="button" id="add_<mt:var name="__col_name__">" class="btn btn-primary btn-sm dialog-chooser" data-toggle="modal" data-target="#modal"
-                data-href="<mt:var name="script_uri">?__mode=view&amp;_type=list&amp;_model=<mt:var name="rel_model" escape><mt:ifworkspacemodel model="$rel_model"><mt:if name="workspace_id">&amp;workspace_id=<mt:var name="workspace_id"></mt:if></mt:ifworkspacemodel>&amp;dialog_view=1&amp;target=<mt:var name="__col_name__">&amp;get_col=<mt:var name="rel_col" escape>&amp;selected_ids=<mt:var name="selected_ids" escape>&amp;select_add=1"><mt:trans phrase="Add..."></button>
+                data-href="<mt:var name="script_uri">?__mode=view&amp;_type=list&amp;_model=<mt:var name="rel_model" escape><mt:ifworkspacemodel model="$rel_model"><mt:if name="workspace_id">&amp;workspace_id=<mt:var name="workspace_id"></mt:if></mt:ifworkspacemodel>&amp;dialog_view=1&amp;target=<mt:var name="__col_name__">&amp;get_col=<mt:var name="rel_col" escape>&amp;select_add=1"><mt:trans phrase="Add..."></button>
               <script>
-                    var dialog_url_<mt:var name="__col_name__"> = '<mt:var name="script_uri">?__mode=view&_type=list&_model=<mt:var name="rel_model" escape><mt:ifworkspacemodel model="$rel_model"><mt:if name="workspace_id">&workspace_id=<mt:var name="workspace_id"></mt:if></mt:ifworkspacemodel>&dialog_view=1&target=<mt:var name="__col_name__">&get_col=<mt:var name="rel_col" escape>';
-                    $('#select_<mt:var name="__col_name__">').click(function(){
-                        var selected_ids = [];
-                        $("input[name='<mt:var name="__col_name__">[]']").each(function(){
-                            if ( $(this).val() ) {
-                                selected_ids.push($(this).val());
-                            }
-                        });
-                        var new_dialog_url_<mt:var name="__col_name__"> = dialog_url_<mt:var name="__col_name__"> + '&selected_ids=' + selected_ids.join(',');
-                        $(this).data('href',new_dialog_url_<mt:var name="__col_name__">);
-                    });
-                    $('#add_<mt:var name="__col_name__">').click(function(){
-                        var selected_ids = [];
-                        $("input[name='<mt:var name="__col_name__">[]']").each(function(){
-                            if ( $(this).val() ) {
-                                selected_ids.push($(this).val());
-                            }
-                        });
-                        var new_dialog_url_<mt:var name="__col_name__"> = dialog_url_<mt:var name="__col_name__"> + '&select_add=1&selected_ids=' + selected_ids.join(',');
-                        $(this).data('href',new_dialog_url_<mt:var name="__col_name__">);
-                    });
-                    $('#<mt:var name="__col_name__">').sortable ( {
-                    // TODO keyboard oparation
-                        stop: function( evt, ui ) {
-                            editContentChanged = true;
-                        }
-                    });
+                var <mt:var name="__col_name__">_add_objects = [];
+                $('#<mt:var name="__col_name__">').sortable ( {
+                // TODO keyboard oparation
+                    stop: function( evt, ui ) {
+                        editContentChanged = true;
+                    }
+                });
               </script>
             <mt:else>
               <mt:setvar name="thumbnail" value="">
@@ -1101,7 +1157,7 @@ $('#_field_chooser').click(function(){
     <button type="submit" id="__apply_to_master" class="btn btn-secondary btn-sm"><mt:trans phrase="Apply to Master"></button>
   </mt:if>
   <mt:if name="request.id">
-    <button type="submit" id="__save_as_revision" class="__save btn btn-secondary btn-sm"><mt:trans phrase="Save as Revision"></button>
+    <button type="button" id="__save_as_revision" class="btn btn-secondary btn-sm"><mt:trans phrase="Save as Revision"></button>
   </mt:if>
 </mt:if>
 <mt:if name="request.id">
@@ -1173,10 +1229,18 @@ $('#__save_as_revision').click(function(){
     if ( !confirm('<mt:trans phrase="Are you sure you want to save this %s as a revision instead of a master?" params="$label">') ) {
         return false;
     }
+    <mt:if name="model" eq="asset">
+    if (! file_file_selected || ! $('#label').val() ) {
+        // TODO label
+        alert( '<mt:trans phrase="File and Label are required.">' );
+        return false;
+    }
+    </mt:if>
+    $('#_save_as_revision').val('1');
     $('#_preview').val('');
     $('#edit-form-main').removeAttr('target');
     $(window).off('beforeunload');
-    $('#_save_as_revision').val('1');
+    $('#edit-form-main').submit();
 });
 <mt:if name="request.edit_revision">
 $('#__apply_to_master').click(function(){
@@ -1354,6 +1418,42 @@ $('#field-<mt:var name="field__basename">-wrapper').hide();
 $('.' + 'field-<mt:var name="field__basename" escape>-option' ).hide();
 </mt:unless>
 </mt:fieldloop>
+</script>
+
+<script>
+(function(){
+	$(document).on('mouseenter mouseleave mousemove','.assets-child-thumb',function(e){
+		var $preview = $('#asset-preview-popup');
+		var $this = $(this);
+		if(e.type == 'mouseenter'){
+			var thumb = '<mt:var name="script_uri">?__mode=get_thumbnail&_model=asset&id=';
+			if(!$preview.length){
+				$preview = $('<div>').attr('id','asset-preview-popup').appendTo('body');
+			}
+			$preview.css('background-image','url(' + thumb + $this.data('id') +')').show();
+		}else
+		if(e.type == 'mouseleave'){
+			$preview.hide();
+		}else
+		if(e.type == 'mousemove'){
+			var size   = 200;
+			var offset = 10;
+			var pos_x = e.clientX + offset;
+			var pos_y = e.clientY + offset;
+			if((pos_x + size) > $(window).width()){
+				pos_x = e.clientX - (size + offset);
+			}
+			if((pos_y + size) > $(window).height()){
+				pos_y = e.clientY - (size + offset);
+			}
+			
+			$preview.css({
+				left : pos_x + 'px',
+				top  : pos_y + 'px'
+			});
+		}
+	});
+})();
 </script>
 <mt:setvarblock name="include_path">include/edit/<mt:var name="model">/footer.tmpl</mt:setvarblock>
 <mt:include file="$include_path">

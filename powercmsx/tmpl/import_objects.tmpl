@@ -121,13 +121,11 @@ $('#save').click(function(){
 </iframe>
 </div>
 </div>
-<mt:ignore>
 <script>
 setInterval(function(){
     var iframe_ele = document.getElementById('print-area-iframe').contentWindow.document.documentElement;
     document.getElementById('print-area-iframe').contentWindow.scrollTo( 0, iframe_ele.scrollHeight );
 },100);
 </script>
-</mt:ignore>
 </mt:unless>
 <mt:include file="include/footer.tmpl">

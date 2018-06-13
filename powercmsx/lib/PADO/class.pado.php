@@ -584,6 +584,7 @@ class PADOBaseModel {
     public $_colprefix = '';
     public $_scheme    = [];
     public $_driver    = null;
+    public $_insert    = false;
 
     public static $_Model     = '';
     public static $_ID_column = '';
@@ -935,9 +936,6 @@ class PADOBaseModel {
                     $v  = $cond[ $op ];
                 }
                 if ( $cond === null ) $cond = [];
-                if ( $pado->debug === 3 ) {
-                    var_dump( $cond );
-                }
                 if ( ( ( is_string( $cond ) || is_numeric( $cond ) )
                     || ( is_array( $cond ) && count( $cond ) === 1 ) )
                     || ( stripos( $op, 'BETWEEN' ) !== false || $op === 'IN' ) ) {
@@ -956,8 +954,7 @@ class PADOBaseModel {
                             if ( $op === 'IN' && is_array( $v ) && ! empty( $v ) ) {
                                 $stms[] = $this->in_stmt( $key, $v, $col_type );
                             } else {
-                                if ( $op == 'AND' || $op == 'OR' && $and_or != $op ) {
-                                    // var_dump( $v );
+                                if ( $op == 'AND' || $op == 'OR' ) {
                                     // if (array_values($arr) === $arr) {
                                     // if ( is_array( $v ) ) {
                                     if ( array_values( $v ) !== $v ) {
@@ -971,7 +968,7 @@ class PADOBaseModel {
                                         }
                                     } else if (! is_array( $v ) ) {
                                         $op = '=';
-                                    } else {
+                                    // } else {
                                         // var_dump( $extra_stms );
                                         // $stms[] = "1=1";
                                     }
@@ -1037,7 +1034,8 @@ class PADOBaseModel {
                                     }
                                     $var = $var[ $_and_or ];
                                 } else {
-                                    $_and_or = 'AND';
+                                    $_and_or = 'OR';
+                                    // $_and_or = 'AND';
                                 }
                                 if ( $stm ) $stm .= $_and_or;
                                 if ( stripos( $op, 'NULL' ) !== false ) {
@@ -1304,9 +1302,11 @@ class PADOBaseModel {
         $original = $arr;
         $statement = 'UPDATE';
         $update = true;
-        if (! isset( $arr[ $id_column ] ) || ! $arr[ $id_column ] ) {
+        if ( $this->_insert || (! isset( $arr[ $id_column ] ) || ! $arr[ $id_column ] ) ) {
             $statement = 'INSERT';
-            unset( $arr[ $id_column ] );
+            if (! $this->_insert ) {
+                unset( $arr[ $id_column ] );
+            }
             $update = false;
         }
         $arr = $this->validation( $arr, $update );

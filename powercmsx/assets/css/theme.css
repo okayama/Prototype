@@ -393,6 +393,7 @@ h5 {
   text-align: center;
   top: 0 !important;
   left: 0 !important;
+  padding-top: 30%;
 }
 
 .navbar-brand {
@@ -557,7 +558,7 @@ input.num {
 }
 
 input.e-num {
-  width: 120px;
+  width: 300px;
   text-align: center;
 }
 
@@ -1282,4 +1283,26 @@ i.required {
 
 .box-no-list-items {
   margin-bottom: 10em;
+}
+
+.assets-child-thumb {
+    display: inline-block;
+    width: 1.4em;
+    height: 1.4em;
+    background: no-repeat 0px 0px / contain;
+    vertical-align: middle;
+    margin: -0.1em -0.1em -2px 0px;
+}
+
+#asset-preview-popup {
+    width: 200px;
+    height: 200px;
+    padding: 5px;
+    box-sizing: border-box;
+    background: #292b2c no-repeat 50% 50% / contain;
+    background-origin: content-box;
+    border-radius: 5px;
+    box-shadow:0px 2px 4px 0px rgba(0,0,0,0.8);
+    position: fixed;
+    z-index: 1000;
 }

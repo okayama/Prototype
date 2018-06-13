@@ -141,7 +141,7 @@ class PTListActions {
             $column_values = [];
             foreach ( $values as $key => $value ) {
                 $key = preg_replace( "/^{$model}_/", '', $key );
-                if ( $column_defs[ $key ]['type'] == 'blob' ) {
+                if ( $column_defs[ $key ]['type'] == 'blob' && $value ) {
                     // $value = ''; // base64_encode( $value );
                     $urlinfo = $app->db->model( 'urlinfo' )->get_by_key(
                         ['model' => $obj->_model, 'object_id' => $obj->id,

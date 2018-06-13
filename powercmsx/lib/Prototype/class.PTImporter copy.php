@@ -14,6 +14,7 @@ class PTImporter {
     private $allowed = ['csv', 'zip'];
 
     function import_objects ( $app ) {
+        // TODO Use FileMgr
         if (! $app->can_do( 'import_objects' ) ) {
             return $app->error( 'Permission denied.' );
         }
@@ -87,7 +88,7 @@ class PTImporter {
             $images = $app->images;
             $videos = $app->videos;
             $audios = $app->audios;
-            list( $insert, $update, $skip ) = [0, 0, 0];
+            list( $insert, $update, $skip, $errors ) = [0, 0, 0, 0];
             $log_info = [];
             foreach ( $import_file as $file ) {
                 $extension = pathinfo( $file, PATHINFO_EXTENSION );
@@ -115,6 +116,7 @@ class PTImporter {
                         if (! $i ) {
                             $columns = $data;
                         } else {
+                            $app->db->begin_work();
                             $values = [];
                             $id = null;
                             $cnt = 0;
@@ -231,7 +233,12 @@ class PTImporter {
                             $app->set_default( $obj );
                             // TODO Callback
                             $is_new = $obj->id ? true : false;
-                            $obj->save();
+                            $error = false;
+                            if (! $obj->save() ) {
+                                $app->db->rollback();
+                                $errors++;
+                                continue;
+                            }
                             if (! $is_new ) {
                                 $insert++;
                             } else {
@@ -242,11 +249,11 @@ class PTImporter {
                                         [ $app->translate( $table->label ),
                                           htmlspecialchars( $line ) ] );
                             $log_info[] = $is_new
-                                        ? $app->translate( "Create %s (%s / ID : %s).",
+                                        ? $app->translate( 'Create %s (%s / ID : %s).',
                                             [ $app->translate( $table->label ),
                                               $app->translate( $line ),
                                               $obj->id ] )
-                                        : $app->translate( "Update %s (%s / ID : %s).",
+                                        : $app->translate( 'Update %s (%s / ID : %s).',
                                             [ $app->translate( $table->label ),
                                               $app->translate( $line ),
                                               $obj->id ] );
@@ -271,7 +278,11 @@ class PTImporter {
                                         }
                                         PTUtil::remove_dir( dirname( $thumbnail ) );
                                     }
-                                    $metadata->save();
+                                    if (! $metadata->save() ) {
+                                        $app->db->rollback();
+                                        $errors++;
+                                        continue 2;
+                                    }
                                 }
                             }
                             if (! empty( $relations ) ) {
@@ -288,7 +299,6 @@ class PTImporter {
                                         $to_primary = $to_table->primary;
                                         $to_ids = [];
                                         if ( $to_obj != 'asset' ) {
-                                            // TODO Permission
                                             foreach ( $csv as $name ) {
                                                 $rel = $app->db->model( $to_obj )->get_by_key(
                                                     [ $to_primary => $name ] );
@@ -311,13 +321,20 @@ class PTImporter {
                                                                 $order = $app->get_order( $tag_obj );
                                                                 $tag_obj->order( $order );
                                                                 $tag_obj->save();
+                                                                if (! $tag_obj->save() ) {
+                                                                    $app->db->rollback();
+                                                                    $errors++;
+                                                                    continue 3;
+                                                                }
                                                                 $to_ids[] = (int) $tag_obj->id;
                                                                 $log_info[] =
-                                                                    $app->translate( "Create %s (%s / ID : %s).",
+                                                                    $app->translate( 'Create %s (%s / ID : %s).',
                                                                     [ $app->translate( 'Tag' ),
                                                                       $app->translate( $name ),
                                                                       $tag_obj->id ] );
                                                             }
+                                                        } else {
+                                                            $skip++;
                                                         }
                                                     }
                                                 }
@@ -356,6 +373,8 @@ class PTImporter {
                                                                 $_update = true;
                                                             }
                                                         }
+                                                    } else {
+                                                        $skip++;
                                                     }
                                                 } else {
                                                     if ( file_exists( $path ) ) {
@@ -367,10 +386,16 @@ class PTImporter {
                                                             $asset_data = file_get_contents( $path );
                                                             $asset_obj->file( $asset_data );
                                                             $asset_obj->label( basename( $path ) );
-                                                            $asset_obj->save();
+                                                            if (! $asset_obj->save() ) {
+                                                                $app->db->rollback();
+                                                                $errors++;
+                                                                continue 3;
+                                                            }
                                                             $to_ids[] = (int) $asset_obj->id;
                                                             $_update = true;
                                                             $is_new = true;
+                                                        } else {
+                                                            $skip++;
                                                         }
                                                     }
                                                 }
@@ -384,18 +409,22 @@ class PTImporter {
                                                     $this->update_asset(
                                                         $app, $asset_obj, $path, $orig_path, $image_info );
                                                     $app->set_default( $asset_obj );
-                                                    $asset_obj->save();
+                                                    if (! $asset_obj->save() ) {
+                                                        $app->db->rollback();
+                                                        $errors++;
+                                                        continue 3;
+                                                    }
                                                     $callback = ['name' => 'post_save',
                                                                  'table' => $to_table ];
                                                     $app->publish_obj( $asset_obj );
                                                     $app->post_save_asset( $callback, $app, $asset_obj );
                                                     $log_info[] =
                                                         $is_new
-                                                        ? $app->translate( "Create %s (%s / ID : %s).",
+                                                        ? $app->translate( 'Create %s (%s / ID : %s).',
                                                         [ $app->translate( 'Asset' ),
                                                           $asset_obj->label,
                                                           $asset_obj->id ] )
-                                                        : $app->translate( "Update %s (%s / ID : %s).",
+                                                        : $app->translate( 'Update %s (%s / ID : %s).',
                                                         [ $app->translate( 'Asset' ),
                                                           $asset_obj->label,
                                                           $asset_obj->id ] );
@@ -412,6 +441,7 @@ class PTImporter {
                                     }
                                 }
                             }
+                            $app->db->commit();
                             $app->publish_obj( $obj, $original );
                             if ( $table->revisable && $exists ) {
                                 PTUtil::pack_revision( $obj, $original, $update_rels );

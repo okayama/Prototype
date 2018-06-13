@@ -56,7 +56,7 @@
   </td>
   <td class="insert-asset-preview-wrapper">
     <mt:if name="class" eq="image">
-      <img src="<mt:assetthumbnail name="file" data_uri="1" type="default" square="1">" alt="<mt:trans phrase="Preview">" width="140" height="140" class="insert-asset-preview">
+      <img src="<mt:assetthumbnail name="file" data_uri="1" type="default" square="1">" alt="<mt:trans phrase="Preview">" width="100" height="100" class="insert-asset-preview">
     <mt:else>
       <i class="fa-3x fa <mt:if name="class" eq="pdf">fa-file-pdf-o<mt:elseif name="class" eq="video">fa-file-video-o<mt:elseif name="class" eq="audio">fa-file-audio-o<mt:else>fa-file-o</mt:unless></mt:if>" aria-hidden="true"></i>
       <span class="sr-only"><mt:trans phrase="$obj_class"></span>

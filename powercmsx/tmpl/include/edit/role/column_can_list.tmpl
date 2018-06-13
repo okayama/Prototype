@@ -35,6 +35,7 @@
   <mt:setvar name="_all_models" value="$name" function="push">
 </mt:unless>
 <mt:setvar name="__name__" value="$name">
+<mt:if name="__name__" ne="user">
 <div class="row form-group">
   <div class="col-lg-2">
     <label class="custom-control custom-checkbox">
@@ -138,8 +139,8 @@ $('.permissions-<mt:var name="name">').each(function(){
 </script>
   </div>
 </div>
+</mt:if>
 </mt:objectloop>
-</mt:loop>
 <script>
 var columns_permission_map = {};
 $('#edit-form-main').on('submit',function(){

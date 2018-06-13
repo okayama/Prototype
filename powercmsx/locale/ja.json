@@ -173,6 +173,7 @@
     "Component"          : "コンポーネント",
     "Version of Scheme"  : "スキーマバージョン",
     "Version of Database": "DBバージョン",
+    "Specified"          : "指定済み",
     "Unspecified"        : "指定なし",
     "Multiple"           : "複数",
     "Title"              : "タイトル",
