@@ -698,13 +698,17 @@ $(function () {
             </select>
           <mt:elseif name="edit" like="dialog">
             <mt:if name="type" eq="relation">
+            <mt:setvar name="has_thumbnail" value="">
+            <mt:ifhasthumbnail model="$rel_model">
+              <mt:setvar name="has_thumbnail" value="1">
+            </mt:ifhasthumbnail>
               <mt:setvarblock name="__rel_name__">object_<mt:var name="__col_name__"></mt:setvarblock>
               <ul id="<mt:var name="__col_name__">" class="relation-list">
                 <li <mt:if name="$__rel_name__">style="display:none" </mt:if>class="badge badge-default badge-relation" id="<mt:var name="__col_name__">-none">
                 <mt:trans phrase="(None selected)">
                 </li>
                 <li class="hidden badge badge-default badge-relation badge-draggable" id="<mt:var name="__col_name__">-tmpl">
-                <mt:if name="__rel_name__" eq="object_assets">
+                <mt:if name="has_thumbnail"">
                 <div class="assets-child-thumb"></div>
                 </mt:if>
                 <span><mt:trans phrase="Default"></span>
@@ -716,7 +720,7 @@ $(function () {
               <mt:setvarblock name="selected_ids"><mt:loop name="$__rel_name__" glue=","><mt:var name="__value__"></mt:loop></mt:setvarblock>
               <mt:loop name="$__rel_name__">
                 <li class="<mt:var name="__col_name__">-child badge badge-default badge-relation badge-draggable">
-                <mt:if name="__rel_name__" eq="object_assets">
+                <mt:if name="has_thumbnail">
                 <div class="assets-child-thumb" data-id="<mt:var name="__value__" escape>" style="background-image:url('<mt:var name="script_uri">?__mode=get_thumbnail&amp;square=1&amp;_model=<mt:var name="rel_model" escape>&amp;id=<mt:var name="__value__" escape>')"></div>
                 </mt:if>
                 <span>
@@ -1297,15 +1301,6 @@ $('.__save').click(function(){
   </mt:if>
 </mt:if>
 </form>
-
-<div id="modal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="modal" aria-hidden="true">
-  <div class="modal-dialog modal-lg">
-    <div class="modal-content" style="width:100% !important;overflow:auto !important;-webkit-overflow-scrolling:touch !important;">
-      <iframe id="modal-iframe" style="width:100%;height:100%;"></iframe>
-    </div>
-  </div>
-</div>
-
 <script>
 $('.badge-draggable').mouseenter(function() {
     $(this).css('cursor','move');

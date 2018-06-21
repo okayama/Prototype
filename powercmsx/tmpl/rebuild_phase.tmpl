@@ -127,11 +127,11 @@ setTimeout(function(){
 <input type="hidden" name="start_rebuild" value="1">
 <input type="hidden" name="request_id" value="<mt:var name="request_id" escape>">
 <div class="row form-group" style="padding:7px;">
-<mt:countgroupby model="urlmapping" group="'workspace_id','model'" workspace_id="$workspace_id" sort_by="order" sort_order="ascend" glue="," setvar="all_models"><mt:var name="count_group_by_model"></mt:countgroupby>
 <mt:unless name="workspace_id">
 <mt:setvar name="workspace_id" value="0">
 </mt:unless>
-<mt:countgroupby model="urlmapping" group="'workspace_id','model'" workspace_id="$workspace_id" sort_by="order" sort_order="ascend">
+<mt:countgroupby model="urlmapping" count="model" group="'workspace_id','model'" workspace_id="$workspace_id" glue="," setvar="all_models"><mt:var name="count_group_by_model"></mt:countgroupby>
+<mt:countgroupby model="urlmapping" count="model" group="'workspace_id','model'" workspace_id="$workspace_id">
 <mt:if name="__first__">
 <select name="next_models" class="form-control">
 <option value="<mt:var name="all_models">"><mt:trans phrase="All"></option>

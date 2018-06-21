@@ -294,7 +294,7 @@ class Prototype {
             'block'      => ['objectcols', 'objectloop', 'tables', 'nestableobjects',
                              'countgroupby', 'fieldloop', 'archivelist', 'grouploop'],
             'conditional'=> ['objectcontext', 'tablehascolumn', 'isadmin',
-                             'ifusercan', 'ifworkspacemodel'],
+                             'ifusercan', 'ifworkspacemodel', 'ifhasthumbnail'],
             'modifier'   => ['epoch2str', 'sec2hms', 'trans', 'convert_breaks', '_eval'] ];
         foreach ( $tags as $kind => $arr ) {
             $tag_prefix = $kind === 'modifier' ? 'filter_' : 'hdlr_';
@@ -994,6 +994,7 @@ class Prototype {
                 $name = $app->param( 'name' );
                 $password = $app->param( 'password' );
                 $user = $app->db->model( 'user' )->load( ['name' => $name, 'status' => 2] );
+                if ( empty( $user ) ) return;
                 if (! empty( $user ) ) {
                     $user = $user[0];
                     if ( $user->lockout ) {
@@ -1682,7 +1683,10 @@ class Prototype {
         if ( $tmpl_markup === 'mt' ) {
             return $ctx->build( $text );
         } else if ( $tmpl_markup === 'smarty' ) {
+            $text = preg_replace( '/<mt:{0,1}([^>]*?)>/is', '{$1}', $text );
+            $text = preg_replace( '/<\/mt:{0,1}([^>]*)?>/is', '{/$1}', $text );
             list ( $pfx, $ldelim, $rdelim ) = [ $ctx->prefix, $ctx->ldelim, $ctx->rdelim ];
+            $ctx->quoted_vars = [];
             $ctx->prefix = '';
             $ctx->ldelim = '{';
             $ctx->rdelim = '}';
@@ -1691,6 +1695,7 @@ class Prototype {
             $build = $ctx->build( $text );
             list( $ctx->prefix, $ctx->ldelim, $ctx->rdelim ) = [ $pfx, $ldelim, $rdelim ];
             $ctx->tag_block = [ $ctx->ldelim, $ctx->rdelim ];
+            $ctx->quoted_vars = [];
             return $build;
         }
     }
@@ -2471,6 +2476,8 @@ class Prototype {
             '&target=' . $app->param( 'target' ) : '';
         $options .= $app->param( 'get_col' ) ?
             '&get_col=' . $app->param( 'get_col' ) : '';
+        $options .= $app->param( 'workspace_select' ) ?
+            '&workspace_select=1' : '';
         $app->redirect( $app->admin_url .
             "?__mode=view&_type={$type}&_model={$model}&saved_props=1"
             . $app->workspace_param . $options );
@@ -2606,6 +2613,8 @@ class Prototype {
             return;
         }
         $meta = null;
+        $md = null;
+        $mime_type = '';
         if ( $_model ) {
             // __mode=get_thumbnail&square=1&_model=asset&id=n
             $meta_objs = $app->db->model( 'meta' )
@@ -2624,9 +2633,37 @@ class Prototype {
         } else {
             $meta = $app->db->model( 'meta' )->load( $id );
         }
+        $data = '';
         if (!$meta ) {
-            if ( $has_thumbnail ) echo json_encode( ['has_thumbnail' => false ] );
-            return;
+            if ( $has_thumbnail ) {
+                echo json_encode( ['has_thumbnail' => false ] );
+            } else {
+                if ( $md ) {
+                    $asset_dir = $this->document_root .
+                        $this->path . 'assets' . DS . 'img' . DS . 'file-icons';
+                    $asset_dir = str_replace( '\\', DS, $asset_dir );
+                    $ext = strtolower( $md['extension'] );
+                    $class = $md['class'];
+                    $icon = '';
+                    if ( $class == 'audio' || $class == 'video' || $class == 'pdf' ) {
+                        $icon = $asset_dir . DS . "{$class}.png";
+                    } else {
+                        $icon = file_exists( $asset_dir . DS . "{$ext}.png" )
+                              ? $asset_dir . DS . "{$ext}.png" : "";
+                        if (! $icon ) {
+                            $icon = file_exists( $asset_dir . DS . "{$ext}x.png" )
+                                  ? $asset_dir . DS . "{$ext}x.png" : "";
+                        }
+                    }
+                    if (! $icon ) {
+                        $icon = $asset_dir . DS . "file.png";
+                    }
+                    if ( file_exists( $icon ) ) {
+                        $data = file_get_contents( $icon );
+                    }
+                    $mime_type = 'image/png';
+                }
+            }
         }
         $model = $meta->model;
         if (!$app->can_do( $model, 'list' ) ) {
@@ -2635,12 +2672,11 @@ class Prototype {
         }
         $matadata = json_decode( $meta->text, true );
         $column = $app->param( 'square' ) ? 'metadata' : 'data';
-        $mime_type = $matadata['mime_type'];
+        $mime_type = $mime_type ? $mime_type : $matadata['mime_type'];
         $column = $app->param( 'square' ) ? 'metadata' : 'data';
-        $data = $meta->$column;
+        $data = $data ? $data : $meta->$column;
         if (! $data ) {
             $data = $app->param( 'square' ) ? $meta->data : $meta->metadata;
-            // if (! $data ) // TODO Dummy icon
         }
         if (! $data ) {
             if ( $has_thumbnail ) echo json_encode( ['has_thumbnail' => false ] );
@@ -4768,8 +4804,12 @@ class Prototype {
     }
 
     function save_filter_obj ( $cb, $pado, $obj ) {
-        if ( $obj->has_column( 'uuid' ) && ! $obj->uuid ) {
-            $obj->uuid( $this->generate_uuid() );
+        if ( $obj->has_column( 'uuid' ) && ! $obj->uuid && ! $obj->id ) {
+            $key = $obj->_model . '_' . 'uuid';
+            $values = $obj->get_values();
+            if ( ( isset( $values[ $key ] ) ) ) {
+                $obj->uuid( $this->generate_uuid() );
+            }
         }
         return true;
     }

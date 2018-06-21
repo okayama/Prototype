@@ -115,6 +115,15 @@ class PTImporter {
                     while( $data = fgetcsv( $fh ) ) {
                         if (! $i ) {
                             $columns = $data;
+                            foreach ( $columns as $column ) {
+                                if ( strpos( $column, $model ) === false ) {
+                                    $session->remove();
+                                    PTUtil::remove_dir( dirname( $session->value ) );
+                                    $error = $app->translate( 'The CSV format are Invalid. Please confirm the file.' );
+                                    return $app->error( $error );
+                                    exit();
+                                }
+                            }
                         } else {
                             $values = [];
                             $id = null;

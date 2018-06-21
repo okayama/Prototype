@@ -827,11 +827,16 @@ class PADOBaseModel {
             $args = array_change_key_case( $args, CASE_LOWER );
             if ( isset( $args['count'] ) && $args['count'] ||
                 isset( $args['count_group_by'] ) && $args['count_group_by'] ) {
+                if ( isset( $args['count'] ) && $args['count'] !== true ) {
+                    $count_col = $colprefix . $args['count'];
+                } else {
+                    $count_col = $id_column;
+                }
                 if ( $distinct ) {
-                    $count = "COUNT(DISTINCT {$id_column}) ";
+                    $count = "COUNT(DISTINCT {$count_col}) ";
                     $distinct = '';
                 } else {
-                    $count = "COUNT({$id_column}) ";
+                    $count = "COUNT({$count_col}) ";
                 }
                 $method = isset( $args['count'] ) ? 'count' : 'count_group_by';
             }

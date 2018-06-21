@@ -138,6 +138,7 @@
         "language": "languages",
         "barcolor": "color",
         "bartextcolor": "color",
+        "last_update": "hidden",
         "uuid": "text_short"
     }
 }

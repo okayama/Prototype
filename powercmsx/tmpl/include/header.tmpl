@@ -69,8 +69,9 @@ window.onload = function(){
       <a class="navbar-brand" href="<mt:var name="script_uri">"><mt:var name="appname" escape></a>
       <mt:if name="user_id">
       <div class="collapse navbar-collapse" id="navbars">
+        <mt:setvar name="selector_limit" value="15">
         <ul class="nav-pills navbar-nav mr-auto">
-            <mt:objectloop model="workspace" sort_by="order" can_access="1">
+            <mt:objectloop model="workspace" can_access="1" limit="$selector_limit" sort_by="last_update" direction="descend">
         <mt:if name="__first__">
           <li class="nav-item dropdown workspace-dd-wrapper active">
             <a aria-label="<mt:trans phrase="WorkSpaces">" class="nav-link dropdown-toggle " data-toggle="dropdown" href="#">
@@ -79,7 +80,12 @@ window.onload = function(){
             </a>
             <div class="dropdown-menu">
         </mt:if>
+            <mt:if name="__counter__" lt="$selector_limit">
             <a class="dropdown-item btn-sm <mt:if name="id" eq="$workspace_id">active</mt:if>" href="<mt:var name="script_uri">?<mt:if name="request_method" eq="GET"><mt:if name="request._type" eq="list"><mt:var name="query_string" escape></mt:if></mt:if>&amp;workspace_id=<mt:var name="id">"><mt:var name="name" escape></a>
+            <mt:else>
+            <a class="dropdown-item btn-sm" data-toggle="modal" data-target="#modal"
+                data-href="" href="<mt:var name="script_uri">?__mode=view&amp;_type=list&amp;_model=workspace&amp;dialog_view=1&amp;workspace_select=1"><mt:trans phrase="Select..."></a>
+            </mt:if>
         <mt:if name="__last__">
             </div>
           </li>
@@ -171,7 +177,7 @@ window.onload = function(){
             <span class="sr-only"><mt:trans phrase="View"></span>
           </a>
         <mt:ifusercan action="rebuild" workspace_id="0">
-        <mt:countgroupby model="urlmapping" group="'workspace_id','model'" workspace_id="0" limit="1">
+        <mt:countgroupby model="urlmapping" count="model" group="'workspace_id','model'" workspace_id="0" limit="1">
           <a href="<mt:var name="script_uri">?__mode=rebuild_phase&_type=start_rebuild" class="popup btn btn-sm btn-secondary my-2 my-sm-0" data-toggle="tooltip" data-placement="right" title="<mt:trans phrase="Rebuild">">
             <i class="fa fa-refresh" aria-hidden="true"></i>
             <span class="sr-only"><mt:trans phrase="Rebuild"></span>
@@ -303,7 +309,7 @@ window.onload = function(){
             <span class="sr-only"><mt:trans phrase="View"></span>
           </a>
         <mt:ifusercan action="rebuild" workspace_id="$workspace_id">
-        <mt:countgroupby model="urlmapping" group="'workspace_id','model'" workspace_id="$workspace_id" limit="1">
+        <mt:countgroupby model="urlmapping" count="model" group="'workspace_id','model'" workspace_id="$workspace_id" limit="1">
           <a href="<mt:var name="script_uri">?__mode=rebuild_phase&_type=start_rebuild&amp;workspace_id=<mt:var name="workspace_id">" class="popup btn btn-sm btn-secondary my-2 my-sm-0" data-toggle="tooltip" data-placement="bottom" title="<mt:trans phrase="Rebuild">">
             <i class="fa fa-refresh" aria-hidden="true"></i>
             <span class="sr-only"><mt:trans phrase="Rebuild"></span>

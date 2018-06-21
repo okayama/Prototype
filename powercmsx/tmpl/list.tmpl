@@ -14,9 +14,12 @@
 &amp;select_system_filters=<mt:var name="request.select_system_filters" escape>
 &amp;_system_filters_option=<mt:var name="request._system_filters_option" escape>
 &amp;_filter=1
+&amp;workspace_select=<mt:var name="request.workspace_select" escape>
 <mt:if name="request._fix_filter">&amp;_fix_filter=1</mt:if>
 </mt:setvarblock>
 </mt:if>
+<mt:var name="selector_cond" value="">
+<mt:if name="request.workspace_select"><mt:setvarblock name="selector_cond">&amp;workspace_select=1</mt:setvarblock></mt:if>
 <mt:if name="request.insert_editor">
 <mt:setvarblock name="insert_cond">
 &amp;insert_editor=1
@@ -77,6 +80,9 @@ $(".query-box").keypress(function(e){
 </mt:setvarblock>
 <mt:setvarblock name="search_box">
   <input class="query-box form-control mb-2 mr-sm-2 mb-sm-0 form-control-sm" name="query" type="text" value="<mt:var name="query" escape>" placeholder="<mt:trans phrase="Keyword">">
+  <mt:if name="request.workspace_select">
+    <input type="hidden" name="workspace_select" value="1">
+  </mt:if>
   <button class="search-btn btn btn-secondary search-button btn-sm" type="submit"><i class="fa fa-search" aria-hidden="true"></i><span class="sr-only"><mt:trans phrase="Search"></span></button>
   <button class="hidden btn btn-secondary alt-search-button btn-sm" type="submit"><i class="fa fa-search" aria-hidden="true"></i><span class="sr-only"><mt:trans phrase="Search"></span></button>
 </mt:setvarblock>
@@ -211,13 +217,13 @@ $('#dialog-cancel-btn').click(function(){
 <nav aria-label="<mt:trans phrase="Page navigation">" class="pull-right">
   <ul class="pagination pagination-sm">
     <li class="page-item <mt:unless name="has_prev">disabled</mt:unless>">
-      <a class="page-link" href="<mt:if name="has_prev"><mt:var name="this_url">&amp;offset=<mt:var name="prev_offset"><mt:var name="sort_cond"><mt:var name="query_cond"><mt:var name="dialog_param"><mt:var name="filter_cond" strip_linefeeds="1"><mt:var name="selected_ids_cond" strip_linefeeds="1"><mt:if name="workspace_id">&amp;workspace_id=<mt:var name="workspace_id"></mt:if><mt:var name="filter_add_params"><mt:else>#</mt:if>" aria-label="<mt:trans phrase="Previous">">
+      <a class="page-link" href="<mt:if name="has_prev"><mt:var name="this_url">&amp;offset=<mt:var name="prev_offset"><mt:var name="sort_cond"><mt:var name="query_cond"><mt:var name="dialog_param"><mt:var name="filter_cond" strip_linefeeds="1"><mt:var name="selected_ids_cond" strip_linefeeds="1"><mt:if name="workspace_id">&amp;workspace_id=<mt:var name="workspace_id"></mt:if><mt:var name="filter_add_params"><mt:var name="selector_cond"><mt:else>#</mt:if>" aria-label="<mt:trans phrase="Previous">">
         <span aria-hidden="true">&laquo;</span>
         <span class="sr-only"><mt:trans phrase="Previous"></span>
       </a>
     </li>
     <li class="page-item <mt:unless name="next_offset">disabled</mt:unless>">
-      <a class="page-link" href="<mt:if name="next_offset"><mt:var name="this_url">&amp;offset=<mt:var name="next_offset"><mt:var name="sort_cond"><mt:var name="query_cond"><mt:var name="dialog_param"><mt:var name="filter_cond" strip_linefeeds="1"><mt:var name="selected_ids_cond" strip_linefeeds="1"><mt:if name="workspace_id">&amp;workspace_id=<mt:var name="workspace_id"></mt:if><mt:var name="filter_add_params"><mt:else>#</mt:if>" aria-label="<mt:trans phrase="Next">">
+      <a class="page-link" href="<mt:if name="next_offset"><mt:var name="this_url">&amp;offset=<mt:var name="next_offset"><mt:var name="sort_cond"><mt:var name="query_cond"><mt:var name="dialog_param"><mt:var name="filter_cond" strip_linefeeds="1"><mt:var name="selected_ids_cond" strip_linefeeds="1"><mt:if name="workspace_id">&amp;workspace_id=<mt:var name="workspace_id"></mt:if><mt:var name="filter_add_params"><mt:var name="selector_cond"><mt:else>#</mt:if>" aria-label="<mt:trans phrase="Next">">
         <span aria-hidden="true">&raquo;</span>
         <span class="sr-only"><mt:trans phrase="Next"></span>
       </a>
@@ -240,6 +246,7 @@ $('#dialog-cancel-btn').click(function(){
 
 <mt:setvarblock name="table_header">
 <tr>
+<mt:unless name="request.workspace_select">
 <th class="id">
 <mt:unless name="_single_select">
 <label class="custom-control custom-checkbox">
@@ -249,6 +256,7 @@ $('#dialog-cancel-btn').click(function(){
 </label>
 </mt:unless>
 </th>
+</mt:unless>
 <mt:loop name="list_cols">
 <mt:ifinarray value="$_name" array="$show_cols">
 <th class="<mt:if name="_name" eq="id">id </mt:if><mt:if name="_list" eq="primary"> primary <mt:elseif name="_list" like="num"> num </mt:if><mt:if name="_list" ne="primary"> not-primary</mt:if>">
@@ -265,8 +273,8 @@ $('#dialog-cancel-btn').click(function(){
       </mt:if>
     </mt:if>
   <mt:unless name="request.revision_select">
-    <a aria-label="<mt:trans phrase="Sort by %s in %s" params="'$_label','$order_asc'" escape><mt:if name="class_asc">(<mt:trans phrase="Selected">)</mt:if>" class="<mt:if name="class_asc">current-cnd</mt:if>" href="<mt:var name="this_url">&amp;sort=<mt:var name="_name">&amp;direction=asc<mt:var name="query_cond"><mt:var name="workspace_param"><mt:var name="dialog_param"><mt:var name="filter_cond" strip_linefeeds="1"><mt:var name="insert_cond" strip_linefeeds="1"><mt:var name="selected_ids_cond" strip_linefeeds="1"><mt:if name="workspace_id">&amp;workspace_id=<mt:var name="workspace_id"></mt:if><mt:var name="filter_add_params">">&#9650;</a>
-    <a aria-label="<mt:trans phrase="Sort by %s in %s" params="'$_label','$order_desc'" escape><mt:if name="class_asc">(<mt:trans phrase="Selected">)</mt:if>" class="<mt:if name="class_desc">current-cnd</mt:if>" href="<mt:var name="this_url">&amp;sort=<mt:var name="_name">&amp;direction=desc<mt:var name="query_cond"><mt:var name="workspace_param"><mt:var name="dialog_param"><mt:var name="filter_cond" strip_linefeeds="1"><mt:var name="insert_cond" strip_linefeeds="1"><mt:var name="selected_ids_cond" strip_linefeeds="1"><mt:if name="workspace_id">&amp;workspace_id=<mt:var name="workspace_id"></mt:if><mt:var name="filter_add_params">">&#9660;</a></span>
+    <a aria-label="<mt:trans phrase="Sort by %s in %s" params="'$_label','$order_asc'" escape><mt:if name="class_asc">(<mt:trans phrase="Selected">)</mt:if>" class="<mt:if name="class_asc">current-cnd</mt:if>" href="<mt:var name="this_url">&amp;sort=<mt:var name="_name">&amp;direction=asc<mt:var name="query_cond"><mt:var name="workspace_param"><mt:var name="dialog_param"><mt:var name="filter_cond" strip_linefeeds="1"><mt:var name="insert_cond" strip_linefeeds="1"><mt:var name="selected_ids_cond" strip_linefeeds="1"><mt:if name="workspace_id">&amp;workspace_id=<mt:var name="workspace_id"></mt:if><mt:var name="filter_add_params"><mt:var name="selector_cond">">&#9650;</a>
+    <a aria-label="<mt:trans phrase="Sort by %s in %s" params="'$_label','$order_desc'" escape><mt:if name="class_asc">(<mt:trans phrase="Selected">)</mt:if>" class="<mt:if name="class_desc">current-cnd</mt:if>" href="<mt:var name="this_url">&amp;sort=<mt:var name="_name">&amp;direction=desc<mt:var name="query_cond"><mt:var name="workspace_param"><mt:var name="dialog_param"><mt:var name="filter_cond" strip_linefeeds="1"><mt:var name="insert_cond" strip_linefeeds="1"><mt:var name="selected_ids_cond" strip_linefeeds="1"><mt:if name="workspace_id">&amp;workspace_id=<mt:var name="workspace_id"></mt:if><mt:var name="filter_add_params"><mt:var name="selector_cond">">&#9660;</a></span>
   </mt:unless>
   </mt:if>
 </th>
@@ -310,6 +318,7 @@ $('#dialog-cancel-btn').click(function(){
 <mt:setvar name="column_vars" value="">
 <mt:loop name="list_cols">
 <mt:if name="__first__">
+<mt:unless name="request.workspace_select">
 <td>
   <mt:unless name="_single_select">
     <label class="custom-control custom-checkbox">
@@ -325,6 +334,7 @@ $('#dialog-cancel-btn').click(function(){
     </label>
   </mt:unless>
 </td>
+</mt:unless>
 </mt:if>
 <mt:ifinarray value="$_name" array="$show_cols">
 <td <mt:if name="_list" eq="primary"><mt:if name="_icon">style="line-height:1.6em;"</mt:if></mt:if> class="<mt:if name="_name" eq="id">id </mt:if><mt:if name="_list" eq="number"><mt:unless name="sort_order"><mt:if name="_name" ne="status">num</mt:if></mt:unless></mt:if> list-col<mt:if name="_list" eq="primary">-primary primary<mt:else> not-primary</mt:if>">
@@ -386,13 +396,24 @@ $('#dialog-cancel-btn').click(function(){
               <span class="sr-only"><mt:trans phrase="$_icon_class"></span>
             </mt:if>
           </mt:if>
-          <a <mt:if name="request.dialog_view">target="_blank"</mt:if> href="<mt:var name="script_uri">?__mode=view&amp;_type=edit&amp;_model=<mt:var name="this_model" escape>&amp;id=<mt:var name="id" escape><mt:if name="workspace_id">&amp;workspace_id=<mt:var name="workspace_id"></mt:if><mt:if name="model" eq="workspace">&amp;workspace_id=<mt:var name="id" escape></mt:if><mt:if name="request.revision_select">&amp;edit_revision=1</mt:if>"></mt:ifusercan>
+          <a <mt:unless name="request.workspace_select"><mt:if name="request.dialog_view">target="_blank"</mt:if><mt:else>target="_parent"</mt:unless> href="<mt:var name="script_uri">?__mode=<mt:unless name="request.workspace_select">view&amp;_type=edit&amp;_model=<mt:var name="this_model" escape>&amp;id=<mt:var name="id" escape><mt:if name="workspace_id">&amp;workspace_id=<mt:var name="workspace_id"></mt:if><mt:if name="model" eq="workspace">&amp;workspace_id=<mt:var name="id" escape></mt:if><mt:if name="request.revision_select">&amp;edit_revision=1</mt:if><mt:else>dashboard&amp;workspace_id=<mt:var name="id" escape></mt:unless>">
+          <mt:else>
+          <mt:if name="request.workspace_select">
+          <a target="_parent" href="<mt:var name="script_uri">?__mode=dashboard&amp;workspace_id=<mt:var name="id" escape>">
+          </mt:if>
+          </mt:ifusercan>
           <mt:unless name="$_name">
             <mt:trans phrase="null">
           <mt:else>
             <mt:var name="$_name" escape>
           </mt:unless>
-        <mt:ifusercan action="edit" model="$this_model" id="$id" workspace_id="$workspace_id"></a></mt:ifusercan>
+        <mt:ifusercan action="edit" model="$this_model" id="$id" workspace_id="$workspace_id">
+          </a>
+        <mt:else>
+          <mt:if name="request.workspace_select">
+          </a>
+          </mt:if>
+        </mt:ifusercan>
         <mt:if name="_permalink">
           &nbsp; 
           <a href="<mt:var name="_permalink">" target="_blank">
@@ -414,7 +435,7 @@ $('#dialog-cancel-btn').click(function(){
       <mt:elseif name="_list" like=":">
         <mt:if name="_name" eq="workspace_id">
           <mt:unless name="workspace_scope">
-            <a href="<mt:var name="this_url"><mt:var name="sort_cond"><mt:var name="query_cond"><mt:if name="workspace_id">&amp;workspace_id=<mt:var name="workspace_id"></mt:if><mt:var name="dialog_param">"><mt:var name="workspace_name" escape></a>
+            <a href="<mt:var name="this_url"><mt:var name="sort_cond"><mt:var name="query_cond"><mt:if name="workspace_id">&amp;workspace_id=<mt:var name="workspace_id"></mt:if><mt:var name="dialog_param"><mt:var name="selector_cond">"><mt:var name="workspace_name" escape></a>
           </mt:unless>
         <mt:else>
           <mt:var name="$_name" escape>
@@ -480,10 +501,12 @@ $('#popover-<mt:var name="_name">-<mt:var name="id">').popover({
 </mt:loop>
 <mt:var name="list_nav">
 
+<mt:unless name="request.workspace_select">
 <mt:if name="request.dialog_view">
   <button id="dialog-cancel-btn" class="btn btn-secondary" type="submit"><mt:trans phrase="Cancel"></button>
   <button id="dialog-selector-btn<mt:if name="request.insert_editor">-editor_insert</mt:if>" class="btn btn-primary" type="submit"><mt:trans phrase="Select"></button>
 </mt:if>
+</mt:unless>
 </form>
 
 <script>
@@ -777,11 +800,9 @@ $('.selector').click(function(){
   </mt:unless>
 </mt:if>
 });
-<mt:if name="list_actions">
 $('.cb-all-selected').change(function(){
     $('.cb-all-selected').prop('checked', $(this).prop('checked'));
 });
-</mt:if>
 $('.__delete').click(function(){
     if ( in_search ) {
         return true;

@@ -30,6 +30,9 @@
             <input type="hidden" name="_filter" value="<mt:var name="request._filter" escape>">
           </mt:if>
           </mt:if>
+          <mt:if name="request.workspace_select">
+            <input type="hidden" name="workspace_select" value="1">
+          </mt:if>
           <mt:if name="request.target">
             <input type="hidden" name="target" value="<mt:var name="request.target" escape>">
             <input type="hidden" name="get_col" value="<mt:var name="request.get_col" escape>">

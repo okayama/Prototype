@@ -140,7 +140,7 @@ class PTTags {
                 }
             }
             $maps = $app->db->model( 'urlmapping' )->count( ['model' => $table->name ] );
-            if ( $maps && count( $maps ) ) {
+            if ( $maps ) {
                 $this->register_tag( $ctx,
                     $table->name . 'permalink',
                         'function', 'hdlr_get_objectcol', $tags, $r_tags );
@@ -229,6 +229,8 @@ class PTTags {
         if (! $counter ) {
             $model = $args['model'];
             $group = $args['group'];
+            $count = isset( $args['count'] ) ? $args['count']
+                   : $group[ count( $group ) - 1 ];
             unset( $args['model'], $args['group'] );
             $obj = $app->db->model( $model )->new();
             $terms = [];
@@ -254,6 +256,7 @@ class PTTags {
             if ( isset( $args['limit'] ) ) {
                 $params['limit'] = (int) $args['limit'];
             }
+            $params['count'] = $count;
             $group = $app->db->model( $model )->count_group_by( $terms, $params );
             if ( empty( $group ) ) {
                 $repeat = false;
@@ -376,6 +379,30 @@ class PTTags {
         return $obj->has_column( 'workspace_id' );
     }
 
+    function hdlr_ifhasthumbnail ( $args, $content, $ctx, $repeat, $counter ) {
+        $app = $ctx->app;
+        $model = $args['model'];
+        if ( $rel_model == 'asset' ) return true;
+        $scheme = $app->get_scheme_from_db( $model );
+        $props = $scheme['edit_properties'];
+        foreach ( $props as $prop => $type ) {
+            if ( $type == 'file' ) {
+                $options = isset( $scheme['options'] ) ? $scheme['options'] : [];
+                if ( !empty( $options ) ) {
+                    if ( isset( $options[ $prop ] )
+                        && $options[ $prop ] == 'image' ) {
+                        return true;
+                    } else {
+                        return true;
+                    }
+                } else {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
     function hdlr_iftagged ( $args, $content, $ctx, $repeat, $counter ) {
         $app = $ctx->app;
         $current_context = $ctx->stash( 'current_context' );
@@ -468,14 +495,16 @@ class PTTags {
     }
 
     function hdlr_setrolecolumns ( $args, $ctx ) {
-        $data = $args['data'];
-        $data = json_decode( $data, true );
-        foreach ( $data as $model => $cols ) {
-            if ( $cols == 'all' ) {
-                $ctx->local_vars["columns_all_{$model}"] = 1;
-            } else {
-                foreach ( $cols as $col ) {
-                    $ctx->local_vars["columns_{$model}_{$col}"] = 1;
+        $data = isset( $args['data'] ) ? $args['data'] : '';
+        if ( $data ) {
+            $data = json_decode( $data, true );
+            foreach ( $data as $model => $cols ) {
+                if ( $cols == 'all' ) {
+                    $ctx->local_vars["columns_all_{$model}"] = 1;
+                } else {
+                    foreach ( $cols as $col ) {
+                        $ctx->local_vars["columns_{$model}_{$col}"] = 1;
+                    }
                 }
             }
         }
