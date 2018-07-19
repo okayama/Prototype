@@ -124,7 +124,7 @@ class Prototype {
                                 'pre_delete'   => [], 'post_delete' => [],
                                 'save_filter'  => [], 'delete_filter'=> [],
                                 'pre_listing'  => [], 'template_source' => [],
-                                'template_output'];
+                                'template_output' => [] ];
 
     public    $permissions   = ['can_rebuild', 'manage_plugins', 'import_objects'];
     public    $disp_option;
@@ -292,7 +292,8 @@ class Prototype {
                              'archivetitle', 'archivedate', 'archivelink', 'property',
                              'assetthumbnailurl', 'setrolecolumns'],
             'block'      => ['objectcols', 'objectloop', 'tables', 'nestableobjects',
-                             'countgroupby', 'fieldloop', 'archivelist', 'grouploop'],
+                             'countgroupby', 'fieldloop', 'archivelist', 'grouploop',
+                             'workspacecontext' ],
             'conditional'=> ['objectcontext', 'tablehascolumn', 'isadmin',
                              'ifusercan', 'ifworkspacemodel', 'ifhasthumbnail'],
             'modifier'   => ['epoch2str', 'sec2hms', 'trans', 'convert_breaks', '_eval'] ];
@@ -379,7 +380,8 @@ class Prototype {
                 $key = $cfg->key;
                 $configs[ $key ] = $cfg;
                 if ( $colprefix ) $key = preg_replace( "/^$colprefix/", '', $key );
-                $ctx->vars[ $key ] = $cfg->value ? $cfg->value : $cfg->data;
+                $ctx->vars[ $key ] = ( $cfg->value !== '' && !$cfg->data )
+                                   ? $cfg->value : $cfg->data;
                 $this->$key = $cfg->value;
                 if ( $key === 'site_url' ) {
                     $this->site_url = $cfg->value;
@@ -817,8 +819,10 @@ class Prototype {
             }
         }
         $all_registries = [];
-        foreach ( $registries as $reg ) {
-            $all_registries[ $reg['name'] ] = $reg;
+        if ( is_array( $registries ) ) {
+            foreach ( $registries as $reg ) {
+                $all_registries[ $reg['name'] ] = $reg;
+            }
         }
         return $all_registries;
     }
@@ -1546,6 +1550,7 @@ class Prototype {
                 $display_options = explode( ',', $user_option->option );
                 $ctx->vars['_field_sort_order'] = $user_option->data;
             }
+            $ctx->vars['model_out_path'] = $table->out_path;
             $ctx->vars['display_options'] = $display_options;
             $ctx->vars['_auditing'] = $table->auditing;
             $ctx->vars['_revisable'] = $table->revisable;
@@ -1723,8 +1728,10 @@ class Prototype {
         $cache_id = null;
         $callback = ['name' => 'template_source', 'template' => $tmpl ];
         $basename = pathinfo( $tmpl, PATHINFO_FILENAME );
+        $app->init_callbacks( $basename, 'template_source' );
         $app->run_callbacks( $callback, $basename, $param, $src );
         $out = $app->ctx->build_page( $tmpl, $param, $cache_id, false, $src );
+        $app->init_callbacks( $basename, 'template_output' );
         $callback = ['name' => 'template_output', 'template' => $tmpl ];
         $app->run_callbacks( $callback, $basename, $param, $src, $out );
         if (!$output ) return $out;
