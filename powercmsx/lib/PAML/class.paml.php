@@ -122,10 +122,11 @@ class PAML {
                         'assignvars', 'setvartemplate', 'nocache', 'isinchild'],
       'conditional' => ['else', 'elseif', 'if', 'unless', 'ifgetvar', 'elseifgetvar',
                         'ifinarray', 'isarray'],
-      'modifier'    => ['escape' ,'setvar', 'format_ts', 'zero_pad', 'trim_to', 'eval',
+      'modifier'    => ['escape' ,'setvar', 'format_ts', 'zero_pad', 'trim_to', 'eval', 'add_slash',
                         'strip_linefeeds', 'sprintf', 'encode_js', 'truncate', 'wrap', 'encode_url',
                         'trim_space', 'regex_replace', 'setvartemplate', 'replace', 'translate',
-                        'to_json', 'from_json', 'nocache', 'split', 'join', 'format_size', 'encode_xml'],
+                        'count_chars', 'to_json', 'from_json', 'nocache', 'split', 'join',
+                        'format_size', 'encode_xml', 'instr', 'mb_instr'],
       'function'    => ['getvar', 'trans', 'setvar', 'property', 'ldelim', 'include', 'math',
                         'rdelim', 'fetch', 'var', 'date', 'assign', 'count', 'vardump'],
       'include'     => ['include', 'includeblock', 'extends'] ];
@@ -1214,7 +1215,7 @@ class PAML {
     }
 
     function modifier_join ( $arr, $arg, $ctx ) {
-        return is_array( $arr )? join( $arg, $arr ) : $arr;
+        return is_array( $arr )? implode( $arg, $arr ) : $arr;
     }
 
     function modifier_format_ts ( $date, $format ) {
@@ -1246,6 +1247,11 @@ class PAML {
         return sprintf( $arg, $str );
     }
 
+    function modifier_add_slash ( $str, $arg ) {
+        if (! preg_match( "/\/$/", $str ) ) $str .= '/';
+        return $str;
+    }
+
     function modifier_setvartemplate ( $str, $arg, $ctx ) {
         $ctx->vars[ $arg ] = ['__eval__' => $str ];
     }
@@ -1259,6 +1265,20 @@ class PAML {
 
     function modifier_trim_to ( $str, $arg, $ctx ) {
         return $ctx->modifier_truncate( $str, $arg, $ctx );
+    }
+
+    function modifier_count_chars ( $str, $arg, $ctx ) {
+        return $arg == 1 ? mb_strlen( $str ) : strlen( $str );
+    }
+
+    function modifier_instr ( $str, $arg, $ctx ) {
+        $instr = strpos( $str, $arg );
+        if ( $instr !== false ) return $instr + 1;
+    }
+
+    function modifier_mb_instr ( $str, $arg, $ctx ) {
+        $instr = mb_strpos( $str, $arg );
+        if ( $instr !== false ) return $instr + 1;
     }
 
     function modifier_truncate ( $str, $len, $ctx ) {

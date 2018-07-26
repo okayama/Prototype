@@ -45,6 +45,7 @@ $('#alert-saved').focus();
   <span class="sr-only"><mt:trans phrase="Required"></span>
 </mt:setvarblock>
 
+<script src="<mt:var name="prototype_path">assets/js/prototype/inputHTML.js?ts=<mt:date>"></script>
 <form action="<mt:var name="script_uri">" method="POST" id="edit-form-main">
 <mt:setvarblock name="include_path">include/edit/<mt:var name="model">/form_header.tmpl</mt:setvarblock>
 <mt:include file="$include_path">
@@ -693,7 +694,7 @@ $(function () {
                 <mt:trans phrase="Unspecified">
               </option>
             </mt:if>
-              <option <mt:if name="__col_value__" eq="$id">selected</mt:if> value="<mt:var name="id">"><mt:var name="$rel_col" escape></option>
+              <option <mt:if name="__col_value__" eq="$id">selected</mt:if> value="<mt:var name="id">"><mt:var name="$rel_col" trans="$translate" escape></option>
             </mt:objectloop>
             </select>
           <mt:elseif name="edit" like="dialog">
@@ -825,11 +826,15 @@ $(function () {
   <div class="col-lg-10">
   <mt:if name="name" eq="extra_path">
     <mt:unless name="request.id">
-      <mt:unless name="workspace_scope">
+      <mt:unless name="request.workspace_id">
         <mt:getoption key="extra_path" escape setvar="value">
       <mt:else>
         <mt:var name="workspace_extra_path" escape setvar="value">
       </mt:unless>
+      <mt:if name="model_out_path">
+        <mt:var name="model_out_path" escape add_slash setvar="model_out_path">
+        <mt:setvar name="value" value="$model_out_path" append="1">
+      </mt:if>
     </mt:unless>
   </mt:if>
     <mt:if name="__col_name__" eq="uuid">
@@ -1070,6 +1075,7 @@ $('#_field_chooser').click(function(){
   </div>
   <div class="col-lg-8">
     <mt:var name="object_modified_on">
+<mt:unless name="request._duplicate">
 <mt:if name="_revision_count">
 &nbsp;
   <i class="fa fa-code-fork" aria-hidden="true"></i> <mt:trans phrase="%s revision(s)" params="$_revision_count">
@@ -1081,6 +1087,7 @@ $('#_field_chooser').click(function(){
     <span class="sr-only"><mt:trans phrase="Manage"></span>
   </a>
 </mt:if>
+</mt:unless>
   </div>
 </mt:setvarblock>
 
@@ -1137,7 +1144,9 @@ $('#_field_chooser').click(function(){
 
 <div class="row form-group edit-action-bar">
   <div class="col-lg-12">
+  <mt:if name="menu_type" ne="3">
     <button type="submit" id="__save" class="__save btn btn-primary"><mt:trans phrase="Save"></button>
+  </mt:if>
   <mt:if name="request.id">
     <mt:unless name="request._duplicate">
       <mt:unless name="model" eq="user">
@@ -1169,10 +1178,12 @@ $('#_field_chooser').click(function(){
     <button type="submit" id="__export" class="btn btn-danger btn-sm"><mt:trans phrase="Export"></button>
   </mt:if>
 </mt:if>
+<mt:if name="menu_type" ne="3">
 <mt:if name="model" ne="table">
   <mt:if name="model" ne="user">
     <button type="submit" id="__duplicate" class="__save btn btn-secondary btn-sm"><mt:trans phrase="Save & Duplicate"></button>
   </mt:if>
+</mt:if>
 </mt:if>
   </div>
 </div>
@@ -1417,37 +1428,36 @@ $('.' + 'field-<mt:var name="field__basename" escape>-option' ).hide();
 
 <script>
 (function(){
-	$(document).on('mouseenter mouseleave mousemove','.assets-child-thumb',function(e){
-		var $preview = $('#asset-preview-popup');
-		var $this = $(this);
-		if(e.type == 'mouseenter'){
-			var thumb = '<mt:var name="script_uri">?__mode=get_thumbnail&_model=asset&id=';
-			if(!$preview.length){
-				$preview = $('<div>').attr('id','asset-preview-popup').appendTo('body');
-			}
-			$preview.css('background-image','url(' + thumb + $this.data('id') +')').show();
-		}else
-		if(e.type == 'mouseleave'){
-			$preview.hide();
-		}else
-		if(e.type == 'mousemove'){
-			var size   = 200;
-			var offset = 10;
-			var pos_x = e.clientX + offset;
-			var pos_y = e.clientY + offset;
-			if((pos_x + size) > $(window).width()){
-				pos_x = e.clientX - (size + offset);
-			}
-			if((pos_y + size) > $(window).height()){
-				pos_y = e.clientY - (size + offset);
-			}
-			
-			$preview.css({
-				left : pos_x + 'px',
-				top  : pos_y + 'px'
-			});
-		}
-	});
+    $(document).on('mouseenter mouseleave mousemove','.assets-child-thumb',function(e){
+        var $preview = $('#asset-preview-popup');
+        var $this = $(this);
+        if(e.type == 'mouseenter'){
+            var thumb = '<mt:var name="script_uri">?__mode=get_thumbnail&_model=asset&id=';
+            if(!$preview.length){
+                $preview = $('<div>').attr('id','asset-preview-popup').appendTo('body');
+            }
+            $preview.css('background-image','url(' + thumb + $this.data('id') +')').show();
+        }else
+        if(e.type == 'mouseleave'){
+            $preview.hide();
+        }else
+        if(e.type == 'mousemove'){
+            var size   = 200;
+            var offset = 10;
+            var pos_x = e.clientX + offset;
+            var pos_y = e.clientY + offset;
+            if((pos_x + size) > $(window).width()){
+                pos_x = e.clientX - (size + offset);
+            }
+            if((pos_y + size) > $(window).height()){
+                pos_y = e.clientY - (size + offset);
+            }
+            $preview.css({
+                left : pos_x + 'px',
+                top  : pos_y + 'px'
+            });
+        }
+    });
 })();
 </script>
 <mt:setvarblock name="include_path">include/edit/<mt:var name="model">/footer.tmpl</mt:setvarblock>

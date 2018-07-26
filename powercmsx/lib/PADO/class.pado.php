@@ -657,6 +657,11 @@ class PADOBaseModel {
     }
 
     public function model ( $_model = null ) {
+        if ( $this->has_column( 'model' ) ) {
+            $col = $this->_model . '_model';
+            $this->$col( $_model );
+            return;
+        }
         static $model;
         if ( $_model ) $model = $_model;
         return $model;
@@ -2329,7 +2334,7 @@ class PADOMySQL extends PADOBaseModel {
                 }
             }
             $values = array_values( $arr );
-            if (! $id ) $id = "''";
+            if (! $id ) $id = "null";
             $stmt = "({$id},";
             foreach ( $values as $v ) {
                 $stmt .= '?,';

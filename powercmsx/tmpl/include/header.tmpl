@@ -71,7 +71,13 @@ window.onload = function(){
       <div class="collapse navbar-collapse" id="navbars">
         <mt:setvar name="selector_limit" value="15">
         <ul class="nav-pills navbar-nav mr-auto">
-            <mt:objectloop model="workspace" can_access="1" limit="$selector_limit" sort_by="last_update" direction="descend">
+          <mt:setvar name="ws_sort_by" value="last_update">
+          <mt:setvar name="ws_sort_order" value="descend">
+          <mt:if name="user_space_order" eq="Default">
+            <mt:setvar name="ws_sort_by" value="order">
+            <mt:setvar name="ws_sort_order" value="ascend">
+          </mt:if>
+            <mt:objectloop model="workspace" can_access="1" limit="$selector_limit" sort_by="$ws_sort_by" direction="$ws_sort_order">
         <mt:if name="__first__">
           <li class="nav-item dropdown workspace-dd-wrapper active">
             <a aria-label="<mt:trans phrase="WorkSpaces">" class="nav-link dropdown-toggle " data-toggle="dropdown" href="#">
@@ -401,12 +407,12 @@ $('.dropdown-sub').each(function(){
             </mt:if>
           <a class="btn btn-primary btn-sm create-new-link" href="<mt:var name="script_uri">?__mode=view&amp;_type=edit&amp;_model=<mt:var name="model" escape><mt:var name="workspace_param">">
             <i class="hidden fa create-new-button-icon" data-toggle="tooltip" data-placement="right" title="<mt:trans phrase="New %s" params="$label">" aria-label="<mt:trans phrase="New %s" params="$label">"></i>
-            <span class="create-new-button"><mt:trans phrase="New %s" params="$label"></span>
+            <span class="shrink-button"><mt:trans phrase="New %s" params="$label"></span>
           </a>
             <mt:if name="model" eq="role">
           <a class="btn btn-primary btn-sm create-new-link" href="<mt:var name="script_uri">?__mode=view&amp;_type=edit&amp;_model=<mt:var name="model" escape>&amp;workspace_role=1">
             <i class="hidden fa create-new-button-icon" data-toggle="tooltip" data-placement="right" title="<mt:trans phrase="New WorkSpace's Role">" aria-label="<mt:trans phrase="New WorkSpace's Role">"></i>
-            <span class="create-new-button"><mt:trans phrase="New WorkSpace's Role"></span>
+            <span class="shrink-button"><mt:trans phrase="New WorkSpace's Role"></span>
           </a>
           <mt:var name="orig_label" setvar="label">
             </mt:if>
@@ -421,14 +427,17 @@ $('.dropdown-sub').each(function(){
             <mt:unless name="model" eq="role">
           <a class="btn btn-primary btn-sm create-new-link" href="<mt:var name="script_uri">?__mode=view&amp;_type=edit&amp;_model=<mt:var name="model" escape><mt:var name="workspace_param">">
             <i class="hidden fa create-new-button-icon" data-toggle="tooltip" data-placement="right" title="<mt:trans phrase="New %s" params="$label">" aria-label="<mt:trans phrase="New %s" params="$label">"></i>
-            <span class="create-new-button"><mt:trans phrase="New %s" params="$label"></span>
+            <span class="shrink-button"><mt:trans phrase="New %s" params="$label"></span>
           </a>
             </mt:unless>
-            <mt:if name="request._type" ne="hierarchy">
-          <a class="btn btn-primary btn-sm" href="<mt:var name="script_uri">?__mode=view&amp;_type=list&amp;_model=<mt:var name="model" escape><mt:var name="workspace_param">">
-            <mt:trans phrase="Return to List">
-          </a>
             </mt:if>
+            <mt:if name="request._type" ne="hierarchy">
+            <mt:unless name="model" eq="user">
+          <a class="btn btn-sm" href="<mt:var name="script_uri">?__mode=view&amp;_type=list&amp;_model=<mt:var name="model" escape><mt:var name="workspace_param">">
+            <i class="hidden fa fa-list" data-toggle="tooltip" data-placement="right" title="<mt:trans phrase="Return to List">" aria-label="<mt:trans phrase="Return to Home">"></i>
+            <span class="shrink-button"><mt:trans phrase="Return to List"></span>
+          </a>
+            </mt:unless>
             </mt:if>
           </mt:if>
           <mt:if name="request._type" eq="list">
@@ -452,7 +461,7 @@ $('.dropdown-sub').each(function(){
       <mt:if name="this_mode" ne="dashboard">
         <a class="btn btn-sm" href="<mt:var name="script_uri">?__mode=dashboard&amp;<mt:var name="workspace_param">">
           <i class="hidden fa fa-home" data-toggle="tooltip" data-placement="right" title="<mt:trans phrase="Return to Dashboard">" aria-label="<mt:trans phrase="Return to Home">"></i>
-          <span class="create-new-button"><mt:trans phrase="Return to Dashboard"></span>
+          <span class="shrink-button"><mt:trans phrase="Return to Dashboard"></span>
         </a>
       </mt:if>
       </mt:if>

@@ -1,0 +1,84 @@
+<div class="row form-group" style="margin-bottom:3px">
+  <div class="col-lg-8 input-group-lg">
+  <mt:if name="permalink">
+    <div class="input-group copy-url copy-url-permalink">
+    <input type="text" class="form-control form-control-sm clipboard-url" id="__permalink-clipboard"
+    value="<mt:var name="permalink">">
+    <button data-toggle="tooltip" data-placement="left" title="<mt:trans phrase="Copy to Clipboard">" type="button" class="input-group-addon copy-clipboard" data-clipboard-target="#__permalink-clipboard"><i class="fa fa-clipboard" aria-hidden="true" aria-label="<mt:trans phrase="Copy to Clipboard">"></i></button>
+    <button id="__view-permalink" data-toggle="tooltip" data-placement="left" title="<mt:trans phrase="View">" type="button" class="input-group-addon"><i class="fa fa-external-link" aria-hidden="true" aria-label="<mt:trans phrase="View">"></i></button>
+    </div>
+    <mt:setvar name="permalink" value="">
+    <script>
+    $('#__view-permalink').click(function(){
+        var permalink = $('#__permalink-clipboard').val();
+        window.open( permalink, '_blank');
+    });
+    </script>
+  </mt:if>
+  </div>
+  <mt:var name="object_text_format" setvar="object_text_format">
+  <mt:unless name="request.id">
+    <mt:setvar name="object_text_format" value="richtext">
+  </mt:unless>
+  <div class="col-lg-4">
+    <div class="text-format-box">
+    <span class="pull-right form-inline">
+    <span class="text-format-label"><mt:trans phrase="Format"> : </span>
+    <select id="text_format-select" name="text_format" class="form-control form-control-sm very-short">
+      <option value=""><mt:trans phrase="None"></option>
+      <option value="convert_breaks" <mt:if name="object_text_format" eq="convert_breaks">selected</mt:if>><mt:trans phrase="Convert Line Breaks"></option>
+      <option value="markdown" <mt:if name="object_text_format" eq="markdown">selected</mt:if>><mt:trans phrase="Markdown"></option>
+      <mt:ignore><option value="markdown_with_smartypants" <mt:if name="object_text_format" eq="markdown_with_smartypants">selected</mt:if>>Markdown + SmartyPants</option></mt:ignore>
+      <option value="richtext" <mt:if name="object_text_format" eq="richtext">selected</mt:if>><mt:trans phrase="RichText"></option>
+      <mt:ignore><option value="textile_2" <mt:if name="object_text_format" eq="textile_2">selected</mt:if>><mt:trans phrase="Textile 2"></option></mt:ignore>
+    </select>
+    </span>
+  </div>
+</div>
+</div>
+<div>
+<div class="row form-group">
+  <div class="col-lg-12">
+    <div id="input-helper" class="hidden">
+<a href="javascript:void(0)" class="btn btn-sm btn-secondary editor-btn" onclick="surroundHTML('h1','<mt:var name="__col_name__">');">H1</a>
+<a href="javascript:void(0)" class="btn btn-sm btn-secondary editor-btn" onclick="surroundHTML('h2','<mt:var name="__col_name__">');">H2</a>
+<a href="javascript:void(0)" class="btn btn-sm btn-secondary editor-btn" onclick="surroundHTML('h3','<mt:var name="__col_name__">');">H3</a>
+<a href="javascript:void(0)" class="btn btn-sm btn-secondary editor-btn" onclick="surroundHTML('h4','<mt:var name="__col_name__">');">H4</a>
+<a href="javascript:void(0)" class="btn btn-sm btn-secondary editor-btn" onclick="surroundHTML('strong','<mt:var name="__col_name__">');"><i class="fa fa-bold"></i><span class="sr-only">STRONG</span></a>
+<a href="javascript:void(0)" class="btn btn-sm btn-secondary editor-btn" onclick="surroundHTML('em','<mt:var name="__col_name__">');"><i class="fa fa-italic"></i><span class="sr-only">EM</span></a>
+<a href="javascript:void(0)" class="btn btn-sm btn-secondary editor-btn" onclick="surroundHTML('a','<mt:var name="__col_name__">');"><i class="fa fa-link"></i><span class="sr-only">A</span></a>
+<a href="javascript:void(0)" class="btn btn-sm btn-secondary editor-btn" onclick="surroundHTML('p','<mt:var name="__col_name__">');"><i class="fa fa-paragraph"></i><span class="sr-only">P</span></a>
+<a href="javascript:void(0)" class="btn btn-sm btn-secondary editor-btn" onclick="surroundHTML('blockquote','<mt:var name="__col_name__">');"><i class="fa fa-quote-left"></i><span class="sr-only">BLOCKQUOTE</span></a>
+<a href="javascript:void(0)" class="btn btn-sm btn-secondary editor-btn" onclick="surroundHTML('ul','<mt:var name="__col_name__">');"><i class="fa fa-list-ul"></i><span class="sr-only">UL</span></a>
+<a href="javascript:void(0)" class="btn btn-sm btn-secondary editor-btn" onclick="surroundHTML('ol','<mt:var name="__col_name__">');"><i class="fa fa-list-ol"></i><span class="sr-only">OL</span></a>
+<a href="javascript:void(0)" class="btn btn-sm btn-secondary editor-btn" onclick="surroundHTML('li','<mt:var name="__col_name__">');">LI</a>
+<a href="javascript:void(0)" class="btn btn-sm btn-secondary editor-btn" onclick="surroundHTML('br','<mt:var name="__col_name__">');">BR</a>
+<a class="btn btn-sm btn-secondary editor-btn" data-toggle="modal" data-target="#modal"
+data-href="" href="<mt:var name="script_uri">?__mode=view&amp;_type=list&amp;_model=asset&amp;workspace_id=<mt:var name="request.workspace_id" escape>&amp;dialog_view=1&amp;insert_editor=1&amp;insert=text"><i class="fa fa-file-o"></i><span class="sr-only">FILE</span></a>
+<a class="btn btn-sm btn-secondary editor-btn" data-toggle="modal" data-target="#modal"
+data-href="" href="<mt:var name="script_uri">?__mode=view&amp;_type=list&amp;_model=asset&amp;workspace_id=<mt:var name="request.workspace_id" escape>&amp;dialog_view=1&amp;select_system_filters=filter_class_image&amp;_system_filters_option=image&amp;_filter=1&amp;insert_editor=1&amp;insert=text"><i class="fa fa-image"></i><span class="sr-only">IMAGE</span></a>
+    </div>
+    <textarea id="<mt:var name="__col_name__">" rows="<mt:if name="options"><mt:var name="options" escape><mt:else>20</mt:if>"
+    class="form-control richtext" name="<mt:var name="__col_name__">"><mt:var name="value"></textarea>
+  </div>
+</div>
+<script>
+<mt:unless name="object_text_format">
+  <mt:setvar name="object_text_format" value="none">
+  $('#input-helper').show();
+</mt:unless>
+<mt:if name="object_text_format" ne="richtext">
+  $('#input-helper').show();
+</mt:if>
+var editorMode = '<mt:var name="object_text_format">';
+$('#text_format-select').change(function(){
+    if ( $(this).val() == 'richtext' ) {
+        editorInit();
+        $('#input-helper').hide();
+    } else {
+        tinymce.EditorManager.remove();
+        $('#input-helper').show();
+    }
+    editorMode = $(this).val();
+});
+</script>

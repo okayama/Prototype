@@ -129,10 +129,10 @@ $(".query-box").keypress(function(e){
     $('.alert-success').focus();
     </script>
     </mt:if>
-
+<mt:setvar name="model" value="">
 <form action="<mt:var name="script_uri">" method="POST" class="form-inline" id="list-select-form">
 <input type="hidden" name="__mode" value="" id="__mode">
-<input type="hidden" name="_model" value="<mt:var name="model">">
+<input type="hidden" name="_model" value="<mt:var name="_this_model">">
 <input type="hidden" name="magic_token" value="<mt:var name="magic_token">">
 <input type="hidden" name="_type" value="list">
 <input type="hidden" name="sort" value="<mt:var name="request.sort" escape>">
@@ -176,6 +176,7 @@ var in_search = false;
     </mt:if>
 </mt:if>
 </form>
+<mt:setvar name="model" value="$_this_model">
 <mt:if name="request.dialog_view">
   <button id="dialog-cancel-btn" class="btn btn-secondary" type="submit"><mt:trans phrase="Cancel"></button>
 <script>

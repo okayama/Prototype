@@ -291,32 +291,93 @@ class PTTags {
             ? $args['glue'] . $content : $content;
     }
 
+    function hdlr_workspacecontext ( $args, $content, $ctx, $repeat, $counter ) {
+        $app = $ctx->app;
+        if (! $counter ) {
+            $ws = $ctx->stash( 'workspace' );
+            $ctx->stash( 'orig_workspace', $ws );
+            $app = $ctx->app;
+            $id = isset( $args['id'] ) ? $args['id'] : null;
+            if (! $id ) {
+                $id = isset( $args['workspace_id'] ) ? $args['workspace_id'] : null;
+            }
+            if ( $id ) {
+                $ws = $app->db->model( 'workspace' )->load( (int) $id );
+                if ( $ws )
+                    $ctx->stash( 'workspace', $ws );
+            }
+        } else {
+            $ws = $ctx->stash( 'orig_workspace' );
+            if ( $ws )
+                $ctx->stash( 'workspace', $ws );
+        }
+        return $content;
+    }
+
     function hdlr_objectcontext ( $args, $content, $ctx, $repeat, $counter ) {
         $app = $ctx->app;
+        $obj = null;
         if ( isset( $args['model'] ) && isset( $args['id'] ) ) {
             $id = (int) $args['id'];
             $obj = $app->db->model( $args['model'] )->load( $id );
+        } else if ( isset( $args['from'] ) && isset( $args['id'] ) ) {
+            $id = (int) $args['id'];
+            $from = $app->db->model( $args['from'] )->load( $id );
+            if ( $from && $from->has_column( 'object_id' )
+                    && $from->has_column( 'model' ) ) {
+                $object_id = $from->object_id;
+                $model = $from->model;
+                if ( $model && $object_id ) {
+                    $obj = $app->db->model( $model )->load( (int) $object_id );
+                }
+            }
         } else {
             $obj = $ctx->stash( 'object' );
         }
+        if (! $obj ) {
+            if ( isset( $args['model'] ) ) {
+                $model = $args['model'];
+                $obj = $ctx->stash( $model );
+            }
+        }
+        if (! $obj ) {
+            return;
+        }
+        $var_prefix = isset( $args['prefix'] ) ? $args['prefix'] : 'object';
+        $var_prefix .= '_';
         $vars = $obj->get_values();
         $colprefix = $obj->_colprefix;
         $ctx->stash( 'current_context', $obj->_model );
         $ctx->stash( $obj->_model, $obj );
         $column_defs = $app->db->scheme[ $obj->_model ]['column_defs'];
+        $table = $app->get_table( $obj->_model );
+        $primary = $table ? $table->primary : '';
+        if (! $primary ) {
+            if ( $obj->has_column( 'title' ) ) {
+                $primary = 'title';
+            } else if ( $obj->has_column( 'name' ) ) {
+                $primary = 'name';
+            } else if ( $obj->has_column( 'label' ) ) {
+                $primary = 'label';
+            }
+        }
         if ( isset( $ctx->vars['forward_params'] ) ) {
             $column_names = array_keys( $column_defs );
             foreach ( $column_names as $name ) {
                 $vars[ $name ] = $app->param( $name );
             }
         }
+        $ctx->local_vars[ '_object_model' ] = $obj->_model;
         foreach ( $vars as $col => $value ) {
             if ( $colprefix ) $col = preg_replace( "/^$colprefix/", '', $col );
             if ( isset( $column_defs[ $col ]['type'] )
                 && $column_defs[ $col ]['type'] === 'blob' ) {
                 $value = $value ? 1 : '';
             }
-            $ctx->local_vars['object_' . $col ] = $value;
+            if ( $col == $primary ) {
+                $ctx->local_vars[ '_object_primary' ] = $value;
+            }
+            $ctx->local_vars[ $var_prefix . $col ] = $value;
             if ( $col === 'status' ) {
                 if ( $table = $app->get_table( $obj->_model ) ) {
                     $column = $app->db->model( 'column' )->get_by_key(
@@ -336,7 +397,7 @@ class PTTags {
                         if ( $id ) $ids[] = $id;
                     }
                 }
-                $ctx->local_vars['object_' . $name ] = $ids;
+                $ctx->local_vars[ $var_prefix . $name ] = $ids;
             }
         } else {
             if ( $obj->id ) {
@@ -357,7 +418,7 @@ class PTTags {
                         $rel_obj = $app->db->model( $model )->load( $to_id );
                         if ( $rel_obj ) $ids[] = $relation->to_id;
                     }
-                    $ctx->local_vars['object_' . $name ] = $ids;
+                    $ctx->local_vars[ $var_prefix . $name ] = $ids;
                 }
             }
         }
@@ -382,21 +443,23 @@ class PTTags {
     function hdlr_ifhasthumbnail ( $args, $content, $ctx, $repeat, $counter ) {
         $app = $ctx->app;
         $model = $args['model'];
-        if ( $rel_model == 'asset' ) return true;
+        if ( $model == 'asset' ) return true;
         $scheme = $app->get_scheme_from_db( $model );
         $props = $scheme['edit_properties'];
-        foreach ( $props as $prop => $type ) {
-            if ( $type == 'file' ) {
-                $options = isset( $scheme['options'] ) ? $scheme['options'] : [];
-                if ( !empty( $options ) ) {
-                    if ( isset( $options[ $prop ] )
-                        && $options[ $prop ] == 'image' ) {
-                        return true;
+        if ( is_array( $props ) ) {
+            foreach ( $props as $prop => $type ) {
+                if ( $type == 'file' ) {
+                    $options = isset( $scheme['options'] ) ? $scheme['options'] : [];
+                    if ( !empty( $options ) ) {
+                        if ( isset( $options[ $prop ] )
+                            && $options[ $prop ] == 'image' ) {
+                            return true;
+                        } else {
+                            return true;
+                        }
                     } else {
                         return true;
                     }
-                } else {
-                    return true;
                 }
             }
         }
@@ -440,7 +503,7 @@ class PTTags {
     function hdlr_ifusercan ( $args, $content, $ctx, $repeat, $counter ) {
         $app = $ctx->app;
         if ( $user = $app->user() ) {
-            $action = $args['action'];
+            $action = isset( $args['action'] ) ? $args['action'] : 'edit';
             $workspace_id = isset( $args['workspace_id'] )
                           ? (int) $args['workspace_id'] : 0;
             $workspace_id = (int) $workspace_id;
@@ -499,11 +562,13 @@ class PTTags {
         if ( $data ) {
             $data = json_decode( $data, true );
             foreach ( $data as $model => $cols ) {
-                if ( $cols == 'all' ) {
+                if ( is_string( $cols ) && $cols == 'all' ) {
                     $ctx->local_vars["columns_all_{$model}"] = 1;
                 } else {
                     foreach ( $cols as $col ) {
-                        $ctx->local_vars["columns_{$model}_{$col}"] = 1;
+                        if ( is_string( $col ) ) {
+                            $ctx->local_vars["columns_{$model}_{$col}"] = 1;
+                        }
                     }
                 }
             }
@@ -914,6 +979,30 @@ class PTTags {
         return $data;
     }
 
+    function hdlr_getobjectlabel ( $args, $ctx ) {
+        $id = isset( $args['id'] ) ? (int) $args['id'] : null;
+        $model = isset( $args['model'] ) ? $args['model'] : null;
+        if (! $id || ! $model ) return;
+        $app = $ctx->app;
+        $obj = $app->db->model( $model )->load( $id );
+        if (! $obj ) return;
+        $column = isset( $args['column'] ) ? $args['column'] : null;
+        if ( $column ) return $obj->$column;
+        $table = $app->get_table( $obj->_model );
+        if (! $table ) return;
+        $primary = $table ? $table->primary : '';
+        if (! $primary ) {
+            if ( $obj->has_column( 'title' ) ) {
+                $primary = 'title';
+            } else if ( $obj->has_column( 'name' ) ) {
+                $primary = 'name';
+            } else if ( $obj->has_column( 'label' ) ) {
+                $primary = 'label';
+            }
+        }
+        return $obj->$primary;
+    }
+
     function hdlr_getobjectname ( $args, $ctx ) {
         $app = $ctx->app;
         $type = isset( $args['type'] ) ? $args['type'] : '';
@@ -1015,28 +1104,32 @@ class PTTags {
                         foreach ( $fld_value as $value ) {
                             $unique_id = $unique_ids[ $i ];
                             $i++;
-                            $fld_values = json_decode( $value, true );
-                            foreach ( $fld_values as $key => $val ) {
-                                if ( strpos( $key, $unique_id . '_' ) === 0 ) {
-                                    $new_key = preg_replace( "/^{$unique_id}_/", '', $key );
-                                    unset( $fld_values[ $key ] );
-                                    $fld_values[ $new_key ] = $val;
+                            if ( $value ) {
+                                $fld_values = json_decode( $value, true );
+                                if ( is_array( $fld_values ) ) {
+                                    foreach ( $fld_values as $key => $val ) {
+                                        if ( strpos( $key, $unique_id . '_' ) === 0 ) {
+                                            $new_key = preg_replace( "/^{$unique_id}_/", '', $key );
+                                            unset( $fld_values[ $key ] );
+                                            $fld_values[ $new_key ] = $val;
+                                        }
+                                    }
                                 }
+                                $value = json_encode( $fld_values, JSON_UNESCAPED_UNICODE );
+                                $meta_obj = $app->db->model( 'meta' )->get_by_key(
+                                    ['object_id' => $id, 'model' => $obj->_model,
+                                     'kind' => 'customfield', 'key' => $fld, 'number' => $i ] );
+                                $meta_obj->text( $value );
+                                $meta_obj->type( $fieldtype );
+                                if ( count( $fld_values ) == 1 ) {
+                                    $meta_key = key( $fld_values );
+                                    $meta_obj->name( $meta_key );
+                                    $meta_obj->value( $fld_values[ $meta_key ] );
+                                } else {
+                                    $meta_obj->value( '' );
+                                }
+                                $meta[] = $meta_obj;
                             }
-                            $value = json_encode( $fld_values, JSON_UNESCAPED_UNICODE );
-                            $meta_obj = $app->db->model( 'meta' )->get_by_key(
-                                ['object_id' => $id, 'model' => $obj->_model,
-                                 'kind' => 'customfield', 'key' => $fld, 'number' => $i ] );
-                            $meta_obj->text( $value );
-                            $meta_obj->type( $fieldtype );
-                            if ( count( $fld_values ) == 1 ) {
-                                $meta_key = key( $fld_values );
-                                $meta_obj->name( $meta_key );
-                                $meta_obj->value( $fld_values[ $meta_key ] );
-                            } else {
-                                $meta_obj->value( '' );
-                            }
-                            $meta[] = $meta_obj;
                         }
                     }
                 }
@@ -1128,10 +1221,14 @@ class PTTags {
                     $field_counter = 0;
                     foreach ( $fields as $custom_field ) {
                         $set_keys = [];
-                        $vars = json_decode( $custom_field->text, true );
-                        foreach ( $vars as $key => $value ) {
-                            $ctx->local_vars['field.' . $key ] = $value;
-                            $set_keys[] = 'field.' . $key;
+                        if ( $custom_field->text ) {
+                            $vars = json_decode( $custom_field->text, true );
+                            if ( is_array( $vars ) ) {
+                                foreach ( $vars as $key => $value ) {
+                                    $ctx->local_vars['field.' . $key ] = $value;
+                                    $set_keys[] = 'field.' . $key;
+                                }
+                            }
                         }
                         if (! $field_counter && $display ) {
                             $ctx->local_vars['field__not_delete'] = 1;
@@ -1323,6 +1420,15 @@ class PTTags {
     function hdlr_get_objectcol ( $args, $ctx ) {
         $this_tag = $args['this_tag'];
         $current_context = $ctx->stash( 'current_context' );
+        if ( strpos( $this_tag, 'template' ) === 0 ) {
+            if ( $current_context !== 'template' ) {
+                $col_name = preg_replace( "/^template/", '', $this_tag );
+                $template = $ctx->stash( 'current_template' );
+                if ( $template->has_column( $col_name ) ) {
+                    return $template->$col_name;
+                }
+            }
+        }
         $workspace_tags = $ctx->stash( 'workspace_tags' );
         if ( $workspace_tags && in_array( $this_tag, $workspace_tags ) ) {
             $current_context = 'workspace';
@@ -1808,7 +1914,7 @@ class PTTags {
                 if ( $colprefix ) $key = preg_replace( "/^$colprefix/", '', $key );
                 $ctx->local_vars[ $key ] = $value;
             }
-            $ctx->local_vars[ 'object_label' ] = $obj->$primary;
+            $ctx->local_vars['object_label'] = $obj->$primary;
             $repeat = true;
         } else {
             $ctx->restore( [ $model ] );

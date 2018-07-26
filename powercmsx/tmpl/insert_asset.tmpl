@@ -23,6 +23,8 @@
     var editor = window.parent.tinyMCE.activeEditor;
     if ( editor ) {
         editor.insertContent(html);
+    } else {
+        window.parent.surroundHTML('file', '<mt:var name="request.insert">', html );
     }
     window.parent.$('#modal').modal('hide');
     window.location.href = '<mt:var name="script_uri">?__mode=loading';

@@ -1,5 +1,4 @@
 <input type="hidden" name="__validation" id="__validation">
-
 <mt:var name="request.id" setvar="table_id">
 <mt:objectloop model="column" sort_by="order" table_id="$table_id">
 <mt:setvarblock name="column_header">
@@ -352,7 +351,7 @@
               <option value="__any__"><mt:trans phrase="Any"></option>
               </mt:if>
               <mt:var name="label" setvar="table_label">
-              <option value="<mt:var name="name" escape>"><mt:trans phrase="$table_label" escape></option>
+              <option id="_detail_list_table_<mt:var name="id" escape>" value="<mt:var name="name" escape>"><mt:trans phrase="$table_label" escape></option>
               </mt:objectloop>
             </select>
             </div>
@@ -396,7 +395,7 @@
               <option value="__any__"><mt:trans phrase="Any"></option>
               </mt:if>
               <mt:var name="label" setvar="table_label">
-              <option value="<mt:var name="name" escape>"><mt:trans phrase="$table_label" escape></option>
+              <option id="_detail_edit_table_<mt:var name="id" escape>" value="<mt:var name="name" escape>"><mt:trans phrase="$table_label" escape></option>
               </mt:objectloop>
             </select>
             </div>
@@ -597,16 +596,23 @@ function toggle_detail_custom( type ) {
 }
 $('#_detail_list').change( function(){
     if ( $(this).val() == 'reference') {
+        $('#_detail_list_table_' + '<mt:var name="request.id">').hide();
         $('#_detail_list_table_wrapper').show();
         var colmns = $('#_detail_list_column').children();
         set_column_names( $('#_detail_edit_table').val(), 'list');
         set_column_names( $('#_detail_edit_table').val(), 'edit');
     } else {
+        $('#_detail_list_table_' + '<mt:var name="request.id">').show();
         $('#_detail_list_table_wrapper').hide();
     }
 });
 $('#_detail_edit').change( function(){
     toggle_detail_custom( $('#_detail_type').val() );
+    if ( $(this).val() == 'reference' ) {
+        $('#_detail_edit_table_' + '<mt:var name="request.id">').hide();
+    } else {
+        $('#_detail_edit_table_' + '<mt:var name="request.id">').show();
+    }
     if ( $(this).val() == 'relation' || $(this).val() == 'reference') {
         $('#_detail_edit_table_wrapper').show();
         if ( $(this).val() == 'relation') {

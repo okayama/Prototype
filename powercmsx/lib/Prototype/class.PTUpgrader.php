@@ -5,7 +5,13 @@ class PTUpgrader {
     protected $reserved = ['magic_token', 'tags', 'additional_tags', 'created_on',
                            'created_by', 'workspace_id', 'order', 'status', 'modified_on',
                            'modified_by', 'published_on', 'unpublished_on', 'user_id',
-                           'basename', 'delete', 'remove', 'save', 'has_deadline',
+                           'load', 'retry', 'in_stmt', 'get_by_key', 'count', 'has_column',
+                           'count_group_by', 'load_iter', 'save', 'update_multi',
+                           'remove_multi', 'update', 'remove', 'delete', 'set_scheme_from_json',
+                           'get_scheme', 'create_table', 'column_values', 'column_names',
+                           'set_values', 'get_values', 'next_prev', 'upgrade', 'array_compare',
+                           'check_upgrade', 'get_diff', 'validation', 'serialize', 'date2db',
+                           'time2db', 'ts2db', 'db2ts', 'basename', 'has_deadline',
                            'rev_type', 'rev_object_id', 'rev_note', 'rev_changed', 'uuid',
                            'rev_diff', 'workspace_id', 'allow_comment', 'comment_count'];
 

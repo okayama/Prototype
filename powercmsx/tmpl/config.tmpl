@@ -63,7 +63,7 @@
   <div class="col-lg-4 form-inline lockout-col">
     <label for="lockout_limit">
       <mt:trans phrase="Lock Out Limit"> : 
-      <input type="number" id="lockout_limit" name="lockout_limit" class="form-control" value="<mt:if name="lockout_limit"><mt:var name="lockout_limit" escape><mt:else>3</mt:if>">
+      <input type="number" id="lockout_limit" name="lockout_limit" class="form-control" value="<mt:if name="lockout_limit" ne=""><mt:var name="lockout_limit" escape><mt:else>3</mt:if>">
     </label>
   </div>
   <div class="col-lg-6 form-inline lockout-col">
@@ -81,7 +81,7 @@
   <div class="col-lg-4 form-inline lockout-col">
     <label for="ip_lockout_limit">
       <mt:trans phrase="Lock Out Limit"> : 
-      <input type="number" id="ip_lockout_limit" name="ip_lockout_limit" class="form-control" value="<mt:if name="ip_lockout_limit"><mt:var name="ip_lockout_limit" escape><mt:else>3</mt:if>">
+      <input type="number" id="ip_lockout_limit" name="ip_lockout_limit" class="form-control" value="<mt:if name="ip_lockout_limit" ne=""><mt:var name="ip_lockout_limit" escape><mt:else>3</mt:if>">
     </label>
   </div>
   <div class="col-lg-6 form-inline lockout-col">

@@ -1,0 +1,21 @@
+<mt:objectcontext id="$object_id" from="contact">
+<div class="row form-group">
+  <div class="col-lg-2">
+    <mt:var name="_object_model" escape translate>
+  </div>
+  <div class="col-lg-10">
+<mt:var name="_object_primary" escape> (ID:<mt:var name="object_id">) &nbsp; 
+<a class="btn btn-sm btn-secondary" href="<mt:var name="script_uri">?__mode=view&amp;_model=contact&amp;_type=list&amp;_filter=1&amp;_filter_cond_model[]=eq&amp;_filter_value_model[]=<mt:var name="_object_model" escape>&amp;_filter_cond_object_id[]=eq&amp;_filter_value_object_id[]=<mt:var name="value">">
+<i class="hidden fa fa-list" data-toggle="tooltip" data-placement="right" title="<mt:trans phrase="View List">" aria-label="<mt:trans phrase="View List">"></i>
+<span class="shrink-button"><mt:trans phrase="View List"></span>
+</a>
+<mt:getobjectlabel model="form" id="$object_id" column="workspace_id" setvar="form_ws_id">
+<mt:ifusercan workspace_id="$form_ws_id" id="$object_id" model="$_object_model" action="edit">
+<a class="btn btn-sm btn-secondary" href="<mt:var name="script_uri">?__mode=view&amp;_type=edit&amp;_model=<mt:var name="_object_model" escape>&amp;id=<mt:var name="object_id"><mt:if name="form_ws_id">&amp;workspace_id=<mt:var name="form_ws_id"></mt:if>">
+<i class="hidden fa fa-edit" data-toggle="tooltip" data-placement="right" title="<mt:trans phrase="Edit">" aria-label="<mt:trans phrase="Edit">"></i>
+<span class="shrink-button"><mt:trans phrase="Edit"></span>
+</a>
+</mt:ifusercan>
+</mt:objectcontext>
+  </div>
+</div>

@@ -1,7 +1,7 @@
 {
     "label"    : "User",
     "plural"   : "Users",
-    "version"  : "1.0",
+    "version"  : "1.1",
     "primary"  : "name",
     "display_system": 1,
     "order"    : 80,
@@ -36,6 +36,14 @@
         },
         "photo": {
             "type": "blob"
+        },
+        "text_format": {
+            "type": "string",
+            "size": 255
+        },
+        "space_order": {
+            "type": "string",
+            "size": 255
         },
         "language": {
             "type": "string",
@@ -120,6 +128,8 @@
     ],
     "options": {
         "photo": "image",
+        "text_format": "None,Convert Line Breaks,Markdown,RichText",
+        "space_order": "Default,by Updated",
         "status": "Disable,Enable"
     },
     "sort_by": {
@@ -144,6 +154,8 @@
         "email": "text",
         "nickname": "text",
         "photo": "file",
+        "text_format": "selection",
+        "space_order": "selection",
         "language": "languages",
         "control_border": "text",
         "is_superuser": "checkbox",
@@ -153,5 +165,15 @@
         "created_on": "datetime",
         "last_login_on": "datetime",
         "uuid": "text_short"
+    },
+    "translate": [
+        "text_format"
+    ],
+    "hint": {
+        "space_order": "Specify the display order of the WorkSpace selector of the top of the screen."
+    },
+    "disp_edit": {
+        "text_format": "select",
+        "space_order": "radio"
     }
 }

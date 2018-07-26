@@ -290,7 +290,7 @@ class Prototype {
             'function'   => ['objectvar', 'include', 'includeparts', 'getobjectname',
                              'assetthumbnail', 'assetproperty', 'getoption', 'statustext',
                              'archivetitle', 'archivedate', 'archivelink', 'property',
-                             'assetthumbnailurl', 'setrolecolumns'],
+                             'assetthumbnailurl', 'setrolecolumns', 'getobjectlabel'],
             'block'      => ['objectcols', 'objectloop', 'tables', 'nestableobjects',
                              'countgroupby', 'fieldloop', 'archivelist', 'grouploop',
                              'workspacecontext' ],
@@ -635,6 +635,8 @@ class Prototype {
             $ctx->vars['user_name'] = $user->name;
             $ctx->vars['user_nickname'] = $user->nickname;
             $ctx->vars['user_id'] = $user->id;
+            $ctx->vars['user_space_order'] = $user->space_order;
+            $ctx->vars['user_text_format'] = $user->text_format;
         }
         $request_id = $app->param( 'request_id' );
         if (!$request_id ) {
@@ -1131,6 +1133,7 @@ class Prototype {
                 $ctx->vars['_has_mapping'] = 1;
             }
         }
+        $ctx->vars['menu_type'] = $table->menu_type;
         if ( $type === 'list' ) {
             if (!$app->param( 'dialog_view' ) ) {
                 if (!$app->can_do( $model, 'list', null, $workspace ) ) {
@@ -1138,7 +1141,6 @@ class Prototype {
                 }
             }
             $ctx->vars['page_title'] = $app->translate( 'List of %s', $plural );
-            $ctx->vars['menu_type'] = $table->menu_type;
             $list_option = $app->get_user_opt( $model, 'list_option', $workspace_id );
             $list_props = $scheme['list_properties'];
             $column_defs = $scheme['column_defs'];
@@ -2672,6 +2674,10 @@ class Prototype {
                 }
             }
         }
+        if (! is_object( $meta ) ) {
+            echo json_encode( ['has_thumbnail' => false ] );
+            return;
+        }
         $model = $meta->model;
         if (!$app->can_do( $model, 'list' ) ) {
             if ( $has_thumbnail ) echo json_encode( ['has_thumbnail' => false ] );
@@ -2705,13 +2711,22 @@ class Prototype {
         $id = (int) $app->param( 'id' );
         $model = $app->param( 'model' );
         $workspace_id = $app->param( 'workspace_id' );
-        $field_model = $app->param( '_type' ) && $app->param( '_type' ) == 'fieldtype'
+        if ( $app->param( '_type' ) == 'questiontype' ) {
+            $field_model = $app->param( '_type' );
+        } else {
+            $field_model = $app->param( '_type' ) && $app->param( '_type' ) == 'fieldtype'
                      ? 'fieldtype' : 'field';
+        }
         $field = $app->db->model( $field_model )->load( $id );
         header( 'Content-type: application/json' );
         if (!$field ) {
             echo json_encode( ['status' => 404,
                                'message' => $app->translate( 'Field not found.' ) ] );
+            exit();
+        }
+        if ( $field_model == 'questiontype' ) {
+            echo json_encode( ['status' => 200,
+                    'content' => $field->template ] );
             exit();
         }
         $field_label = $field->label;
@@ -3224,7 +3239,7 @@ class Prototype {
         }
         $callbacks = ['save_filter_table', 'save_filter_urlmapping',
                       'save_filter_workspace', 'post_save_workspace',
-                      'pre_save_role', 'post_save_role',
+                      'pre_save_role', 'post_save_role', 'pre_save_question',
                       'post_save_permission', 'post_save_table', 'post_save_field',
                       'post_save_asset', 'save_filter_tag', 'pre_save_user'];
         foreach ( $callbacks as $meth ) {
@@ -3321,21 +3336,23 @@ class Prototype {
                 }
                 if ( in_array( $col, $unchangeable ) ) {
                     if ( $obj->id && $obj->$col != $value ) {
-                        $error_msg = $app->translate( 'You can not change the %s.', 
-                        $app->translate( $labels[ $col ] ) );
-                        if ( $prop == 'datetime' ) {
-                            if (! $obj->$col ) {
-                                if ( $value != '0000-00-00 00:00:00' ) {
-                                    $errors[] = $error_msg;
-                                    continue;
+                        if ( $col != 'uuid' && $obj->_model != 'user' ) {
+                            $error_msg = $app->translate( 'You can not change the %s.', 
+                            $app->translate( $labels[ $col ] ) );
+                            if ( $prop == 'datetime' ) {
+                                if (! $obj->$col ) {
+                                    if ( $value != '0000-00-00 00:00:00' ) {
+                                        $errors[] = $error_msg;
+                                        continue;
+                                    }
+                                } else {
+                                $errors[] = $error_msg;
+                                continue;
                                 }
                             } else {
-                            $errors[] = $error_msg;
-                            continue;
+                                $errors[] = $error_msg;
+                                continue;
                             }
-                        } else {
-                            $errors[] = $error_msg;
-                            continue;
                         }
                     }
                 }
@@ -3770,7 +3787,7 @@ class Prototype {
                 $add_return_args .= '&rebuild_this_template=1';
             }
         }
-        if ( $is_changed ) {
+        if ( $is_changed || $is_new ) {
             if ( $ws = $obj->workspace ) {
                 $ws->last_update( time() );
                 $ws->save();
@@ -5300,6 +5317,19 @@ class Prototype {
         return true;
     }
 
+    function pre_save_question ( $cb, $app, $obj, $original ) {
+        if (! $obj->template ) {
+            $questiontype_id = $obj->questiontype_id;
+            if ( $questiontype_id ) {
+                $qt = $app->db->model( 'questiontype' )->load( (int) $questiontype_id );
+                if ( $qt ) {
+                    $obj->template( $qt->template );
+                }
+            }
+        }
+        return true;
+    }
+
     function post_save_field ( $cb, $app, $obj, $original ) {
         $relations = $app->get_relations( $obj, 'table', 'models' );
         $table_ids = [];
@@ -5333,7 +5363,7 @@ class Prototype {
 
     function post_save_permission ( $cb, $app, $obj ) {
         $sessions =
-            $app->db->model( 'session' )->load( ['user_id' => $obj->id,
+            $app->db->model( 'session' )->load( ['user_id' => $obj->user_id,
                 'name' => 'user_permissions', 'kind' => 'PM' ] );
         if (! empty( $sessions ) ) {
             $app->db->model( 'session' )->remove_multi( $sessions );
