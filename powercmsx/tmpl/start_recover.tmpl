@@ -7,6 +7,12 @@
   <input type="hidden" name="__mode" value="recover_password">
 
 <mt:if name="request._type" eq="recover">
+  <mt:setvar name="request_type" value="recover">
+<mt:elseif name="request._type">
+  <mt:setvar name="request_type" value="recover">
+</mt:if>
+
+<mt:if name="request_type" eq="recover">
   <input type="hidden" name="_type" value="new_password">
   <input type="hidden" name="token" value="<mt:var name="request.token" escape>">
 

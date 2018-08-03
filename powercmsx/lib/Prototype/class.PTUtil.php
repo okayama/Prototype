@@ -117,7 +117,9 @@ class PTUtil {
                     $meta_rev->save();
                 }
             }
+            return true;
         }
+        return false;
     }
 
     public static function diff ( $source, $change, &$renderer = null ) {

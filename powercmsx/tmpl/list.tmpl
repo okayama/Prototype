@@ -44,6 +44,7 @@
 <mt:setvarblock name="dialog_param">&amp;dialog_view=1</mt:setvarblock>
 <mt:if name="request.single_select">
 <mt:setvar name="_single_select" value="1">
+<mt:setvarblock name="dialog_param" append="1">&amp;single_select=1</mt:setvarblock>
 </mt:if>
 </mt:if>
 <mt:setvar name="selecter_param" value="">
@@ -57,7 +58,7 @@
 <mt:else>
 <mt:include file="include/header.tmpl">
 </mt:if>
-<mt:setvarblock name="this_url"><mt:var name="script_uri">?__mode=view&amp;_type=list&amp;_model=<mt:var name="model"></mt:setvarblock>
+<mt:setvarblock name="this_url"><mt:var name="script_uri">?__mode=view&amp;_type=list&amp;_model=<mt:var name="this_model"></mt:setvarblock>
 <mt:setvarblock name="setup_search">
 $(".search-btn").click(function(){
     $("#__mode").prop('value','view');
@@ -478,7 +479,7 @@ $('#popover-<mt:var name="_name">-<mt:var name="id">').popover({
 <mt:setvar name="__last_col__" value="$_name">
 <mt:if name="__counter__" eq="1">
   <mt:if name="_no_primary">
-    <a <mt:if name="request.dialog_view">target="_blank"</mt:if> href="<mt:var name="script_uri">?__mode=view&amp;_type=edit&amp;_model=<mt:var name="model" escape>&amp;id=<mt:var name="id" escape><mt:if name="workspace_id">&amp;workspace_id=<mt:var name="workspace_id"></mt:if>">
+    <a <mt:if name="request.dialog_view">target="_blank"</mt:if> href="<mt:var name="script_uri">?__mode=view&amp;_type=edit&amp;_model=<mt:var name="this_model" escape>&amp;id=<mt:var name="id" escape><mt:if name="workspace_id">&amp;workspace_id=<mt:var name="workspace_id"></mt:if>">
     (<mt:trans phrase="Edit">)
     </a>
   </mt:if>
@@ -690,7 +691,7 @@ $('#dialog-selector-btn').click(function(){
         }
     }
   <mt:else>
-    next_url = '<mt:var name="script_uri">?__mode=view&_type=edit&_model=<mt:var name="model">&edit_revision=1&id='+selected<mt:if name="workspace_id">+'&workspace_id=<mt:var name="workspace_id">'</mt:if>;
+    next_url = '<mt:var name="script_uri">?__mode=view&_type=edit&_model=<mt:var name="this_model">&edit_revision=1&id='+selected<mt:if name="workspace_id">+'&workspace_id=<mt:var name="workspace_id">'</mt:if>;
     window.parent.$('#modal').modal('hide');
     window.parent.location.href = next_url;
     return;
@@ -730,7 +731,7 @@ $('#dialog-selector-btn').click(function(){
         newli.children('input').val( checked_ids[i] );
         newli.removeAttr('id');
         newli.addClass( target_control+'-child');
-        newli.children('.assets-child-thumb').attr('data-id',checked_ids[i]).css('background-image','url(\'<mt:var name="script_uri">?__mode=get_thumbnail&square=1&_model=<mt:var name="model" escape>&id=' + checked_ids[i] + '\')');
+        newli.children('.assets-child-thumb').attr('data-id',checked_ids[i]).css('background-image','url(\'<mt:var name="script_uri">?__mode=get_thumbnail&square=1&_model=<mt:var name="this_model" escape>&id=' + checked_ids[i] + '\')');
         newli.show();
     }
 </mt:if>

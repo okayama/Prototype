@@ -53,7 +53,7 @@
         "class"
     ],
     "options": {
-        "class": "allow,banned,info"
+        "class": "allow,banned,info,spam"
     },
     "sort_by": {
         "id": "ascend"
@@ -77,26 +77,5 @@
         "class": "text",
         "modified_on": "datetime",
         "modified_by": "reference:user:name"
-    },
-    "locale": {
-        "default": {
-            "id": "ID",
-            "ip_address": "IP Address",
-            "class": "Class",
-            "created_on": "Date Created",
-            "modified_on": "Date Modified",
-            "created_by": "Created By",
-            "modified_by": "Modified By"
-        },
-        "ja": {
-            "IP Address": "IPアドレス",
-            "IP Addresses": "IPアドレス",
-            "ID": "ID",
-            "Class": "クラス",
-            "Date Created": "作成日",
-            "Date Modified": "更新日",
-            "Created By": "作成者",
-            "Modified By": "更新者"
-        }
     }
 }

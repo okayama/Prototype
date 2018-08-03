@@ -142,6 +142,7 @@ class PTUpgrader {
                 $user->status( 2 );
                 $user->save();
                 $this->install_field_types( $app );
+                $this->install_question_types( $app );
                 $app->redirect( $app->admin_url );
             }
         } else {
@@ -328,6 +329,8 @@ class PTUpgrader {
                         $scheme = $app->get_scheme_from_db( $model );
                         if ( $model == 'fieldtype' ) {
                             $this->install_field_types( $app );
+                        } else if ( $model == 'questiontype' ) {
+                            $this->install_question_types( $app );
                         }
                         $counter++;
                     }
@@ -350,7 +353,10 @@ class PTUpgrader {
             foreach ( $fields as $basename => $prop ) {
                 $field = $app->db->model( 'fieldtype' )->get_by_key(
                         ['basename' => $basename ] );
-                if ( $field->id ) continue;
+                if ( $field->id ) {
+                    $original = clone $obj;
+                    PTUtil::pack_revision( $obj, $original );
+                }
                 $name = $prop['name'];
                 $field->name( $prop['name'] );
                 $field->order( $prop['order'] );
@@ -358,6 +364,29 @@ class PTUpgrader {
                 $field->content( file_get_contents( "{$tmpl_dir}{$basename}_content.tmpl" ) );
                 $app->set_default( $field );
                 $field->save();
+            }
+        }
+    }
+
+    function install_question_types ( $app ) {
+        $questions_dir = $app->path() . DS . 'tmpl' . DS . 'question' . DS . 'question_types';
+        $json = $questions_dir . DS . 'questions.json';
+        $tmpl_dir = $questions_dir . DS . 'tmpl' . DS;
+        if ( is_readable( $json ) ) {
+            $questions = json_decode( file_get_contents( $json ), true );
+            foreach ( $questions as $basename => $prop ) {
+                $question = $app->db->model( 'questiontype' )->get_by_key(
+                        ['basename' => $basename ] );
+                if ( $question->id ) {
+                    $original = clone $obj;
+                    PTUtil::pack_revision( $obj, $original );
+                }
+                $name = $prop['name'];
+                $question->name( $prop['name'] );
+                $question->order( $prop['order'] );
+                $question->template( file_get_contents( "{$tmpl_dir}{$basename}.tmpl" ) );
+                $app->set_default( $question );
+                $question->save();
             }
         }
     }

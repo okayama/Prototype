@@ -21,16 +21,37 @@
     &nbsp; &nbsp; &nbsp; 
     <input type="hidden" name="required" value="0">
     <label class="custom-control custom-checkbox">
-    <input id="normarize" class="form-control custom-control-input watch-changed"
+    <input id="required" class="form-control custom-control-input watch-changed"
     <mt:if name="readonly">onclick="return false;"</mt:if>
      type="checkbox" name="required" value="1" <mt:if name="object_required">checked</mt:if>>
         <span class="custom-control-indicator"></span>
         <span class="custom-control-description"> 
         <mt:trans phrase="Required"></span>
     </label>
+    &nbsp;
+    <input type="hidden" name="is_primary" value="0">
+    <label class="custom-control custom-checkbox is_primary">
+    <input id="is_primary" class="form-control custom-control-input watch-changed"
+    <mt:if name="readonly">onclick="return false;"</mt:if>
+     type="checkbox" name="is_primary" value="1" <mt:if name="object_is_primary">checked</mt:if>>
+        <span class="custom-control-indicator"></span>
+        <span class="custom-control-description"> 
+        <mt:trans phrase="Primary"></span>
+    </label>
+
   </div>
 </div>
 <script>
+<mt:unless name="object_required">
+  $('.is_primary').hide();
+</mt:unless>
+$('#required').change(function(){
+    if ( $(this).prop('checked') ) {
+        $('.is_primary').show();
+    } else {
+        $('.is_primary').hide();
+    }
+});
 $('#questiontype_id-selector').change(function(){
     var class_name = $('[name=<mt:var name="__col_name__">] option:selected').prop('class');
     if ( class_name.indexOf('text') != -1 ) {

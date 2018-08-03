@@ -132,10 +132,13 @@ class Prototype {
     public    $return_args   = [];
     public    $core_tags;
     private   $encrypt_key   = 'prototype-default-encrypt-key';
+    public    $ws_menu_type  = 1;
     public    $dynamic_view  = false;
     public    $in_dynamic    = false;
+    public    $form_interval = 180;
+    public    $form_upper_limit = 5;
     public    $resetdb_per_rebuild = false;
-    public    $max_packet = 16777216;
+    public    $max_packet    = 16777216;
 
     static function get_instance() {
         return self::$app;
@@ -194,6 +197,19 @@ class Prototype {
             parse_str( $r_query, $params );
             foreach ( $params as $key => $value ) {
                 $_REQUEST[ $key ] = $value;
+            }
+        }
+        if ( isset( $_SERVER['REDIRECT_STATUS'] ) ) {
+            $status = $_SERVER['REDIRECT_STATUS'];
+            if ( ( $status == 403 ) || ( $status == 404 ) ) {
+                if ( empty( $_POST ) ) {
+                    if ( $params = file_get_contents( "php://input" ) ) {
+                        parse_str( $params, $_POST );
+                    }
+                }
+                if ( isset( $_SERVER['REDIRECT_REQUEST_METHOD'] ) ) {
+                    $this->request_method = $_SERVER['REDIRECT_REQUEST_METHOD'];
+                }
             }
         }
         $this->base = $base;
@@ -1557,6 +1573,11 @@ class Prototype {
             $ctx->vars['_auditing'] = $table->auditing;
             $ctx->vars['_revisable'] = $table->revisable;
             $ctx->vars['_assign_user'] = $table->assign_user;
+            if ( $model == 'question' ) {
+                if ( isset( $app->registry['form_validations'] ) ) {
+                    $ctx->vars['form_validations'] = $app->registry['form_validations'];
+                }
+            }
             if ( $key = $app->param( 'view' ) ) {
                 if ( $db->model( $model )->has_column( $key ) ) {
                     if ( $screen_id ) {
@@ -1846,6 +1867,10 @@ class Prototype {
                     if ( in_array( 'can_activate_' . $model, $perms ) ) {
                         $max_status = 5;
                     } else if ( in_array( 'can_review_' . $model, $perms ) ) {
+                        $max_status = 2;
+                    }
+                } else {
+                    if ( in_array( 'can_activate_' . $model, $perms ) ) {
                         $max_status = 2;
                     }
                 }
@@ -4827,8 +4852,8 @@ class Prototype {
         return PTUtil::remove_dir( $cache_path, true );
     }
 
-    function save_filter_obj ( $cb, $pado, $obj ) {
-        if ( $obj->has_column( 'uuid' ) && ! $obj->uuid && ! $obj->id ) {
+    function save_filter_obj ( $cb, $pado, &$obj ) {
+        if ( $obj->has_column( 'uuid' ) && ! $obj->uuid ) {
             $key = $obj->_model . '_' . 'uuid';
             $values = $obj->get_values();
             if ( ( isset( $values[ $key ] ) ) ) {
@@ -5361,12 +5386,20 @@ class Prototype {
         return true;
     }
 
-    function post_save_permission ( $cb, $app, $obj ) {
+    function post_save_permission ( $cb, $app, $obj, $original ) {
         $sessions =
             $app->db->model( 'session' )->load( ['user_id' => $obj->user_id,
                 'name' => 'user_permissions', 'kind' => 'PM' ] );
         if (! empty( $sessions ) ) {
             $app->db->model( 'session' )->remove_multi( $sessions );
+        }
+        if ( $original && ( $original->user_id != $obj->user_id ) ) {
+            $sessions =
+                $app->db->model( 'session' )->load( ['user_id' => $original->user_id,
+                    'name' => 'user_permissions', 'kind' => 'PM' ] );
+            if (! empty( $sessions ) ) {
+                $app->db->model( 'session' )->remove_multi( $sessions );
+            }
         }
         return true;
     }
@@ -5535,9 +5568,10 @@ class Prototype {
             if ( $urlmapping->date_based ) $archive_date = $type;
             $type = $urlmapping->template_id ? 'archive' : 'model';
             $publish = $urlmapping->publish_file;
-            $ui = $db->model( 'urlinfo' )->get_by_key(
-                ['urlmapping_id' => $urlmapping->id, 'class' => 'archive',
-                 'object_id' => $obj->id, 'model' => $obj->_model ] );
+            $terms = ['urlmapping_id' => $urlmapping->id, 'class' => 'archive',
+                 'object_id' => $obj->id, 'model' => $obj->_model ];
+            if ( $archive_date ) $terms['archive_date'] = $archive_date;
+            $ui = $db->model( 'urlinfo' )->get_by_key( $terms );
             $ui->file_path( $file_path );
             $ui->publish_file( $publish );
             $template = $urlmapping->template;
@@ -5612,6 +5646,7 @@ class Prototype {
         $url = str_replace( DS, '/', $url );
         $relative_path = str_replace( '/', DS, $relative_path );
         $relative_url = preg_replace( '!^https{0,1}:\/\/.*?\/!', '/', $url );
+        $orig_url = $ui->url;
         $ui->set_values( ['model' => $table->name,
                           'url' => $url,
                           'key' => $key,
@@ -5624,6 +5659,9 @@ class Prototype {
                           'relative_path' => '%r' . DS . $relative_path,
                           'workspace_id' => $obj->workspace_id ] );
         if ( isset( $archive_date ) ) $ui->archive_date( $archive_date );
+        if ( $orig_url != $url ) {
+            $ui->save();
+        }
         if ( $obj->has_column( 'status' ) ) {
             $status_published = $app->status_published( $obj->_model );
             if ( $obj->status != $status_published ) {
@@ -5999,7 +6037,7 @@ class Prototype {
         list( $column_defs, $indexes, $list, $edit, $labels, $unique,
             $unchangeable, $autoset, $locale ) = [ [], [], [], [], [], [], [], [], [] ];
         $locale['default'] = [];
-        $lang = $app->language;
+        $lang = $app->user() ? $app->user()->language : $app->language;
         $locale[ $lang ] = [];
         $scheme['version'] = $table->version;
         $scheme['label'] = $table->label;
@@ -6366,12 +6404,13 @@ class Prototype {
         $model = $obj->_model;
         $id = $obj->id;
         $extra = " AND relation_from_obj='{$model}' AND relation_from_id={$id}"
-               . " AND relation_to_obj='{$to_obj}' ORDER BY relation_order ASC ";
+               . " AND relation_to_obj='{$to_obj}' ";
         $args = ['join' => [ 'relation', ['id', 'to_id'] ], 'distinct' => 1];
         $terms = [];
         $rel_model = $app->db->model( $to_obj );
         if ( $rel_model->has_column( 'status' ) ) {
-            $published_only = $get_args['published_only'] ? $get_args['published_only'] : false;
+            $published_only = $get_args['published_only'] ?
+                $get_args['published_only'] : false;
             if ( $published_only ) {
                 $status_published = $app->status_published( $to_obj );
                 $terms['status'] = $status_published;
@@ -6383,8 +6422,23 @@ class Prototype {
                 $args[ $arg ] = $v;
             }
         }
-        return $app->db->model( $to_obj )->load(
-                                      $terms, $args, '*', $extra );
+        $to_obj = $app->db->model( $to_obj );
+        if ( isset( $args['sort'] ) && $args['sort']
+            && $to_obj->has_column( $args['sort'] ) ) {
+        } else {
+            $extra .= 'ORDER BY relation_order ';
+            if ( isset( $args['direction'] ) && $args['direction']
+                && ( $args['direction'] == 'ascend' || $args['direction'] == 'descend' ) ) {
+                if ( $args['direction'] == 'ascend' ) {
+                    $extra .= 'ASC ';
+                } else {
+                    $extra .= 'DESC ';
+                }
+            } else {
+                $extra .= 'ASC ';
+            }
+        }
+        return $to_obj->load( $terms, $args, '*', $extra );
     }
 
     function get_meta ( $obj, $kind = null, $key = null, $name = null ) {
@@ -6437,6 +6491,11 @@ class Prototype {
         if ( $obj->has_column( 'status' ) && ! $obj->status ) {
             if ( $table = $app->get_table( $obj->_model ) ) {
                 $obj->status( $table->default_status );
+            }
+        }
+        if ( $obj->has_column( 'uuid' ) ) {
+            if (! $obj->uuid && ! $obj->id ) {
+                $obj->uuid( $this->generate_uuid() );
             }
         }
         if ( $obj->has_column( 'remote_ip' ) && ! $obj->remote_ip ) {

@@ -1385,6 +1385,12 @@ class PTTags {
                 if ( isset( $args['limit'] ) ) {
                     $params['limit'] = (int) $args['limit'];
                 }
+                if ( isset( $args['sort_by'] ) ) {
+                    $params['sort'] = $args['sort_by'];
+                }
+                if ( isset( $args['sort_order'] ) ) {
+                    $params['direction'] = $args['sort_order'];
+                }
                 $objects = $app->get_related_objs( $obj, $to_obj, $colname, $params );
             }
             // Filter Status
@@ -1925,15 +1931,27 @@ class PTTags {
     function hdlr_tables ( $args, &$content, $ctx, &$repeat, $counter ) {
         $app = $ctx->app;
         $type = isset( $args['type'] ) ? $args['type'] : 'display_system';
+        $workspace_perm = isset( $args['workspace_perm'] ) ? $args['workspace_perm'] : null;
         if (! $counter ) {
             $terms = [ $type => 1];
             $menu_type = isset( $args['menu_type'] ) ? $args['menu_type'] : 0;
             if ( $menu_type ) $terms['menu_type'] = $menu_type;
             $permission = isset( $args['permission'] ) ? $args['permission'] : 0;
             $models = [];
+            $ws_admin = false;
             if ( $permission && !$app->user()->is_superuser ) {
                 $permissions = $app->permissions();
                 foreach ( $permissions as $ws_id => $perms ) {
+                    if ( $workspace_perm && $app->workspace() ) {
+                        if ( $ws_id != $app->workspace()->id ) {
+                            continue;
+                        }
+                    }
+                    if ( $app->ws_menu_type == 1 &&
+                        in_array( 'workspace_admin', $perms ) !== false ) {
+                        $ws_admin = true;
+                        continue;
+                    }
                     foreach ( $perms as $perm ) {
                         if ( strpos( $perm, 'can_list_' ) === 0 ) {
                             $perm = str_replace( 'can_list_', '', $perm );
@@ -1941,12 +1959,14 @@ class PTTags {
                         }
                     }
                 }
-                if (! empty( $models ) ) {
-                    $models = array_keys( $models );
-                    $terms['name'] = ['IN' => $models ];
-                } else {
-                    $repeat = false;
-                    return;
+                if (! $ws_admin ) {
+                    if (! empty( $models ) ) {
+                        $models = array_keys( $models );
+                        $terms['name'] = ['IN' => $models ];
+                    } else {
+                        $repeat = false;
+                        return;
+                    }
                 }
             }
             $im_export = isset( $args['im_export'] ) ? $args['im_export'] : 0;
@@ -1989,15 +2009,17 @@ class PTTags {
         $this_tag = $args['this_tag'];
         $model = $model ? $model : $ctx->stash( 'blockmodel_' . $this_tag );
         $local_vars = [ $model, 'current_context', 'current_archive_context',
-                        'current_container' ];
+                        'current_container', 'current_workspace' ];
         if (! $counter ) {
             if (! $model ) {
                 $repeat = false;
                 return;
             }
             $orig_args = $args;
+            $ctx->local_vars['current_workspace'] = $ctx->stash( 'workspace' );
             $ctx->localize( $local_vars );
             $obj = $app->db->model( $model );
+            $app->get_scheme_from_db( $model );
             $loop_objects = $ctx->stash( 'loop_objects' );
             if (! $loop_objects ) {
                 $table_id = isset( $args['table_id'] ) ? (int) $args['table_id'] : null;
@@ -2182,6 +2204,13 @@ class PTTags {
                 $count_args = $args;
                 unset( $count_args['limit'] );
                 unset( $count_args['offset'] );
+                if ( $obj->has_column( 'workspace_id' ) ) {
+                    $ws_attr = $this->include_exclude_workspaces( $app, $args );
+                    if ( $ws_attr ) {
+                        $ws_attr = ' AND ' . $obj->_model . "_workspace_id ${ws_attr}";
+                        $extra .= $ws_attr;
+                    }
+                }
                 $count_obj = $obj->count( $terms, $count_args, $cols, $extra );
                 $loop_objects = $obj->load( $terms, $args, $cols, $extra );
                 $ctx->stash( 'object_count', $count_obj );
@@ -2203,6 +2232,8 @@ class PTTags {
         $count_obj = $ctx->stash( 'object_count' );
         $ctx->local_vars[ 'object_count' ] = $count_obj;
         $ctx->set_loop_vars( $counter, $params );
+        $var_prefix = isset( $args['prefix'] ) ? $args['prefix'] : '';
+        $var_prefix .= $var_prefix ? '_' : '';
         if ( isset( $params[ $counter ] ) ) {
             $obj = $params[ $counter ];
             if ( is_object( $obj ) ) {
@@ -2212,15 +2243,73 @@ class PTTags {
                 $values = $obj->get_values();
                 foreach ( $values as $key => $value ) {
                     if ( $colprefix ) $key = preg_replace( "/^$colprefix/", '', $key );
-                    $ctx->local_vars[ $key ] = $value;
+                    $ctx->local_vars[ $var_prefix . $key ] = $value;
+                }
+                if ( $ws = $obj->workspace ) {
+                    $ctx->stash( 'workspace', $ws );
                 }
                 $repeat = true;
             }
         } else {
             $ctx->restore( $local_vars );
+            $ws = $ctx->local_vars['current_workspace'];
+            $ctx->stash( 'workspace', $ws );
         }
         return ( $counter > 1 && isset( $args['glue'] ) )
             ? $args['glue'] . $content : $content;
+    }
+
+    public function include_exclude_workspaces ( $app, $args ) {
+        $attr = null;
+        $is_excluded = null;
+        if ( isset( $args['workspace_ids'] ) ||
+             isset( $args['include_workspaces'] ) ) {
+            if (! isset( $args['workspace_ids'] ) ) {
+                $args['workspace_ids'] = $args['include_workspaces'];
+            }
+            $attr = $args['workspace_ids'];
+            unset( $args['workspace_ids'] );
+            $is_excluded = 0;
+        } elseif ( isset( $args['exclude_workspaces'] ) ) {
+            $attr = $args['exclude_workspaces'];
+            $is_excluded = 1;
+        } elseif ( isset( $args['workspace_id'] ) &&
+            is_numeric( $args['workspace_id'] ) ) {
+            return ' = ' . $args['workspace_id'];
+        } else {
+            $workspace = $app->ctx->stash( 'workspace' );
+            if ( isset ( $workspace ) ) return ' = ' . $workspace->id;
+        }
+        if ( preg_match( '/-/', $attr ) ) {
+            $list = preg_split( '/\s*,\s*/', $attr );
+            $attr = '';
+            foreach ( $list as $item ) {
+                if ( preg_match('/(\d+)-(\d+)/', $item, $matches ) ) {
+                    for ( $i = $matches[1]; $i <= $matches[2]; $i++ ) {
+                        if ( $attr != '' ) $attr .= ',';
+                        $attr .= $i;
+                    }
+                } else {
+                    if ( $attr != '' ) $attr .= ',';
+                    $attr .= $item;
+                }
+            }
+        }
+        $workspace_ids = preg_split( '/\s*,\s*/', $attr, -1, PREG_SPLIT_NO_EMPTY );
+        $sql = '';
+        if ( $is_excluded ) {
+            $sql = ' not in ( ' . join( ',', $workspace_ids ) . ' )';
+        } else if ( isset( $args['include_workspaces'] ) &&
+            $args['include_workspaces'] == 'all' ) {
+            return '';
+        } else {
+            if ( count( $workspace_ids ) ) {
+                $sql = ' in ( ' . join( ',', $workspace_ids ) . ' ) ';
+            } else {
+                return '';
+            }
+        }
+        return $sql;
     }
 
     function hdlr_objectcols ( $args, &$content, $ctx, &$repeat, $counter ) {

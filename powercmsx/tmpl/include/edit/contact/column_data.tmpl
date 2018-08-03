@@ -3,6 +3,7 @@
     <mt:var name="label" escape="1">
   </div>
   <div class="col-lg-10">
+    <input type="hidden" value="<mt:objectvar name="$_column_name" escape>" name="data">
     <mt:objectvar name="$_column_name" from_json="contact_vars">
     <mt:loop name="contact_vars">
     <mt:if name="__first__">

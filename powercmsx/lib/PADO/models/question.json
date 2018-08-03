@@ -1,0 +1,241 @@
+{
+    "label": "Question",
+    "plural": "Questions",
+    "version": "1.1",
+    "primary": "label",
+    "auditing": 1,
+    "order": 360,
+    "sortable": 1,
+    "menu_type": 4,
+    "template_tags": 1,
+    "display_space": 1,
+    "has_basename": 1,
+    "revisable": 1,
+    "has_uuid": 1,
+    "display_system": 1,
+    "column_defs": {
+        "id": {
+            "type": "int",
+            "size": 11,
+            "not_null": 1
+        },
+        "label": {
+            "type": "string",
+            "size": 255,
+            "not_null": 1
+        },
+        "questiontype_id": {
+            "type": "int",
+            "size": 11
+        },
+        "hint": {
+            "type": "text"
+        },
+        "required": {
+            "type": "tinyint",
+            "size": 4
+        },
+        "is_primary": {
+            "type": "tinyint",
+            "size": 4,
+            "default": null
+        },
+        "validation_type": {
+            "type": "string",
+            "size": 255
+        },
+        "normarize": {
+            "type": "tinyint",
+            "size": 4
+        },
+        "format": {
+            "type": "string",
+            "size": 255
+        },
+        "maxlength": {
+            "type": "int",
+            "size": 11
+        },
+        "multi_byte": {
+            "type": "tinyint",
+            "size": 4
+        },
+        "hide_in_email": {
+            "type": "tinyint",
+            "size": 4,
+            "default": null
+        },
+        "template": {
+            "type": "text"
+        },
+        "rows": {
+            "type": "int",
+            "size": 11
+        },
+        "count_fields": {
+            "type": "int",
+            "size": 11
+        },
+        "connector": {
+            "type": "string",
+            "size": 255
+        },
+        "options": {
+            "type": "text"
+        },
+        "values": {
+            "type": "text"
+        },
+        "default_value": {
+            "type": "text"
+        },
+        "placeholder": {
+            "type": "text"
+        },
+        "basename": {
+            "type": "string",
+            "size": 255,
+            "not_null": 1
+        },
+        "order": {
+            "type": "int",
+            "size": 11
+        },
+        "workspace_id": {
+            "type": "int",
+            "size": 11
+        },
+        "rev_type": {
+            "type": "int",
+            "size": 11,
+            "not_null": 1,
+            "default": "0"
+        },
+        "rev_object_id": {
+            "type": "int",
+            "size": 11
+        },
+        "rev_changed": {
+            "type": "string",
+            "size": 255
+        },
+        "rev_note": {
+            "type": "string",
+            "size": 255
+        },
+        "rev_diff": {
+            "type": "text"
+        },
+        "created_on": {
+            "type": "datetime"
+        },
+        "modified_on": {
+            "type": "datetime"
+        },
+        "created_by": {
+            "type": "int",
+            "size": 11
+        },
+        "modified_by": {
+            "type": "int",
+            "size": 11
+        },
+        "uuid": {
+            "type": "string",
+            "size": 255
+        }
+    },
+    "indexes": {
+        "PRIMARY": "id",
+        "id": "id",
+        "label": "label",
+        "questiontype_id": "questiontype_id",
+        "basename": "basename",
+        "order": "order",
+        "workspace_id": "workspace_id",
+        "rev_type": "rev_type",
+        "rev_object_id": "rev_object_id",
+        "rev_note": "rev_note",
+        "created_on": "created_on",
+        "modified_on": "modified_on",
+        "created_by": "created_by",
+        "modified_by": "modified_by",
+        "uuid": "uuid"
+    },
+    "translate": [
+        "questiontype_id",
+        "validation_type",
+        "connector"
+    ],
+    "hint": {
+        "connector": "Combine multiple fields with connectors.",
+        "options": "Please enter all allowable options for this field as a comma separated list.",
+        "values": "If you want to receive a value different from the value entered for the options, please enter alternative comma separated list."
+    },
+    "options": {
+        "validation_type": "Email,Selected Items,Tel,Postal Code,URL,Date,Date & Time",
+        "multi_byte": "Multi-Byte",
+        "template": "10",
+        "default_value": "3"
+    },
+    "sort_by": {
+        "id": "ascend"
+    },
+    "autoset": [
+        "workspace_id",
+        "rev_type",
+        "rev_object_id",
+        "rev_changed",
+        "rev_diff",
+        "created_on",
+        "modified_on",
+        "created_by",
+        "modified_by"
+    ],
+    "unique": [
+        "label"
+    ],
+    "unchangeable": [
+        "workspace_id",
+        "uuid"
+    ],
+    "disp_edit": {
+        "validation_type": "select"
+    },
+    "edit_properties": {
+        "id": "hidden",
+        "label": "primary",
+        "questiontype_id": "relation:questiontype:name:select",
+        "hint": "text",
+        "validation_type": "selection",
+        "maxlength": "number",
+        "hide_in_email": "checkbox",
+        "template": "textarea",
+        "rows": "number",
+        "count_fields": "number",
+        "connector": "text_short",
+        "options": "text",
+        "values": "text",
+        "default_value": "textarea",
+        "placeholder": "text",
+        "basename": "text_short",
+        "order": "number",
+        "uuid": "text_short"
+    },
+    "list_properties": {
+        "id": "number",
+        "label": "primary",
+        "questiontype_id": "reference:questiontype:name",
+        "required": "checkbox",
+        "is_primary": "checkbox",
+        "validation_type": "text_short",
+        "options": "text_short",
+        "basename": "text_short",
+        "order": "number",
+        "workspace_id": "reference:workspace:name",
+        "rev_note": "text",
+        "rev_diff": "popover",
+        "modified_on": "datetime",
+        "modified_by": "reference:user:name"
+    }
+}

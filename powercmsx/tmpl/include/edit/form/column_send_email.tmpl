@@ -1,0 +1,167 @@
+<div class="row form-group">
+  <div class="col-lg-2">
+    <label for="<mt:var name="__col_name__">">
+      <mt:trans phrase="Send Notification Email">
+      <mt:if name="not_null"><mt:var name="field_required"></mt:if>
+    </label>
+  </div>
+  <div class="col-lg-10">
+    <input type="hidden" name="<mt:var name="__col_name__">" value="0">
+    <label class="custom-control custom-checkbox">
+    <input id="<mt:var name="__col_name__">" class="custom-control-input watch-changed"
+    <mt:if name="readonly">onclick="return false;"</mt:if>
+     type="checkbox" name="<mt:var name="__col_name__">" value="1" <mt:if name="value">checked</mt:if>>
+        <span class="custom-control-indicator"></span>
+        <span class="custom-control-description"> 
+        <mt:var name="label" escape></span>
+    </label>
+    <div class="row form-group send_email" style="margin-top:1.2em !important">
+      <div class="col-lg-2">
+        <label for="email_from">
+          <mt:trans phrase="Mail From"> : 
+        </label>
+      </div>
+      <div class="col-lg-9">
+        <input id="email_from" type="text" class="form-control watch-changed" name="email_from" value="<mt:var name="object_email_from" escape>">
+      </div>
+    </div>
+  </div>
+</div>
+<div class="row form-group send_email">
+  <div class="col-lg-2">
+  </div>
+  <div class="col-lg-10">
+    <input type="hidden" name="send_thanks" value="0">
+    <label class="custom-control custom-checkbox">
+    <input id="send_thanks" class="custom-control-input watch-changed"
+     type="checkbox" name="send_thanks" value="1" <mt:if name="object_send_thanks">checked</mt:if>>
+        <span class="custom-control-indicator"></span>
+        <span class="custom-control-description"> 
+        <mt:trans phrase="Send Thank You Message"></span>
+    </label>
+    <div class="row form-group send_thanks" style="margin-top:1.2em !important">
+      <div class="col-lg-2">
+        <label for="thanks_subject">
+          <mt:trans phrase="Subject"> : 
+        </label>
+      </div>
+      <div class="col-lg-9">
+        <input id="thanks_subject" type="text" class="form-control watch-changed" name="thanks_subject" value="<mt:var name="object_thanks_subject" escape>">
+      </div>
+    </div>
+    <div class="row form-group send_thanks">
+      <div class="col-lg-2">
+        <label for="thanks_template">
+          <mt:trans phrase="Template"> : 
+        </label>
+      </div>
+      <div class="col-lg-9">
+        <select id="thanks_template" class="form-control watch-changed" name="thanks_template">
+          <option value=""><mt:trans phrase="Unspecified"></option>
+        <mt:objectloop model="template" sort_by="order" prefix="template" class="Mail" workspace_id="0">
+          <option value="<mt:var name="template_id">"
+            <mt:if name="object_thanks_template" eq="$template_id">selected</mt:if>
+            ><mt:var name="template_name" escape></option>
+        </mt:objectloop>
+        <mt:if name="workspace_id">
+          <mt:objectloop model="template" sort_by="order" prefix="template" class="Mail" workspace_id="$workspace_id">
+          <option value="<mt:var name="template_id">"
+            <mt:if name="object_thanks_template" eq="$template_id">selected</mt:if>
+            ><mt:var name="template_name" escape></option>
+          </mt:objectloop>
+        </mt:if>
+        </select>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="row form-group send_email">
+  <div class="col-lg-2">
+  </div>
+  <div class="col-lg-10">
+    <input type="hidden" name="send_notify" value="0">
+    <label class="custom-control custom-checkbox">
+    <input id="send_notify" class="custom-control-input watch-changed"
+     type="checkbox" name="send_notify" value="1" <mt:if name="object_send_notify">checked</mt:if>>
+        <span class="custom-control-indicator"></span>
+        <span class="custom-control-description"> 
+        <mt:trans phrase="Send Notify Message"></span>
+    </label>
+    <div class="row form-group send_notify" style="margin-top:1.2em !important">
+      <div class="col-lg-2">
+        <label for="thanks_subject">
+          <mt:trans phrase="Notify To"> : 
+        </label>
+      </div>
+      <div class="col-lg-9">
+        <input id="notify_to" type="text" class="form-control watch-changed" name="notify_to" value="<mt:var name="object_notify_to" escape>">
+      </div>
+    </div>
+    <div class="row form-group send_notify">
+      <div class="col-lg-2">
+        <label for="thanks_subject">
+          <mt:trans phrase="Subject"> : 
+        </label>
+      </div>
+      <div class="col-lg-9">
+        <input id="notify_subject" type="text" class="form-control watch-changed" name="notify_subject" value="<mt:var name="object_notify_subject" escape>">
+      </div>
+    </div>
+    <div class="row form-group send_notify">
+      <div class="col-lg-2">
+        <label for="thanks_template">
+          <mt:trans phrase="Template"> : 
+        </label>
+      </div>
+      <div class="col-lg-9">
+        <select id="notify_template" class="form-control watch-changed" name="notify_template">
+          <option value=""><mt:trans phrase="Unspecified"></option>
+        <mt:objectloop model="template" sort_by="order" prefix="template" class="Mail" workspace_id="0">
+          <option value="<mt:var name="template_id">"
+            <mt:if name="object_notify_template" eq="$template_id">selected</mt:if>
+            ><mt:var name="template_name" escape></option>
+        </mt:objectloop>
+        <mt:if name="workspace_id">
+          <mt:objectloop model="template" sort_by="order" prefix="template" class="Mail" workspace_id="$workspace_id">
+          <option value="<mt:var name="template_id">"
+            <mt:if name="object_notify_template" eq="$template_id">selected</mt:if>
+            ><mt:var name="template_name" escape></option>
+          </mt:objectloop>
+        </mt:if>
+        </select>
+      </div>
+    </div>
+  </div>
+</div>
+<script>
+<mt:unless name="object_send_notify">
+  $('.send_notify').hide();
+</mt:unless>
+$('#send_notify').change(function(){
+    if ( $(this).prop('checked') ) {
+        $('.send_notify').show();
+    } else {
+        $('.send_notify').hide();
+    }
+});
+<mt:unless name="object_send_thanks">
+  $('.send_thanks').hide();
+</mt:unless>
+$('#send_thanks').change(function(){
+    if ( $(this).prop('checked') ) {
+        $('.send_thanks').show();
+    } else {
+        $('.send_thanks').hide();
+    }
+});
+<mt:unless name="object_send_email">
+  $('.send_email').hide();
+</mt:unless>
+$('#<mt:var name="__col_name__">').change(function(){
+    if ( $(this).prop('checked') ) {
+        $('.send_email').show();
+    } else {
+        $('.send_email').hide();
+    }
+});
+</script>

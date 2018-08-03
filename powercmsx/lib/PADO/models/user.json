@@ -1,7 +1,7 @@
 {
     "label"    : "User",
     "plural"   : "Users",
-    "version"  : "1.1",
+    "version"  : "1.2",
     "primary"  : "name",
     "display_system": 1,
     "order"    : 80,
@@ -135,6 +135,9 @@
     "sort_by": {
         "id": "ascend"
     },
+    "child_tables" : [
+        "permission"
+    ],
     "list_properties": {
         "id": "number",
         "name": "primary",

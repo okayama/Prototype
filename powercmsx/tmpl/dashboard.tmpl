@@ -8,7 +8,7 @@
 
 <div class="card-group dashboard-widget">
   <mt:unless name="workspace_id">
-    <mt:objectloop model="workspace" sort_by="order">
+    <mt:objectloop model="workspace" sort_by="order" can_access="1">
       <div class="card">
         <mt:ignore><img class="card-img-top" src="..." alt="Card image cap"></mt:ignore>
         <div class="card-block">
@@ -29,7 +29,7 @@
       </div>
     </mt:objectloop>
   <mt:else>
-    <mt:tables type="display_dashboard">
+    <mt:tables type="display_dashboard" permission="1" workspace_perm="1">
       <mt:trans phrase="$plural" setvar="object_plural">
       <mt:trans phrase="$label" setvar="object_label">
       <div class="card">

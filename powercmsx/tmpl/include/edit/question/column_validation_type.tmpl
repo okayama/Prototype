@@ -14,6 +14,20 @@
       </mt:unless>
       </mt:if>
         <option <mt:if name="__col_value__" eq="$__value__">selected</mt:if> value="<mt:var name="__value__" escape>"><mt:trans phrase="$__value__" escape></option>
+    <mt:if name="__last__">
+<mt:loop name="form_validations">
+<option value="<mt:var name="__key__" escape>"
+<mt:if name="__col_value__" eq="$__key__">selected</mt:if>
+<mt:loop name="__value__">
+<mt:if name="__key__" eq="label">
+  <mt:setvar name="validation_label" value="$__value__">
+<mt:elseif name="__key__" eq="component">
+  <mt:setvar name="validation_component" value="$__value__">
+</mt:if>
+</mt:loop>
+><mt:trans phrase="$validation_label" component="$validation_component"></option>
+</mt:loop>
+    </mt:if>
     </mt:loop>
     </select>
     <input type="hidden" name="normarize" value="0">
@@ -28,3 +42,4 @@
     &nbsp; &nbsp;<label><mt:trans phrase="Format"> : <input type="text" name="format" class="form-control e-num watch-changed" value="<mt:var name="object_format" escape>"></label>
   </div>
 </div>
+

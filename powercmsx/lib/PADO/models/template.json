@@ -1,7 +1,7 @@
 {
     "label"    : "View",
     "plural"   : "Views",
-    "version"  : "1.0",
+    "version"  : "1.1",
     "auditing" : 1,
     "display_system": 1,
     "order"    : 130,
@@ -26,6 +26,11 @@
         },
         "text": {
             "type": "text"
+        },
+        "class": {
+            "type": "string",
+            "size": 255,
+            "not_null": 1
         },
         "status": {
             "type": "int",
@@ -114,6 +119,7 @@
         "uuid"
     ],
     "disp_edit": {
+        "class": "select",
         "status": "select"
     },
     "autoset": [
@@ -128,6 +134,7 @@
     "edit_properties": {
         "id": "hidden",
         "name": "primary",
+        "class": "selection",
         "text": "textarea",
         "status": "selection",
         "basename": "text_short",
@@ -136,6 +143,7 @@
     "list_properties": {
         "id": "number",
         "name": "primary",
+        "class": "text_short",
         "status": "number",
         "rev_diff": "popover",
         "rev_note": "text",
@@ -145,6 +153,10 @@
         "workspace_id": "reference:workspace:name"
     },
     "options": {
+        "class": "Archive,Form,Search,Mail",
         "status": "Disable,Enable"
-    }
+    },
+    "translate": [
+        "class"
+    ]
 }

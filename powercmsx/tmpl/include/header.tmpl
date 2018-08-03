@@ -141,7 +141,7 @@ window.onload = function(){
             </a>
             <div class="dropdown-menu">
           </mt:if>
-            <a class="dropdown-item dropdown-sub btn-sm <mt:if name="name" eq="$model">active</mt:if>" href="<mt:var name="script_uri">?__mode=view&amp;_type=list&amp;_model=<mt:var name="name" escape><mt:if name="workspace_id">&amp;workspace_id=<mt:var name="workspace_id"></mt:if>"><mt:var name="label" escape></a>
+            <a class="dropdown-item dropdown-sub btn-sm <mt:if name="name" eq="$model">active</mt:if>" href="<mt:var name="script_uri">?__mode=view&amp;_type=list&amp;_model=<mt:var name="name" escape>"><mt:var name="label" escape></a>
           <mt:if name="__last__">
             </div>
             </li>
@@ -227,12 +227,12 @@ window.onload = function(){
       <a class="navbar-brand brand-workspace" href="<mt:var name="script_uri">?__mode=dashboard&amp;workspace_id=<mt:var name="workspace_id">"><mt:var name="workspace_name" escape></a>
       <div class="collapse navbar-collapse" id="navbars-ws">
         <ul class="nav-pills navbar-nav mr-auto">
-        <mt:tables type="display_space" menu_type="1" permission="1">
+        <mt:tables type="display_space" menu_type="1" permission="1" workspace_perm="1">
           <li class="nav-item nav-item-ws <mt:if name="name" eq="$model">active</mt:if>">
             <a class="nav-link" href="<mt:var name="script_uri">?__mode=view&amp;_type=list&amp;_model=<mt:var name="name" escape><mt:if name="workspace_id">&amp;workspace_id=<mt:var name="workspace_id"></mt:if>"><mt:var name="label" escape></a>
           </li>
           <mt:if name="__last__">
-            <mt:tables type="display_space" menu_type="2" permission="1">
+            <mt:tables type="display_space" menu_type="2" permission="1" workspace_perm="1">
               <mt:if name="__first__">
                 <li class="nav-item dropdown">
                 <a aria-label="<mt:trans phrase="System Objects">" class="nav-link dropdown-toggle" data-toggle="dropdown" href="#">
@@ -247,7 +247,7 @@ window.onload = function(){
                 </li>
               </mt:if>
             </mt:tables>
-            <mt:tables type="display_space" menu_type="3" permission="1">
+            <mt:tables type="display_space" menu_type="3" permission="1" workspace_perm="1">
               <mt:if name="__first__">
                 <li class="nav-item dropdown">
                 <a aria-label="<mt:trans phrase="Read-only Objects">" class="nav-link dropdown-toggle" data-toggle="dropdown" href="#">
@@ -262,7 +262,7 @@ window.onload = function(){
                 </li>
               </mt:if>
             </mt:tables>
-            <mt:tables type="display_space" menu_type="4" permission="1">
+            <mt:tables type="display_space" menu_type="4" permission="1" workspace_perm="1">
               <mt:if name="__first__">
                 <li class="nav-item dropdown">
                 <a aria-label="<mt:trans phrase="Communication">" class="nav-link dropdown-toggle" data-toggle="dropdown" href="#">
@@ -277,7 +277,7 @@ window.onload = function(){
                 </li>
               </mt:if>
             </mt:tables>
-            <mt:tables type="display_space" menu_type="5" permission="1">
+            <mt:tables type="display_space" menu_type="5" permission="1" workspace_perm="1">
               <mt:if name="__first__">
                 <li class="nav-item dropdown">
                 <a aria-label="<mt:trans phrase="User and Permission">" class="nav-link dropdown-toggle" data-toggle="dropdown" href="#">
