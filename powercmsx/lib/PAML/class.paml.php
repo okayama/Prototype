@@ -126,7 +126,7 @@ class PAML {
                         'strip_linefeeds', 'sprintf', 'encode_js', 'truncate', 'wrap', 'encode_url',
                         'trim_space', 'regex_replace', 'setvartemplate', 'replace', 'translate',
                         'count_chars', 'to_json', 'from_json', 'nocache', 'split', 'join',
-                        'format_size', 'encode_xml', 'instr', 'mb_instr'],
+                        'format_size', 'encode_xml', 'instr', 'mb_instr', 'absolute'],
       'function'    => ['getvar', 'trans', 'setvar', 'property', 'ldelim', 'include', 'math',
                         'rdelim', 'fetch', 'var', 'date', 'assign', 'count', 'vardump'],
       'include'     => ['include', 'includeblock', 'extends'] ];
@@ -696,6 +696,7 @@ class PAML {
  * Localize variables in block scope.
  *
  * @param array $vars: Array for localize and restore variables names.
+ * @param array $stashes: Array for localize and restore stashes names.
  */
     function localize ( $vars = [] ) {
         foreach ( $vars as $var ) {
@@ -714,6 +715,7 @@ class PAML {
  * Restore variables in block scope.
  *
  * @param array $vars: Array for localize and restore variables names.
+ * @param array $stashes: Array for localize and restore stashes names.
  */
     function restore ( $vars = [] ) {
         foreach ( $vars as $var ) {
@@ -977,6 +979,9 @@ class PAML {
             $v = isset( $vars[ $key ][ $value ] ) ? $vars[ $key ][ $value ] : '';
         } elseif ( strpos( $args['name'], 'request.' ) === 0 ) {
             $v = $ctx->request_var( $args['name'], $args );
+        } elseif ( strpos( $args['name'], 'cookie.' ) === 0 ) {
+            $cookie = preg_replace( '/^cookie\./', '', $args['name'] );
+            $v = isset( $_COOKIE[ $cookie ] ) ? $_COOKIE[ $cookie ] : '';
         } else {
             if ( isset( $vars[ $args['name'] ] ) ) $v = $vars[ $args['name'] ];
         }
@@ -1041,8 +1046,12 @@ class PAML {
         $name = $args['name'];
         if ( is_array( $name )&&isset( $name['__array__'] ) )
             return $name['__array__'];
-        if ( is_string( $name ) && strpos( $name, 'request.' ) === 0 )
+        if ( is_string( $name ) && strpos( $name, 'request.' ) === 0 ) {
             return $ctx->request_var( $args['name'], $args );
+        } else if ( is_string( $name ) && strpos( $name, 'cookie.' ) === 0 ) {
+            $name = preg_replace( '/^cookie\./', '', $name );
+            return isset( $_COOKIE[ $name ] ) ? $_COOKIE[ $name ] : '';
+        }
         if ( isset( $args['index'] ) ) {
             if ( is_array( $name ) && isset( $name[ $args['index'] ] ) )
                 return $name[ $args['index'] ];
@@ -1279,6 +1288,13 @@ class PAML {
     function modifier_mb_instr ( $str, $arg, $ctx ) {
         $instr = mb_strpos( $str, $arg );
         if ( $instr !== false ) return $instr + 1;
+    }
+
+    function modifier_absolute ( $str, $arg, $ctx ) {
+        if ( strpos( $str, 'http' ) === 0 ) {
+            $str = preg_replace( "/^https{0,1}:\/\/.*?\//", '/', $str );
+        }
+        return $str;
     }
 
     function modifier_truncate ( $str, $len, $ctx ) {

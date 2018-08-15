@@ -1,7 +1,7 @@
 {
     "label"    : "Role",
     "plural"   : "Roles",
-    "version"  : "1.2",
+    "version"  : "1.3",
     "primary"  : "name",
     "auditing" : 1,
     "order"    : 160,
@@ -53,6 +53,10 @@
             "type": "relation"
         },
         "can_rebuild": {
+            "type": "tinyint",
+            "size": 4
+        },
+        "can_livepreview": {
             "type": "tinyint",
             "size": 4
         },
@@ -129,6 +133,7 @@
         "can_activate": "relation:table:label:checkbox",
         "can_delete": "relation:table:label:checkbox",
         "can_rebuild": "checkbox",
+        "can_livepreview": "checkbox",
         "import_objects": "checkbox",
         "manage_plugins": "checkbox"
     },

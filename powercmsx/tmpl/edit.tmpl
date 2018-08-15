@@ -592,6 +592,39 @@ $(function () {
                   </li>
                 <mt:if name="__last__"></ul></mt:if>
               </mt:nestableobjects>
+              </mt:setvartemplate>
+            <mt:else>
+              <mt:setvartemplate name="nestable_obj_list">
+              <mt:nestableobjects model="$rel_model" parent_id="$_parent_id">
+                <mt:if name="__first__"><ul>
+                  <li>
+                  <label class="custom-control custom-radio">
+                    <input class="custom-control-input" type="radio" <mt:unless name="__col_value__">checked</mt:unless> name="<mt:var name="__col_name__">" value="">
+                    <span class="custom-control-indicator"></span>
+                    <span class="custom-control-description"><mt:trans phrase="Unspecified"></span>
+                  </label>
+                  </li>
+                </mt:if>
+                  <li>
+                    <label class="custom-control custom-radio">
+                      <input class="custom-control-input watch-changed" type="radio" <mt:if name="__col_value__" eq="$id">checked</mt:if> name="<mt:var name="__col_name__">" value="<mt:var name="id">">
+                      <span class="custom-control-indicator"></span>
+                      <span class="custom-control-description"><mt:var name="$rel_col" escape></span>
+                    </label>
+                    <mt:if name="has_children">
+                      <mt:var name="id" setvar="_parent_id">
+                      <mt:var name="nestable_obj_list">
+                    </mt:if>
+                  </li>
+                <mt:if name="__last__"></ul></mt:if>
+              </mt:nestableobjects>
+              </mt:setvartemplate>
+            </mt:if>
+            <div class="relation_nestable_list">
+              <mt:setvar name="_parent_id" value="0">
+              <mt:var name="nestable_obj_list">
+              <input type="hidden" value="<mt:var name="relation_primary_id" escape>" id="<mt:var name="__col_name__">_primary_id" name="<mt:var name="__col_name__">_primary_id">
+                <mt:if name="edit" like="hierarchy">
                 <script>
                 var orig_selected_id;
                 var selected_id = '<mt:var name="relation_primary_id" escape>';
@@ -654,37 +687,7 @@ $(function () {
                     }
                 });
                 </script>
-              </mt:setvartemplate>
-            <mt:else>
-              <mt:setvartemplate name="nestable_obj_list">
-              <mt:nestableobjects model="$rel_model" parent_id="$_parent_id">
-                <mt:if name="__first__"><ul>
-                  <li>
-                  <label class="custom-control custom-radio">
-                    <input class="custom-control-input" type="radio" <mt:unless name="__col_value__">checked</mt:unless> name="<mt:var name="__col_name__">" value="">
-                    <span class="custom-control-indicator"></span>
-                    <span class="custom-control-description"><mt:trans phrase="Unspecified"></span>
-                  </label>
-                  </li>
                 </mt:if>
-                  <li>
-                    <label class="custom-control custom-radio">
-                      <input class="custom-control-input watch-changed" type="radio" <mt:if name="__col_value__" eq="$id">checked</mt:if> name="<mt:var name="__col_name__">" value="<mt:var name="id">">
-                      <span class="custom-control-indicator"></span>
-                      <span class="custom-control-description"><mt:var name="$rel_col" escape></span>
-                    </label>
-                    <mt:if name="has_children">
-                      <mt:var name="id" setvar="_parent_id">
-                      <mt:var name="nestable_obj_list">
-                    </mt:if>
-                  </li>
-                <mt:if name="__last__"></ul></mt:if>
-              </mt:nestableobjects>
-              </mt:setvartemplate>
-            </mt:if>
-            <div class="relation_nestable_list">
-              <mt:var name="nestable_obj_list">
-              <input type="hidden" value="<mt:var name="relation_primary_id" escape>" id="<mt:var name="__col_name__">_primary_id" name="<mt:var name="__col_name__">_primary_id">
             </div>
           <mt:elseif name="edit" like="select">
             <select id="<mt:var name="__col_name__">" class="form-control short watch-changed" name="<mt:var name="__col_name__">">
@@ -1063,7 +1066,10 @@ $('#_field_chooser').click(function(){
 <mt:if name="_revisable">
 <mt:var name="object_rev_object_id" setvar="object_rev_object_id">
 <input type="hidden" name="rev_object_id" value="<mt:var name="object_rev_object_id">">
+<mt:tablehascolumn column="status">
+<mt:else>
 <input type="hidden" name="rev_type" value="<mt:var name="object_rev_type">">
+</mt:tablehascolumn>
 </mt:if>
 
 <mt:setvarblock name="modified_col">
@@ -1259,7 +1265,7 @@ $('#__save_as_revision').click(function(){
 });
 <mt:if name="request.edit_revision">
 $('#__apply_to_master').click(function(){
-    if(!confirm('<mt:trans phrase="Are you sure you want to apply this revision to master?">')){
+    if(!confirm('<mt:trans phrase="Are you sure you want to apply this revision to master?"><mt:tablehascolumn column="status">(<mt:trans phrase="The status at apply is the status of the master.">)</mt:tablehascolumn>')){
         return false;
     }
     $('#_preview').val('');

@@ -283,14 +283,21 @@ class PADO {
             $key = key( $model );
             $model = $model[ $key ];
         }
-        if (! class_exists( $model ) ) {
+        $class_exists = class_exists( $model );
+        if (! $class_exists ) {
             $lib = PADODIR . 'lib' . DS . 'class.' . $model . '.php';
             if ( is_readable( $lib ) ) include( $lib );
         }
-        $class = class_exists( $model ) ? $model
+        $class = $class_exists ? $model
                : ( class_exists( 'PADO' . $this->driver )
                ? 'PADO' . $this->driver : 'PADOBaseModel' );
-        return new $class( $model, $this );
+        $_model = new $class( $model, $this );
+        if ( $class_exists && get_class( $_model ) != $model ) {
+            $class = class_exists( 'PADO' . $this->driver ) 
+               ? 'PADO' . $this->driver : 'PADOBaseModel';
+            $_model = new $class( $model, $this );
+        }
+        return $_model;
     }
 
 /**

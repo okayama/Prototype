@@ -1,6 +1,7 @@
 <mt:setvar name="__can_rebuild_this_template" value="0">
 
 <mt:var name="request.id" escape setvar="template_id">
+<mt:unless name="request._duplicate">
 <mt:objectloop model="urlmapping" template_id="$template_id" sort_by="order" sort_order="ascend">
 <mt:if name="__first__">
 <div class="row form-group">
@@ -43,7 +44,7 @@
 </div>
 </mt:if>
 </mt:objectloop>
-
+</mt:unless>
 <mt:loop name="_include_modules">
 <mt:if name="__first__">
 <div class="row form-group">

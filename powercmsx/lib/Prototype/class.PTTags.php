@@ -13,7 +13,7 @@ class PTTags {
         $cache = $app->get_cache( $cache_key );
         if ( $cache ) {
             $r_tags = $cache['tags'];
-            $components = $cache['components'];
+            // $components = $cache['components'];
             $blockmodels = $cache['blockmodels'];
             $function_relations = $cache['function_relations'];
             $block_relations = $cache['block_relations'];
@@ -56,11 +56,15 @@ class PTTags {
         $tags = $this;
         $r_tags             = [];
         $blockmodels        = [];
-        $components = ['pttags' => true];
+        // $components = ['pttags' => true];
         foreach ( $tables as $table ) {
             $plural = strtolower( $table->plural );
             $plural = preg_replace( '/[^a-z]/', '' , $plural );
+            $label = strtolower( $table->label );
+            $label = preg_replace( '/[^a-z]/', '' , $label );
             $this->register_tag( $ctx, $plural, 'block', 'hdlr_objectloop', $tags, $r_tags );
+            $this->register_tag( $ctx, $label . 'referencecontext',
+                'block', 'hdlr_referencecontext', $tags, $r_tags );
             $ctx->stash( 'blockmodel_' . $plural, $table->name );
             $blockmodels[ 'blockmodel_' . $plural ] = $table->name;
             $scheme = $app->get_scheme_from_db( $table->name );
@@ -174,6 +178,7 @@ class PTTags {
         $ctx->stash( 'fileurl_tags', $fileurl_tags );
         $ctx->stash( 'alias_functions', $alias );
         $ctx->stash( 'count_tags', $count_tags );
+        /*
         $registry = $app->registry;
         if ( isset( $registry['tags'] ) ) {
             $tags = $registry['tags'];
@@ -187,13 +192,14 @@ class PTTags {
                         if ( method_exists( $component, $meth ) ) {
                             $this->register_tag( $ctx,
                                 $name, $tag_kind, $meth, $component, $r_tags );
-                            $components[ strtolower( $plugin ) ] = true;
+                            // $components[ strtolower( $plugin ) ] = true;
                         }
                     }
                 }
             }
         }
-        $cache = ['tags' => $r_tags, 'components' => $components,
+        */
+        $cache = ['tags' => $r_tags, // 'components' => $components,
                   'blockmodels' => $blockmodels, 'function_relations' => $function_relations,
                   'block_relations' => $block_relations, 'function_date' => $function_date,
                   'workspace_tags' => $workspace_tags, 'alias_functions' => $alias,
@@ -466,6 +472,17 @@ class PTTags {
         return false;
     }
 
+    function hdlr_ifcomponent ( $args, $content, $ctx, $repeat, $counter ) {
+        $app = $ctx->app;
+        if ( isset( $args['component'] ) ) {
+            $component = $app->component( $args['component'] );
+            if ( is_object( $component ) ) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     function hdlr_iftagged ( $args, $content, $ctx, $repeat, $counter ) {
         $app = $ctx->app;
         $current_context = $ctx->stash( 'current_context' );
@@ -660,7 +677,7 @@ class PTTags {
         $db_cache_key = md5( "template-module-{$cache_key}-{$request_id}" );
         if ( $cache_key && $app->stash( "template-module-{$cache_key}" ) ) {
             return $app->stash( "template-module-{$cache_key}" );
-        } else if ( $cache_key ) {
+        } else if ( $cache_key && !$app->no_cache ) {
             $session = $app->db->model( 'session' )->get_by_key( [
                            'name' => $db_cache_key, 
                            'kind' => 'CH',
@@ -727,11 +744,14 @@ class PTTags {
             }
             $ctx->local_vars[ $k ] = $v;
         }
+        if ( stripos( $tmpl, 'setvartemplate' ) !== false ) {
+            $ctx->compile( $tmpl, false );
+        }
         $build = $ctx->build( $tmpl );
         foreach ( $old_vars as $k => $v ) {
             $ctx->local_vars[ $k ] = $v;
         }
-        if ( $cache_key ) {
+        if ( $cache_key && !$app->no_cache ) {
             $app->stash( "template-module-{$cache_key}", $build );
             $session = $app->db->model( 'session' )->get_by_key( [
                            'name'  => $db_cache_key, 
@@ -1300,6 +1320,82 @@ class PTTags {
             ? $args['glue'] . $content : $content;
     }
 
+    function hdlr_referencecontext ( $args, $content, $ctx, &$repeat, $counter ) {
+        $app = $ctx->app;
+        $name = isset( $args['name'] ) ? $args['name'] : '';
+        $model = isset( $args['model'] ) ? $args['model'] : '';
+        if (! $name && ! $model ) {
+            $repeat = false;
+            return;
+        }
+        $localvars = ['current_context', 'reference_obj', 'object'];
+        if (! $counter ) {
+            if ( $model ) {
+                $obj_id = isset( $args['id'] ) ? $args['id'] : '';
+                if (! $obj_id ) {
+                    $repeat = false;
+                    return;
+                }
+                $ref_model = $model;
+            } else {
+                $current_context = $ctx->stash( 'current_context' );
+                $scheme = $app->get_scheme_from_db( $current_context );
+                $obj = $ctx->stash( $current_context );
+                if (! $obj ) {
+                    $repeat = false;
+                    return;
+                }
+                if (! $obj->has_column( $name ) ) {
+                    $name = strtolower( $name );
+                    $labels = $scheme['labels'];
+                    foreach ( $labels as $key => $val ) {
+                        $val = strtolower( $val );
+                        if ( $name == $val ) {
+                            $name = $key;
+                            break;
+                        }
+                    }
+                }
+                if (! $obj->$name ) {
+                    $repeat = false;
+                    return;
+                }
+                $props = $scheme['edit_properties'];
+                $prop = $props[ $name ];
+                $props = explode( ':', $prop );
+                $ref_model = $props[1];
+                if (! $ref_model ) {
+                    $repeat = false;
+                    return;
+                }
+                $obj_id = $obj->$name;
+            }
+            if ( isset( $args['force'] ) && $args['force'] ) {
+                $app->db->caching = false;
+            }
+            $ref_obj = $app->db->model( $ref_model )->load( (int)$obj_id );
+            if (! $ref_obj ) {
+                $repeat = false;
+                return;
+            }
+            $callback = ['name' => 'post_load_object', 'model' => $ref_model ];
+            $app->run_callbacks( $callback, $model, $ref_obj );
+            $localvars[] = $ref_model;
+            $ctx->localize( $localvars );
+            $ctx->stash( 'reference_obj', $ref_model );
+            $ctx->stash( 'current_context', $ref_model );
+            $ctx->stash( $ref_model, $ref_obj );
+            $ctx->stash( 'object', $ref_obj );
+        }
+        $ref_model = $ctx->stash( 'reference_obj' );
+        if ( $counter ) {
+            $localvars[] = $ref_model;
+            $ctx->restore( $localvars );
+            $repeat = false;
+        }
+        return $content;
+    }
+
     function hdlr_get_relatedobjs ( $args, $content, $ctx, &$repeat, $counter ) {
         $app = $ctx->app;
         $this_tag = $args['this_tag'];
@@ -1392,6 +1488,9 @@ class PTTags {
                     $params['direction'] = $args['sort_order'];
                 }
                 $objects = $app->get_related_objs( $obj, $to_obj, $colname, $params );
+                $callback = ['name' => 'post_load_objects', 'model' => $to_obj ];
+                $count_obj = count( $objects );
+                $app->run_callbacks( $callback, $model, $objects, $count_obj );
             }
             // Filter Status
             $scheme = $app->db->scheme;
@@ -1574,7 +1673,11 @@ class PTTags {
         if ( $table->revisable ) {
             $terms['rev_type'] = 0;
         }
-        return $app->db->model( $model )->count( $terms );
+        $callback = ['name' => 'pre_archive_count', 'model' => $model ];
+        $args = [];
+        $extra = '';
+        $app->run_callbacks( $callback, $model, $terms, $args, $extra );
+        return $app->db->model( $model )->count( $terms, $args, $extra );
     }
 
     function hdlr_archivelist ( $args, &$content, $ctx, &$repeat, $counter ) {
@@ -1688,21 +1791,28 @@ class PTTags {
                     $wheres[] = "{$_colprefix}status=$status_published";
                 }
                 if ( $container_obj->has_column( 'workspace_id' ) ) {
-                    $wheres[] = "{$_colprefix}workspace_id=$workspace_id";
+                    if ( $table->space_child && ! $workspace_id ) {
+                    } else {
+                        $wheres[] = "{$_colprefix}workspace_id=$workspace_id";
+                    }
                 }
                 if ( $container_obj->has_column( 'rev_type' ) ) {
                     $wheres[] = "{$_colprefix}rev_type=0";
                 }
+                $callback = ['name' => 'pre_archive_list', 'model' => $container_obj->_model ];
+                $app->run_callbacks( $callback, $container_obj->_model, $wheres );
                 $sql .= join( ' AND ', $wheres );
                 $request_id = $app->request_id;
                 $cache_key = md5( "archive-list-{$sql}-{$request_id}" );
-                $session = $app->db->model( 'session' )->get_by_key( [
+                if (! $app->no_cache ) {
+                    $session = $app->db->model( 'session' )->get_by_key( [
                                'name'  => $cache_key, 
                                'kind'  => 'CH',
                                'value' => $request_id,
                                'key'   => $cache_key ] );
+                }
                 $time_stamp = [];
-                if ( $session->id && ( $session->expires > time() ) ) {
+                if ( $session && $session->id && ( $session->expires > time() ) ) {
                     $time_stamp = unserialize( $session->data );
                 } else {
                     $year_and_month = $container_obj->load( $sql );
@@ -1732,11 +1842,13 @@ class PTTags {
                         krsort( $time_stamp, SORT_NUMERIC );
                     }
                     $time_stamp = array_keys( $time_stamp );
-                    $ser = serialize( $time_stamp );
-                    $session->start( time() );
-                    $session->expires( time() + $app->token_expires );
-                    $session->data( $ser );
-                    $session->save();
+                    if (! $app->no_cache ) {
+                        $ser = serialize( $time_stamp );
+                        $session->start( time() );
+                        $session->expires( time() + $app->token_expires );
+                        $session->data( $ser );
+                        $session->save();
+                    }
                 }
                 $template = $urlmapping->template;
                 $limit = 0;
@@ -1900,6 +2012,9 @@ class PTTags {
                 $get_args['published_only'] = true;
             }
             $related_objs = $app->get_related_objs( $group, $model, 'objects', $get_args );
+            $callback = ['name' => 'post_load_objects', 'model' => $model ];
+            $count_obj = count( $related_objs );
+            $app->run_callbacks( $callback, $model, $related_objs, $count_obj );
             $ctx->localize( [ $model ] );
             $ctx->local_params = $related_objs;
             $table = $app->get_table( $model );
@@ -2213,6 +2328,9 @@ class PTTags {
                 }
                 $count_obj = $obj->count( $terms, $count_args, $cols, $extra );
                 $loop_objects = $obj->load( $terms, $args, $cols, $extra );
+                $callback = ['name' => 'post_load_objects', 'model' => $model,
+                             'table' => $table ];
+                $app->run_callbacks( $callback, $model, $loop_objects, $count_obj );
                 $ctx->stash( 'object_count', $count_obj );
             }
             $ctx->stash( 'current_archive_context', $obj->_model );

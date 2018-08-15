@@ -36,7 +36,7 @@ class PTPublisher {
         }
     }
 
-    function publish ( $url ) {
+    function publish ( &$url ) {
         $app = Prototype::get_instance();
         $ctx = $app->ctx;
         $object_id = (int) $url->object_id;
@@ -56,6 +56,10 @@ class PTPublisher {
                     $workspace = $obj->workspace;
                 }
             }
+        }
+        if ( $obj ) {
+            $callback = ['name' => 'pre_view', 'model' => $obj->_model ];
+            $app->run_callbacks( $callback, $obj->_model, $obj, $url );
         }
         $ts = $url->archive_date;
         if ( $urlmapping_id = (int) $url->urlmapping_id ) {
@@ -110,7 +114,11 @@ class PTPublisher {
                     }
                 }
                 $ctx->vars['current_archive_url'] = $url->url;
-                $data = $ctx->build( $tmpl );
+                if ( stripos( $tmpl, 'setvartemplate' ) !== false ) {
+                    $ctx->compile( $tmpl, false );
+                }
+                $data = $app->tmpl_markup === 'mt' ? $ctx->build( $tmpl )
+                                                   : $app->build( $tmpl, $ctx );
             }
             return $data;
         }

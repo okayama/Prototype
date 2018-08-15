@@ -4,6 +4,8 @@
     "WorkSpace"          : "スペース",
     "WorkSpaces"         : "スペース",
     "Child of WorkSpace" : "スペースの子テーブル",
+    "Workspace Order"    : "スペースの表示順",
+    "by Updated"         : "更新日順",
     "Creator"            : "作成者",
     "Login"              : "ログイン",
     "Logout"             : "ログアウト",
@@ -20,6 +22,7 @@
     "IP Addresses"       : "IPアドレス",
     "banned"             : "禁止",
     "allow"              : "許可",
+    "administrator"      : "管理者",
     "ja"                 : "日本語",
     "en"                 : "英語",
     "info"               : "情報",
@@ -29,6 +32,7 @@
     "Manually"           : "手動",
     "On-Demand"          : "オンデマンド",
     "Publish Type"       : "パブリッシュ・タイプ",
+    "Revision Type"      : "リビジョン・タイプ",
     "Re-Compile Cache"   : "キャッシュの再コンパイル",
     "Template Markup"    : "テンプレート記法",
     "MT Compatible"      : "MT互換",
@@ -77,6 +81,7 @@
     "Apply to Master"    : "マスタに適用",
     "Upgrade"            : "アップグレード",
     "Archive"            : "アーカイブ",
+    "Module"             : "モジュール",
     "Table"              : "モデル",
     "Tables"             : "モデル",
     "Model"              : "モデル",
@@ -257,6 +262,7 @@
     "Copyright"          : "コピーライト",
     "Index"              : "インデックス",
     "index"              : "インデックス",
+    "Field not found."   : "フィールドが見つかりません。",
     "Parent"             : "親",
     "Child Models"       : "子モデル",
     "Primary"            : "プライマリ",
@@ -279,6 +285,7 @@
     "Publishing"         : "公開",
     "Publish"            : "公開",
     "Reserved"           : "公開予約",
+    "Reserved(Replace)"  : "差し替え予約",
     "Between"            : "期間指定",
     "Review"             : "レビュー",
     "Ended"              : "終了",
@@ -396,10 +403,58 @@
     "Status"             : "ステータス",
     "Draft"              : "下書き",
     "Read-Only"          : "読取り専用",
+    "Questions"          : "設問",
+    "Question"           : "設問",
+    "question"           : "設問",
+    "Validation"         : "バリデーション",
+    "Values"             : "値",
+    "Max Length"         : "テキスト長",
+    "Multi-Byte"         : "マルチバイト",
+    "questiontype"       : "設問タイプ",
+    "Question Type"      : "設問タイプ",
+    "Question Types"     : "設問タイプ",
+    "Default Value"      : "初期値",
+    "Selected Items"     : "選択項目",
+    "Postal Code"        : "郵便番号",
+    "Form"               : "フォーム",
+    "Forms"              : "フォーム",
+    "form"               : "フォーム",
+    "Redirect To"        : "リダイレクト先",
+    "Confirm"            : "確認する",
+    "Mail"               : "メール",
+    "Contact"            : "コンタクト",
+    "Contacts"           : "コンタクト",
+    "contact"            : "コンタクト",
+    "Subject"            : "件名",
+    "Normarize"          : "正規化",
+    "Text Input Group"   : "テキスト(複数欄)",
+    "Count of Fields"    : "フィールド数",
+    "Rows"               : "行の高さ",
+    "Connector"          : "コネクタ",
+    "%s is invalid."     : "%sが正しくありません。",
+    "Date & Time"        : "日付と時刻",
+    "(Year)"             : "年",
+    "(Month)"            : "月",
+    "(Day)"              : "日",
+    "Send Email"         : "メールを送信する",
+    "Mail From"          : "メールのFrom",
+    "Notify To"          : "通知送信先",
+    "Notification"       : "通知",
+    "Requires Token"     : "トークンを要求する",
+    "Token Expires"      : "トークン有効期限",
+    "Anti-spam Measures" : "スパム対策",
+    "Hide in email"      : "メールには情報を含めない",
+    "spam"               : "スパム",
+    "Post not allowed."  : "投稿は許可されていません。",
+    "Send Notify Message": "管理者に通知メールを送る",
     "Any"                : "任意",
     "Image"              : "画像",
     "Video"              : "ビデオ",
     "Audio"              : "オーディオ",
+    "image"              : "画像",
+    "video"              : "ビデオ",
+    "pdf"                : "PDF",
+    "audio"              : "オーディオ",
     "%s - %s of %s Items": "%s - %s / %s 項目",
     "%s not found."      : "%sが見つかりません。",
     "Category is '%s'"   : "カテゴリが「%s」",
@@ -444,6 +499,7 @@
     "Revisions"          : "リビジョン",
     "Auto Save"          : "自動保存",
     "Save as Revision"   : "リビジョンとして保存",
+    "Live Preview"       : "ライブプレビュー",
     "Manage"             : "管理",
     "Group"              : "グループ",
     "Groups"             : "グループ",
@@ -451,6 +507,7 @@
     "Change Note"        : "変更メモ",
     "Hierarchy"          : "階層",
     "My %s"              : "自分の%s",
+    "System %s"          : "システムの%s",
     "Your Filters"       : "自分のフィルタ",
     "System Filters"     : "システムフィルタ",
     "Show only errors"   : "エラーだけを表示",
@@ -520,6 +577,7 @@
     "Input Text (Multiple)" : "テキスト (可変長)",
     "Column's Permissions" : "カラムの権限",
     "Saving %s ( %s )...": "%s (%s)を保存しています...",
+    "(Class not specified)" : "(クラス指定なし)",
     "Create %s (%s / ID : %s)."
         : "新規 : %s (%s / ID : %s).",
     "Update %s (%s / ID : %s)."
@@ -528,10 +586,14 @@
         : "%sをインポートしました (新規 %s件, 更新 %s件)。",
     "Could not import %s. Please check upload file format."
         : "%sをインポートできませんでした。ファイルのフォーマットを確認してください。",
-    "%s %s were skipped because you have not permission."
-        : "%s個の%sについては権限がないため、インポートがスキップされました。",
+    "%s object(s) were skipped because you have not permission."
+        : "%s個のオブジェクトについては権限がないため、インポートがスキップされました。",
     "An error occurred while updating the related object(s)."
         : "関連オブジェクトのアップデート中にエラーが発生しました。",
+    "Apply IP address restriction to Administrator login"
+        : "管理者ログインにIPアドレス制限を設定する",
+    "You need to register at least one administrator login IP address."
+        : "一つ以上の管理者ログインIPアドレスを登録する必要があります。",
     "Lock Out Interval(Seconds)"
         : "ロックアウト間隔 (秒)",
     "When Lock Out Limit is set to 0, lockout is not performed."
@@ -544,6 +606,8 @@
         : "連続してログインに失敗したため、このIPアドレスはロックアウトされました。",
     "This User was locked out because you failed to log in continuously."
         : "連続してログインに失敗したため、このアカウントはロックアウトされました。",
+    "Administrator login from this IP address is not allowed."
+       : "このIPアドレスからの管理者ログインは許可されていません。",
     "Two-factor Authentication"
         : "2段階認証",
     "Use Two-factor Authentication"
@@ -554,6 +618,10 @@
         : "確認用コードが一致しません。",
     "The confirmation code has been expired."
         : "確認用コードの有効期限が切れました。",
+    "The status at replacement is the status of the master."
+        : "予約差し替え時のステータスは、マスタのステータスになります。",
+    "The status at apply is the status of the master."
+        : "差し替え時のステータスは、マスタのステータスになります。",
     "The number of retry times limit was exceeded, the confirmation code was discarded."
         : "リトライ回数制限を超えたため、確認用コードは破棄されました。",
     "Are you sure you want to import this objects?"
@@ -664,6 +732,8 @@
         : "年度の開始月",
     "Welcome to %s!"
         : "%sへようこそ!",
+    "Specify the display order of the WorkSpace selector of the top of the screen."
+        : "画面上部のスペースセレクタの表示順序を指定します。",
     "The Model can not be hidden."
         : "モデルは非表示にできません。",
     "The Model or Column name must be %s characters or less."
@@ -790,6 +860,8 @@
         : "ユーザーの設定言語に翻訳します。",
     "Translate labels to the user's language."
         : "ラベルをユーザーの設定言語に翻訳します。",
+    "The CSV format are Invalid. Please confirm the file."
+        : "CSVのファイルフォーマットが正しくありません。ファイルを確認してください。",
     "Please enter keyword for search."
         : "検索するキーワードを入力してください。",
     "The default template was successfully applied. The applied template will not be reflected until you save this page."
@@ -806,6 +878,38 @@
         : "選択の項目の表示タイプを指定してください。指定できるのは radio, option, select のいずれかです。",
     "Please enter options for this field as a comma delimited list."
         : "このフィールドのオプションをカンマで区切って入力してください。",
+    "Send Thank You Message"
+        : "送信者にメールを送る",
+    "Send Notification Email"
+        : "通知メール送信",
+    "Your session has expired."
+        : "セッションの有効期限が切れました。",
+    "Combine multiple fields with connectors."
+        : "複数のフィールドをコネクタで連結します。",
+    "Please enter all allowable options for this field as a comma separated list."
+        : "このフィールドで有効なすべてのオプションをカンマで区切って入力してください。",
+    "If you want to receive a value different from the value entered for the options, please enter alternative comma separated list."
+        : "オプションに入力した値と異なる値を受け取る場合は、別のカンマ区切りリストを入力してください。",
+    "Please enter the width (number) of the fields(Comma separated list)."
+        : "フィールドの幅(数字)をカンマ区切りで入力してください。",
+    "Failed to save a contact for %s."
+        : "フォーム %s へのコンタクトを保存できませんでした。",
+    "Failed to send a notification email.(%s)"
+        : "通知メールの送信に失敗しました。(%s)",
+    "Failed to send a thank you email.(%s)"
+        : "コンタクト投稿者へのメール送信に失敗しました。(%s)",
+    "The inquiry you posted for %s has been received."
+        : "%s へのお問合わせを承りました。",
+    "The contact posted for %s has been received."
+        : "%s へのコンタクト投稿を受け付けました。",
+    "The inquiry posted for %s has been received."
+        : "%s へのお問合わせが投稿されました。",
+    "Too many posts have been submitted from you in a short period of time."
+        : "続けてたくさんの投稿を送りすぎています。",
+    "Please try again in a short while."
+        : "しばらく立ってからやり直してください。",
+    "The reception on '%s' has been closed."
+        : "%s への受付は終了しています。",
     "Are you sure you want to save this %s as a revision instead of a master?"
         : "この%sをマスタでなくリビジョンとして保存しますか?",
     "Model and View are required."

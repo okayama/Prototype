@@ -6,12 +6,6 @@
     "author"      : "Alfasado Inc.",
     "author_link" : "https://alfasado.net/",
     "description" : "It provides entries import function.",
-    "cfg_template": "cfg_template.tmpl",
-    "cfg_system"  : 1,
-    "cfg_space"   : 1,
-    "settings"    : {
-        "name" : "EntryImporter"
-    },
     "menus": {
         "start_import": {
             "display_space" : 1,
@@ -49,6 +43,14 @@
             "method"     : "import_movabletype",
             "order"      : 10,
             "options"    : [ "author_setting", "new_author_password", "comment_status" ]
+        },
+        "noren": {
+            "component"  : "EntryImporter",
+            "label"      : "NOREN",
+            "method"     : "import_noren",
+            "order"      : 20,
+            "options"    : [ "author_setting", "new_author_password",
+                             "field_settings", "keywords_to", "text_format" ]
         }
     },
     "export_format": {

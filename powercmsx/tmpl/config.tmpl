@@ -106,6 +106,36 @@
 
 <div class="row form-group">
   <div class="col-lg-2">
+  <mt:trans phrase="Administrator">
+  </div>
+  <div class="col-lg-10">
+    <label class="custom-control custom-checkbox">
+    <input id="administrator_ip" class="custom-control-input"
+     type="checkbox" name="administrator_ip" value="1" <mt:if name="administrator_ip">checked</mt:if>>
+        <span class="custom-control-indicator"></span>
+        <span class="custom-control-description"> 
+        <mt:var name="label" escape><mt:trans phrase="Apply IP address restriction to Administrator login"></span>
+    </label>
+  </div>
+</div>
+
+<div class="row form-group" style="margin-top:-14px">
+  <div class="col-lg-2">
+  </div>
+  <div class="col-lg-10">
+    <p class="text-muted">
+    <i class="fa fa-question-circle-o" aria-hidden="true"></i>
+    <span class="sr-only"><mt:trans phrase="Hint"></span>
+    <mt:trans phrase="You need to register at least one administrator login IP address.">
+    
+    <a href="<mt:var name="script_uri">?__mode=view&_type=edit&_model=remote_ip"><i class="fa fa-plus-circle"></i> <mt:trans phrase="Create"></a>
+    
+    </p>
+  </div>
+</div>
+
+<div class="row form-group">
+  <div class="col-lg-2">
     <label for="system_email">
       <mt:trans phrase="System Email">
       <mt:var name="field_required">

@@ -12,6 +12,16 @@ class PTSystemFilters {
         if ( $obj->has_column( 'workspace_id' ) && $app->workspace() ) {
             $ws_terms = [ 'workspace_id' => ['IN' => [0, $app->workspace()->id ] ] ];
         }
+        if ( $obj->has_column( 'workspace_id' ) && ! $app->workspace() ) {
+            if ( $table->display_system && !$table->space_child ) {
+                $system_filters[] = ['name' => 'system_objects',
+                                     'label' => $app->translate( 'System %s', 
+                                        $app->translate( $table->plural ) ),
+                                     'component' => $this,
+                                     'option' => 'workspace_id',
+                                     'method' => 'system_objects'];
+            }
+        }
         if ( $table->assign_user ) {
             $system_filters[] = ['name' => 'owned_objects',
                                  'label' => $app->translate( 'My %s', 
@@ -58,6 +68,7 @@ class PTSystemFilters {
             $group = $obj->count_group_by( $ws_terms, $args );
             foreach ( $group as $item ) {
                 $class_type = $item[ $_colprefix . 'class' ];
+                if (! $class_type ) $class_type = '(Class not specified)';
                 $class_name = $app->translate( $class_type, null, null, 'default' );
                 $class_name = $app->translate( $class_name );
                 $system_filters[] = ['name' => 'filter_class_' . $class_type,
@@ -142,6 +153,10 @@ class PTSystemFilters {
 
     function owned_objects ( $app, &$terms, $model, $col = 'user_id' ) {
         $terms[ $col ] = (int) $app->user()->id;
+    }
+
+    function system_objects ( $app, &$terms, $model, $col = 'workspace_id' ) {
+        $terms[ $col ] = 0;
     }
 
     function show_only_errors ( $app, &$terms, $model ) {

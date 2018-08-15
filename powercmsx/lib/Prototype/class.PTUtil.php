@@ -298,8 +298,12 @@ class PTUtil {
             $uploaded = $thumb_props['uploaded'];
             $uploaded = $obj->db2ts( $uploaded );
         }
+        $wants = false;
+        if ( isset( $orig_args['wants'] ) && $orig_args['wants'] == 'data' ) {
+            $wants = true;
+        }
         $hash = '';
-        if (! $metadata->id || $modified_on > $uploaded ) {
+        if (! $metadata->id || $modified_on > $uploaded || $wants ) {
             $ctx->stash( 'current_context', $model );
             $ctx->stash( $model, $obj );
             $args = ['model' => $model, 'name' => $name, 'id' => $id ];
@@ -346,6 +350,10 @@ class PTUtil {
             }
             $thumbnail->save( $upload_dir . DS . $thumbnail_name );
             $thumb = file_get_contents( $upload_dir . DS . $thumbnail_name );
+            if ( isset( $orig_args['wants'] ) && $orig_args['wants'] == 'data' ) {
+                PTUtil::remove_dir( $upload_dir );
+                return $thumb;
+            }
             $t_property = $assetproperty;
             $t_property['file_name'] = $thumbnail_name;
             $t_property['basename'] = $thumbnail_basename;

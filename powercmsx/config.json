@@ -31,5 +31,9 @@
             "label"      : "Import Objects",
             "order"      : 40
         }
+    },
+    "config_settings": {
+        "developer_mode" : true,
+        "debug" : true
     }
 }

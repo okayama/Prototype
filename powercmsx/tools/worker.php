@@ -71,7 +71,6 @@ foreach ( $status_models as $table ) {
                 }
             }
             $rem_id = $obj->id;
-            $obj->status( 4 );
             $app->set_default( $obj );
             if ( $basename ) {
                 $obj->basename( $basename );
@@ -81,6 +80,7 @@ foreach ( $status_models as $table ) {
             }
             $obj->rev_type( 0 );
             $obj->rev_object_id( 0 );
+            $obj->status( $original->status );
             $obj->save();
             foreach ( $obj_relations as $relation ) {
                 $relation->from_id( (int) $original_id );

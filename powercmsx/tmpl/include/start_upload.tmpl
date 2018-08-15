@@ -19,6 +19,10 @@
                 </span>
                 <div class="form-inline" style="margin: 10px 7px">
                   <mt:trans phrase="Upload Path">
+                  <mt:if name="model_out_path">
+                    <mt:var name="model_out_path" escape add_slash setvar="model_out_path">
+                    <mt:setvar name="extra_path" value="$model_out_path" append="1">
+                  </mt:if>
                   <input id="extra_path" type="text" style="width:200px;" class="form-control" name="extra_path" value="<mt:var name="extra_path" escape>">
                 </div>
                 <!-- The container for the uploaded files -->

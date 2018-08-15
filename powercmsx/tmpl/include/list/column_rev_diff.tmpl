@@ -1,5 +1,6 @@
 <mt:var name="rev_diff" setvar="raw_value">
 <mt:if name="raw_value">
+<mt:if name="raw_value" ne="[]">
 <span title="<mt:var name="value">"><mt:var name="rev_diff" escape trim_to="70+..."></span>
 <mt:var name="raw_value" from_json="rev_diff">
 <mt:loop name="rev_diff">
@@ -22,4 +23,5 @@
 </table>
 </mt:if>
 </mt:loop>
+</mt:if>
 </mt:if>

@@ -1,0 +1,30 @@
+<div class="row form-group">
+  <div class="col-lg-2">
+    <label for="setting_livepreview_page_url">
+      <mt:trans phrase="Setting page's URL" component="LivePreview">
+    </label>
+  </div>
+  <div class="col-lg-10">
+    <input type="text" id="setting_livepreview_page_url" name="setting_livepreview_page_url" class="form-control" value="<mt:var name="setting_livepreview_page_url" escape>">
+    <p class="text-muted hint-block">
+      <i class="fa fa-question-circle-o" aria-hidden="true"></i>
+      <span class="sr-only"><mt:trans phrase="Hint"></span>
+      <mt:trans phrase="Please specify when website and CMS domain are different." component="LivePreview">
+    </p>
+  </div>
+</div>
+<div class="row form-group">
+  <div class="col-lg-2">
+    <label for="setting_livepreview_date_based">
+      <mt:trans phrase="Date-Based Archives" component="LivePreview">
+    </label>
+  </div>
+  <div class="col-lg-10">
+    <input type="text" id="setting_livepreview_date_based" name="setting_livepreview_date_based" class="form-control" value="<mt:var name="setting_livepreview_date_based" escape>">
+    <p class="text-muted hint-block">
+      <i class="fa fa-question-circle-o" aria-hidden="true"></i>
+      <span class="sr-only"><mt:trans phrase="Hint"></span>
+      <mt:trans phrase="Please enter comma-separated model names." component="LivePreview">
+    </p>
+  </div>
+</div>

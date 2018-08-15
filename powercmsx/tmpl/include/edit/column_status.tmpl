@@ -1,3 +1,4 @@
+
 <mt:var name="options" split="," setvar="_options_loop">
 <div class="row form-group">
   <div class="col-lg-2">
@@ -7,10 +8,21 @@
     </label>
   </div>
   <div class="col-lg-10 form-inline">
-    <select class="form-control short" name="<mt:var name="__col_name__">">
+    <select id="status-selector" class="form-control short" name="<mt:var name="__col_name__">">
     <mt:loop name="_options_loop">
       <mt:if name="__counter__" le="$max_status">
+      <mt:unless name="request.edit_revision">
         <option <mt:unless name="object_status"><mt:if name="_default_status" eq="$__counter__">selected</mt:if></mt:unless><mt:if name="object_status" eq="$__counter__">selected</mt:if> value="<mt:var name="__counter__">"><mt:trans phrase="$__value__" escape></option>
+      <mt:else>
+        <mt:if name="__counter__" ne="$status_published">
+            <mt:if name="__counter__" eq="3">
+              <mt:setvar name="__value" value="Reserved(Replace)">
+            <mt:else>
+              <mt:var name="__value__" setvar="__value">
+            </mt:if>
+        <option <mt:unless name="object_status"><mt:if name="_default_status" eq="$__counter__">selected</mt:if></mt:unless><mt:if name="object_status" eq="$__counter__">selected</mt:if> value="<mt:var name="__counter__">"><mt:trans phrase="$__value" escape></option>
+        </mt:if>
+      </mt:unless>
       </mt:if>
     </mt:loop>
     </select>
@@ -26,6 +38,23 @@
 </mt:tablehascolumn>
   </div>
 </div>
+
+<mt:if name="request.edit_revision">
+<mt:tablehascolumn column="rev_type">
+<div class="row form-group" style="margin:-1em 0 0 -10px" id="status-hint">
+  <div class="col-lg-2">
+  </div>
+  <div class="col-lg-10">
+  <p class="text-muted hint-block">
+    <i class="fa fa-question-circle-o" aria-hidden="true"></i>
+    <span class="sr-only"><mt:trans phrase="Hint"></span>
+    <mt:trans phrase="The status at replacement is the status of the master.">
+  </p>
+  </div>
+</div>
+</mt:tablehascolumn>
+</mt:if>
+
 <mt:tablehascolumn column="published_on">
 <div class="row form-group published_on-col">
   <div class="col-lg-2">
@@ -56,7 +85,36 @@
 </mt:tablehascolumn>
   </div>
 </div>
+<mt:if name="request.edit_revision">
+<mt:tablehascolumn column="rev_type">
+<div class="row form-group">
+  <div class="col-lg-2">
+      <mt:trans phrase="Revision Type">
+  </div>
+  <div class="col-lg-10">
+    <select class="form-control short" name="rev_type">
+        <option <mt:if name="object_rev_type" eq="1">selected</mt:if> value="1"><mt:trans phrase="Auto Save"></option>
+        <option <mt:if name="object_rev_type" eq="2">selected</mt:if> value="2"><mt:trans phrase="Revision"></option>
+    </select>
+  </div>
+</div>
+</mt:tablehascolumn>
+</mt:if>
 <script>
+<mt:if name="request.edit_revision">
+<mt:tablehascolumn column="rev_type">
+<mt:if name="object_status" ne="3">
+$('#status-hint').hide();
+</mt:if>
+$('#status-selector').change(function(){
+    if ( $(this).val() == 3 ) {
+        $('#status-hint').show();
+    } else {
+        $('#status-hint').hide();
+    }
+});
+</mt:tablehascolumn>
+</mt:if>
 $(function () {
     if ( $('#has_deadline').prop('checked') == false ) {
         $('.unpublished-on-col').hide();

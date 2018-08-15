@@ -6,12 +6,14 @@
     </label>
   </div>
   <div class="col-lg-10">
+    <mt:setvarblock name="__rel_name__">object_<mt:var name="__col_name__"></mt:setvarblock>
     <mt:var name="edit" split=":" setvar="edit_props">
     <mt:var name="edit_props[1]" setvar="rel_model">
     <mt:var name="edit_props[2]" setvar="rel_col">
     <mt:var name="edit_props[3]" setvar="rel_type">
     <mt:setvarblock name="__rel_model__">object_<mt:var name="__col_name__">_model</mt:setvarblock>
     <mt:var name="$__rel_model__" setvar="selected_model">
+    <mt:if name="object_model"><mt:if name="$__rel_name__"><mt:setvar name="model_readonly" value="1"></mt:if></mt:if>
     <mt:if name="object_model">
       <mt:setvar name="selected_model" value="$object_model">
     </mt:if>
@@ -22,7 +24,7 @@
     </mt:if>
       <mt:tables menu_type="1" type="$table_type">
       <mt:if name="__first__">
-      <select <mt:if name="object_model">readonly onmousedown="return false;" onkeydown="return false;"</mt:if> class="form-control short watch-changed short" name="_<mt:var name="__col_name__">_model" id="<mt:var name="__col_name__">-selector">
+      <select <mt:if name="model_readonly">readonly onmousedown="return false;" onkeydown="return false;"</mt:if> class="form-control short watch-changed short" name="_<mt:var name="__col_name__">_model" id="<mt:var name="__col_name__">-selector">
         <mt:unless name="object_model">
         <option value="" <mt:unless name="request.id">selected</mt:unless>>
           <mt:trans phrase="Unspecified">
@@ -31,12 +33,12 @@
       </mt:if>
       <mt:if name="primary">
         <mt:if name="menu_type" eq="1">
-          <mt:if name="object_model">
+          <mt:if name="model_readonly">
             <mt:if name="name" eq="$object_model">
             <option data-model="<mt:var name="name">" selected value="<mt:var name="name">"><mt:trans phrase="$label" escape></option>
             </mt:if>
           <mt:else>
-            <option data-model="<mt:var name="name">" value="<mt:var name="name">"><mt:trans phrase="$label" escape></option>
+            <option <mt:if name="name" eq="$object_model">selected</mt:if> data-model="<mt:var name="name">" value="<mt:var name="name">"><mt:trans phrase="$label" escape></option>
           </mt:if>
           <mt:setvars name="model_primary">
             <mt:var name="name">=<mt:var name="primary" escape>
@@ -52,7 +54,6 @@
         </select>
       </mt:if>
       </mt:tables>
-      <mt:setvarblock name="__rel_name__">object_<mt:var name="__col_name__"></mt:setvarblock>
       <input type="hidden" id="_group_model" name="model" value="<mt:var name="object_model" escape>">
   </div>
 </div>
@@ -94,8 +95,8 @@
     </ul>
       <button id="<mt:var name="__col_name__">-chooser" type="button" class="hidden btn btn-primary btn-sm dialog-chooser group-chooser" data-toggle="modal" data-target="#modal"
         data-href="<mt:var name="script_uri">?__mode=view&amp;_type=list&amp;_model=<mt:var name="rel_model" escape><mt:if name="workspace_id">&amp;workspace_id=<mt:var name="workspace_id"></mt:if>&amp;dialog_view=1&amp;target=<mt:var name="__col_name__">&amp;get_col=<mt:var name="rel_col" escape>&amp;selected_ids=<mt:var name="selected_ids" escape>&amp;from_obj=group"><mt:trans phrase="Select..."></button>
-      <button id="<mt:var name="__col_name__">-add-chooser" type="button" class="hidden btn btn-primary btn-sm dialog-chooser group-chooser" data-toggle="modal" data-target="#modal"
-        data-href="<mt:var name="script_uri">?__mode=view&amp;_type=list&amp;_model=<mt:var name="rel_model" escape><mt:if name="workspace_id">&amp;workspace_id=<mt:var name="workspace_id"></mt:if>&amp;dialog_view=1&amp;target=<mt:var name="__col_name__">&amp;get_col=<mt:var name="rel_col" escape>&amp;selected_ids=<mt:var name="selected_ids" escape>&amp;from_obj=group&amp;select_add=1"><mt:trans phrase="Add..."></button>
+      <mt:ignore><button id="<mt:var name="__col_name__">-add-chooser" type="button" class="hidden btn btn-primary btn-sm dialog-chooser group-chooser" data-toggle="modal" data-target="#modal"
+        data-href="<mt:var name="script_uri">?__mode=view&amp;_type=list&amp;_model=<mt:var name="rel_model" escape><mt:if name="workspace_id">&amp;workspace_id=<mt:var name="workspace_id"></mt:if>&amp;dialog_view=1&amp;target=<mt:var name="__col_name__">&amp;get_col=<mt:var name="rel_col" escape>&amp;selected_ids=<mt:var name="selected_ids" escape>&amp;from_obj=group&amp;select_add=1"><mt:trans phrase="Add..."></button></mt:ignore>
   </div>
 </div>
 <script>
@@ -116,7 +117,7 @@ $('#<mt:var name="__col_name__">-chooser').click(function(){
     new_dialog_url_<mt:var name="__col_name__"> += '&from_obj=group';
     $(this).data('href',new_dialog_url_<mt:var name="__col_name__">);
 });
-$('#<mt:var name="__col_name__">-add-chooser').click(function(){
+<mt:ignore>$('#<mt:var name="__col_name__">-add-chooser').click(function(){
     var selected_ids = [];
     $("input[name='<mt:var name="__col_name__">[]']").each(function(){
         if ( $(this).val() ) {
@@ -130,7 +131,7 @@ $('#<mt:var name="__col_name__">-add-chooser').click(function(){
     new_dialog_url_<mt:var name="__col_name__"> = new_dialog_url_<mt:var name="__col_name__">.replace( /get_col=__primary__/, 'get_col=' + primary_col );
     new_dialog_url_<mt:var name="__col_name__"> += '&from_obj=group';
     $(this).data('href',new_dialog_url_<mt:var name="__col_name__">);
-});
+});</mt:ignore>
 var <mt:var name="__col_name__">_data_href ='<mt:var name="script_uri">?__mode=view&amp;_type=list&amp;_model=<mt:var name="rel_model" escape><mt:if name="workspace_id">&amp;workspace_id=<mt:var name="workspace_id"></mt:if>&amp;dialog_view=1&amp;target=<mt:var name="__col_name__">&amp;get_col=<mt:var name="rel_col" escape>&amp;selected_ids=<mt:var name="selected_ids" escape>&amp;from_obj=group';
 $('#<mt:var name="__col_name__">-selector').change(function(){
     if ( $(this).val() == '' ) {

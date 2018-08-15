@@ -17,6 +17,8 @@
 <mt:elseif name="request._type" eq="user">
 <mt:trans phrase="This User was locked out because you failed to log in continuously." setvar="lockout_error">
 <mt:setvar name="lockout_error" value="$recover_link" append="1">
+<mt:elseif name="request._type" eq="admin">
+<mt:trans phrase="Administrator login from this IP address is not allowed." setvar="lockout_error">
 </mt:if>
 </mt:if>
 

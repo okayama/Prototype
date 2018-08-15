@@ -1,0 +1,29 @@
+{
+    "Live Preview" : "ライブプレビュー",
+    "It provides site preview in future." : "未来日のプレビュー機能を提供します。",
+    "Set Date and Time" : "日付と時刻をセット",
+    "Clear Date and Time" : "日付と時刻をクリア",
+    "Setting page's URL" : "設定ページのURL",
+    "Date-Based Archives" : "日付ベースアーカイブ",
+    "Live Preview Date" : "ライブプレビュー",
+    "Live preview is set on %s."
+        : "ライブプレビューは %s に設定されています。",
+    "Live preview is set on %s."
+        : "ライブプレビューは %s に設定されています。",
+    "Live preview is not set."
+        : "ライブプレビューは設定されていません。",
+    "Set the date and time to live preview at %s."
+        : "プレビューの日付と時刻を %s に設定しました。",
+    "Clear the date and time to live preview."
+        : "プレビューの日付と時刻をクリアしました。",
+    "The past date can not be specified."
+        : "過去の日付は指定できません。",
+    "Are you sure you want to set preview date and time?"
+        : "プレビューの日付と時刻を設定してもよろしいですか?",
+    "Are you sure you want to clear preview date and time?"
+        : "プレビューの日付と時刻設定を削除してもよろしいですか?",
+    "Please specify when website and CMS domain are different."
+        : "WebサイトとCMSのドメインが違う時設定ページのURLを指定します。",
+    "Please enter comma-separated model names."
+        : "日付ベースアーカイブを持つモデル名をカンマ区切りで入力してください。"
+}

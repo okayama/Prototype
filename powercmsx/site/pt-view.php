@@ -1,12 +1,26 @@
 <?php
-
 $pt_path = dirname( __DIR__ ) . DIRECTORY_SEPARATOR;
 $workspace_id = 1;
 require_once( $pt_path . 'class.Prototype.php' );
 $app = new Prototype();
 // $app->debug = true;
+$app->dynamic_view = true;
+$app->id = 'Bootstrapper';
 $app->init();
-$url = $app->db->model( 'urlinfo' )->get_by_key( ['relative_url' => $app->request_uri ] );
+$app->init_tags();
+$document_root = $app->document_root;
+list( $request, $param ) = explode( '?', $app->request_uri );
+$file_path = $document_root . $request;
+if (! $app->user() && file_exists( $file_path ) ) {
+    $data = file_get_contents( $file_path );
+    $mime_type = PTUtil::get_mime_type( $file_path );
+    $regex = '<\${0,1}' . 'mt';
+    if ( strpos( $mime_type, 'text' ) !== false
+        && !preg_match( "/$regex/i", $data ) ) {
+        pt_view_print_html( $data, $mime_type );
+    }
+}
+$url = $app->db->model( 'urlinfo' )->get_by_key( ['relative_url' => $request ] );
 if (! $url->id ) {
     if ( $workspace_id ) {
         $workspace_id = (int) $workspace_id;
@@ -34,6 +48,27 @@ if ( empty( $table ) ) {
 }
 $table = $table[0];
 $model = $table->name;
+$can_view = false;
+if ( $table->has_status ) {
+    $publish_status = $table->start_end ? 4 : 2;
+    $obj_id = (int) $url->object_id;
+    $url_obj = $app->db->model( $model )->load( $obj_id );
+    if ( $url_obj->status != $publish_status ) {
+        if (! $app->user() ) {
+            if (! $app->dynamic_view ) {
+                pt_page_not_found( $app, $workspace );
+            }
+        }
+    } else {
+        $can_view = true;
+    }
+} else {
+    if (! $app->user() ) {
+        if (! $app->dynamic_view ) {
+            pt_page_not_found( $app, $workspace );
+        }
+    }
+}
 $workspace = null;
 $key = $url->key;
 if ( $object_id && $model ) {
@@ -58,10 +93,21 @@ $ts = $url->archive_date;
 $mime_type = $url->mime_type ? $url->mime_type : 'text/html';
 if ( $url->class === 'file' ) {
     if ( isset( $obj ) && $obj->has_column( $key ) ) {
+        $callback = ['name' => 'pre_view', 'model' => $obj->_model ];
+        $app->run_callbacks( $callback, $obj->_model, $obj, $url );
         $data = $obj->$key;
         pt_view_print_html( $data, $mime_type );
     }
 } else if ( $url->class === 'archive' ) {
+    if ( $app->param( '_type' ) == 'form' ) {
+        require_once( $pt_path . 'lib' . DIRECTORY_SEPARATOR . 'Prototype'
+                      . DIRECTORY_SEPARATOR . 'class.PTForm.php' );
+        $form = new PTForm;
+        $mode = $app->mode;
+        if ( method_exists( $form, $mode ) ) {
+            $form->$mode( $app, $url );
+        }
+    }
     require_once( $pt_path . 'lib' . DIRECTORY_SEPARATOR . 'Prototype' . DIRECTORY_SEPARATOR . 'class.PTPublisher.php' );
     $pub = new PTPublisher;
     $data = $pub->publish( $url );
@@ -85,7 +131,7 @@ function pt_page_not_found ( $app, $workspace, $error = null, $mime_type = 'text
         $tmpl = $app->db->model( 'template' )->get_by_key( [
             'basename' => '404-error', 'workspace_id' => 0 ] );
     }
-    if ( $tmpl ) {
+    if ( $tmpl->id ) {
         $app->ctx->stash( 'current_template', $tmpl );
         $data = $app->ctx->build( $tmpl->text );
         pt_view_print_html( $data, $mime_type );
