@@ -1,3 +1,4 @@
+<div class="container-fluid">
 <mt:if name="request.__mode" eq="submit">
   <mt:if name="error">
   <p class="text-center text-danger"><mt:trans phrase="An error occurred." language="$language"></p>
@@ -26,6 +27,7 @@
       <p class="text-center"><mt:trans phrase="Please complete the form below and click Confirm button."  language="$language"></p>
     </mt:if>
   </mt:if>
+  </div>
   <form action="<mt:formpermalink>" method="POST" enctype="multipart/form-data">
   <input type="hidden" name="form_id" value="<mt:formid>">
   <input type="hidden" name="__mode" value="<mt:if name="confirm_ok">submit<mt:else>confirm</mt:if>">
