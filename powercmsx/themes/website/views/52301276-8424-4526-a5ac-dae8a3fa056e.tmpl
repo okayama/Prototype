@@ -1,0 +1,14 @@
+<mt:setvar name="body_class" value="cerezo">
+<mt:websitename setvar="website_name">
+<mt:websiteurl setvar="website_url">
+<mt:websitecopyright setvar="website_copyright">
+<mt:websitelanguage setvar="language">
+
+<mt:if name="request._language">
+<mt:var name="request._language" escape setvar="language">
+</mt:if>
+<mt:websitedescription setvar="page_description">
+<mt:setvar name="page_keywords" value="">
+
+<mt:setvarblock name="side_bar_cache_key">__side_bar_<mt:websiteid>__</mt:setvarblock>
+<mt:setvarblock name="footer_cache_key">__footer_<mt:websiteid>__</mt:setvarblock>

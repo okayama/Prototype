@@ -1,0 +1,198 @@
+<div class="row form-group">
+  <div class="col-lg-2">
+    <mt:var name="label" escape="1">
+  </div>
+  <div class="col-lg-10 form-inline">
+    <mt:var name="edit" split=":" setvar="edit_props">
+    <mt:var name="edit_props[1]" setvar="rel_model">
+    <mt:var name="edit_props[2]" setvar="rel_col">
+    <mt:var name="edit_props[3]" setvar="rel_type">
+    <select id="questiontype_id-selector" class="form-control short watch-changed" name="<mt:var name="__col_name__">">
+    <mt:objectloop model="$rel_model" sort_by="order">
+    <mt:if name="__first__">
+      <option value="">
+        <mt:trans phrase="Unspecified">
+      </option>
+    </mt:if>
+      <option class="<mt:var name="basename"escape>" <mt:if name="__col_value__" eq="$id">selected</mt:if> value="<mt:var name="id">"><mt:var name="$rel_col" trans="$translate" escape></option>
+    </mt:objectloop>
+    </select>
+    <button class="btn btn-secondary" type="button" id="_apply_question_type"><mt:trans phrase="Apply"></button>
+    &nbsp; &nbsp; &nbsp; 
+    <input type="hidden" name="required" value="0">
+    <label class="custom-control custom-checkbox">
+    <input id="required" class="form-control custom-control-input watch-changed"
+    <mt:if name="readonly">onclick="return false;"</mt:if>
+     type="checkbox" name="required" value="1" <mt:if name="object_required">checked</mt:if>>
+        <span class="custom-control-indicator"></span>
+        <span class="custom-control-description"> 
+        <mt:trans phrase="Required"></span>
+    </label>
+    &nbsp;
+    <input type="hidden" name="is_primary" value="0">
+    <label class="custom-control custom-checkbox is_primary">
+    <input id="is_primary" class="form-control custom-control-input watch-changed"
+    <mt:if name="readonly">onclick="return false;"</mt:if>
+     type="checkbox" name="is_primary" value="1" <mt:if name="object_is_primary">checked</mt:if>>
+        <span class="custom-control-indicator"></span>
+        <span class="custom-control-description"> 
+        <mt:trans phrase="Primary"></span>
+    </label>
+    &nbsp;
+    <label class="custom-control custom-checkbox">
+    <input id="aggregate" class="form-control custom-control-input watch-changed"
+        type="checkbox" name="aggregate" value="1" <mt:if name="object_aggregate">checked</mt:if>>
+        <span class="custom-control-indicator"></span>
+        <span class="custom-control-description"> 
+        <mt:trans phrase="Aggregate"></span>
+    </label>
+    &nbsp;
+    <label class="custom-control custom-checkbox">
+    <input id="hide_in_email" class="form-control custom-control-input watch-changed"
+        type="checkbox" name="hide_in_email" value="1" <mt:if name="object_hide_in_email">checked</mt:if>>
+        <span class="custom-control-indicator"></span>
+        <span class="custom-control-description"> 
+        <mt:trans phrase="Hide in email"></span>
+    </label>
+  </div>
+</div>
+<script>
+<mt:unless name="object_required">
+  $('.is_primary').hide();
+</mt:unless>
+$('#required').change(function(){
+    if ( $(this).prop('checked') ) {
+        $('.is_primary').show();
+    } else {
+        $('#is_primary').prop('checked',false);
+        $('.is_primary').hide();
+    }
+});
+$('#questiontype_id-selector').change(function(){
+    var class_name = $('[name=<mt:var name="__col_name__">] option:selected').prop('class');
+    class_selector_chenge( class_name );
+});
+var __old_class = '';
+function class_selector_chenge( class_name ) {
+    if ( class_name.indexOf('checkbox') != -1
+        || class_name.indexOf('radio') != -1
+        || class_name.indexOf('file') != -1
+        || class_name.indexOf('attachment') != -1
+        || class_name.indexOf('dropdown') != -1
+        || class_name.indexOf('input_group') != -1 ) {
+        $('#options-wrapper').show();
+        if ( class_name.indexOf('file') != -1 || class_name.indexOf('attachment') != -1 ) {
+            $('#values-wrapper').hide();
+        } else {
+            $('#values-wrapper').show();
+        }
+        if ( class_name.indexOf('checkboxes') != -1 ) {
+            if (! $('#connector').val() ) {
+                $('#connector').val(', ');
+            }
+        }
+    } else {
+        $('#options-wrapper').hide();
+        $('#values-wrapper').hide();
+    }
+    if ( class_name.indexOf('textarea') != -1 ) {
+        $('#rows-wrapper').show();
+    } else {
+        $('#rows-wrapper').hide();
+    }
+    if ( class_name == 'checkbox' ) {
+        $('#column-options-label').html('<span><mt:trans phrase="Label"></span>');
+        $('#options-hint-wrapper').hide();
+        $('#column-values-hint').html('<span><mt:trans phrase="If you want to receive a value different from the value entered for the label, please enter alternative value."></span>');
+    } else {
+        $('#column-options-label').html('<span><mt:trans phrase="Options"></span>');
+        $('#options-hint-wrapper').show();
+        $('#column-values-hint').html('<span><mt:trans phrase="If you want to receive a value different from the value entered for the options, please enter alternative comma separated list."></span>');
+    }
+    if ( class_name.indexOf('checkboxes') != -1
+        || class_name.indexOf('date') != -1
+        || class_name.indexOf('input_group') != -1 ) {
+        $('#connector-wrapper').show();
+    } else {
+        $('#connector-wrapper').hide();
+    }
+    if ( class_name.indexOf('input_group') != -1 ) {
+        $('#count_fields-wrapper').show();
+        $('#values-wrapper').hide();
+        $('#options-hint').html('<mt:trans phrase="Please enter the width (number) of the fields(Comma separated list).">');
+    } else if ( class_name.indexOf('file') != -1 ) {
+        $('#values-wrapper').hide();
+        $('#options-hint').html('<mt:trans phrase="Please enter the file extension for allow(Comma separated list).">');
+    } else if ( class_name.indexOf('attachment') != -1 ) {
+        $('#values-wrapper').hide();
+        $('#options-hint').html('<mt:trans phrase="Please enter the file extension for allow(Comma separated list).">');
+    } else {
+        $('#count_fields-wrapper').hide();
+        $('#options-hint').html('<mt:trans phrase="Please enter all allowable options for this field as a comma separated list.">');
+    }
+    if ( class_name.indexOf('date') != -1 ) {
+        if (! $('#connector').val() ) {
+            $('#connector').val('<mt:trans phrase="(Year)">,<mt:trans phrase="(Month)">,<mt:trans phrase="(Day)">');
+        }
+        if (! $('#default_value').val() ) {
+            $('#default_value').val('<'+'mt:date format="Y"'+'>,<'+'mt:date format="m"'+'>,<'+'mt:date format="d"'+'>');
+        }
+        $('#options-wrapper').show();
+        if (! $('#options').val() ) {
+            $('#options').val('1930,<'+'mt:date format="Y"'+'>');
+        }
+    } else {
+        if ( __old_class == 'date' ) {
+            $('#options').val('');
+            $('#connector').val('');
+            $('#default_value').val('');
+        }
+    }
+    if ( class_name.indexOf('attachment') != -1 || class_name.indexOf('file') != -1 ) {
+        $('#validation_type-wrapper').hide();
+        $('#column_maxlength-label').html('<span><mt:trans phrase="Max File Size"></span>');
+        $('#column_maxlength-option').hide();
+        $('#default_value-wrapper').hide();
+        $('.unit-label').show();
+    } else {
+        $('#validation_type-wrapper').show();
+        $('#column_maxlength-label').html('<span><mt:trans phrase="Max Length"></span>');
+        $('#column_maxlength-option').show();
+        $('#default_value-wrapper').show();
+        $('.unit-label').hide();
+    }
+    __old_class = class_name;
+}
+$('#_apply_question_type').click(function(){
+    var questiontype_id = $('#questiontype_id-selector').val();
+    if ( questiontype_id ) {
+        if ( !confirm('<mt:trans phrase="Are you sure you want to apply the default template?">') ) {
+            return false;
+        }
+        var str = '__mode=get_field_html&_type=questiontype';
+        str += '&magic_token=<mt:var name="magic_token">&id=' + questiontype_id;
+        $.post('<mt:var name="script_uri">', str,
+            function ( data ) {
+                if ( data.status != 200 ) {
+                    alert( data.message );
+                    return;
+                }
+                var content = data.content;
+                $('#template').val( content );
+                if ( content.match(/placeholder=/i)) {
+                    $('#placeholder-wrapper').show();
+                }
+                var class_name = data.class;
+                if ( class_name ) {
+                    class_selector_chenge( class_name );
+                }
+                // text,textarea,text_input_group,radio,checkbox,checkboxes,dropdown,date,file
+                disp_header_alert( '<mt:trans phrase="The default template was successfully applied. The applied template will not be reflected until you save this page.">' );
+            },
+            'json'
+        );
+    } else {
+        alert('<mt:trans phrase="Model not specified.">');
+    }
+});
+</script>

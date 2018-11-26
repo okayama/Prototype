@@ -1,0 +1,38 @@
+<mt:pagewidgets class="col-lg-4">
+  <mt:if name="__first__">
+    <mt:setvar name="col_width" value="4">
+    <mt:pagewidgetscount  class="col-lg-4" setvar="widgets_count">
+    <mt:math eq="floor(x / 3)*3" x="$widgets_count" setvar="last_start">
+    <mt:math eq="x % 3" x="$widgets_count" setvar="remainder_of_division">
+    <mt:var name="per_widgets" value="3">
+    <mt:if name="widgets_count" lt="3">
+      <mt:math eq="12 / x" x="$widgets_count" setvar="col_width">
+      <mt:var name="per_widgets" value="$widgets_count">
+    </mt:if>
+    <mt:setvar name="widget_class" value="col-lg-">
+    <mt:setvar name="widget_class" value="$col_width" append="1">
+  </mt:if>
+  <mt:math eq="x % 3" x="$__index__" setvar="is_not_start">
+  <mt:unless name="is_not_start">
+    <div class="row mt-4 plain-style">
+  </mt:unless>
+  <mt:if name="remainder_of_division">
+    <mt:if name="last_start" eq="$__index__">
+      <mt:math eq="12 / x" x="$remainder_of_division" setvar="col_width">
+      <mt:setvar name="widget_class" value="col-lg-">
+      <mt:setvar name="widget_class" value="$col_width" append="1">
+    </mt:if>
+  </mt:if>
+  <mt:include module="(Website) Main Page Widget" widget_class="$widget_class">
+  <mt:math eq="x % 3" x="$__counter__"  setvar="is_not_last">
+  <mt:unless name="is_not_last">
+    </div>
+  </mt:unless>
+  <mt:if name="__last__">
+    <mt:if name="widgets_count" lt="3">
+    </div>
+    <mt:elseif name="remainder_of_division">
+    </div>
+    </mt:if>
+  </mt:if>
+</mt:pagewidgets>

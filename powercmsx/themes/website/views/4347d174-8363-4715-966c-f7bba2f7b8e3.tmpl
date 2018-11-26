@@ -1,0 +1,55 @@
+<mt:include module="(Website) Site Config">
+<mt:include module="(Website) HTML Header">
+<div class="container-fluid">
+<mt:setcontext context="tag" name="@main_page" container="page">
+<mt:pages limit="1" include_draft="1">
+<mt:pagewidgets class="jumbotron">
+<mt:include module="(Website) Main Page Widget" widget_class="jumbotron">
+</mt:pagewidgets>
+</mt:pages>
+</mt:setcontext>
+<mt:entries limit="5" sort="published_on" direction="decend" cols="title,published_on" include_workspaces="this">
+<mt:if name="__first__">
+<div class="card mb-3">
+  <h2 class="card-header lead"><mt:trans phrase="Latest News" language="$language"></h2>
+  <div class="card-body card-inner-list">
+  <ul class="list-group list-group-flush">
+</mt:if>
+    <li class="list-group-item">
+      <div class="row">
+        <div class="col-lg-2">
+        <mt:entrydate format="Y-m-d">
+        </div>
+        <div class="col-lg-10 d-flex justify-content-between align-items-center">
+          <a href="<mt:entrypermalink>"><mt:entrytitle language="$language" escape></a>
+            <mt:entrycategories limit="1" cols="label"><small class="badge badge-secondary"><mt:categorylabel language="$language" escape></small></mt:entrycategories>
+        </div>
+      </div>
+    </li>
+  </ul>
+<mt:if name="__last__">
+  </div>
+  <div class="card-footer text-right">
+<a href="<mt:var name="website_url">news/index.html" class="btn btn-secondary"><mt:trans phrase="List News"  language="$language"></a>
+  </div>
+</div>
+</mt:if>
+</mt:entries>
+<mt:setcontext context="tag" name="@main_page" container="page">
+<mt:pages limit="1" include_draft="1">
+<mt:pagewidgets class="full-band-dark">
+<mt:if name="__first__"></div></mt:if>
+<mt:include module="(Website) Main Page Widget" widget_class="full-band-dark">
+<mt:if name="__last__"><div class="container-fluid"></mt:if>
+</mt:pagewidgets>
+<mt:include module="(Website) Widgets 3 Columns">
+</mt:pages>
+</mt:setcontext>
+<mt:templateformcontext>
+<div class="container-fluid">
+  <hr>
+  <h2 id="tables"><span class="title"><mt:formname language="$language" escape></span></h2>
+  <mt:include module="(Website) Form" form_identifier="main_page">
+  </div>
+</mt:templateformcontext>
+<mt:include module="(Website) HTML Footer" cache_key="$footer_cache_key">

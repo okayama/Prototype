@@ -1,0 +1,115 @@
+{
+    "label"   : "Column",
+    "plural"  : "Columns",
+    "version" : "1.1",
+    "column_defs": {
+        "id": {
+            "type": "int",
+            "not_null": 1,
+            "size": 11
+        },
+        "table_id": {
+            "type": "int",
+            "not_null": 1,
+            "size": 11
+        },
+        "name": {
+            "type": "string",
+            "size": 255
+        },
+        "type": {
+            "type": "string",
+            "size": 255
+        },
+        "default": {
+            "type": "string",
+            "size": 255
+        },
+        "size": {
+            "type": "int",
+            "size": 11
+        },
+        "label": {
+            "type": "string",
+            "size": 255
+        },
+        "hint": {
+            "type": "text"
+        },
+        "edit": {
+            "type": "string",
+            "size": 255
+        },
+        "disp_edit": {
+            "type": "string",
+            "size": 255
+        },
+        "options": {
+            "type": "string",
+            "size": 255
+        },
+        "extra": {
+            "type": "string",
+            "size": 255
+        },
+        "list": {
+            "type": "string",
+            "size": 255
+        },
+        "order": {
+            "type": "int",
+            "not_null": 1,
+            "size": 11
+        },
+        "not_null": {
+            "type": "tinyint",
+            "size": 4,
+            "default": 0
+        },
+        "translate": {
+            "type": "tinyint",
+            "size": 4
+        },
+        "unique": {
+            "type": "tinyint",
+            "size": 4,
+            "default": 0
+        },
+        "unchangeable": {
+            "type": "tinyint",
+            "size": 4,
+            "default": 0
+        },
+        "not_delete": {
+            "type": "tinyint",
+            "size": 4,
+            "default": 0
+        },
+        "autoset": {
+            "type": "tinyint",
+            "size": 4,
+            "default": 0
+        },
+        "index": {
+            "type": "tinyint",
+            "size": 4,
+            "default": 0
+        },
+        "is_primary": {
+            "type": "tinyint",
+            "size": 4,
+            "default": 0
+        },
+        "modified_on": {
+            "type": "datetime"
+        }
+    },
+    "indexes": {
+        "PRIMARY": "id",
+        "table_id": "table_id",
+        "list": "list",
+        "edit": "edit",
+        "is_primary": "is_primary",
+        "modified_on": "modified_on"
+    }
+}

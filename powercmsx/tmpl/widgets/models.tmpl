@@ -1,0 +1,33 @@
+<mt:tables type="display_dashboard" permission="1" workspace_perm="1">
+  <mt:if name="__first__">
+<div class="card dashboard-widget" id="widget-models">
+  <h2 class="card-header"><mt:trans phrase="Models">
+    <button  type="button" class="detatch-widget" aria-label="<mt:trans phrase="Detach">" data-name="widget-models">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </h2>
+  <div class="card-block card-group">
+  </mt:if>
+      <mt:trans phrase="$plural" setvar="object_plural">
+      <mt:trans phrase="$label" setvar="object_label">
+      <div class="card widget-card">
+        <mt:ignore><img class="card-img-top" src="..." alt="Card image cap"></mt:ignore>
+        <div class="card-block">
+          <h3 class="card-title"><mt:var name="object_plural"></h3>
+          <p class="card-text"><mt:var name="description" eval="1"></p>
+          <small class="text-muted"></small>
+        </div>
+        <div class="card-footer">
+          <a href="<mt:var name="script_uri">?__mode=view&amp;_type=list&amp;_model=<mt:var name="name" escape>&amp;workspace_id=<mt:var name="workspace_id">" class="btn btn-sm btn-primary">
+            <mt:trans phrase="List" params="$object_plural">
+          </a>
+          <a href="<mt:var name="script_uri">?__mode=view&amp;_type=edit&amp;_model=<mt:var name="name" escape>&amp;workspace_id=<mt:var name="workspace_id">" class="btn btn-sm btn-primary">
+            <mt:trans phrase="New" params="$object_label">
+          </a>
+        </div>
+      </div>
+  <mt:if name="__last__">
+  </div>
+</div>
+  </mt:if>
+</mt:tables>

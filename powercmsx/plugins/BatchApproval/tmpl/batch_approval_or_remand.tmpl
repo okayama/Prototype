@@ -1,0 +1,229 @@
+<mt:trans phrase="Approval Request or Remand of %s" params="$plural" component="BatchApproval" setvar="page_title">
+<mt:include file="include/dialog_header.tmpl">
+<form action="<mt:var name="script_uri">" method="POST" id="batch_approval-form" target="_top">
+<input type="hidden" name="__mode" value="list_action">
+<input type="hidden" name="_model" value="<mt:var name="model" escape>">
+<input type="hidden" name="magic_token" value="<mt:var name="magic_token">">
+<input type="hidden" name="workspace_id" value="<mt:var name="workspace_id">">
+<input type="hidden" name="_type" value="list">
+<input type="hidden" name="action_name" value="batch_approval_objects">
+<input type="hidden" name="itemset_action_input" value="1">
+<input type="hidden" name="do_action" value="1">
+<mt:loop name="object_ids"><input name="id[]" type="hidden"value="<mt:var name="__value__">">
+</mt:loop>
+  <mt:loop name="workflows">
+<mt:if name="__first__"><hr></mt:if>
+<div class="row form-group">
+  <div class="col-lg-2">
+  <h2><mt:var name="_workflow_workspace_name" escape> &nbsp; <small style="font-size:70%">(
+    <mt:if name="_workflow_object_count" eq="1">
+     <mt:trans phrase="%s %s is selected." params="'$_workflow_object_count','$label'">
+    <mt:else>
+     <mt:trans phrase="%s %s are selected." params="'$_workflow_object_count','$plural'">
+    </mt:if>
+  )</small></h2>
+  </div>
+  <div class="col-lg-10 form-inline form-inline-left-margin">
+  <label class="custom-control custom-radio">
+    <input class="custom-control-input" type="radio" checked name="__workflow_type_<mt:var name="_workflow_workspace_id">" value="0">
+    <span class="custom-control-indicator"></span>
+    <span class="custom-control-description"><mt:trans phrase="Unspecified"></span>
+  </label>
+
+  <mt:setvar name="_remand_type_single" value="0">
+  <mt:if name="_workflow_remand_type" eq="Serial">
+    <mt:setvar name="_remand_type_single" value="1">
+  </mt:if>
+  <mt:setvar name="current_group" value="">
+  <mt:workflowusers previous="1" single="$_remand_type_single" workflow_id="$_workflow_id">
+    <mt:if name="__first__">
+      <label class="custom-control custom-radio">
+        <input class="custom-control-input" type="radio" name="__workflow_type_<mt:var name="_workflow_workspace_id">" value="1">
+        <span class="custom-control-indicator"></span>
+        <span class="custom-control-description"><mt:trans phrase="Remand"></span>
+      </label>
+      <select class="form-control short" name="__workflow_remand_<mt:var name="_workflow_workspace_id">" id="__workflow_remand_<mt:var name="_workflow_workspace_id">">
+      <option class="remand-none" value=""><mt:trans phrase="Unspecified"></option>
+    </mt:if>
+      <mt:if name="current_group" ne="$workflow_relation_name">
+        <mt:if name="current_group"></optgroup></mt:if>
+        <optgroup label="<mt:var name="workflow_group_label" translate escape>">
+      </mt:if>
+      <option class="remand-<mt:var name="workflow_relation_name" escape>" value="<mt:var name="workflow_user_id" escape>">
+      <mt:var name="workflow_user_nickname" escape>
+      <mt:var name="workflow_relation_name" setvar="current_group">
+      </option>
+    <mt:if name="__last__"></optgroup></select></mt:if>
+  </mt:workflowusers>
+
+  <mt:setvar name="_approval_type_single" value="0">
+  <mt:if name="_workflow_approval_type" eq="Serial">
+    <mt:setvar name="_approval_type_single" value="1">
+  </mt:if>
+  <mt:setvar name="current_group" value="">
+  <mt:workflowusers next="1" single="$_approval_type_single" workflow_id="$_workflow_id">
+    <mt:if name="__first__">
+      <label class="custom-control custom-radio">
+        <input class="custom-control-input" type="radio" name="__workflow_type_<mt:var name="_workflow_workspace_id">" value="2">
+        <span class="custom-control-indicator"></span>
+        <span class="custom-control-description"><mt:trans phrase="Approval Request"></span>
+      </label>  
+      <select class="form-control short" name="__workflow_approval_<mt:var name="_workflow_workspace_id">" id="__workflow_approval_<mt:var name="_workflow_workspace_id">">
+      <option class="approval-none" value=""><mt:trans phrase="Unspecified"></option>
+    </mt:if>
+      <mt:if name="current_group" ne="$workflow_relation_name">
+        <mt:if name="current_group"></optgroup></mt:if>
+        <optgroup label="<mt:var name="workflow_group_label" translate escape>">
+      </mt:if>
+      <option class="approval-<mt:var name="workflow_relation_name" escape>" value="<mt:var name="workflow_user_id" escape>">
+      <mt:var name="workflow_user_nickname" escape>
+      <mt:var name="workflow_relation_name" setvar="current_group">
+      </option>
+    <mt:if name="__last__"></optgroup></select></mt:if>
+  </mt:workflowusers>
+<script>
+$("#__workflow_remand_<mt:var name="_workflow_workspace_id">").hide();
+$("#__workflow_approval_<mt:var name="_workflow_workspace_id">").hide();
+$('[name=__workflow_type_<mt:var name="_workflow_workspace_id">]').change(function() {
+    reset_workflow_<mt:var name="_workflow_workspace_id">();
+    $("#__workflow_remand_<mt:var name="_workflow_workspace_id">").val('');
+    $("#__workflow_approval_<mt:var name="_workflow_workspace_id">").val('');
+    if ( $(this).val() == 0 ) {
+        $("#__workflow_remand_<mt:var name="_workflow_workspace_id">").hide();
+        $("#__workflow_approval_<mt:var name="_workflow_workspace_id">").hide();
+    } else if ( $(this).val() == 1 ) {
+        $("#__workflow_remand_<mt:var name="_workflow_workspace_id">").show();
+        $("#__workflow_approval_<mt:var name="_workflow_workspace_id">").hide();
+    } else if ( $(this).val() == 2 ) {
+        $("#__workflow_remand_<mt:var name="_workflow_workspace_id">").hide();
+        $("#__workflow_approval_<mt:var name="_workflow_workspace_id">").show();
+    }
+    enable_action_button();
+});
+$('#__workflow_remand_<mt:var name="_workflow_workspace_id">').change(function() {
+    reset_workflow_<mt:var name="_workflow_workspace_id">();
+    var remand_selected_class = $('[name=__workflow_remand_<mt:var name="_workflow_workspace_id">] option:selected').attr('class');
+    if ( remand_selected_class == 'remand-none' ) {
+        return;
+    }
+    var nickname = $('[name=__workflow_remand_<mt:var name="_workflow_workspace_id">] option:selected').text();
+    $('#badge-change-user_<mt:var name="_workflow_workspace_id">').html( '<span>' + nickname + '</span>' );
+    $('#badge-change-user_<mt:var name="_workflow_workspace_id">').show();
+    $('#__workflow_message-wrapper_<mt:var name="_workflow_workspace_id">').show();
+    if ( remand_selected_class == 'remand-users_draft' ) {
+        $('#status-alert-block_<mt:var name="_workflow_workspace_id">').show();
+        $('#status-alert-message_<mt:var name="_workflow_workspace_id">').html('<span><mt:trans phrase="When remanded back to the Creator, the status will be changed to Draft."></span>');
+    } else if ( remand_selected_class == 'remand-users_review' ) {
+        $('#status-alert-block_<mt:var name="_workflow_workspace_id">').show();
+        $('#status-alert-message_<mt:var name="_workflow_workspace_id">').html('<span><mt:trans phrase="When remanded back to the Reviewer, the status of other than draft will be changed to Review." component="BatchApproval"></span>');
+    } else if ( remand_selected_class == 'remand-users_publish' ) {
+        $('#status-alert-block_<mt:var name="_workflow_workspace_id">').show();
+        $('#status-alert-message_<mt:var name="_workflow_workspace_id">').html('<span><mt:trans phrase="When remanded back to the Publisher, the status will be changed to Approval Pending."></span>');
+    }
+    enable_action_button();
+});
+$('#__workflow_approval_<mt:var name="_workflow_workspace_id">').change(function() {
+    reset_workflow_<mt:var name="_workflow_workspace_id">();
+    var approval_selected_class = $('[name=__workflow_approval_<mt:var name="_workflow_workspace_id">] option:selected').attr('class');
+    if ( approval_selected_class == 'approval-none' ) {
+        return;
+    }
+    var nickname = $('[name=__workflow_approval_<mt:var name="_workflow_workspace_id">] option:selected').text();
+    $('#badge-change-user_<mt:var name="_workflow_workspace_id">').html( '<span>' + nickname + '</span>' );
+    $('#badge-change-user_<mt:var name="_workflow_workspace_id">').show();
+    $('#__workflow_message-wrapper_<mt:var name="_workflow_workspace_id">').show();
+    if ( approval_selected_class == 'approval-users_draft' ) {
+    } else if ( approval_selected_class == 'approval-users_review' ) {
+        $('#status-alert-block_<mt:var name="_workflow_workspace_id">').show();
+        $('#status-alert-message_<mt:var name="_workflow_workspace_id">').html('<span><mt:trans phrase="When send approval request to the Reviewer, the status of other than draft will be changed to Review." component="BatchApproval"></span>');
+    } else if ( approval_selected_class == 'approval-users_publish' ) {
+        $('#status-alert-block_<mt:var name="_workflow_workspace_id">').show();
+        $('#status-alert-message_<mt:var name="_workflow_workspace_id">').html('<span><mt:trans phrase="When send approval request to the Publisher, the status will be changed to Approval Pending." component="BatchApproval"></span>');
+    }
+    enable_action_button();
+});
+function reset_workflow_<mt:var name="_workflow_workspace_id"> () {
+    $('#badge-change-user_<mt:var name="_workflow_workspace_id">').html( '<span></span>' );
+    $('#badge-change-user_<mt:var name="_workflow_workspace_id">').hide();
+    $('#status-alert-block_<mt:var name="_workflow_workspace_id">').hide();
+    $('#__workflow_message-wrapper_<mt:var name="_workflow_workspace_id">').hide();
+}
+</script>
+  </div>
+</div>
+<div class="row form-group" id="status-alert-block_<mt:var name="_workflow_workspace_id">">
+  <div class="col-lg-12">
+  <p class="text-muted text-danger hint-block">
+    <i class="fa fa-exclamation-triangle" aria-hidden="true"></i>
+    <span class="sr-only"><mt:trans phrase="Caution"></span>
+    <span id="status-alert-message_<mt:var name="_workflow_workspace_id">"></span>
+  </p>
+  </div>
+</div>
+<script>
+$('#status-alert-block_<mt:var name="_workflow_workspace_id">').hide();
+</script>
+<div class="row form-group">
+  <div class="col-lg-12">
+    <span class="badge badge-default badge-relation">
+    <mt:trans phrase="Current User">
+    </span>
+      <span id="badge-change-arrow" class="">
+      <i class="fa fa-arrow-right" aria-hidden="true"></i>
+      </span>
+      <span class="badge badge-warning-lite change-user hidden" id="badge-change-user_<mt:var name="_workflow_workspace_id">"><span></span></span>
+  </div>
+</div>
+<div class="row form-group has-danger" id="__workflow_message-wrapper_<mt:var name="_workflow_workspace_id">">
+  <div class="col-lg-2">
+    <label for="__workflow_message_<mt:var name="_workflow_workspace_id">">
+      <mt:trans phrase="Notify Message">
+    </label>
+  </div>
+  <div class="col-lg-10">
+  <textarea class="form-control alert-textarea" name="__workflow_message_<mt:var name="_workflow_workspace_id">" id="__workflow_message_<mt:var name="_workflow_workspace_id">"></textarea>
+  </div>
+</div>
+<script>
+$('#__workflow_message-wrapper_<mt:var name="_workflow_workspace_id">').hide();
+</script>
+<hr>
+  </mt:loop>
+
+<script>
+function enable_action_button () {
+var disableBtn = true;
+<mt:loop name="workflows">
+var new_user = $('#badge-change-user_<mt:var name="_workflow_workspace_id">').html();
+if ( new_user != '<span></span>' ) {
+    disableBtn = false;
+}
+</mt:loop>
+$('#do-action').attr('disabled', disableBtn);
+}
+</script>
+
+<button id="dialog-cancel-btn" class="btn btn-secondary" type="button"><mt:trans phrase="Cancel"></button>
+<button disabled type="submit" id="do-action" class="btn btn-primary"><mt:trans phrase="Do Action"></button>
+
+<script>
+$('#do-action').click(function(){
+    if (! confirm( '<mt:trans phrase="Are you sure you want to approval request or remand?" component="BatchApproval">' ) ) {
+        return false;
+    }
+});
+$('#dialog-cancel-btn').click(function(){
+    window.parent.$('#modal').modal('hide');
+    window.location.href = '<mt:var name="script_uri">?__mode=loading';
+    return false;
+});
+$(document).keydown(evnt_keydown);
+function evnt_keydown(e) {
+    if ( e.keyCode == 27 ) {
+        window.parent.$('#modal').modal('hide');
+        window.location.href = '<mt:var name="script_uri">?__mode=loading';
+    }
+}
+</script>
+</form>
+<mt:include file="include/dialog_footer.tmpl">

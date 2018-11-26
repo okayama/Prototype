@@ -1,0 +1,127 @@
+{
+    "label": "Attachment File",
+    "plural": "Attachment Files",
+    "version": "1.7",
+    "primary": "name",
+    "order": 410,
+    "menu_type": 3,
+    "display_space": 1,
+    "display_system": 1,
+    "start_end": 1,
+    "has_status": 1,
+    "template_tags": 1,
+    "default_status": 1,
+    "column_defs": {
+        "id": {
+            "type": "int",
+            "size": 11,
+            "not_null": 1
+        },
+        "name": {
+            "type": "string",
+            "size": 255
+        },
+        "file": {
+            "type": "blob"
+        },
+        "mime_type": {
+            "type": "string",
+            "size": 255
+        },
+        "size": {
+            "type": "int",
+            "size": 11
+        },
+        "class": {
+            "type": "string",
+            "size": 255,
+            "default": null
+        },
+        "workspace_id": {
+            "type": "int",
+            "size": 11,
+            "default" : 0
+        },
+        "status": {
+            "type": "int",
+            "size": 11,
+            "default": "1"
+        },
+        "created_on": {
+            "type": "datetime"
+        },
+        "modified_on": {
+            "type": "datetime"
+        },
+        "modified_by": {
+            "type": "int",
+            "size": 11
+        },
+        "published_on": {
+            "type": "datetime"
+        },
+        "unpublished_on": {
+            "type": "datetime"
+        },
+        "has_deadline": {
+            "type": "tinyint",
+            "size": 4
+        }
+    },
+    "indexes": {
+        "PRIMARY": "id",
+        "id": "id",
+        "workspace_id": "workspace_id",
+        "created_on": "created_on",
+        "modified_on": "modified_on",
+        "modified_by": "modified_by",
+        "published_on": "published_on",
+        "unpublished_on": "unpublished_on",
+        "has_deadline": "has_deadline",
+        "status": "status"
+    },
+    "sort_by": {
+        "id": "descend"
+    },
+    "autoset": [
+        "workspace_id",
+        "created_on",
+        "modified_on",
+        "modified_by"
+    ],
+    "options": {
+        "status": "Draft,Review,Approval Pending,Reserved,Publish,Ended"
+    },
+    "disp_edit": {
+        "status": "select"
+    },
+    "unchangeable": [
+        "class",
+        "workspace_id"
+    ],
+    "edit_properties": {
+        "id": "hidden",
+        "name": "primary",
+        "file": "file",
+        "mime_type": "text_short",
+        "size": "number",
+        "class": "text_short",
+        "status": "selection",
+        "published_on": "datetime",
+        "unpublished_on": "datetime"
+    },
+    "list_properties": {
+        "id": "number",
+        "name": "primary",
+        "status": "number",
+        "mime_type": "text_short",
+        "size": "number",
+        "class": "text_short",
+        "workspace_id": "reference:workspace:name",
+        "modified_on": "datetime",
+        "modified_by": "reference:user:name",
+        "published_on": "date",
+        "unpublished_on": "date",
+        "has_deadline": "checkbox"
+    }
+}

@@ -1,0 +1,106 @@
+<mt:setvarblock name="error_name">question_<mt:var name="question_basename" escape>_error</mt:setvarblock>
+<tr class="<mt:if name="$error_name"> has-danger</mt:if>">
+  <th scope="row" class="cell-form-question">
+    <label class="form-control-label" for="question_<mt:var name="question_basename" escape>">
+      <mt:var name="question_label" language="$language" eval="1" escape>
+      <mt:if name="question_required">
+      <small><i class="fa fa-asterisk required text-muted" aria-hidden="true"></i>
+      <span class="sr-only"><mt:trans phrase="Required" language="$language"></span></small>
+      </mt:if>
+    </label>
+  </th>
+  <td class="cell-form-input">
+      <mt:var name="question_connector" instr="," setvar="connector_split">
+      <mt:if name="connector_split">
+          <mt:var name="question_connector" split="," setvar="question_connectors">
+      <mt:else>
+          <mt:setvar function="push" name="question_connectors" value="$question_connector">
+          <mt:setvar function="push" name="question_connectors" value="$question_connector">
+      </mt:if>
+    <mt:setvarblock name="param_name">request.question_<mt:var name="question_basename" escape></mt:setvarblock>
+    <mt:var name="$param_name" setvar="question_vars">
+<mt:unless name="request.__mode">
+  <mt:var name="question_default_value" eval="1" split="," setvar="question_vars">
+</mt:unless>
+    <mt:if name="confirm_ok">
+<mt:setvarblock name="question_value">
+<mt:var name="question_vars" index="0"><mt:var name="question_connectors" index="0" escape>
+<mt:var name="question_vars" index="1"><mt:var name="question_connectors" index="1" escape>
+<mt:var name="question_vars" index="2"><mt:var name="question_connectors" index="2" escape>
+</mt:setvarblock>
+      <mt:var name="question_value" escape strip_linefeeds>
+      <input type="hidden" id="question_<mt:var name="question_basename" escape>" name="question_<mt:var name="question_basename" escape>[]" value="<mt:var name="question_vars" index="0" regex_replace="'/[^0-9]/',''" >">
+      <input type="hidden" name="question_<mt:var name="question_basename" escape>[]" value="<mt:var name="question_vars" index="1" regex_replace="'/[^0-9]/',''" >">
+      <input type="hidden" name="question_<mt:var name="question_basename" escape>[]" value="<mt:var name="question_vars" index="2" regex_replace="'/[^0-9]/',''" >">
+    <mt:else>
+      <mt:var name="question_options" eval="1" split="," setvar="year_from_to">
+      <mt:var name="year_from_to" index="0" setvar="year_from">
+      <mt:var name="year_from_to" index="1" setvar="year_to">
+      <mt:unless name="year_from"><mt:setvar name="year_from" value="1930"></mt:unless>
+      <mt:unless name="year_to"><mt:date format="Y" setvar="year_to"></mt:unless>
+      <mt:var name="question_vars" index="0" regex_replace="'/[^0-9]/',''" setvar="var_year">
+      <mt:var name="question_vars" index="1" regex_replace="'/[^0-9]/',''" setvar="var_month">
+      <mt:var name="question_vars" index="2" regex_replace="'/[^0-9]/',''" setvar="var_day">
+      <mt:for from="$year_from" to="$year_to">
+      <mt:if name="__first__">
+        <select name="question_<mt:var name="question_basename" escape>[]"
+              id="question_<mt:var name="question_basename" escape>"
+              class="select-date form-control watch-changed short <mt:if name="$error_name"> form-control-danger</mt:if>">
+        <mt:unless name="question_required">
+            <option value=""><mt:trans phrase="Unspecified" language="$language"></option>
+        </mt:unless>
+      </mt:if>
+        <option <mt:if name="var_year" eq="$__value__">selected</mt:if>
+          value="<mt:var name="__value__">"><mt:var name="__value__"></option>
+      <mt:if name="__last__">
+        </select>
+      </mt:if>
+      </mt:for>
+      &nbsp; <mt:var name="question_connectors" index="0" escape> &nbsp;
+      <mt:for from="1" to="12">
+      <mt:if name="__first__">
+        <select name="question_<mt:var name="question_basename" escape>[]"
+              id="question_<mt:var name="question_basename" escape>"
+              class="select-date form-control watch-changed short<mt:if name="$error_name"> form-control-danger</mt:if>">
+        <mt:unless name="question_required">
+            <option value=""><mt:trans phrase="Unspecified" language="$language"></option>
+        </mt:unless>
+      </mt:if>
+        <option <mt:if name="var_month" eq="$__value__">selected</mt:if>
+          value="<mt:var name="__value__" zero_pad="2">"><mt:var name="__value__" zero_pad="2"></option>
+      <mt:if name="__last__">
+        </select>
+      </mt:if>
+      </mt:for>
+      &nbsp; <mt:var name="question_connectors" index="1" language="$language" escape> &nbsp;
+      <mt:for from="1" to="31">
+      <mt:if name="__first__">
+        <select name="question_<mt:var name="question_basename" escape>[]"
+              id="question_<mt:var name="question_basename" escape>"
+              class="select-date form-control watch-changed short<mt:if name="$error_name"> form-control-danger</mt:if>">
+        <mt:unless name="question_required">
+            <option value=""><mt:trans phrase="Unspecified" language="$language"></option>
+        </mt:unless>
+      </mt:if>
+        <option <mt:if name="var_day" eq="$__value__">selected</mt:if>
+          value="<mt:var name="__value__" zero_pad="2">"><mt:var name="__value__" zero_pad="2"></option>
+      <mt:if name="__last__">
+        </select>
+      </mt:if>
+      </mt:for>
+      &nbsp; <mt:var name="question_connectors" index="2" language="$language" escape>
+    </mt:if>
+  <mt:if name="question_hint">
+  <div class="text-muted">
+    <i class="fa fa-question-circle-o" aria-hidden="true"></i>
+    <span class="sr-only"><mt:trans phrase="Hint" language="$language"></span>
+    <mt:var name="question_hint" language="$language" eval="1">
+  </div>
+  </mt:if>
+<mt:if name="$error_name">
+  <div class="form-control-feedback">
+    <mt:var name="$error_name" escape>
+  </div>
+</mt:if>
+  </td>
+</tr>

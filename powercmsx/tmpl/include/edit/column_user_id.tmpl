@@ -1,0 +1,401 @@
+<mt:if name="_has_workflow">
+<div class="row form-group user_id-widget">
+  <div class="col-lg-2">
+    <label for="">
+      <mt:trans phrase="Workflow">
+      <mt:if name="not_null"><mt:var name="field_required"></mt:if>
+    </label>
+  </div>
+  <div class="col-lg-10 form-inline form-inline-left-margin">
+  <mt:ignore>
+    <mt:var name="_workflow_user_type">,
+    <mt:var name="_workflow_remand_type">,
+    <mt:var name="_workflow_approval_type">,
+  </mt:ignore>
+  <mt:if name="user_id" ne="$object_user_id">
+    <span class="left-margin text-muted" id="__workflow_disable_message">
+    <i class="fa fa-exclamation-triangle" aria-hidden="true"></i>
+    <span class="sr-only"><mt:trans phrase="Caution"></span>
+    <mt:trans phrase="Because other User is in edit, Workflow can not be used.">
+    </span>
+    <button id="__workflow_use" type="button" class="btn btn-sm btn-outline-danger btn-very-sm"><mt:trans phrase="Use Workflow"></button>
+<script>
+__enable_workflow = true;
+$('#__workflow_use').click(function() {
+    __reset_workflow();
+    __enable_workflow = true;
+});
+function __reset_workflow () {
+    $('#status-selector').show();
+    $('#status-alterative').hide();
+    $('[name=__workflow_type]:eq(0)').prop('checked', true);
+    $('#__workflow_disable_message').hide();
+    $('#__workflow_use').hide();
+    $('.__workflow_elements').show();
+    $('#__workflow_hide').show();
+    $("#__workflow_remand").hide();
+    $("#__workflow_approval").hide();
+    $("#__workflow_remand").val('');
+    $("#__workflow_approval").val('');
+    if ( __workflow_orig_status != $('#status-selector').val() ) {
+        $('#status-selector').val( __workflow_orig_status );
+        __workflow_owner_max_status = __workflow_orig_max_status;
+        $('#status-alert-block').show();
+        $('#status-alert-message').html('<span><mt:trans phrase="The status has been reset."></span>');
+        $('#badge-change-user').html('<span></span>');
+        $('#badge-change-user').hide();
+        $('#badge-change-arrow').hide();
+        $('#__workflow_message-wrapper').hide();
+        $('#__workflow_message-wrapper').hide();
+    }
+}
+</script>
+  </mt:if>
+  <label class="custom-control custom-radio __workflow_elements">
+    <input class="custom-control-input" type="radio" checked name="__workflow_type" value="0">
+    <span class="custom-control-indicator"></span>
+    <span class="custom-control-description"><mt:trans phrase="Unspecified"></span>
+  </label>
+
+  <mt:setvar name="_remand_type_single" value="0">
+  <mt:if name="_workflow_remand_type" eq="Serial">
+    <mt:setvar name="_remand_type_single" value="1">
+  </mt:if>
+  <mt:setvar name="current_group" value="">
+  <mt:workflowusers previous="1" single="$_remand_type_single">
+    <mt:if name="__first__">
+      <label class="custom-control custom-radio __workflow_elements">
+        <input class="custom-control-input" type="radio" name="__workflow_type" value="1">
+        <span class="custom-control-indicator"></span>
+        <span class="custom-control-description"><mt:trans phrase="Remand"></span>
+      </label>
+      <select class="form-control __workflow_elements" name="__workflow_remand" id="__workflow_remand">
+      <option class="remand-none" value=""><mt:trans phrase="Unspecified"></option>
+    </mt:if>
+      <mt:if name="current_group" ne="$workflow_relation_name">
+        <mt:if name="current_group"></optgroup></mt:if>
+        <optgroup label="<mt:var name="workflow_group_label" translate escape>">
+      </mt:if>
+      <mt:if name="object_user_id" ne="$workflow_user_id">
+      <option class="remand-<mt:var name="workflow_relation_name" escape>" value="<mt:var name="workflow_user_id" escape>">
+      <mt:var name="workflow_user_nickname" escape>
+      </option>
+      <mt:var name="workflow_relation_name" setvar="current_group">
+      </mt:if>
+    <mt:if name="__last__"></optgroup></select>
+<script>
+$("#__workflow_remand").hide();
+$('#__workflow_remand').change(function() {
+    $('#status-selector').show();
+    $('#status-alterative').hide();
+    var remand_selected_class = $('[name=__workflow_remand] option:selected').attr('class');
+    var nickname = $('[name=__workflow_remand] option:selected').text();
+    $('#badge-change-user').html('<span>' + nickname + '</span>');
+    $('#badge-change-user').show();
+    $('#badge-change-arrow').show();
+    $('#__workflow_message-wrapper').show();
+    var current_status = $('#status-selector').val();
+    if ( remand_selected_class == 'remand-users_draft' ) {
+        $('#status-selector').val('0');
+        if ( current_status != 0 ) {
+            $('#status-alert-block').show();
+            $('#status-alert-message').html('<span><mt:trans phrase="When remanded back to the Creator, the status will be changed to Draft."></span>');
+        }
+        __workflow_owner_max_status = 0;
+    } else if ( remand_selected_class == 'remand-users_review' ) {
+        if ( current_status > 1 ) {
+            $('#status-selector').val('1');
+            $('#status-alert-block').show();
+            $('#status-alert-message').html('<span><mt:trans phrase="When remanded back to the Reviewer, the status will be changed to Review."></span>');
+        }
+        __workflow_owner_max_status = 1;
+    } else if ( remand_selected_class == 'remand-users_publish' ) {
+        if ( current_status < 2 ) {
+            $('#status-selector').val('2');
+            $('#status-alert-block').show();
+            $('#status-alert-message').html('<span><mt:trans phrase="When remanded back to the Publisher, the status will be changed to Approval Pending."></span>');
+        }
+        __workflow_owner_max_status = 5;
+    } else {
+        $('#status-alert-block').hide();
+        $('#badge-change-user').html('<span></span>');
+        $('#badge-change-user').hide();
+        $('#badge-change-arrow').hide();
+        $('#__workflow_message-wrapper').hide();
+        __reset_workflow();
+    }
+});
+</script>
+    </mt:if>
+  </mt:workflowusers>
+  <mt:setvar name="_approval_type_single" value="0">
+  <mt:if name="_workflow_approval_type" eq="Serial">
+    <mt:setvar name="_approval_type_single" value="1">
+  </mt:if>
+  <mt:setvar name="current_group" value="">
+  <mt:workflowusers next="1" single="$_approval_type_single">
+    <mt:if name="__first__">
+      <label class="custom-control custom-radio __workflow_elements">
+        <input class="custom-control-input" type="radio" name="__workflow_type" value="2">
+        <span class="custom-control-indicator"></span>
+        <span class="custom-control-description"><mt:trans phrase="Approval Request"></span>
+      </label>  
+      <select class="form-control __workflow_elements" name="__workflow_approval" id="__workflow_approval">
+      <option class="approval-none" value=""><mt:trans phrase="Unspecified"></option>
+    </mt:if>
+      <mt:if name="current_group" ne="$workflow_relation_name">
+        <mt:if name="current_group"></optgroup></mt:if>
+        <optgroup label="<mt:var name="workflow_group_label" translate escape>">
+      </mt:if>
+      <mt:if name="object_user_id" ne="$workflow_user_id">
+      <option class="approval-<mt:var name="workflow_relation_name" escape>" value="<mt:var name="workflow_user_id" escape>">
+      <mt:var name="workflow_user_nickname" escape>
+      </option>
+      </mt:if>
+      <mt:var name="workflow_relation_name" setvar="current_group">
+    <mt:if name="__last__"></optgroup></select>
+<script>
+$("#__workflow_approval").hide();
+$('#__workflow_approval').change(function(e) {
+    var approval_selected_class = $('[name=__workflow_approval] option:selected').attr('class');
+    var nickname = $('[name=__workflow_approval] option:selected').text();
+    $('#badge-change-user').html('<span>' + nickname + '</span>');
+    $('#badge-change-user').show();
+    $('#badge-change-arrow').show();
+    $('#__workflow_message-wrapper').show();
+    var current_status = $('#status-selector').val();
+    if ( approval_selected_class == 'approval-users_draft' ) {
+        $('#status-selector').show();
+        $('#status-alterative').hide();
+        $('#status-selector').val('0');
+        if ( current_status != 0 ) {
+            $('#status-alert-block').show();
+            $('#status-alert-message').html('<span><mt:trans phrase="When you send approval request to the Creator, the status will be changed to Draft."></span>');
+        }
+        __workflow_owner_max_status = 0;
+    } else if ( approval_selected_class == 'approval-users_review' ) {
+        if ( current_status != 1 ) {
+            $('#status-selector').val('1');
+            $('#status-alert-block').show();
+            if ( '<mt:var name="_workflow_user_type">' != 'reviewer' ) {
+                $('#status-alert-message').html('<span><mt:trans phrase="When you send approval request to the Reviewer, the status will be changed to Review(You will not be able to edit this %s)." params="$_object_label"></span>');
+                $('#status-selector').hide();
+                $('#status-alterative').html('<span><mt:trans phrase="Review"></span>');
+                $('#status-alterative').show();
+            } else {
+                $('#status-alert-message').html('<span><mt:trans phrase="When you send approval request to the Reviewer, the status will be changed to Review."></span>');
+            }
+        }
+        __workflow_owner_max_status = 1;
+    } else if ( approval_selected_class == 'approval-users_publish' ) {
+        if ( current_status < 2 ) {
+            $('#status-selector').val('2');
+            $('#status-alert-block').show();
+            $('#status-alert-message').html('<span><mt:trans phrase="When you send approval request to the Publisher, the status will be changed to Approval Pending."></span>');
+            if ( '<mt:var name="_workflow_user_type">' != 'publisher' ) {
+                $('#status-alert-message').html('<span><mt:trans phrase="When you send approval request to the Publisher, the status will be changed to Approval Pending(You will not be able to edit this %s)." params="$_object_label"></span>');
+                $('#status-selector').hide();
+                $('#status-alterative').html('<span><mt:trans phrase="Approval Pending"></span>');
+                $('#status-alterative').show();
+            } else {
+                $('#status-alert-message').html('<span><mt:trans phrase="When you send approval request to the Publisher, the status will be changed to Approval Pending."></span>');
+            }
+        } else if ( current_status == 5 ) {
+            $('#status-selector').val('2');
+            $('#status-alert-block').show();
+            $('#status-alert-message').html('<span><mt:trans phrase="When you send approval request to the Publisher, the status will be changed to Approval Pending." params="$_object_label"></span>');
+        }
+        __workflow_owner_max_status = 5;
+    } else {
+        $('#status-alert-block').hide();
+        $('#badge-change-user').html('<span></span>');
+        $('#badge-change-user').hide();
+        $('#badge-change-arrow').hide();
+        $('#__workflow_message-wrapper').hide();
+        __reset_workflow();
+    }
+});
+</script>
+    </mt:if>
+  </mt:workflowusers>
+  <mt:if name="user_id" ne="$object_user_id">
+    <button id="__workflow_hide" type="button" class="btn btn-sm btn-outline-danger btn-very-sm"><mt:trans phrase="Hide Workflow"></button>
+<script>
+__enable_workflow = false;
+$('#__workflow_hide').click(function() {
+    __enable_workflow = false;
+    $('#status-selector').show();
+    $('#status-alterative').hide();
+    $('#__workflow_disable_message').show();
+    $('#__workflow_use').show();
+    $('#__workflow_hide').hide();
+    $('.__workflow_elements').hide();
+    if ( __workflow_orig_status != $('#status-selector').val() ) {
+        $('#status-selector').val( __workflow_orig_status );
+        __workflow_owner_max_status = __workflow_orig_max_status;
+        $('#status-alert-block').show();
+        $('#status-alert-message').html('<span><mt:trans phrase="The status has been reset."></span>');
+        $('#badge-change-user').html('<span></span>');
+        $('#badge-change-user').hide();
+        $('#badge-change-arrow').hide();
+        $('#__workflow_message-wrapper').hide();
+    }
+});
+$('#__workflow_hide').hide();
+</script>
+  </mt:if>
+<script>
+$('[name=__workflow_type]').change(function() {
+    $('#status-selector').show();
+    $('#status-alterative').hide();
+    var selected_workflow_type = $('input[name=__workflow_type]:checked').val();
+    var $userSelecter;
+    var userid;
+    if ( selected_workflow_type == 1 ) {
+        if ( $("#__workflow_remand").length ) {
+            <mt:if test="($_remand_type_single === '1' && $_approval_type_single === '1')">
+              $userSelecter = $('#__workflow_remand');
+              userid = $userSelecter.find('>optgroup >option:last-child').val();
+              $userSelecter.val(userid).trigger('change');
+            <mt:else>
+              $("#__workflow_remand").show();
+            </mt:if>
+        }
+    } else {
+        if ( $("#__workflow_remand").length ) {
+            $("#__workflow_remand").hide();
+            $("#__workflow_remand").val('');
+        }
+    }
+    if ( selected_workflow_type == 2 ) {
+        if ( $("#__workflow_approval").length ) {
+            <mt:if test="($_remand_type_single === '1' && $_approval_type_single === '1')">
+              $userSelecter = $('#__workflow_approval');
+              userid = $userSelecter.find('>optgroup >option:last-child').val();
+              $userSelecter.val(userid).trigger('change');
+            <mt:else>
+              $("#__workflow_approval").show();
+            </mt:if>
+        }
+    } else {
+        if ( $("#__workflow_approval").length ) {
+            $("#__workflow_approval").hide();
+            $("#__workflow_approval").val('');
+        }
+    }
+    if ( selected_workflow_type == 0 ) {
+        $("#__workflow_remand").val('');
+        $("#__workflow_approval").val('');
+        $('#status-alert-block').hide();
+        $('#badge-change-user').hide();
+        $('#badge-change-user').html('<span></span>');
+        $('#badge-change-arrow').hide();
+        $('#__workflow_message-wrapper').hide();
+        $('#__workflow_remand').val('');
+        $('#__workflow_approval').val('');
+    }
+    if ( typeof __workflow_orig_status !== 'undefined' && __workflow_orig_status != $('#status-selector').val() ) {
+        $('#status-selector').val( __workflow_orig_status );
+        __workflow_owner_max_status = __workflow_orig_max_status;
+        $('#status-alert-block').show();
+        $('#status-alert-message').html('<span><mt:trans phrase="The status has been reset."></span>');
+    }
+});
+</script>
+  </div>
+<mt:if name="user_id" ne="$object_user_id">
+<script>
+$(".__workflow_elements").hide();
+</script>
+</mt:if>
+</div>
+</mt:if>
+  <mt:var name="edit" split=":" setvar="edit_props">
+  <mt:var name="edit_props[1]" setvar="rel_model">
+  <mt:var name="edit_props[2]" setvar="rel_col">
+  <mt:var name="edit_props[3]" setvar="rel_type">
+  <div class="row form-group">
+    <div class="col-lg-2">
+      <label for="<mt:var name="__col_name__">">
+        <mt:var name="label" escape>
+        <mt:if name="not_null"><mt:var name="field_required"></mt:if>
+      </label>
+    </div>
+    <div class="col-lg-8">
+
+<mt:if name="object_previous_owner">
+<mt:ignore>previous_owner</mt:ignore>
+( <mt:trans phrase="Previous Owner"> : 
+    <mt:getobjectname id="$object_previous_owner" type="relation:user:nickname:dialog" wants="id" escape setvar="__owner_id__">
+  <mt:ignore>
+    <mt:setvar name="thumbnail" value="">
+    <mt:assetthumbnail id="$__owner_id__" type="default" square="1" model="$rel_model" data_uri="1" setvar="thumbnail">
+    <img src="<mt:var name="thumbnail">" id="previous_owner-img" class="<mt:unless name="thumbnail">hidden</mt:unless>" alt="<mt:trans phrase="Profile Picture">" width="32">
+  </mt:ignore>
+    <span class="badge badge-default badge-relation badge-relation-user">
+      <div id="previous_owner-img" class="assets-child-thumb" data-model="<mt:var name="rel_model" escape>" data-id="<mt:var name="object_previous_owner" escape>" style="background-image:url('<mt:var name="script_uri">?__mode=get_thumbnail&amp;square=1&amp;_model=<mt:var name="rel_model" escape>&amp;id=<mt:var name="object_previous_owner" escape>')"></div>
+    <span id="previous_owner-label">
+    <mt:if name="__owner_id__">
+    <mt:getobjectname id="$__owner_id__" type="relation:user:nickname:dialog" escape>
+    <mt:else>
+    <mt:trans phrase="(None selected)">
+    </mt:if>
+    </span>
+    </span>
+    <input type="hidden" name="owner_id" value="<mt:var name="__owner_id__">">
+) <i class="fa fa-arrow-right" aria-hidden="true"></i>
+<mt:ignore>/previous_owner</mt:ignore>
+</mt:if>
+      <span class="badge badge-default badge-relation badge-relation-user">
+      <div id="user_id-img" class="assets-child-thumb" data-model="<mt:var name="rel_model" escape>" data-id="<mt:var name="__col_value__" escape>" style="background-image:url('<mt:var name="script_uri">?__mode=get_thumbnail&amp;square=1&amp;_model=<mt:var name="rel_model" escape>&amp;id=<mt:var name="__col_value__" escape>')"></div>
+      <span id="<mt:var name="__col_name__">-label">
+      <mt:if name="__col_value__">
+      <mt:getobjectname id="$__col_value__" type="$edit">
+      <mt:else>
+      <mt:trans phrase="(None selected)">
+      </mt:if>
+      </span>
+      </span>
+      <mt:if name="_has_workflow">
+        <span id="badge-change-arrow" class="hidden">
+          <i class="fa fa-arrow-right" aria-hidden="true"></i>
+        </span>
+        <span class="badge badge-warning-lite change-user hidden" id="badge-change-user"></span>
+      <div>
+      </div>
+      </mt:if>
+      <input id="<mt:var name="__col_name__">" type="hidden" name="<mt:var name="__col_name__">" value="<mt:var name="__col_value__" escape>">
+    <mt:unless name="_has_workflow">
+      <button id="user_id-chooser" type="button" class="<mt:if name="_assign_user">hidden </mt:if>btn btn-primary btn-sm dialog-chooser" data-toggle="modal" data-target="#modal"
+      data-href="<mt:var name="script_uri">?__mode=view&amp;_type=list&amp;_model=<mt:var name="rel_model" escape><mt:if name="workspace_id">&amp;workspace_id=<mt:var name="workspace_id"></mt:if>&amp;dialog_view=1&amp;single_select=1&amp;target=<mt:var name="__col_name__">&amp;get_col=<mt:var name="rel_col" escape>&amp;workflow_type=all&amp;workflow_model=<mt:var name="model">"><mt:trans phrase="Select..."></button>
+      <mt:if name="_assign_user">
+      <a id="user_id-edit" href="javascript:void(0)"><i class="fa fa-pencil-square-o" aria-hidden="true"></i>
+      <span class="sr-only"><mt:trans phrase="Assign User"></span></a>
+      </mt:if>
+    </mt:unless>
+    </div>
+  </div>
+<mt:if name="_assign_user">
+<mt:unless name="_has_workflow">
+<script>
+$("#user_id-edit").click(function(){
+    $("#user_id-chooser").toggle();
+});
+</script>
+</mt:unless>
+</mt:if>
+<mt:if name="_has_workflow">
+<div class="row form-group has-danger" id="__workflow_message-wrapper">
+  <div class="col-lg-2">
+    <label for="__workflow_message">
+      <mt:trans phrase="Notify Message">
+    </label>
+  </div>
+  <div class="col-lg-10">
+  <textarea class="form-control alert-textarea" name="__workflow_message" id="__workflow_message"></textarea>
+  </div>
+</div>
+<script>
+$("#__workflow_message-wrapper").hide();
+</script>
+</mt:if>

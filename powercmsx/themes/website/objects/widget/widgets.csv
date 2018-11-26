@@ -1,0 +1,19 @@
+widget_name,widget_text,widget_fore_color,widget_back_color,widget_text_format,widget_image,widget_colors,widget_class,widget_order,widget_user_id,widget_published_on,widget_unpublished_on,widget_has_deadline,widget_status,widget_basename,widget_uuid,widget_assets,widget_tags
+Main Widget,"<h1>PowerCMS X</h1>
+<p>This is a simple hero unit, a simple jumbotron-style component for calling extra attention to featured content or information.</p>
+<p>{{mt:if tag=""pagestatus"" eq=""4""}}&lt;span class=""d-block text-right""&gt;&lt;a class=""btn btn-secondary"" href=""{{mt:pagepermalink}}""&gt;{{mt:trans phrase=""Show Detail"" language=""$language""}}&lt;/a&gt;&lt;/span&gt;{{/mt:if}}</p>",#ffffff,#00006f,richtext,%r/assets/widget/main_widget.jpg,,jumbotron,1,1,2018-11-15T12:09:56,0,0,4,main_widget,9b31afda-3457-4759-a4f2-a3404d0ba7f1,,
+Full Band Dark,"<h2 style=""text-align: center;"">Example body text</h2>
+<p>Nullam quis risus eget <a href=""#"">urna mollis ornare</a> vel eu leo. Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Nullam id dolor id nibh ultricies vehicula.</p>
+<p>The following is <strong>rendered as bold text</strong>.</p>",#ffffff,#c2007d,richtext,,,full-band-dark,2,1,2018-11-15T12:53:33,0,0,4,example_body_text_nullam_quis_risus_eget,08e5495e-02cd-46d3-893c-af86bb1d9d5b,,
+3 columns of 1,"<h2 style=""background-color: rgba(255, 255, 255, 0.4); text-align: center;"">Example body text</h2>
+<p style=""background-color: rgba(255, 255, 255, 0.4);"">Nullam quis risus eget <a href=""#"">urna mollis ornare</a> vel eu leo. Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Nullam id dolor id nibh ultricies vehicula.</p>
+<p style=""background-color: rgba(255, 255, 255, 0.4);"">The following is <strong>rendered as bold text</strong>.</p>",#000000,#ffffff,richtext,,,col-lg-4,3,1,2018-11-15T13:22:35,0,0,4,3_columns_of_1,d56d5342-117e-4c12-af24-44de07b7dec8,,
+3 columns of 2,"<h2 style=""background-color: rgba(255, 255, 255, 0.4); text-align: center;"">Example body text</h2>
+<p style=""background-color: rgba(255, 255, 255, 0.4);"">Nullam quis risus eget <a href=""#"">urna mollis ornare</a> vel eu leo. Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Nullam id dolor id nibh ultricies vehicula.</p>
+<p style=""background-color: rgba(255, 255, 255, 0.4);"">The following is <strong>rendered as bold text</strong>.</p>",#000000,#ffffff,richtext,,,col-lg-4,4,1,2018-11-15T13:22:35,0,0,4,3_columns_of_2,fa061af8-c2e1-4e0d-ab76-9d273b1b3f0c,,
+3 columns of 3,"<h2 style=""background-color: rgba(255, 255, 255, 0.4); text-align: center;"">Example body text</h2>
+<p style=""background-color: rgba(255, 255, 255, 0.4);"">Nullam quis risus eget <a href=""#"">urna mollis ornare</a> vel eu leo. Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Nullam id dolor id nibh ultricies vehicula.</p>
+<p style=""background-color: rgba(255, 255, 255, 0.4);"">The following is <strong>rendered as bold text</strong>.</p>",#000000,#ffffff,richtext,,,col-lg-4,5,1,2018-11-15T13:22:35,0,0,4,3_columns_of_3,9a0f5a86-4d28-46b0-b293-ae0842916204,,
+3 columns of 4,"<h2 style=""background-color: rgba(255, 255, 255, 0.4); text-align: center;"">Example body text</h2>
+<p style=""background-color: rgba(255, 255, 255, 0.4);"">Nullam quis risus eget <a href=""#"">urna mollis ornare</a> vel eu leo. Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Nullam id dolor id nibh ultricies vehicula.</p>
+<p style=""background-color: rgba(255, 255, 255, 0.4);"">The following is <strong>rendered as bold text</strong>.</p>",#000000,#ffffff,richtext,,,col-lg-4,6,1,2018-11-15T13:22:35,0,0,4,3_columns_of_4,2bb9dac1-3b7b-4fbd-912b-8532f8b3d614,,

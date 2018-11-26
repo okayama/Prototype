@@ -1,0 +1,12 @@
+{
+    "Provide preview function with UUID specified." : "UUIDパラメタ指定での外部ユーザーのプレビュー機能を提供します。",
+    "Target Models" : "対象モデル",
+    "External Preview Link" : "外部プレビューリンク",
+    "Enable External Preview" : "外部プレビューを有効にする",
+    "Expires" : "有効期限",
+    "Default Expires" : "有効期限の規定値",
+    "day(s) after" : "日後",
+    "There is no target model." : "対象のモデルがありません。",
+    "In order to use this function, UUID is set in the model, and URL Map needs to be present."
+        : "この機能を利用するためには、モデルにUUIDが設定されていて、URLマップが存在する必要があります。"
+}

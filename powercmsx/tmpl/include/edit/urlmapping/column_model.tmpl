@@ -1,0 +1,34 @@
+<mt:setvar name="no_disp" value="Role,Permission,Question Type">
+<mt:var name="no_disp" split="," setvar="no_disp">
+
+<div class="row form-group">
+  <div class="col-lg-2">
+    <label for="<mt:var name="name" escape>">
+    <mt:var name="label" escape="1">
+    <mt:var name="field_required">
+    </label>
+  </div>
+  <div class="col-lg-3">
+    <select class="form-control short" name="<mt:var name="__col_name__">">
+    <mt:if name="workspace_id">
+      <mt:setvarblock name="table_option">'display_space','1'</mt:setvarblock>
+    <mt:else>
+      <mt:setvarblock name="table_option">'display','1'</mt:setvarblock>
+    </mt:if>
+    <mt:objectloop model="table" sort_by="order" options="$table_option">
+    <mt:if name="__first__">
+      <option value="">
+        <mt:trans phrase="Unspecified">
+      </option>
+    </mt:if>
+      <mt:if name="menu_type" ne="2">
+        <mt:ifinarray array="no_disp" value="$label">
+        <mt:else>
+        <option <mt:if name="__col_value__" eq="$name">selected</mt:if> value="<mt:var name="name">">
+        <mt:trans phrase="$label" escape></option>
+        </mt:ifinarray>
+      </mt:if>
+    </mt:objectloop>
+    </select>
+  </div>
+</div>

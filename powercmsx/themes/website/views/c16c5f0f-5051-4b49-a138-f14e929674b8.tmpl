@@ -1,0 +1,24 @@
+<div class="container-fluid">
+<mt:breadcrumbs exclude_workspace="1" exclude_folders="1">
+  <mt:if name="__first__">
+      <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+          <li class="breadcrumb-item">
+            <a href="<mt:websiteurl>"><mt:websitename escape></a>
+          </li>
+  </mt:if>
+          <li class="breadcrumb-item<mt:if name="__last__"> active</mt:if>"<mt:if name="__last__"> aria-current="page"</mt:if>>
+             <mt:unless name="__last__"><mt:if name="__breadcrumbs_url__">
+            <a href="<mt:var name="__breadcrumbs_url__">">
+              </mt:if></mt:unless>
+              <mt:if name="__last__"><mt:if name="archive_title"><mt:var name="archive_title"><mt:else><mt:var name="__breadcrumbs_title__" language="$language" escape></mt:if><mt:else><mt:var name="__breadcrumbs_title__" language="$language" escape></mt:if>
+             <mt:unless name="__last__"><mt:if name="__breadcrumbs_url__">
+            </a>
+            </mt:if></mt:unless>
+          </li>
+  <mt:if name="__last__">
+        </ol>
+      </nav>
+  </mt:if>
+</mt:breadcrumbs>
+</div>

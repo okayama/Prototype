@@ -1,0 +1,363 @@
+<mt:ignore>Reset Variables</mt:ignore>
+<mt:setvar name="class" value="">
+<mt:setvar name="asset_url" value="">
+<mt:setvar name="thumbnail" value="">
+<mt:setvar name="file_meta" value="">
+<div class="row form-group">
+  <div class="col-lg-2">
+    <label for="<mt:var name="__col_name__">">
+      <mt:var name="label" escape>
+      <mt:if name="not_null"><mt:var name="field_required"></mt:if>
+    </label>
+  </div>
+  <div class="col-lg-10 input-group-lg">
+<mt:assetproperty name="$name" model="$model" property="class" setvar="class">
+<mt:assetproperty name="$name" model="$model" property="url" setvar="asset_url">
+<mt:setvar name="__widget_background_image" value="$asset_url">
+<mt:assetthumbnail type="default" name="$name" model="$model" dynamic="1" setvar="thumbnail">
+<mt:unless name="class">
+<mt:if name="thumbnail">
+  <mt:setvar name="class" value="image">
+  <mt:else>
+  <mt:setvar name="class" value="$options">
+</mt:if>
+</mt:unless>
+<mt:setvar name="preview_width" value="128">
+<mt:assetproperty name="$name" model="$model" property="image_width" setvar="image_width">
+<mt:if name="image_width">
+<mt:if name="image_width" lt="$preview_width">
+  <mt:setvar name="preview_width" value="$image_width">
+</mt:if>
+</mt:if>
+<mt:assetproperty name="$name" model="$model" property="file_name" setvar="file_name">
+<mt:if name="file_name">
+<mt:assetproperty name="$name" model="$model" property="url" setvar="asset_url">
+<mt:setvarblock name="file_meta">
+    <b><mt:trans phrase="Name"></b> :
+      <mt:assetproperty name="$name" model="$model" property="file_name"><br>
+    <b><mt:trans phrase="Size"></b> :
+      <mt:assetproperty name="$name" model="$model" property="file_size" format_size="1"><br>
+    <b><mt:trans phrase="Type"></b> :
+      <mt:assetproperty name="$name" model="$model" property="mime_type">
+    <mt:if name="class" eq="image">
+    <br>
+    <b><mt:trans phrase="Width"></b> :
+      <mt:assetproperty name="$name" model="$model" property="image_width">px<br>
+    <b><mt:trans phrase="Height"></b> : 
+      <mt:assetproperty name="$name" model="$model" property="image_height">px
+    </mt:if>
+</mt:setvarBlock>
+</mt:if>
+
+<mt:ignore>TODO: top of template</mt:ignore>
+
+<mt:setvarblock name="file_meta_tmpl">
+    <b><mt:trans phrase="Name"></b> :
+      file_name<br>
+    <b><mt:trans phrase="Size"></b> :
+      file_size<br>
+    <b><mt:trans phrase="Type"></b> :
+      mime_type
+</mt:setvarBlock>
+<mt:setvarblock name="file_image_tmpl">
+    <br>
+    <b><mt:trans phrase="Width"></b> :
+      image_widthpx<br>
+    <b><mt:trans phrase="Height"></b> : 
+      image_heightpx
+</mt:setvarBlock>
+    <div class="alert alert-success hidden" id="<mt:var name="__col_name__">-alert" role="alert" tabindex="0">
+      <button onclick="$('#<mt:var name="__col_name__">-alert').hide();" type="button" id="header-alert-close" class="close" aria-label="<mt:trans phrase="Detach">">
+        <span aria-hidden="true">&times;</span>
+      </button>
+      <span id="<mt:var name="__col_name__">-alert-message"><mt:trans phrase="The file has successfully uploaded. The uploaded file will not be reflected until you save this page."></span>
+    </div>
+<mt:assetproperty name="$name" model="$model" property="image_width" thumbnail_height="$preview_width" setvar="thumbnail_height">
+<div id="drop-<mt:var name="__col_name__">">
+<i id="icon-<mt:var name="__col_name__">" class="btn fa <mt:if name="class" eq="image">fa-file-image-o<mt:elseif name="class" eq="pdf">fa-file-pdf-o<mt:elseif name="class" eq="video">fa-file-video-o<mt:elseif name="class" eq="audio">fa-file-audio-o<mt:else>fa-file-o</mt:if> fa-3x" aria-hidden="true"></i>
+  <img class="<mt:unless name="class" eq="image">hidden</mt:unless>
+    <mt:unless name="file_name"> hidden</mt:unless> preview-file-field lazy"
+    id="image_preview-<mt:var name="__col_name__">"
+    src="<mt:var name="prototype_path">assets/img/spacer.gif"
+    data-original="<mt:var name="thumbnail">" <mt:if name="thumbnail_height">height="<mt:assetproperty name="$name" model="$model" property="image_width" thumbnail_height="$preview_width">"</mt:if> width="<mt:var name="preview_width">" alt="<mt:trans phrase="Preview">">
+    <a href="javascript:void(0);"
+        id="popover-<mt:var name="__col_name__">"><i class="btn fa fa-info-circle fa-2x" aria-hidden="true" aria-label="<mt:trans phrase="Properties">"></i></a>
+    <mt:objectvar name="$name" setvar="value">
+    <mt:ignore>TODO:not Image</mt:ignore>
+      &nbsp; <a id="inline-<mt:var name="__col_name__">" target="_blank" class="btn btn-secondary <mt:unless name="value">hidden</mt:unless>" href="<mt:var name="script_uri">?__mode=view&amp;_type=edit&amp;_model=<mt:var name="model">&amp;id=<mt:var name="request.id" escape>&amp;view=<mt:var name="__col_name__">&amp;_screen_id=<mt:var name="screen_id"><mt:if name="workspace_id">&amp;workspace_id=<mt:var name="workspace_id"></mt:if>"><mt:trans phrase="View"></a>
+      <a id="download-<mt:var name="__col_name__">" class="btn btn-secondary <mt:unless name="value">hidden</mt:unless>" href="<mt:var name="script_uri">?__mode=view&amp;_type=edit&amp;_model=<mt:var name="model">&amp;id=<mt:var name="request.id" escape>&amp;view=<mt:var name="__col_name__">&amp;download=1&amp;_screen_id=<mt:var name="screen_id"><mt:if name="workspace_id">&amp;workspace_id=<mt:var name="workspace_id"></mt:if>"><mt:trans phrase="Download"></a>
+      <mt:setvarblock name="attach_key">request.<mt:var name="__col_name__">-magic</mt:setvarblock>
+      <mt:unless name="readonly">
+        <button type="button" id="edit-<mt:var name="__col_name__">" class="btn btn-primary<mt:unless name="value"> hidden</mt:unless><mt:unless name="class" eq="image"> hidden</mt:unless>" data-toggle="modal" data-target="#modal"
+        data-href="<mt:var name="script_uri">?__mode=edit_image&amp;_model=<mt:var name="model">&amp;id=<mt:var name="request.id" escape>&amp;view=<mt:var name="__col_name__">&amp;_screen_id=<mt:var name="screen_id"><mt:if name="workspace_id">&amp;workspace_id=<mt:var name="workspace_id"></mt:if>"><mt:trans phrase="Edit..."></button>
+      </mt:unless>
+    <input id="<mt:var name="__col_name__">-magic" type="hidden" value="<mt:var name="$attach_key" escape>" name="<mt:var name="__col_name__">-magic" class="watch-changed">
+    <mt:unless name="readonly">
+    <span id="<mt:var name="__col_name__">-chooser" class="btn btn-success fileinput-button">
+        <span><mt:trans phrase="Select File..."></span>
+        <!-- The file input field used as target for the file upload widget -->
+        <input id="<mt:var name="__col_name__">" type="file" name="files"
+            onfocus="$('#<mt:var name="__col_name__">-chooser').css('border','2px solid green');"
+            onblur="$('#<mt:var name="__col_name__">-chooser').css('border','none');">
+    </span>
+    </mt:unless>
+<mt:setvar name="_asset_file_col" value="0">
+<mt:if name="model" eq="asset">
+<mt:if name="__col_name__" eq="file">
+  <mt:setvar name="_asset_file_col" value="1">
+</mt:if>
+</mt:if>
+<mt:unless name="_asset_file_col">
+  <mt:unless name="readonly">
+    <span class="form-inline-span-cb <mt:var name="__col_name__">-remove-wrapper hidden">
+    <input type="hidden" name="<mt:var name="__col_name__">-remove" value="0">
+    <label class="custom-control custom-checkbox">
+    <input id="<mt:var name="__col_name__">-remove" class="custom-control-input watch-changed"
+     type="checkbox" name="<mt:var name="__col_name__">-remove" value="1">
+        <span class="custom-control-indicator"></span>
+        <span class="custom-control-description"> 
+        <mt:trans phrase="Delete"></span>
+    </label>
+    </span>
+  </mt:unless>
+</mt:unless>
+  <!-- The global progress bar -->
+  <mt:unless name="readonly">
+  <div id="progress-<mt:var name="__col_name__">" class="progress">
+    <div class="progress-bar progress-bar-success"></div>
+  </div>
+  <!-- The container for the uploaded files -->
+  <div id="files-<mt:var name="__col_name__">" class="files"></div>
+  <div class="alt-text <mt:unless name="value">hidden</mt:unless>" id="file-<mt:var name="__col_name__">-label">
+    <label id="files-<mt:var name="__col_name__">-label-label" for="files-<mt:var name="__col_name__">-label" class="sr-only"><mt:if name="class" eq="image"><mt:trans phrase="Alternative Text"><mt:else><mt:trans phrase="Label"></mt:if></label>
+    <input id="files-<mt:var name="__col_name__">-label" type="text" class="form-control form-control-sm"
+           name="<mt:var name="__col_name__">-label" placeholder="<mt:if name="class" eq="image"><mt:trans phrase="Alternative Text"><mt:else><mt:trans phrase="Label"></mt:if>"
+           value="<mt:assetproperty name="$name" model="$model" property="label" escape>">
+  </div>
+  </mt:unless>
+  <div class="input-group copy-url" id="clipboard-<mt:var name="__col_name__">-wrapper">
+    <input type="text" class="form-control form-control-sm clipboard-url" id="clipboard-<mt:var name="__col_name__">"
+           value="<mt:if name="asset_url"><mt:var name="asset_url"><mt:else><mt:var name="script_uri">?__mode=view&amp;_type=edit&amp;_model=<mt:var name="model">&amp;id=<mt:var name="request.id" escape>&amp;view=<mt:var name="__col_name__">&amp;_screen_id=<mt:var name="screen_id"><mt:if name="workspace_id">&amp;workspace_id=<mt:var name="workspace_id"></mt:if></mt:if>">
+    <button data-toggle="tooltip" data-placement="left" title="<mt:trans phrase="Copy to Clipboard">" type="button" class="input-group-addon copy-clipboard" data-clipboard-target="#clipboard-<mt:var name="__col_name__">"><i class="fa fa-clipboard" aria-hidden="true" aria-label="<mt:trans phrase="Copy to Clipboard">"></i></button>
+    <button id="view-<mt:var name="__col_name__">" data-toggle="tooltip" data-placement="left" title="<mt:trans phrase="View">" type="button" class="input-group-addon"><i class="fa fa-external-link" aria-hidden="true" aria-label="<mt:trans phrase="View">"></i></button>
+  </div>
+</div>
+<script>
+var file_<mt:var name="__col_name__">_selected;
+var file_<mt:var name="__col_name__">_class = '<mt:var name="class">';
+<mt:if name="file_name">
+file_<mt:var name="__col_name__">_selected = true;
+$('.<mt:var name="__col_name__">-remove-wrapper').show();
+</mt:if>
+$('body').on('click', function (e) {
+    //did not click a popover toggle or popover
+    $('#popover-<mt:var name="__col_name__">').popover('hide');
+});
+var file_meta_tmpl = '<mt:var name="file_meta_tmpl" strip_linefeeds="1">';
+var file_image_tmpl = '<mt:var name="file_image_tmpl" strip_linefeeds="1">';
+$('#view-<mt:var name="__col_name__">').click(function(){
+    var viewlink = $('#clipboard-<mt:var name="__col_name__">').val();
+    window.open( viewlink, '_blank');
+});
+<mt:if name="file_meta">
+$('#popover-<mt:var name="__col_name__">').popover({
+    title: "<mt:trans phrase="Properties">",
+    content: "<mt:var name="file_meta" strip_linefeeds="1">",
+    placement: "right",
+    html: true
+});
+<mt:else>
+$('#popover-<mt:var name="__col_name__">').hide();
+$('#clipboard-<mt:var name="__col_name__">-wrapper').hide();
+$('#image_preview-<mt:var name="__col_name__">').hide();
+</mt:if>
+$('#<mt:var name="__col_name__">-remove').change(function(){
+    if ( $(this).prop('checked') ) {
+        if (! confirm( '<mt:trans phrase="Are you sure you want to delete the file? Delete is reflected when saving this page.">' ) ) {
+            $(this).prop('checked',!$(this).prop('checked'));
+            return;
+        }
+    }
+    $('#files-<mt:var name="__col_name__">').toggle();
+    $('#files-<mt:var name="__col_name__">-label').toggle();
+    $('#popover-<mt:var name="__col_name__">').toggle();
+    $('#clipboard-<mt:var name="__col_name__">-wrapper').toggle();
+    $('#download-<mt:var name="__col_name__">').toggle();
+    $('#inline-<mt:var name="__col_name__">').toggle();
+    if ( file_<mt:var name="__col_name__">_class == 'image' ) {
+        $('#image_preview-<mt:var name="__col_name__">').toggle();
+        $('#edit-<mt:var name="__col_name__">').toggle();
+    }
+});
+var DropZone<mt:var name="__col_name__"> = document.getElementById('drop-<mt:var name="__col_name__">');
+<mt:if name="readonly">
+$('#drop-<mt:var name="__col_name__">').css('border','1px solid <mt:if name="user_control_border"><mt:var name="user_control_border" escape><mt:else>#ccc</mt:if>');
+$('#drop-<mt:var name="__col_name__">').css('margin','1px');
+$('#drop-<mt:var name="__col_name__">').css('padding','8px');
+<mt:else>
+DropZone<mt:var name="__col_name__">.addEventListener('dragover', function (event) {
+    $('#drop-<mt:var name="__col_name__">').css('background-color','#ddf');
+});
+DropZone<mt:var name="__col_name__">.addEventListener('dragleave', function (event) {
+    $('#drop-<mt:var name="__col_name__">').css('background-color','#fff');
+});
+$('#drop-<mt:var name="__col_name__">').css('border','3px dashed <mt:if name="user_control_border"><mt:var name="user_control_border" escape><mt:else>#ccc</mt:if>');
+$('#drop-<mt:var name="__col_name__">').css('margin','1px');
+$('#drop-<mt:var name="__col_name__">').css('padding','8px');
+/*jslint unparam: true */
+/*global window, $ */
+$(function () {
+    'use strict';
+    var url = '<mt:var name="script_uri">?__mode=upload&_model=<mt:var name="model">&_screen_id=<mt:var name="screen_id">&name=<mt:var name="__col_name__">';
+    $('#<mt:var name="__col_name__">').fileupload({
+        url: url,
+        dataType: 'json',
+        dropZone: $("#drop-<mt:var name="__col_name__">"),
+        done: function (e, data) {
+            if (!data.result.files) {
+                var error = data.result.message;
+                $('#progress-<mt:var name="__col_name__"> .progress-bar').css(
+                    'width', 0
+                );
+                alert("<mt:trans phrase="An error occurred while uploading.">"+' (' + error + ')');
+                return;
+            }
+            file_<mt:var name="__col_name__">_selected = true;
+            $.each(data.result.files, function (index, file) {
+                $('#files-<mt:var name="__col_name__">').html('');
+                $('#download-<mt:var name="__col_name__">').show();
+                $('#file-<mt:var name="__col_name__">-label').show();
+                $('#<mt:var name="__col_name__">-magic').val(file.magic);
+                var file_name = escape_html( decodeURI(file.name) );
+                var file_class = escape_html( file.class );
+                if (file_class == 'image') {
+                    $('#edit-<mt:var name="__col_name__">').show();
+                } else {
+                    $('#edit-<mt:var name="__col_name__">').hide();
+                }
+                $('#inline-<mt:var name="__col_name__">').show();
+                $('<p/>').text(file_name).appendTo('#files-<mt:var name="__col_name__">');
+                file_<mt:var name="__col_name__">_class = file_class;
+                if (file_class == 'image') {
+                    $('#files-<mt:var name="__col_name__">-label').attr( 'placeholder', '<mt:trans phrase="Alternative Text">' );
+                } else {
+                    $('#files-<mt:var name="__col_name__">-label').attr( 'placeholder', '<mt:trans phrase="Label">' );
+                }
+                if (! $('#files-<mt:var name="__col_name__">-label').val() ) {
+                    $('#files-<mt:var name="__col_name__">-label').val( file_name );
+                }
+                if (file_class == 'image') {
+                    $('#image_preview-<mt:var name="__col_name__">').show();
+                    $('#image_preview-<mt:var name="__col_name__">').prop('src','data:'+file.type+';base64,'+file.thumbnail);
+                    if(file.width < <mt:var name="preview_width"> ){
+                        $('#image_preview-<mt:var name="__col_name__">').prop('width',file.width);
+                        $('#image_preview-<mt:var name="__col_name__">').prop('height',file.height);
+                    } else {
+                        $('#image_preview-<mt:var name="__col_name__">').prop('width',<mt:var name="preview_width">);
+                        $('#image_preview-<mt:var name="__col_name__">').removeAttr('height');
+                    }
+                    $('#icon-<mt:var name="__col_name__">').removeClass('fa-file-pdf-o');
+                    $('#icon-<mt:var name="__col_name__">').removeClass('fa-file-o');
+                    $('#icon-<mt:var name="__col_name__">').addClass('fa-file-image-o');
+                    // fa-file-pdf-o
+                } else if (file_class == 'pdf') {
+                    $('#icon-<mt:var name="__col_name__">').removeClass('fa-file-o');
+                    $('#icon-<mt:var name="__col_name__">').removeClass('fa-file-image-o');
+                    $('#icon-<mt:var name="__col_name__">').addClass('fa-file-pdf-o');
+                } else {
+                    $('#icon-<mt:var name="__col_name__">').removeClass('fa-file-pdf-o');
+                    $('#icon-<mt:var name="__col_name__">').removeClass('fa-file-image-o');
+                    $('#icon-<mt:var name="__col_name__">').addClass('fa-file-o');
+                }
+                if (file_class != 'image') {
+                    $('#image_preview-<mt:var name="__col_name__">').hide();
+                }
+                var file_size = file.size;
+                if ( file_size >= 1048576 ) {
+                    file_size = Math.round( ( file_size / 1048576 )*10 )/10 + 'MB';
+                } else if ( file_size >= 1024 ) {
+                    file_size = Math.round( ( file_size / 1024 )*10 )/10 + 'KB';
+                } else {
+                    file_size = file_size + 'Byte';
+                }
+                var prop_tmpl = '<mt:var name="file_meta_tmpl" strip_linefeeds="1">';
+                prop_tmpl = prop_tmpl.replace('file_name', file_name);
+                prop_tmpl = prop_tmpl.replace('file_size', file_size);
+                prop_tmpl = prop_tmpl.replace('mime_type', file.type);
+                var image_tmpl = '<mt:var name="file_image_tmpl" strip_linefeeds="1">';
+                if (file_class == 'image') {
+                    image_tmpl = image_tmpl.replace('image_width', file.width);
+                    image_tmpl = image_tmpl.replace('image_height', file.height);
+                    prop_tmpl = prop_tmpl + image_tmpl;
+                }
+                $('#clipboard-<mt:var name="__col_name__">-wrapper').show();
+                var image_url = '<mt:var name="script_uri">?__mode=view&_type=edit&_model=<mt:var name="model">&id=<mt:var name="request.id" escape>&view=<mt:var name="__col_name__">&_screen_id=<mt:var name="screen_id"><mt:if name="workspace_id">&workspace_id=<mt:var name="workspace_id"></mt:if>';
+                $('#clipboard-<mt:var name="__col_name__">').val( image_url );
+                image_url += '&rnd=' + Math.random();
+                $('iframe#text_ifr')
+                  .contents()
+                  .find('body')
+                  .css({
+                    'background-image': 'url(' + image_url + ')',
+                    'background-size': 'cover',
+                    'background-position': 'center'
+                });
+                $('#popover-<mt:var name="__col_name__">').show();
+                $('#popover-<mt:var name="__col_name__">').popover('dispose');
+                $('#popover-<mt:var name="__col_name__">').popover({
+                    title: "<mt:trans phrase="Properties">",
+                    content: prop_tmpl,
+                    placement: "right",
+                    html: true
+                });
+                if('<mt:var name="model">' == 'asset' && '<mt:var name="__col_name__">' == 'file' ) {
+                    if ( $('#label').val() == '' ) {
+                        $('#label').val(file_name);
+                    }
+                    $('#file_name').val(file_name);
+                    $('#file_ext').val(file.extension);
+                    $('#mime_type').val(file.type);
+                    $('#class').val(file_class);
+                    $('#size').val(file.size);
+                    $('#_object_size').html(file_size);
+                    if (file_class == 'image') {
+                        $('#image_width').val(file.width);
+                        $('#image_height').val(file.height);
+                        $('#_object_width').html(file.width+'px');
+                        $('#_object_height').html(file.height+'px');
+                    } else {
+                        $('#image_width').val('');
+                        $('#image_height').val('');
+                        $('#_object_width').html('');
+                        $('#_object_height').html('');
+                    }
+                }
+                if ( file.resized != true ) {
+                    $('#<mt:var name="__col_name__">-alert-message').html('<mt:trans phrase="The file has successfully uploaded. The uploaded file will not be reflected until you save this page.">');
+                } else {
+                    $('#<mt:var name="__col_name__">-alert-message').html('<mt:trans phrase="It has been reduced because it exceeds the maximum size of the image. The uploaded file will not be reflected until you save this page.">');
+                }
+                $('#<mt:var name="__col_name__">-alert').show();
+                $('#<mt:var name="__col_name__">-alert').focus();
+                $('#progress-<mt:var name="__col_name__"> .progress-bar').css(
+                    'width', 0
+                );
+                $('#drop-<mt:var name="__col_name__">').css('background-color','#fff');
+                $('.<mt:var name="__col_name__">-remove-wrapper').show();
+            });
+        },
+        progressall: function (e, data) {
+            var progress = parseInt(data.loaded / data.total * 100, 10);
+            $('#progress-<mt:var name="__col_name__"> .progress-bar').css(
+                'width',
+                progress + '%'
+            );
+        }
+    }).prop('disabled', !$.support.fileInput)
+        .parent().addClass($.support.fileInput ? undefined : 'disabled');
+});
+</mt:if>
+</script>
+    <mt:var name="_hint">
+  </div>
+</div>

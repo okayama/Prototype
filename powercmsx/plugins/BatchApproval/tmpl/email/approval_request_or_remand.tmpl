@@ -1,0 +1,55 @@
+<mt:for merge_linefeeds="1">
+<mt:if name="assigned_count_objects">
+<mt:trans phrase="%1$s %2$s has been sent %3$s for you by user %4$s."
+    params="'$assigned_count_objects','$object_label_plural','$workflow_label','$by_user'"
+    component="BatchApproval">
+<mt:if name="workflow_message">
+<mt:trans phrase="(Message)">
+<mt:var name="workflow_message"></mt:if>
+
+<mt:trans phrase="(List of %s)" params="$object_label_plural">
+<mt:var name="list_url">
+
+<mt:loop name="assigned_object_loop">
+<mt:if name="__first__">====================================================================<mt:else>-------------------------------------------------------------------</mt:if>
+
+<mt:var name="object_name"> (ID: <mt:var name="object_id">)
+<mt:trans phrase="(Changing)">
+<mt:if name="object_user_changed"> - <mt:var name="object_user_changed"></mt:if>
+<mt:if name="object_status_changed"> - <mt:var name="object_status_changed"></mt:if>
+<mt:trans phrase="(URLs)">
+<mt:if name="object_permalink"><mt:var name="object_permalink"></mt:if>
+<mt:if name="edit_link"><mt:var name="edit_link"></mt:if>
+<mt:if name="__last__">
+====================================================================</mt:if>
+</mt:loop></mt:if>
+
+<mt:if name="changed_count_objects">
+<mt:trans phrase="Your responsible %1$s %2$s has been sent %3$s to another user %4$s by %5$s."
+    params="'$changed_count_objects','$object_label_plural','$workflow_label','$to_user','$by_user'"
+    component="BatchApproval">
+<mt:unless name="assigned_count_objects">
+<mt:if name="workflow_message">
+<mt:trans phrase="(Message)">
+<mt:var name="workflow_message"></mt:if>
+
+<mt:trans phrase="(List of %s)" params="$object_label_plural">
+<mt:var name="list_url">
+</mt:unless>
+
+<mt:loop name="changed_object_loop">
+<mt:if name="__first__">====================================================================<mt:else>-------------------------------------------------------------------</mt:if>
+
+<mt:var name="object_name"> (ID: <mt:var name="object_id">)
+<mt:trans phrase="(Changing)">
+<mt:if name="object_user_changed"> - <mt:var name="object_user_changed"></mt:if>
+<mt:if name="object_status_changed"> - <mt:var name="object_status_changed"></mt:if>
+<mt:trans phrase="(URLs)">
+<mt:if name="object_permalink"><mt:var name="object_permalink"></mt:if>
+<mt:if name="edit_link"><mt:var name="edit_link"></mt:if>
+<mt:if name="__last__">
+====================================================================</mt:if>
+</mt:loop>
+</mt:if>
+<mt:if name="mail_footer"><mt:var name="mail_footer"></mt:if>
+</mt:for>

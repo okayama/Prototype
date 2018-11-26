@@ -1,0 +1,39 @@
+<div class="row form-group">
+  <div class="col-lg-2">
+    <mt:trans phrase="Target" component="Sitemap">
+  </div>
+  <div class="col-lg-10">
+    <input type="hidden" name="setting_sitemap_contains_assets" value="0">
+    <label class="custom-control custom-checkbox">
+    <input id="setting_sitemap_contains_assets" class="custom-control-input watch-changed"
+     type="checkbox" name="setting_sitemap_contains_assets" value="1" <mt:if name="setting_sitemap_contains_assets">checked</mt:if>>
+        <span class="custom-control-indicator"></span>
+        <span class="custom-control-description"> 
+        <mt:trans phrase="Contains Assets" component="Sitemap"></span>
+    </label>
+    <input type="hidden" name="sitemap_contains_attachmentfiles" value="0">
+    <label class="custom-control custom-checkbox">
+    <input id="sitemap_contains_attachmentfiles" class="custom-control-input watch-changed"
+     type="checkbox" name="sitemap_contains_attachmentfiles" value="1" <mt:if name="sitemap_contains_attachmentfiles">checked</mt:if>>
+        <span class="custom-control-indicator"></span>
+        <span class="custom-control-description"> 
+        <mt:trans phrase="Contains Attachment Files" component="Sitemap"></span>
+    </label>
+    <input type="hidden" name="setting_sitemap_contains_files" value="0">
+    <label class="custom-control custom-checkbox">
+    <input id="setting_sitemap_contains_files" class="custom-control-input watch-changed"
+     type="checkbox" name="setting_sitemap_contains_files" value="1" <mt:if name="setting_sitemap_contains_files">checked</mt:if>>
+        <span class="custom-control-indicator"></span>
+        <span class="custom-control-description"> 
+        <mt:trans phrase="Contains Files" component="Sitemap"></span>
+    </label>
+    <input type="hidden" name="setting_sitemap_contains_thumbnails" value="0">
+    <label class="custom-control custom-checkbox">
+    <input id="setting_sitemap_contains_files" class="custom-control-input watch-changed"
+     type="checkbox" name="setting_sitemap_contains_thumbnails" value="1" <mt:if name="setting_sitemap_contains_thumbnails">checked</mt:if>>
+        <span class="custom-control-indicator"></span>
+        <span class="custom-control-description"> 
+        <mt:trans phrase="Contains Thumbnails" component="Sitemap"></span>
+    </label>
+  </div>
+</div>

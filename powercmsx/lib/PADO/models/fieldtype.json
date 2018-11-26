@@ -1,0 +1,141 @@
+{
+    "label"    : "Field Type",
+    "plural"   : "Field Types",
+    "version"  : "1.1",
+    "primary"  : "name",
+    "auditing" : 1,
+    "order"    : 191,
+    "sortable" : 1,
+    "display_system": 1,
+    "menu_type": 2,
+    "has_basename": 1,
+    "revisable": 1,
+    "column_defs": {
+        "id": {
+            "type": "int",
+            "size": 11,
+            "not_null": 1
+        },
+        "name": {
+            "type": "string",
+            "size": 255
+        },
+        "label": {
+            "type": "text"
+        },
+        "hide_label": {
+            "type": "tinyint",
+            "size": 4
+        },
+        "content": {
+            "type": "text"
+        },
+        "basename": {
+            "type": "string",
+            "size": 255,
+            "not_null": 1
+        },
+        "order": {
+            "type": "int",
+            "size": 11
+        },
+        "created_on": {
+            "type": "datetime"
+        },
+        "modified_on": {
+            "type": "datetime"
+        },
+        "created_by": {
+            "type": "int",
+            "size": 11
+        },
+        "modified_by": {
+            "type": "int",
+            "size": 11
+        },
+        "rev_type": {
+            "type": "int",
+            "size": 11,
+            "not_null": 1,
+            "default": "0"
+        },
+        "rev_object_id": {
+            "type": "int",
+            "size": 11,
+            "default": null
+        },
+        "rev_changed": {
+            "type": "string",
+            "size": 255,
+            "default": null
+        },
+        "rev_note": {
+            "type": "string",
+            "size": 255,
+            "default": null
+        },
+        "rev_diff": {
+            "type": "text",
+            "default": null
+        }
+    },
+    "indexes": {
+        "PRIMARY": "id",
+        "id": "id",
+        "basename": "basename",
+        "order": "order",
+        "created_on": "created_on",
+        "modified_on": "modified_on",
+        "created_by": "created_by",
+        "modified_by": "modified_by",
+        "rev_type": "rev_type",
+        "rev_object_id": "rev_object_id",
+        "rev_note": "rev_note"
+    },
+    "translate": [
+        "name"
+    ],
+    "options": {
+        "label": "10",
+        "content": "16"
+    },
+    "sort_by": {
+        "id": "ascend"
+    },
+    "autoset": [
+        "created_on",
+        "modified_on",
+        "created_by",
+        "modified_by",
+        "rev_type",
+        "rev_object_id",
+        "rev_changed",
+        "rev_diff"
+    ],
+    "edit_properties": {
+        "id": "hidden",
+        "name": "primary",
+        "label": "textarea",
+        "hide_label": "checkbox",
+        "content": "textarea",
+        "basename": "text_short",
+        "order": "number",
+        "uuid": "text_short"
+    },
+    "hide_edit_options" : [
+        "label",
+        "hide_label",
+        "content",
+        "basename"
+    ],
+    "list_properties": {
+        "id": "number",
+        "name": "primary",
+        "basename": "text",
+        "order": "number",
+        "modified_on": "datetime",
+        "modified_by": "reference:user:name",
+        "rev_note": "text",
+        "rev_diff": "popover"
+    }
+}

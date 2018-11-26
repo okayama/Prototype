@@ -1,0 +1,18 @@
+{
+    "Provides customization for WYSIWYG HTML Editor."
+                    : "WYSIWYGエディタのカスタマイズ機能を提供します。",
+    "Menu Bar"      : "メニューバー",
+    "Tool Bar"      : "ツールバー",
+    "Plugins"       : "プラグイン",
+    "Mobile"        : "モバイル",
+    "Content CSS"   : "エディタCSS",
+    "Relative URLs" : "相対パス変換",
+    "Use Mobile mode"
+                    : "モバイルモードを有効にする",
+    "Label of Boilerplate Snippet here."
+                    : "エディタひな形の「ラベル」がここに表示されます。",
+    "Snippet of Boilerplate Snippet here(No Boilerplate Snippet found)."
+                    : "エディタひな形の「スニペット」がここに表示されます(エディタひな形が見つかりません)。",
+    "Description of Boilerplate Snippet here."
+                    : "エディタひな形の「説明」がここに表示されます。"
+}

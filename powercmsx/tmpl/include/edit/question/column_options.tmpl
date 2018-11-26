@@ -1,0 +1,50 @@
+<mt:getobjectlabel id="$object_questiontype_id" column="basename" model="questiontype" setvar="questiontype_value">
+<div class="row form-group">
+  <div class="col-lg-2">
+    <label for="<mt:var name="__col_name__">" id="column-options-label">
+      <mt:var name="label" escape>
+      <mt:if name="not_null"><mt:var name="field_required"></mt:if>
+    </label>
+  </div>
+  <div class="col-lg-10">
+    <input id="<mt:var name="__col_name__">" type="<mt:if name="disp_option" like="num">number<mt:else>text</mt:if>" class="form-control watch-changed <mt:var name="ctrl_class">" name="<mt:var name="__col_name__">" value="<mt:var name="value">"
+      <mt:if name="readonly">readonly</mt:if>>
+<mt:if name="questiontype_value" like="input_group">
+<mt:setvar name="_hint" value="Please enter the width (number) of the fields(Comma separated list).">
+<mt:elseif name="questiontype_value" like="file">
+<mt:setvar name="_hint" value="Please enter the file extension for allow(Comma separated list).">
+<mt:elseif name="questiontype_value" like="attachment">
+<mt:setvar name="_hint" value="Please enter the file extension for allow(Comma separated list).">
+<mt:else>
+<mt:setvar name="_hint" value="Please enter all allowable options for this field as a comma separated list.">
+</mt:if>
+  <p class="text-muted hint-block" id="options-hint-wrapper">
+    <i class="fa fa-question-circle-o" aria-hidden="true"></i>
+    <span class="sr-only"><mt:trans phrase="Hint"></span>
+    <span id="options-hint"><mt:var name="_hint" trans="1"></span>
+  </p>
+  </div>
+</div>
+<mt:unless name="questiontype_value" like="checkbox">
+<mt:unless name="questiontype_value" like="radio">
+<mt:unless name="questiontype_value" like="dropdown">
+<mt:unless name="questiontype_value" like="input_group">
+<mt:unless name="questiontype_value" like="date">
+<mt:unless name="questiontype_value" like="file">
+<mt:unless name="questiontype_value" like="attachment">
+<script>
+$('#options-wrapper').hide();
+</script>
+</mt:unless>
+</mt:unless>
+</mt:unless>
+</mt:unless>
+</mt:unless>
+</mt:unless>
+</mt:unless>
+<mt:if name="questiontype_value" eq="checkbox">
+<script>
+$('#column-options-label').html('<span><mt:trans phrase="Label"></span>');
+$('#options-hint-wrapper').hide();
+</script>
+</mt:if>

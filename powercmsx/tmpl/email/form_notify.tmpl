@@ -1,0 +1,12 @@
+<mt:for merge_linefeeds="1">
+<mt:trans phrase="(%s) The inquiry posted for %s has been received." params="'$app_name','$form_name'">
+
+<mt:loop name="post_params">
+<mt:var name="post_question" />:
+<mt:var name="post_value" />
+</mt:loop>
+
+<mt:var name="script_uri"><mt:var name="contact_param">
+
+<mt:include file="mail_footer.tmpl">
+</mt:for>

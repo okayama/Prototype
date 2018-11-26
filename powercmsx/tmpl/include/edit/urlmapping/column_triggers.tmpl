@@ -1,0 +1,68 @@
+<mt:setvar name="_can_trigger" value="0">
+<mt:if name="object_publish_file" eq="1">
+  <mt:setvar name="_can_trigger" value="1">
+<mt:elseif name="object_publish_file" eq="3">
+  <mt:setvar name="_can_trigger" value="1">
+</mt:if>
+<mt:if name="_can_trigger">
+<div class="row form-group">
+  <div class="col-lg-2">
+    <label for="<mt:var name="__col_name__">">
+      <mt:var name="label" escape>
+      <mt:if name="not_null"><mt:var name="field_required"></mt:if>
+    </label>
+  </div>
+  <mt:setvarblock name="_exclude_models">table,workflow,boilerplate,urlmapping,permission,field,fieldtype,remote_ip,role,comment,questiontype,contact</mt:setvarblock>
+  <mt:var name="_exclude_models" split="," setvar="_exclude_models">
+  <div class="col-lg-<mt:if name="edit" like="select">3<mt:else>10</mt:if>">
+    <mt:var name="edit" split=":" setvar="edit_props">
+    <mt:var name="edit_props[1]" setvar="rel_model">
+    <mt:var name="edit_props[2]" setvar="rel_col">
+    <mt:var name="edit_props[3]" setvar="rel_type">
+    <mt:setvarblock name="__rel_name__">object_<mt:var name="__col_name__"></mt:setvarblock>
+    <mt:objectloop model="$rel_model" sort_by="order">
+      <mt:if name="menu_type" ne="3">
+      <mt:ifinarray array="_exclude_models" value="$name">
+      <mt:else>
+      <label class="custom-control custom-checkbox">
+        <input type="checkbox" class="custom-control-input watch-changed" name="<mt:var name="__col_name__">[]" value="<mt:var name="id">" <mt:ifinarray array="$__rel_name__" value="$id">checked</mt:ifinarray>>
+        <span class="custom-control-indicator"></span>
+        <span class="custom-control-description"><mt:if name="$rel_col">
+        <mt:if name="translate"><mt:var name="$rel_col" translate escape><mt:else><mt:var name="$rel_col" escape></mt:if><mt:else>null(id:<mt:var name="id">)</mt:if></span>
+      </label>
+      </mt:ifinarray>
+    </mt:if>
+    </mt:objectloop>
+  </div>
+</div>
+
+<div class="row form-group">
+  <div class="col-lg-2">
+    <label for="trigger_scope">
+      <mt:trans phrase="Scope of Triggers">
+    </label>
+  </div>
+  <div class="col-lg-10">
+    <input type="hidden" name="trigger_scope" value="0">
+    <label id="trigger_scope-wrapper" class="custom-control custom-checkbox">
+    <input id="trigger_scope" class="custom-control-input"
+      <mt:if name="object_trigger_scope">checked</mt:if>
+      type="checkbox" name="trigger_scope" value="1">
+        <span class="custom-control-indicator"></span>
+        <span class="custom-control-description"> 
+        <mt:trans phrase="Trigger(s) only the same scope."></span>
+    </label>
+    <div class="text-muted">
+      <i class="fa fa-question-circle-o" aria-hidden="true"></i>
+      <span class="sr-only"><mt:trans phrase="Hint"></span>
+      <mt:if name="workspace_id">
+        <mt:trans phrase="Target only object(s) with the same WorkSpace.">
+      <mt:else>
+        <mt:trans phrase="Target only system scope's object(s).">
+      </mt:if>
+    </div>
+  </div>
+</div>
+<mt:else>
+<!--Do not display-->
+</mt:if>

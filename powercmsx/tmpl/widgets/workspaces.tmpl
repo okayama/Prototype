@@ -1,0 +1,79 @@
+<script src="<mt:var name="prototype_path">assets/js/jquery.lazyload.min.js"></script>
+<div class="card dashboard-widget" id="widget-workspaces">
+  <h2 class="card-header"><mt:trans phrase="WorkSpaces">
+    <button  type="button" class="detatch-widget" aria-label="<mt:trans phrase="Detach">" data-name="widget-workspaces">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </h2>
+  <div class="card-block">
+    <mt:setvar name="selector_limit" value="6">
+      <mt:setvar name="ws_sort_by" value="last_update">
+      <mt:setvar name="ws_sort_order" value="descend">
+      <mt:if name="user_space_order" eq="Default">
+        <mt:setvar name="ws_sort_by" value="order">
+        <mt:setvar name="ws_sort_order" value="ascend">
+      </mt:if>
+    <mt:setvar name="workspace_found" value="0">
+    <mt:objectloop model="workspace" can_access="1" limit="$selector_limit" sort_by="$ws_sort_by" direction="$ws_sort_order">
+    <mt:if name="__first__">
+    <mt:setvar name="workspace_found" value="1">
+    <table class="table table-sm table-striped table-widget">
+    <tr>
+      <th class="workspace-primary"><mt:trans phrase="Name"></th>
+      <th class="workspace-last_update"><mt:trans phrase="Last Update"></th>
+    </tr>
+    </mt:if>
+    <mt:if name="__counter__" lt="$selector_limit">
+    <tr>
+      <td class="workspace-primary">
+        <a href="javascript:void(0);" id="popover-list-<mt:var name="id">"><img class="lazy" width="36" height="36"
+        src="<mt:var name="prototype_path">assets/img/loading.gif"
+        data-original="<mt:var name="script_uri">?__mode=get_thumbnail&amp;square=1&amp;id=<mt:var name="id">&amp;_model=workspace"
+        alt=""></a>
+        <script>
+        $('#popover-list-<mt:var name="id">').popover({
+            content: "<img src='<mt:var name="script_uri">?__mode=get_thumbnail&amp;id=<mt:var name="id">&amp;_model=workspace' alt='<mt:trans phrase="Preview">' width='150'>",
+            placement: "right",
+            html: true
+        });
+        $('body').on('click', function (e) {
+            $('#popover-list-<mt:var name="id">').popover('hide');
+        });
+        </script>&nbsp;
+        <a href="<mt:var name="script_uri">?__mode=dashboard&amp;workspace_id=<mt:var name="id">">
+          <mt:var name="name" escape>
+        </a>
+        <mt:if name="description"><small class="text-muted">( <mt:var name="description" escape> )</small></mt:if>
+      </td>
+      <td class="workspace-last_update">
+        <mt:var name="last_update" epoch2str="1">
+      </td>
+    </tr>
+    <mt:else>
+    </mt:if>
+    <mt:if name="__last__">
+    </table>
+    <mt:unless name="__counter__" lt="$selector_limit">
+      <div class="text-right">
+      <a data-toggle="modal" data-target="#modal"
+        class="btn btn-info btn-sm"
+        data-href="" href="<mt:var name="script_uri">?__mode=view&amp;_type=list&amp;_model=workspace&amp;dialog_view=1&amp;workspace_select=1"><mt:trans phrase="Select a WorkSpace..."></a>
+      </div>
+    </mt:unless>
+    </mt:if>
+    </mt:objectloop>
+    <mt:unless name="workspace_found">
+    <table class="table table-sm table-striped table-widget">
+    <tr><td>
+    <mt:gettableid model="$count_group_by_model" column="plural" translate setvar="_object_label">
+    <span class="text-muted"><mt:trans phrase="No WorkSpace Found."></span>
+    </td></tr>
+    </table>
+    </mt:unless>
+  </div>
+</div>
+<script>
+$(function() {
+    $('img.lazy').lazyload();
+});
+</script>

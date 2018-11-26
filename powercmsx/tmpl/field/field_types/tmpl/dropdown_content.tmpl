@@ -1,0 +1,9 @@
+    <mt:loop name="field_options">
+    <mt:if name="__first__">
+      <select name="value" id="field.<mt:var name="field_uniqueid">" class="form-control watch-changed">
+    </mt:if>
+        <option <mt:if name="field.value" eq="$field_option">selected</mt:if> value="<mt:var name="field_option" escape>"><mt:trans phrase="$field_label" escape></option>
+    <mt:if name="__last__">
+      </select>
+    </mt:if>
+    </mt:loop>

@@ -1,0 +1,22 @@
+<div class="row form-group">
+  <div class="col-lg-2">
+    <label for="<mt:var name="__col_name__">">
+      <mt:var name="label" escape>
+      <mt:if name="not_null"><mt:var name="field_required"></mt:if>
+    </label>
+  </div>
+  <div class="col-lg-10 form-inline form-inline-left-margin">
+    <input id="<mt:var name="__col_name__">" type="<mt:if name="disp_option" like="num">number<mt:else>text</mt:if>" class="form-control watch-changed <mt:var name="ctrl_class">" name="<mt:var name="__col_name__">" value="<mt:var name="value">"
+      <mt:if name="readonly">readonly</mt:if>>
+    <input type="hidden" name="do_not_output" value="0">
+    <label class="custom-control custom-checkbox"> 
+    <input id="do_not_output" class="form-control custom-control-input watch-changed"
+    <mt:if name="readonly">onclick="return false;"</mt:if>
+     type="checkbox" name="do_not_output" value="1" <mt:if name="object_do_not_output">checked</mt:if>>
+        <span class="custom-control-indicator"></span>
+        <span class="custom-control-description"> 
+        <mt:trans phrase="Do not output file(s)"></span>
+    </label>
+    <mt:var name="_hint">
+  </div>
+</div>

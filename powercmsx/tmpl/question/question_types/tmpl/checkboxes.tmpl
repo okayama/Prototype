@@ -1,0 +1,59 @@
+<mt:setvarblock name="error_name">question_<mt:var name="question_basename" escape>_error</mt:setvarblock>
+<tr class="<mt:if name="$error_name"> has-danger</mt:if>">
+  <th scope="row" class="cell-form-question">
+    <label class="form-control-label" for="question_<mt:var name="question_basename" escape>">
+      <mt:var name="question_label" language="$language" eval="1" escape>
+      <mt:if name="question_required">
+      <small><i class="fa fa-asterisk required text-muted" aria-hidden="true"></i>
+      <span class="sr-only"><mt:trans phrase="Required" language="$language"></span></small>
+      </mt:if>
+    </label>
+  </th>
+  <td class="cell-form-input">
+    <mt:setvarblock name="param_name">request.question_<mt:var name="question_basename" escape></mt:setvarblock>
+    <mt:var name="$param_name" setvar="question_vars">
+    <mt:var name="question_options" split="," setvar="question_opts">
+    <mt:if name="confirm_ok">
+      <mt:loop name="question_vars">
+        <mt:var name="__value__" language="$language" escape>
+        <mt:unless name="__last__">,</mt:unless>
+      </mt:loop>
+    </mt:if>
+    <mt:unless name="request.__mode">
+    <mt:var name="question_default_value" split="," setvar="question_vars">
+    </mt:unless>
+    <mt:if name="confirm_ok">
+      <mt:loop name="question_vars"><input type="hidden" <mt:if name="__first__">
+        id="question_<mt:var name="question_basename" escape>"</mt:if>
+        name="question_<mt:var name="question_basename" escape>[]"
+        value="<mt:var name="question_vars" index="$__index__" escape>">
+      </mt:loop>
+    <mt:else>
+      <mt:loop name="question_opts">
+      <label class="custom-control custom-checkbox">
+      <mt:var name="question_opts" index="$__index__" escape setvar="current_opt">
+      <input <mt:if name="__first__">
+        id="question_<mt:var name="question_basename" escape>"</mt:if>
+        <mt:ifinarray value="$current_opt" array="question_vars">checked</mt:ifinarray>
+        class="custom-control-input watch-changed"
+        type="checkbox" name="question_<mt:var name="question_basename" escape>[]" value="<mt:if name="question_values"><mt:var name="question_vars" index="$__index__" escape><mt:else><mt:var name="question_opts" index="$__index__" escape></mt:if>">
+          <span class="custom-control-indicator"></span>
+          <span class="custom-control-description"> 
+          <mt:var name="question_opts" language="$language" index="$__index__" escape></span>
+      </label>
+      </mt:loop>
+    </mt:if>
+  <mt:if name="question_hint">
+  <div class="text-muted">
+    <i class="fa fa-question-circle-o" aria-hidden="true"></i>
+    <span class="sr-only"><mt:trans phrase="Hint" language="$language"></span>
+        <mt:var name="question_hint" language="$language" eval="1">
+  </div>
+  </mt:if>
+<mt:if name="$error_name">
+  <div class="form-control-feedback">
+    <mt:var name="$error_name" escape>
+  </div>
+</mt:if>
+  </td>
+</tr>

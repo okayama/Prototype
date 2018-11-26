@@ -1,0 +1,362 @@
+{
+    "label"       : "Website",
+    "id"          : "website",
+    "version"     : "1.0",
+    "author"      : "Alfasado Inc.",
+    "author_link" : "https://alfasado.net/",
+    "description" : "Simple theme based on Bootstrap.",
+    "objects"     : ["question", "widget", "folder", "page", "form", "category", "entry", "menu"],
+    "component"   : "ThemeWebsite",
+    "views": {
+        "4347d174-8363-4715-966c-f7bba2f7b8e3": {
+            "name": "(Website) Main Page",
+            "subject": "",
+            "class": "Archive",
+            "basename": "website_main_page",
+            "form": {
+                "name": "Contact Us",
+                "requires_token": "1",
+                "token_expires": "1200",
+                "redirect_url": "<mt:formpermalink>?submit=1",
+                "basename": "website_contact_us",
+                "send_email": "1",
+                "email_from": "",
+                "send_thanks": "1",
+                "send_notify": "1",
+                "notify_to": "",
+                "thanks_template": "ba2d5cfd-8817-4ae5-a448-a25b71012067",
+                "notify_template": "e2d8d4a4-8fef-4f83-b2b5-ffd2db146629",
+                "questions": {
+                    "27317441-65af-4c84-a8c5-f1ea1a6c5a6f": {
+                        "label": "Your Name",
+                        "description": "",
+                        "questiontype_id": "text",
+                        "hint": "",
+                        "required": "1",
+                        "is_primary": "1",
+                        "validation_type": "",
+                        "normarize": "1",
+                        "format": "",
+                        "maxlength": "255",
+                        "multi_byte": "0",
+                        "hide_in_email": "0",
+                        "aggregate": "0",
+                        "rows": "0",
+                        "count_fields": "0",
+                        "multiple": "0",
+                        "connector": "",
+                        "options": "",
+                        "unit": "KB",
+                        "values": "",
+                        "default_value": "",
+                        "placeholder": "",
+                        "basename": "website_your_name"
+                    },
+                    "29d8b4a8-7b9f-46b5-96cc-032916ce7321": {
+                        "label": "Email",
+                        "description": "",
+                        "questiontype_id": "text",
+                        "hint": "",
+                        "required": "1",
+                        "is_primary": "0",
+                        "validation_type": "Email",
+                        "normarize": "1",
+                        "format": "",
+                        "maxlength": "512",
+                        "multi_byte": "0",
+                        "hide_in_email": "0",
+                        "aggregate": "0",
+                        "rows": "0",
+                        "count_fields": "0",
+                        "multiple": "0",
+                        "connector": "",
+                        "options": "",
+                        "unit": "KB",
+                        "values": "",
+                        "default_value": "",
+                        "placeholder": "",
+                        "basename": "website_email"
+                    },
+                    "70e240d6-e458-4d10-b8af-859bb8e0656c": {
+                        "label": "Message",
+                        "description": "",
+                        "questiontype_id": "textarea",
+                        "hint": "",
+                        "required": "1",
+                        "is_primary": "0",
+                        "validation_type": "",
+                        "normarize": "0",
+                        "format": "",
+                        "maxlength": "0",
+                        "multi_byte": "0",
+                        "hide_in_email": "0",
+                        "aggregate": "0",
+                        "rows": "4",
+                        "count_fields": "0",
+                        "multiple": "0",
+                        "connector": "",
+                        "options": "",
+                        "unit": "KB",
+                        "values": "",
+                        "default_value": "",
+                        "placeholder": "",
+                        "basename": "website_message"
+                    },
+                    "65f395fb-200b-4cc8-a7de-ae6699165884": {
+                        "label": "Privacy Policy",
+                        "description": "",
+                        "questiontype_id": "checkbox",
+                        "hint": "&nbsp; <mt:pages basename=\"privacy_policy\" limit=1><a href=\"<mt:pagepermalink>\" target=\"_blank\"> <i class=\"fa fa-external-link\" aria-hidden=\"true\"><\/i><span class=\"sr-only\"><mt:trans phrase=\"View\"><\/span> <mt:pagetitle language=\"$language\" escape><\/a><\/mt:pages>",
+                        "required": "1",
+                        "is_primary": "0",
+                        "validation_type": "",
+                        "normarize": "0",
+                        "format": "",
+                        "maxlength": "0",
+                        "multi_byte": "0",
+                        "hide_in_email": "0",
+                        "aggregate": "0",
+                        "rows": "0",
+                        "count_fields": "0",
+                        "multiple": "0",
+                        "connector": "",
+                        "options": "I have read and agree to the Privacy Policy.",
+                        "unit": "KB",
+                        "values": "agree",
+                        "default_value": "",
+                        "placeholder": "",
+                        "basename": "website_privacy_policy"
+                    }
+                }
+            },
+            "urlmappings": [
+                {
+                    "name": "(Website) Top Page",
+                    "model": "template",
+                    "mapping": "index.html",
+                    "date_based": "",
+                    "fiscal_start": "1",
+                    "publish_file": "6",
+                    "container": "",
+                    "container_scope": "0",
+                    "trigger_scope": "0"
+                }
+            ]
+        },
+        "c79f3f71-1051-40ff-9de7-2427a2860e1f": {
+            "name": "(Website) HTML Header",
+            "subject": "",
+            "class": "Module",
+            "basename": "website_html_header"
+        },
+        "c9730d1b-096b-46f6-a539-9a151bda8feb": {
+            "name": "(Website) HTML Footer",
+            "subject": "",
+            "class": "Module",
+            "basename": "website_html_footer"
+        },
+        "82de16d8-fcdf-455a-b123-2fbe662f9136": {
+            "name": "(Website) Entry",
+            "subject": "",
+            "class": "Archive",
+            "basename": "website_entry",
+            "urlmappings": [
+                {
+                    "name": "(Website) Entry",
+                    "model": "entry",
+                    "mapping": "<mt:entrycategories limit=\"1\"><mt:categorypath \/>\/<\/mt:entrycategories><mt:entrybasename>.html",
+                    "date_based": "",
+                    "fiscal_start": "1",
+                    "publish_file": "6",
+                    "container": "",
+                    "container_scope": "0",
+                    "trigger_scope": "0"
+                }
+            ]
+        },
+        "a8935acd-bc56-4a0c-95d6-3fd63808827f": {
+            "name": "(Website) Main Page Widget",
+            "subject": "",
+            "class": "Module",
+            "basename": "website_widget"
+        },
+        "27c1e9b1-e1c3-4f63-b389-e0bbfaeaff56": {
+            "name": "(Website) Page",
+            "subject": "",
+            "class": "Archive",
+            "basename": "website_page",
+            "urlmappings": [
+                {
+                    "name": "(Website) Page",
+                    "model": "page",
+                    "mapping": "<mt:pagefoldercontext><mt:folderpath>\/<\/mt:pagefoldercontext><mt:pagebasename>.html",
+                    "date_based": "",
+                    "fiscal_start": "1",
+                    "publish_file": "6",
+                    "container": "",
+                    "container_scope": "0",
+                    "trigger_scope": "0"
+                }
+            ]
+        },
+        "1296483c-b8dd-4040-84b5-e96b0f2712d9": {
+            "name": "(Website) Page not found",
+            "subject": "",
+            "class": "Archive",
+            "basename": "404-error"
+        },
+        "c16c5f0f-5051-4b49-a138-f14e929674b8": {
+            "name": "(Website) Breadcrumbs",
+            "subject": "",
+            "class": "Module",
+            "basename": "website_breadcrumbs"
+        },
+        "1c682072-f732-4ad2-9c22-ae834e83081b": {
+            "name": "(Website) Page Detail",
+            "subject": "",
+            "class": "Module",
+            "basename": "website_detail"
+        },
+        "94e7b3a1-df05-4fa8-acb7-8949543b846d": {
+            "name": "(Website) Category",
+            "subject": "",
+            "class": "Archive",
+            "basename": "website_category",
+            "urlmappings": [
+                {
+                    "name": "(Website) Category",
+                    "model": "category",
+                    "mapping": "<mt:categorypath>\/index.html",
+                    "date_based": "",
+                    "fiscal_start": "1",
+                    "publish_file": "6",
+                    "container": "entry",
+                    "container_scope": "0",
+                    "trigger_scope": "0"
+                }
+            ]
+        },
+        "61bef30b-9c7a-4679-bc6f-20c88e54a8d6": {
+            "name": "(Website) List of Entries",
+            "subject": "",
+            "class": "Module",
+            "basename": "website_list_of_entries"
+        },
+        "71ab8d6d-8a78-4d26-9dca-7215fc9182fd": {
+            "name": "(Website) Latest News",
+            "subject": "",
+            "class": "Archive",
+            "basename": "website_entries",
+            "urlmappings": [
+                {
+                    "name": "(Website) Latest News",
+                    "model": "template",
+                    "mapping": "news\/index.html",
+                    "date_based": "",
+                    "fiscal_start": "1",
+                    "publish_file": "6",
+                    "container": "entry",
+                    "container_scope": "0",
+                    "trigger_scope": "0"
+                },
+                {
+                    "name": "(Website) Fiscal Yearly",
+                    "model": "template",
+                    "mapping": "<mt:archivedate format=\"Y\">\/index.html",
+                    "date_based": "Fiscal-Yearly",
+                    "fiscal_start": "4",
+                    "publish_file": "6",
+                    "container": "entry",
+                    "container_scope": "0",
+                    "trigger_scope": "0"
+                }
+            ]
+        },
+        "9eb91ab6-e666-4d8e-8a8b-6ba452f32a8d": {
+            "name": "(Website) Side Bar",
+            "subject": "",
+            "class": "Module",
+            "basename": "website_side_bar"
+        },
+        "0e741272-b644-4adc-a42e-55490dfcb8fd": {
+            "name": "(Website) Contact Us",
+            "subject": "",
+            "class": "Archive",
+            "basename": "website_contact_us",
+            "urlmappings": [
+                {
+                    "name": "(Website) Form",
+                    "model": "form",
+                    "mapping": "contact\/<mt:formbasename>.html",
+                    "date_based": "",
+                    "fiscal_start": "1",
+                    "publish_file": "6",
+                    "container": "",
+                    "container_scope": "0",
+                    "trigger_scope": "0"
+                }
+            ]
+        },
+        "901d28cd-7725-4c2a-80a5-581e96fc6181": {
+            "name": "(Website) Form",
+            "subject": "",
+            "class": "Module",
+            "basename": "website_form"
+        },
+        "52301276-8424-4526-a5ac-dae8a3fa056e": {
+            "name": "(Website) Site Config",
+            "subject": "",
+            "class": "Module",
+            "basename": "website_site_config"
+        },
+        "e612813c-5514-4a3f-a10f-30fa4d334739": {
+            "name": "(Website) Page Widget",
+            "subject": "",
+            "class": "Archive",
+            "basename": "website_page_widget"
+        },
+        "b3dad0a7-2d36-4a3e-aa09-636c6c998c84": {
+            "name": "(Website) Widgets 3 Columns",
+            "subject": "",
+            "class": "Archive",
+            "basename": "website_widgets_3_columns"
+        },
+        "e2d8d4a4-8fef-4f83-b2b5-ffd2db146629": {
+            "name": "(Website) Notification of Inquiry",
+            "subject": "<mt:var name=\"form_name\" language=\"$language\" setvar=\"form_name\"><mt:trans phrase=\"(%s) The inquiry posted for %s has been received.\" params=\"'$app_name','$form_name'\">",
+            "class": "Mail",
+            "basename": "website_form_notify"
+        },
+        "ba2d5cfd-8817-4ae5-a448-a25b71012067": {
+            "name": "(Website) Thanks for Inquiry",
+            "subject": "<mt:var name=\"form_name\" language=\"$language\" setvar=\"form_name\"><mt:trans phrase=\"(%s) The inquiry you posted for %s has been received.\" params=\"'$app_name','$form_name'\">",
+            "class": "Mail",
+            "basename": "website_form_thanks"
+        },
+        "cea96195-d45a-4764-afc9-043bd634c72b": {
+            "name": "(Website) Mail Footer",
+            "subject": "",
+            "class": "Module",
+            "basename": "website_mail_footer"
+        },
+        "f7eebc34-f389-4814-bcca-172f8655af27": {
+            "name": "(Website) Stylesheet",
+            "subject": "",
+            "class": "Archive",
+            "basename": "website_stylesheet",
+            "urlmappings": [
+                {
+                    "name": "(Website) Stylesheet",
+                    "model": "template",
+                    "mapping": "css\/theme.css",
+                    "date_based": "",
+                    "fiscal_start": "1",
+                    "publish_file": "1",
+                    "container": "",
+                    "container_scope": "0",
+                    "trigger_scope": "0"
+                }
+            ]
+        }
+    }
+}

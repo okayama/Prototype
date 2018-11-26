@@ -1,0 +1,203 @@
+<mt:setvar name="_common_permissions" value="can_list" function="push">
+<mt:setvar name="_common_permissions" value="can_all_list" function="push">
+<mt:setvar name="_common_permissions" value="can_create" function="push">
+<mt:setvar name="_common_permissions" value="can_update_own" function="push">
+<mt:setvar name="_common_permissions" value="can_update_all" function="push">
+<mt:setvar name="_common_permissions" value="can_review" function="push">
+<mt:setvar name="_common_permissions" value="can_revision" function="push">
+<mt:setvar name="_common_permissions" value="can_duplicate" function="push">
+<mt:setvar name="_common_permissions" value="can_activate" function="push">
+<mt:setvar name="_common_permissions" value="can_delete" function="push">
+<mt:setvar name="_common_permissions" value="can_hierarchy" function="push">
+
+<mt:setvar name="_permission_labels" value="View List" function="push">
+<mt:setvar name="_permission_labels" value="View All List" function="push">
+<mt:setvar name="_permission_labels" value="Create" function="push">
+<mt:setvar name="_permission_labels" value="Can Update Own" function="push">
+<mt:setvar name="_permission_labels" value="Can Update All" function="push">
+<mt:setvar name="_permission_labels" value="Can Review" function="push">
+<mt:setvar name="_permission_labels" value="Manage Revision" function="push">
+<mt:setvar name="_permission_labels" value="Can Duplicate" function="push">
+<mt:setvar name="_permission_labels" value="Can Activate" function="push">
+<mt:setvar name="_permission_labels" value="Delete" function="push">
+<mt:setvar name="_permission_labels" value="Manage Hierarchy" function="push">
+
+<mt:objectvar name="columns_data" setvar="columns_data">
+<mt:setrolecolumns data="$columns_data">
+
+<mt:objectvar name="class" setvar="__class__">
+<mt:unless name="request.id">
+  <mt:if name="request.workspace_role">
+    <mt:setvar name="__class__" value="workspace">
+  <mt:else>
+    <mt:setvar name="__class__" value="system">
+  </mt:if>
+</mt:unless>
+<mt:if name="__class__" eq="workspace">
+  <mt:setvarblock name="table_option">'display_space','1'</mt:setvarblock>
+<mt:else>
+  <mt:setvarblock name="table_option">'display','1','space_child','0'</mt:setvarblock>
+</mt:if>
+
+<mt:objectloop model="table" sort_by="order" options="$table_option">
+<mt:unless name="__end__">
+  <mt:setvar name="_all_models" value="$name" function="push">
+</mt:unless>
+<mt:setvar name="__name__" value="$name">
+<mt:if name="__name__" ne="user">
+<div class="row form-group">
+  <div class="col-lg-2">
+    <label class="custom-control custom-checkbox">
+      <input type="checkbox" id="permissions-<mt:var name="name">" checked class="custom-control-input watch-changed" name="" value="">
+      <span class="custom-control-indicator"></span>
+      <span class="custom-control-description"><strong><mt:trans phrase="$label"></strong></span>
+    </label>
+  </div>
+  <div class="col-lg-10">
+  <input type="hidden" name="permission_models[]" value="<mt:var name="__name__" escape>">
+  <mt:loop name="_common_permissions">
+    <mt:setvar name="__display__" value="1">
+    <mt:if name="__value__" eq="can_update_own">
+      <mt:if name="name" eq="permission">
+        <mt:setvar name="__display__" value="0">
+      <mt:else>
+        <mt:tablehascolumn column="user_id" model="$name">
+        <mt:else>
+          <mt:setvar name="__display__" value="0">
+        </mt:tablehascolumn>
+      </mt:if>
+    <mt:elseif name="__value__" eq="can_update_all">
+      <mt:tablehascolumn column="user_id" model="$name">
+      <mt:else>
+        <mt:setvar name="__display__" value="0">
+      </mt:tablehascolumn>
+      <mt:if name="menu_type" eq="3">
+        <mt:setvar name="__display__" value="1">
+        <mt:setvar name="_permission_labels" key="$__index__" value="Detail">
+      <mt:else>
+        <mt:setvar name="_permission_labels" key="$__index__" value="Can Update All">
+      </mt:if>
+    <mt:elseif name="__value__" eq="can_all_list">
+      <mt:unless name="has_status">
+        <mt:setvar name="__display__" value="0">
+      </mt:unless>
+      <mt:tablehascolumn column="user_id" model="$name">
+      <mt:else>
+        <mt:setvar name="__display__" value="0">
+      </mt:tablehascolumn>
+    <mt:elseif name="__value__" eq="can_review">
+      <mt:setvar name="__display__" value="0">
+      <mt:tablehascolumn column="status" model="$name">
+        <mt:tablehascolumn column="has_deadline" model="$name">
+        <mt:setvar name="__display__" value="1">
+        </mt:tablehascolumn>
+      </mt:tablehascolumn>
+    <mt:elseif name="__value__" eq="can_activate">
+      <mt:tablehascolumn column="status" model="$name">
+      <mt:else>
+        <mt:setvar name="__display__" value="0">
+      </mt:tablehascolumn>
+    <mt:elseif name="__value__" eq="can_create">
+      <mt:if name="menu_type" eq="3">
+        <mt:setvar name="__display__" value="0">
+      </mt:if>
+    <mt:elseif name="__value__" eq="can_hierarchy">
+      <mt:unless name="hierarchy">
+        <mt:setvar name="__display__" value="0">
+      </mt:unless>
+    <mt:elseif name="__value__" eq="can_duplicate">
+      <mt:unless name="can_duplicate">
+        <mt:setvar name="__display__" value="0">
+      </mt:unless>
+    <mt:elseif name="__value__" eq="can_revision">
+      <mt:unless name="revisable">
+        <mt:setvar name="__display__" value="0">
+      </mt:unless>
+    </mt:if>
+  <mt:if name="__display__" eq="1">
+    <mt:setvarblock name="__rel_name__">object_<mt:var name="__value__"></mt:setvarblock>
+    <label class="custom-control custom-checkbox">
+      <input type="checkbox" class="custom-control-input watch-changed permissions-<mt:var name="name">" name="<mt:var name="__value__">[]" value="<mt:var name="id">" <mt:ifinarray array="$__rel_name__" value="$id">checked</mt:ifinarray>>
+      <span class="custom-control-indicator"></span>
+      <span class="custom-control-description"><mt:var name="_permission_labels" index="$__index__" translate="1"></span>
+    </label>
+  </mt:if>
+  <mt:if name="__last__">
+<mt:ignore>
+    <mt:objectloop model="column" sort_by="order" table_id="$id">
+      <mt:if name="__first__">
+        <div class="row form-group">
+          <div class="col-lg-2">
+            <label class="custom-control custom-checkbox">
+              <mt:setvarblock name="current_all">columns_all_<mt:var name="__name__"></mt:setvarblock>
+              <input type="checkbox" id="columns-<mt:var name="__name__">" <mt:if name="$current_all">checked</mt:if> class="custom-control-input watch-changed" name="columns-all-<mt:var name="__name__">" value="1">
+              <span class="custom-control-indicator"></span>
+              <span class="custom-control-description"><strong><mt:trans phrase="Columns"></strong></span>
+            </label>
+          </div>
+          <div class="col-lg-10">
+      </mt:if>
+        <mt:if name="edit">
+          <mt:if name="edit" ne="hidden">
+            <mt:if name="name" ne="uuid">
+            <mt:setvarblock name="current_col">columns_<mt:var name="__name__">_<mt:var name="name" escape></mt:setvarblock>
+    <label class="custom-control custom-checkbox">
+      <input type="checkbox" <mt:if name="$current_all">checked<mt:else><mt:if name="$current_col">checked</mt:if></mt:if> class="custom-control-input watch-changed columns-<mt:var name="__name__">" name="<mt:var name="__name__">-<mt:var name="name" escape>" value="<mt:var name="name" escape>">
+      <span class="custom-control-indicator"></span>
+      <span class="custom-control-description"><mt:var name="label" translate="1" escape></span>
+    </label>
+            </mt:if>
+          </mt:if>
+        </mt:if>
+      <mt:if name="__last__">
+<script>
+$('#columns-<mt:var name="__name__">').click(function(){
+    var checked = $(this).prop('checked');
+    $('.columns-<mt:var name="__name__">').each(function(){
+        $(this).prop('checked', checked);
+    });
+});
+</script>
+        </div>
+      </div>
+    </mt:if>
+    </mt:objectloop>
+</mt:ignore>
+  </mt:if>
+  </mt:loop>
+<script>
+$('#permissions-<mt:var name="name">').click(function(){
+    var checked = $(this).prop('checked');
+    $('.permissions-<mt:var name="name">').each(function(){
+        $(this).prop('checked', checked);
+    });
+});
+$('.permissions-<mt:var name="name">').each(function(){
+    if (! $(this).prop('checked') ) {
+        $('#permissions-<mt:var name="name">').prop('checked', false);
+    }
+});
+</script>
+  </div>
+</div>
+</mt:if>
+</mt:objectloop>
+<script>
+var columns_permission_map = {};
+$('#edit-form-main').on('submit',function(){
+<mt:loop name="_all_models">
+    if ( $('#columns-<mt:var name="__value__">').prop('checked') ) {
+        columns_permission_map['<mt:var name="__value__">'] = '__all__';
+    } else {
+        var columns = [];
+        $('.columns-<mt:var name="__value__">').each(function(){
+            if ( $(this).prop('checked' ) ) {
+                columns.push( $(this).val() );
+            }
+        });
+        columns_permission_map['<mt:var name="__value__">'] = columns.join(',');
+    }
+</mt:loop>
+    $('#col_perms').val(JSON.stringify(columns_permission_map));
+});
+</script>

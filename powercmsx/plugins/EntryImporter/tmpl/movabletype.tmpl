@@ -1,0 +1,23 @@
+AUTHOR: <mt:entryAuthor wants="name" strip_linefeeds="1">
+TITLE: <mt:entryTitle strip_linefeeds="1">
+BASENAME: <mt:entrybasename strip_linefeeds="1">
+STATUS: <mt:entrystatus setvar="entry_status"><mt:if name="entry_status" eq="4">Publish<mt:elseif name="entry_status" eq="3">Future<mt:elseif name="entry_status" eq="2">Review<mt:elseif name="entry_status" eq="5">Unpublish<mt:else>Draft</mt:if>
+ALLOW COMMENTS: <mt:entryacceptcomments>
+CONVERT BREAKS: <mt:entrytextformat><mt:entrycategories>
+CATEGORY: <mt:categorylabel></mt:entrycategories>
+DATE: <mt:entryDate format="m/d/Y h:i:s A"><mt:entryiftagged include_private="1">
+TAGS: <mt:entrytags include_private="1" glue=","><mt:tagname></mt:entrytags></mt:entryiftagged>
+-----
+BODY:
+<mt:entrybody>
+-----
+EXTENDED BODY:
+<mt:entrymore>
+-----
+EXCERPT:
+<mt:entryexcerpt>
+-----
+KEYWORDS:
+<mt:entrykeywords>
+-----
+--------

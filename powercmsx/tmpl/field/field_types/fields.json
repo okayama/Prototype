@@ -1,0 +1,57 @@
+{
+    "text": {
+        "name": "Input Text",
+        "order": 1,
+        "hide_label" : false
+    },
+    "input_text_multi": {
+        "name": "Input Text (Multiple)",
+        "order": 2,
+        "hide_label" : false
+    },
+    "textarea": {
+        "name": "Textarea",
+        "order": 3,
+        "hide_label" : false
+    },
+    "richtext": {
+        "name": "RichText",
+        "order": 4,
+        "hide_label" : false
+    },
+    "checkbox": {
+        "name": "Checkbox",
+        "order": 5,
+        "hide_label" : false
+    },
+    "checkboxes": {
+        "name": "Multiple Checkboxes",
+        "order": 6,
+        "hide_label" : false
+    },
+    "radio": {
+        "name": "Radio Buttons",
+        "order": 7,
+        "hide_label" : false
+    },
+    "dropdown": {
+        "name": "Dropdown",
+        "order": 8,
+        "hide_label" : false
+    },
+    "tel": {
+        "name": "Tel",
+        "order": 9,
+        "hide_label" : false
+    },
+    "tel_separated": {
+        "name": "Tel (Separated)",
+        "order": 10,
+        "hide_label" : false
+    },
+    "datetime": {
+        "name": "DateTime",
+        "order": 11,
+        "hide_label" : false
+    }
+}

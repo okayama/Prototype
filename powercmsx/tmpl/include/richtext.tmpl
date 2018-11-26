@@ -1,0 +1,71 @@
+<script src="<mt:var name="prototype_path">assets/js/tinymce/tinymce.min.js"></script>
+<script>
+<mt:unless name="object_text_format">
+$(function(){
+    editorInit();
+    window.editorMode = 'richtext';
+});
+<mt:else>
+<mt:if name="object_text_format" eq="richtext">
+$(function(){
+    editorInit();
+    editorMode = 'richtext';
+});
+</mt:if>
+</mt:unless>
+function editorInit () {
+    tinymce.init({
+        language : '<mt:var name="user_language">',
+        branding : false,
+        selector : 'textarea.richtext',
+        relative_urls : false,
+        image_advtab: true,
+        menubar: 'edit insert view format table tools',
+        content_css: "<mt:var name="prototype_path">assets/css/editor.css",
+        onchange_callback : "editHtmlEditor",
+        plugins  : 'advlist autolink lists link image charmap print preview anchor searchreplace visualblocks code fullscreen insertdatetime media table contextmenu paste code',
+        // theme: 'mobile',
+        toolbar  : 'undo redo | insert | styleselect | bold italic | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | link image | pt-file pt-image',
+        setup: function (ed) {
+            ed.on('change', function(e) {
+                editContentChanged = true;
+            });
+            ed.addButton('pt-image', {
+                image: '<mt:var name="prototype_path">assets/img/insert_image.png',
+                tooltip: '<mt:trans phrase="Insert Image">',
+                icon: false,
+                onclick: function () {
+                    url = '<mt:var name="script_uri">?__mode=view&_type=list&_model=asset<mt:if name="workspace_id">&workspace_id=<mt:var name="workspace_id"></mt:if>&dialog_view=1&select_system_filters=filter_class_image&_system_filters_option=image&_filter=1&insert_editor=1&insert=' + ed.id;
+                    $('#modal').modal().find('iframe').attr( 'src', url );
+                }
+            });
+            ed.addButton('pt-file', {
+                image: '<mt:var name="prototype_path">assets/img/insert_file.png',
+                tooltip: '<mt:trans phrase="Insert File">',
+                icon: false,
+                onclick: function () {
+                    url = '<mt:var name="script_uri">?__mode=view&_type=list&_model=asset<mt:if name="workspace_id">&workspace_id=<mt:var name="workspace_id"></mt:if>&dialog_view=1&insert_editor=1&insert=' + ed.id;
+                    $('#modal').modal().find('iframe').attr( 'src', url );
+                }
+            });
+            <mt:if name="model" eq="widget">
+            if(ed.id && ed.id == 'text'){
+              var clipboard_image = $('#clipboard-image');
+              if ( clipboard_image.length ) {
+                var rgba = getConversionRgba('<mt:var name="__object_back_color">');
+                ed.settings['content_style'] = 'body {margin: 40px; font-size: 110%;color:<mt:var name="__object_fore_color">; background-color:<mt:var name="__object_back_color">;'
+                  + 'background-size: cover; background-position: center;'
+                  + 'text-shadow: 2px 2px 2px <mt:var name="__object_back_color">,'
+                  + '-2px 2px 2px <mt:var name="__object_back_color">,'
+                  + '2px -2px 2px <mt:var name="__object_back_color">,'
+                  + '-2px -2px 2px <mt:var name="__object_back_color">;'
+                  + 'background-image:url("' + clipboard_image.val() + '?rnd=' + Math.random() + '")} body *{background-color: rgba(' + rgba + ')}';
+              } else {
+                ed.settings['content_style'] = 'body {margin: 40px; font-size: 110%;color:<mt:var name="__object_fore_color">; background:<mt:var name="__object_back_color">;}';
+              }
+            }
+            </mt:if>
+        }
+    });
+}
+</script>

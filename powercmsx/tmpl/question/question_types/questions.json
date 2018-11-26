@@ -1,0 +1,38 @@
+{
+    "text": {
+        "name": "Input Text",
+        "order": 1
+    },
+    "textarea": {
+        "name": "Textarea",
+        "order": 2
+    },
+    "text_input_group": {
+        "name": "Text Input Group",
+        "order": 3
+    },
+    "radio": {
+        "name": "Radio Buttons",
+        "order": 4
+    },
+    "checkbox": {
+        "name": "Checkbox",
+        "order": 5
+    },
+    "checkboxes": {
+        "name": "Multiple Checkboxes",
+        "order": 6
+    },
+    "dropdown": {
+        "name": "Dropdown",
+        "order": 7
+    },
+    "date": {
+        "name": "Date",
+        "order": 8
+    },
+    "file": {
+        "name": "File Attachment",
+        "order": 9
+    }
+}

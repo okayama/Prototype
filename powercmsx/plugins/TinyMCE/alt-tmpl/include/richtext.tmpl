@@ -1,0 +1,101 @@
+<script src="<mt:var name="prototype_path">assets/js/tinymce/tinymce.min.js"></script>
+<script>
+<mt:unless name="object_text_format">
+$(function(){
+    editorInit();
+    window.editorMode = 'richtext';
+});
+<mt:else>
+<mt:if name="object_text_format" eq="richtext">
+$(function(){
+    editorInit();
+    editorMode = 'richtext';
+});
+</mt:if>
+</mt:unless>
+<mt:setvar name="tinymce_use_mobile" value="0">
+<mt:ifeditormobile>
+  <mt:if name="model" ne="widget">
+    <mt:pluginsetting component="TinyMCE" name="tinymce_use_mobile" workspace_id="$workspace_id" setvar="tinymce_use_mobile">
+  </mt:if>
+</mt:ifeditormobile>
+<mt:pluginsetting component="TinyMCE" name="tinymce_relative_urls" workspace_id="$workspace_id" setvar="relative_urls">
+function editorInit () {
+    tinymce.init({
+      language : '<mt:var name="user_language">',
+      branding : false,
+      selector : 'textarea.richtext',
+      <mt:if name="relative_urls" ne="none">
+      relative_urls : <mt:pluginsetting component="TinyMCE" name="tinymce_relative_urls" workspace_id="$workspace_id" _eval="1">,
+      </mt:if>
+      image_advtab: true,
+    <mt:if name="tinymce_use_mobile">
+      theme: 'mobile',
+      plugins: [ 'autosave', 'lists', 'autolink' ],
+      toolbar: ['undo', 'bold', 'italic', 'styleselect', 'bullist', 'numlist', 'link'],
+    <mt:else>
+      toolbar  : '<mt:pluginsetting component="TinyMCE" name="tinymce_toolbar" workspace_id="$workspace_id" _eval="1">',
+    </mt:if>
+      menubar: '<mt:pluginsetting component="TinyMCE" name="tinymce_menubar" workspace_id="$workspace_id" _eval="1">',
+      content_css: "<mt:pluginsetting component="TinyMCE" name="tinymce_content_css" workspace_id="$workspace_id" _eval="1">",
+      onchange_callback : "editHtmlEditor",
+      plugins  : '<mt:pluginsetting component="TinyMCE" name="tinymce_plugins" workspace_id="$workspace_id" _eval="1">',
+    <mt:objectloop model="boilerplate" prefix="boilerplate" workspace_id="$workspace_id" glue=",">
+      <mt:if name="__first__"><mt:setvar name="_boilerplate_exists" value="1">templates: [</mt:if>
+        {title: '<mt:var name="boilerplate_label" translate encode_js>', description: '<mt:var name="boilerplate_description" translate encode_js>', url: '<mt:var name="script_uri">?__mode=tinymce_insert_boilerplate&id=<mt:var name="boilerplate_id"><mt:if name="workspace_id">&workspace_id=<mt:var name="workspace_id"></mt:if><mt:if name="request.id">&object_id=<mt:var name="request.id" escape></mt:if>&_model=<mt:var name="request._model" escape>'}
+      <mt:if name="__last__">],</mt:if>
+    </mt:objectloop>
+      <mt:unless name="_boilerplate_exists">
+      templates: [
+        {title: '<mt:trans phrase="Label of Boilerplate Snippet here." component="TinyMCE">', description: '<mt:trans phrase="Description of Boilerplate Snippet here." component="TinyMCE">', content: '<mt:trans phrase="Snippet of Boilerplate Snippet here(No Boilerplate Snippet found)." component="TinyMCE">'}
+      ],
+      </mt:unless>
+      setup: function (ed) {
+        ed.on('change', function(e) {
+            editContentChanged = true;
+        });
+        ed.addButton('pt-image', {
+            image: '<mt:var name="prototype_path">assets/img/insert_image.png',
+            tooltip: '<mt:trans phrase="Insert Image">',
+            icon: false,
+            onclick: function () {
+                url = '<mt:var name="script_uri">?__mode=view&_type=list&_model=asset<mt:if name="workspace_id">&workspace_id=<mt:var name="workspace_id"></mt:if>&dialog_view=1&select_system_filters=filter_class_image&_system_filters_option=image&_filter=1&insert_editor=1&insert=' + ed.id;
+                $('#modal').modal().find('iframe').attr( 'src', url );
+            }
+        });
+        ed.addButton('pt-file', {
+            image: '<mt:var name="prototype_path">assets/img/insert_file.png',
+            tooltip: '<mt:trans phrase="Insert File">',
+            icon: false,
+            onclick: function () {
+                url = '<mt:var name="script_uri">?__mode=view&_type=list&_model=asset<mt:if name="workspace_id">&workspace_id=<mt:var name="workspace_id"></mt:if>&dialog_view=1&insert_editor=1&insert=' + ed.id;
+                $('#modal').modal().find('iframe').attr( 'src', url );
+            }
+        });
+        <mt:if name="model" eq="widget">
+        if(ed.id && ed.id == 'text'){
+          var clipboard_image = $('#clipboard-image');
+          if ( clipboard_image.length ) {
+            // var rgba = getConversionRgba('<mt:var name="__object_back_color">');
+            var editorStyle = 'body {margin: 40px; font-size: 110%;color:<mt:var name="__object_fore_color">; background-color:<mt:var name="__object_back_color">;'
+              + 'background-size: cover; background-position: center;'
+              + 'background-image:url("' + clipboard_image.val() + '?rnd=' + Math.random() + '")}';
+              <mt:if name="__widget_background_image">
+              /*
+              editorStyle += 'text-shadow: 2px 2px 2px <mt:var name="__object_back_color">,'
+              + '-2px 2px 2px <mt:var name="__object_back_color">,'
+              + '2px -2px 2px <mt:var name="__object_back_color">,'
+              + '-2px -2px 2px <mt:var name="__object_back_color">;'
+              + 'background-image:url("' + clipboard_image.val() + '?rnd=' + Math.random() + '")} body *{background-color: rgba(' + rgba + ')}';
+              */
+              </mt:if>
+              ed.settings['content_style'] = editorStyle;
+          } else {
+            ed.settings['content_style'] = 'body {margin: 40px; font-size: 110%;color:<mt:var name="__object_fore_color">; background:<mt:var name="__object_back_color">;}';
+          }
+        }
+        </mt:if>
+      }
+    });
+}
+</script>

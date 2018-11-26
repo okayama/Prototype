@@ -1,0 +1,11 @@
+Display Option,画面オプション
+displayoption,画面オプション
+Columns(Edit Screen),カラム(編集画面)
+Allow Hiding Fields,フィールドの非表示を許可
+Allow Sort Fields,フィールドのソートを許可
+Show All,すべてを表示
+Columns(List Screen),カラム(一覧画面)
+Exclude Publisher,公開者を対象外にする
+Exclude Workspace Administrator,スペース管理者を対象外にする
+Exclude Reviewer,レビュアーを対象外にする
+Exclude Administrator,管理者を対象外にする

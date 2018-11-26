@@ -1,0 +1,33 @@
+<mt:setvar name="_show_this_column" value="0">
+<mt:tablehascolumn column="text_format">
+<mt:if name="object_name" ne="table">
+<mt:setvar name="_show_this_column" value="1">
+</mt:if>
+</mt:tablehascolumn>
+<mt:if name="_show_this_column">
+<mt:var name="options" split="," setvar="_options_loop">
+<div class="row form-group">
+  <div class="col-lg-2">
+    <label for="<mt:var name="__col_name__">">
+      <mt:var name="label" escape>
+    </label>
+  </div>
+  <div class="col-lg-10">
+    <mt:unless name="request.id"><mt:unless name="forward_params"><mt:var name="default" escape setvar="__col_value__"></mt:unless></mt:unless>
+    <select id="<mt:var name="__col_name__">" class="form-control short watch-changed" name="<mt:var name="__col_name__">">
+    <mt:loop name="_options_loop">
+      <mt:if name="__first__">
+      <mt:unless name="not_null">
+        <option value="">
+          <mt:trans phrase="Unspecified">
+        </option>
+      </mt:unless>
+      </mt:if>
+        <option <mt:if name="__col_value__" eq="$__value__">selected</mt:if> value="<mt:var name="__value__" escape>"><mt:trans phrase="$__value__" escape></option>
+    </mt:loop>
+    </select>
+    <mt:if name="_hint"><span style="white-space:nowrap"><mt:var name="_hint"></span></mt:if>
+  </div>
+</div>
+</mt:if>
+<!--Do not display-->

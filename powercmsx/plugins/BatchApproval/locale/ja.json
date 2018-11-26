@@ -1,0 +1,32 @@
+{
+    "Batch Approval" : "一括承認",
+    "Workflow" : "ワークフロー",
+    "Mail Footer" : "メール・フッター",
+    "Batch Approval of %s" : "%sの一括承認",
+    "Approval Request or Remand" : "承認依頼 / 差し戻し",
+    "Approval Request or Remand of %s" : "%sの承認依頼 / 差し戻し",
+    "Enable Approval collectively from the Listing Screen." : "一覧画面から一括承認・差し戻しを可能にします。",
+    "Your responsible %s is not selected." : "あなたが担当者の%sが選択されていません。",
+    "Are you sure you want to approval request or remand?"
+        : "承認依頼/差し戻しを実行してもよろしいですか?",
+    "Are you sure you want to do batch approval of %s?"
+        : "%sの一括承認を実行してもよろしいですか?",
+    "When send approval request to the Reviewer, the status of other than draft will be changed to Review."
+        : "レビュアーに承認依頼すると、下書きのオブジェクトのステータスはレビューになります。",
+    "When remanded back to the Reviewer, the status of other than draft will be changed to Review."
+        : "作成者に差し戻すと、下書き以外のステータスはレビューになります。",
+    "When send approval request to the Publisher, the status will be changed to Approval Pending."
+        : "公開者に承認依頼すると、ステータスは承認待ちになります。",
+    "%1$s %2$s has been sent %3$s for you by user %4$s."
+        : "%1$s件の%2$sが %4$s によって他のユーザーからあなたに%3$sされました。",
+    "%s %s you requested for approval was approved by %s."
+        : "あなたが承認依頼した%s件の%sがユーザー %s によって承認されました。",
+    "%s %s you requested for approval were approved by %s."
+        : "あなたが承認依頼した%s件の%sがユーザー %s によって承認されました。",
+    "Your responsible %1$s %2$s has been sent %3$s to another user %4$s by %5$s."
+        : "あなたの担当の%1$s件の%2$sが %5$s によってユーザー %4$s に%3$sされました。",
+    "Changing user in charge(from %s to %s)"
+        : "担当ユーザー(%s から %s に変更)",
+    "Change status(from %s to %s)"
+        : "ステータス(%sから%sに変更)"
+}

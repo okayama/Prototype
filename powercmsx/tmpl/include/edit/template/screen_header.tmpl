@@ -1,0 +1,11 @@
+<mt:loop name="parser_errors">
+<mt:if name="__first__"><div id="alert-parser_errors" class="alert alert-danger" role="alert" tabindex="0">
+<ul class="parser_errors list-group list-group-flush"></mt:if>
+<li><mt:var name="__value__"></li>
+<mt:if name="__last__">
+</ul></div>
+<script>
+$('#alert-parser_errors').focus();
+</script>
+</mt:if>
+</mt:loop>

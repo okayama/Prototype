@@ -1,0 +1,10 @@
+{
+    "edit_columns" : "Columns(Edit Screen)",
+    "list_columns": "Columns(List Screen)",
+    "exclude_superuser": "Exclude Administrator",
+    "exclude_ws_admin": "Exclude Workspace Administrator",
+    "exclude_publisher": "Exclude Publisher",
+    "exclude_reviewer": "Exclude Reviewer",
+    "edit_all": "Show All",
+    "list_all": "Show All"
+}

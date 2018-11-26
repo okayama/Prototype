@@ -1,0 +1,55 @@
+<div class="row form-group">
+  <div class="col-lg-2">
+    <label for="<mt:var name="__col_name__">">
+      <mt:var name="label" escape>
+      <mt:if name="not_null"><mt:var name="field_required"></mt:if>
+    </label>
+  </div>
+  <div class="col-lg-<mt:if name="edit" like="select">3<mt:else>10</mt:if>">
+    <mt:getchildrenids id="$object_id" model="$model" setvar="_children_ids">
+    <mt:unless name="can_hierarchy">
+      <mt:setvar name="readonly" value="1">
+    </mt:unless>
+    <mt:var name="edit" split=":" setvar="edit_props">
+    <mt:var name="edit_props[1]" setvar="rel_model">
+    <mt:var name="edit_props[2]" setvar="rel_col">
+    <mt:var name="edit_props[3]" setvar="rel_type">
+    <mt:if name="edit" like="select">
+      <mt:setvar name="__options_out" value="">
+      <select id="<mt:var name="__col_name__">" class="form-control short watch-changed" name="<mt:var name="__col_name__">">
+        <mt:objectloop model="$rel_model" sort_by="order" include_draft="1" workspace_id="$workspace_id">
+        <mt:if name="readonly">
+          <mt:if name="__col_value__" eq="$id"><mt:setvar name="__options_out" value="1">
+          <option selected value="<mt:var name="id">"><mt:if name="$rel_col"><mt:var name="$rel_col" trans="$translate" escape><mt:else>null(id:<mt:var name="id">)</mt:if></option>
+          </mt:if>
+        <mt:else>
+        <mt:if name="__first__">
+          <option value="">
+            <mt:trans phrase="Unspecified">
+          </option>
+        </mt:if>
+          <mt:if name="request.id" ne="$id">
+            <mt:ifinarray array="_children_ids" value="$id">
+            <mt:else>
+              <option <mt:if name="__col_value__" eq="$id">selected</mt:if> value="<mt:var name="id">"><mt:if name="$rel_col"><mt:var name="$rel_col" trans="$translate" escape><mt:else>null(id:<mt:var name="id">)</mt:if></option>
+            </mt:ifinarray>
+          </mt:if>
+        </mt:if>
+        <mt:if name="__last__">
+        <mt:if name="readonly">
+          <mt:unless name="__options_out">
+          <option value="">
+            <mt:trans phrase="Unspecified">
+          </option>
+          </mt:unless>
+        </mt:if>
+        </mt:if>
+        </mt:objectloop>
+     </select>
+   <mt:else>
+     <input id="<mt:var name="__col_name__">" type="number" class="form-control watch-changed <mt:var name="ctrl_class">" name="<mt:var name="__col_name__">" value="<mt:var name="value">"
+     <mt:if name="readonly">readonly</mt:if>>
+   </mt:if>
+   <mt:var name="_hint">
+  </div>
+</div>

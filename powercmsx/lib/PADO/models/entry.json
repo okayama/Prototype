@@ -1,0 +1,249 @@
+{
+    "label"    : "Entry",
+    "plural"   : "Entries",
+    "version"  : "2.0",
+    "primary"  : "title",
+    "display_system": 1,
+    "auditing" : 1,
+    "order"    : 10,
+    "menu_type": 1,
+    "taggable" : 1,
+    "revisable": 1,
+    "start_end": 1,
+    "has_assets": 1,
+    "template_tags": 1,
+    "display_space": 1,
+    "has_basename": 1,
+    "has_status": 1,
+    "assign_user": 1,
+    "display_dashboard": 1,
+    "allow_comment": 1,
+    "default_status": 2,
+    "can_duplicate" : 1,
+    "has_uuid": 1,
+    "show_activity": 1,
+    "column_defs": {
+        "id": {
+            "type": "int",
+            "size": 11,
+            "not_null": 1
+        },
+        "title": {
+            "type": "string",
+            "size": 255,
+            "not_null": 1
+        },
+        "text": {
+            "type": "text"
+        },
+        "text_format": {
+            "type": "string",
+            "size": 60,
+            "default": null
+        },
+        "assets": {
+            "type": "relation",
+            "default": null
+        },
+        "text_more": {
+            "type": "text"
+        },
+        "excerpt": {
+            "type": "text"
+        },
+        "keywords": {
+            "type": "string",
+            "size": 255
+        },
+        "categories": {
+            "type": "relation"
+        },
+        "tags": {
+            "type": "relation"
+        },
+        "basename": {
+            "type": "string",
+            "size": 255,
+            "not_null": 1
+        },
+        "status": {
+            "type": "int",
+            "size": 11,
+            "default": "1"
+        },
+        "has_deadline": {
+            "type": "tinyint",
+            "size": 4
+        },
+        "published_on": {
+            "type": "datetime"
+        },
+        "unpublished_on": {
+            "type": "datetime"
+        },
+        "rev_note": {
+            "type": "string",
+            "size": 255
+        },
+        "rev_diff": {
+            "type": "text"
+        },
+        "rev_type": {
+            "type": "int",
+            "size": 11,
+            "not_null": 1,
+            "default": "0"
+        },
+        "user_id": {
+            "type": "int",
+            "size": 11
+        },
+        "previous_owner": {
+            "type": "int",
+            "size": 11
+        },
+        "rev_changed": {
+            "type": "string",
+            "size": 255
+        },
+        "allow_comment": {
+            "type": "tinyint",
+            "size": 4
+        },
+        "comment_count": {
+            "type": "int",
+            "size": 11
+        },
+        "created_on": {
+            "type": "datetime"
+        },
+        "modified_on": {
+            "type": "datetime"
+        },
+        "created_by": {
+            "type": "int",
+            "size": 11
+        },
+        "modified_by": {
+            "type": "int",
+            "size": 11
+        },
+        "workspace_id": {
+            "type": "int",
+            "size": 11,
+            "default" : 0
+        },
+        "rev_object_id": {
+            "type": "int",
+            "size": 11
+        },
+        "uuid": {
+            "type": "string",
+            "size": 255
+        }
+    },
+    "indexes": {
+        "PRIMARY": "id",
+        "title": "title",
+        "keywords": "keywords",
+        "basename": "basename",
+        "status": "status",
+        "has_deadline": "has_deadline",
+        "published_on": "published_on",
+        "unpublished_on": "unpublished_on",
+        "rev_note": "rev_note",
+        "rev_type": "rev_type",
+        "user_id": "user_id",
+        "previous_owner": "previous_owner",
+        "comment_count": "comment_count",
+        "created_on": "created_on",
+        "modified_on": "modified_on",
+        "created_by": "created_by",
+        "modified_by": "modified_by",
+        "workspace_id": "workspace_id",
+        "rev_object_id": "rev_object_id",
+        "uuid": "uuid"
+    },
+    "sort_by": {
+        "published_on": "descend"
+    },
+    "relations": {
+        "categories": "category",
+        "tags": "tag",
+        "assets": "asset"
+    },
+    "autoset": [
+        "rev_diff",
+        "rev_type",
+        "rev_changed",
+        "comment_count",
+        "created_on",
+        "modified_on",
+        "created_by",
+        "modified_by",
+        "workspace_id",
+        "rev_object_id"
+    ],
+    "unchangeable": [
+        "workspace_id",
+        "uuid"
+    ],
+    "hide_edit_options" : [
+        "status",
+        "published_on",
+        "unpublished_on",
+        "user_id"
+    ],
+    "edit_properties": {
+        "id": "hidden",
+        "title": "primary",
+        "text": "richtext",
+        "assets": "relation:asset:label:dialog",
+        "text_more": "textarea",
+        "excerpt": "textarea",
+        "keywords": "text",
+        "categories": "relation:category:label:hierarchy",
+        "tags": "relation:tag:name:dialog",
+        "basename": "text_short",
+        "status": "selection",
+        "published_on": "datetime",
+        "unpublished_on": "datetime",
+        "user_id": "relation:user:nickname:dialog",
+        "allow_comment": "hidden",
+        "uuid": "text_short"
+    },
+    "list_properties": {
+        "id": "number",
+        "title": "primary",
+        "categories": "reference:category:label",
+        "tags": "reference:tag:name",
+        "status": "number",
+        "basename": "text_short",
+        "has_deadline": "checkbox",
+        "published_on": "date",
+        "unpublished_on": "date",
+        "rev_diff": "popover",
+        "rev_type": "text_short",
+        "rev_note": "text",
+        "rev_changed": "text",
+        "user_id": "reference:user:nickname",
+        "previous_owner": "reference:user:nickname",
+        "comment_count": "number",
+        "modified_on": "datetime",
+        "created_by": "reference:user:nickname",
+        "modified_by": "reference:user:nickname",
+        "workspace_id": "reference:workspace:name"
+    },
+    "default_list_items" : [
+        "title",
+        "status",
+        "published_on",
+        "user_id",
+        "workspace_id"
+    ],
+    "options": {
+        "text": 20,
+        "text_more": 3,
+        "status": "Draft,Review,Approval Pending,Reserved,Publish,Ended"
+    }
+}

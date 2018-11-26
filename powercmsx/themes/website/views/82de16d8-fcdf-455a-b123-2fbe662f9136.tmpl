@@ -1,0 +1,31 @@
+<mt:include module="(Website) Site Config">
+<mt:if tag="entryexcerpt">
+<mt:entryexcerpt setvar="page_description">
+</mt:if>
+<mt:if tag="entrykeywords">
+<mt:entrykeywords setvar="page_keywords">
+</mt:if>
+<mt:entrytitle language="$language" setvar="archive_title">
+<mt:include module="(Website) HTML Header">
+    <div class="full-band-dark page-top-item">
+      <div>
+        <h1 class="text-center"><mt:var name="archive_title" escape></h1>
+        <span class="text-center date"><mt:trans phrase="Publish Date" language="$language">&nbsp; : &nbsp;<mt:entrydate format_ts="Y-m-d H:i"></span>
+      </div>
+    </div>
+<mt:include module="(Website) Breadcrumbs">
+<mt:entrybody setvar="page_content">
+<mt:entrymore setvar="page_more">
+<mt:setvarblock name="page_footer">
+<mt:entrycategories glue=", ">
+<mt:if name="__first__">
+    <mt:trans phrase="Categories" language="$language"> &nbsp; : &nbsp;
+</mt:if>
+<mt:if tag="categorypermalink"><a href="<mt:categorypermalink>"></mt:if>
+  <mt:categorylabel language="$language" escape>
+<mt:if tag="categorypermalink"></a></mt:if>
+</mt:entrycategories>
+<div><mt:trans phrase="Last Update" language="$language"> : <mt:entrymodifiedon format_ts="Y-m-d H:i"></div>
+</mt:setvarblock>
+<mt:include module="(Website) Page Detail" page_content="$page_content" page_more="$page_more" page_footer=$page_footer>
+<mt:include module="(Website) HTML Footer" cache_key="$footer_cache_key">

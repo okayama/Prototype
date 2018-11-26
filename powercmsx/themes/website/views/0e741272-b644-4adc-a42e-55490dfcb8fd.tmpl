@@ -1,0 +1,15 @@
+<mt:include module="(Website) Site Config">
+<mt:ignore>
+<mt:setvar name="page_description" value="">
+<mt:setvar name="page_keywords" value="">
+</mt:ignore>
+<mt:formname language="$language" setvar="archive_title">
+<mt:include module="(Website) HTML Header">
+    <div class="full-band-dark page-top-item">
+      <div>
+        <h1 class="text-center"><mt:var name="archive_title" escape></h1>
+      </div>
+    </div>
+<mt:include module="(Website) Breadcrumbs">
+<mt:include module="(Website) Form" form_identifier="contact_us">
+<mt:include module="(Website) HTML Footer" cache_key="$footer_cache_key">

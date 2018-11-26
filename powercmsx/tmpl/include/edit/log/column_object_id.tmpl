@@ -1,0 +1,25 @@
+<div class="row form-group">
+  <div class="col-lg-2">
+    <mt:trans phrase="Object ID">
+  </div>
+  <div class="col-lg-5">
+    <input type="number" class="form-control short" name="object_id" value="<mt:var name="object_object_id">" readonly>
+  </div>
+</div>
+<div class="row form-group">
+  <div class="col-lg-2">
+    <mt:trans phrase="Created">
+  </div>
+  <div class="col-lg-2">
+    <mt:unless name="object_created_by">
+      <mt:if name="request.id">
+        <mt:trans phrase="System">
+      </mt:if>
+    <mt:else>
+      <mt:getobjectname id="$object_created_by" type="reference:user:nickname" escape>
+    </mt:unless>
+  </div>
+  <div class="col-lg-8">
+     <mt:var name="object_created_on">
+  </div>
+</div>

@@ -1,0 +1,30 @@
+<div class="row form-group">
+  <div class="col-lg-2">
+    <label for="<mt:var name="__col_name__">">
+      <mt:var name="label" escape>
+    </label>
+  </div>
+  <div class="col-lg-10">
+  <mt:if name="name" eq="extra_path">
+    <mt:unless name="request.id">
+      <mt:unless name="request.workspace_id">
+        <mt:getoption key="extra_path" escape setvar="value">
+      <mt:else>
+        <mt:var name="workspace_extra_path" escape setvar="value">
+      </mt:unless>
+      <mt:if name="model_out_path">
+        <mt:var name="model_out_path" escape add_slash setvar="model_out_path">
+        <mt:setvar name="value" value="$model_out_path" append="1">
+      </mt:if>
+    </mt:unless>
+  </mt:if>
+    <mt:if name="__col_name__" eq="uuid">
+      <mt:if name="request._duplicate">
+        <mt:setvar name="value" value="">
+      </mt:if>
+    </mt:if>
+    <input id="<mt:var name="__col_name__">" type="<mt:if name="disp_option" like="num">number<mt:else>text</mt:if>" class="form-control watch-changed <mt:var name="ctrl_class">" name="<mt:var name="__col_name__">" value="<mt:var name="value">"
+      <mt:if name="readonly">readonly</mt:if>>
+    <mt:var name="_hint">
+  </div>
+</div>

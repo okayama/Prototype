@@ -1,0 +1,40 @@
+<div class="row form-group">
+  <div class="col-lg-2">
+    <label for="<mt:var name="name" escape>">
+    <mt:var name="label" escape="1">
+    <mt:var name="field_required">
+    </label>
+  </div>
+  <div class="col-lg-3">
+    <select class="form-control short" name="<mt:var name="__col_name__">" id="wf-model">
+    <mt:if name="workspace_id">
+      <mt:setvarblock name="table_option">'display_space','1','has_status','1','start_end','1','assign_user','1'</mt:setvarblock>
+    <mt:else>
+      <mt:setvarblock name="table_option">'display','1','space_child','0','has_status','1','start_end','1','assign_user','1','space_child','0'</mt:setvarblock>
+    </mt:if>
+    <mt:if name="request._duplicate">
+      <mt:setvar name="__col_value__" value="">
+    </mt:if>
+    <mt:objectloop model="table" sort_by="order" options="$table_option">
+    <mt:if name="__first__">
+      <mt:unless name="__col_value__">
+      <option value="">
+        <mt:trans phrase="Unspecified">
+      </option>
+      <mt:else>
+        <option selected value="<mt:var name="__col_value__" escape>">
+        <mt:trans phrase="$__col_value__" escape>
+        </option>
+      </mt:unless>
+    </mt:if>
+        <mt:unless name="__col_value__">
+        <mt:ifobjectexists model="workflow" column="model" value="$name" workspace_id="$workspace_id">
+        <mt:else>
+          <option <mt:if name="__col_value__" eq="$name">selected</mt:if> value="<mt:var name="name">">
+        <mt:trans phrase="$label" escape></option>
+        </mt:ifobjectexists>
+        </mt:unless>
+    </mt:objectloop>
+    </select>
+  </div>
+</div>

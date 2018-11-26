@@ -1,0 +1,24 @@
+{
+    "label"       : "BatchApproval",
+    "id"          : "batchapproval",
+    "component"   : "BatchApproval",
+    "version"     : "1.0",
+    "author"      : "Alfasado Inc.",
+    "author_link" : "https://alfasado.net/",
+    "description" : "Enable Approval collectively from the Listing Screen.",
+    "cfg_template": "cfg_template.tmpl",
+    "cfg_system"  : 1,
+    "cfg_space"   : 1,
+    "settings"    : {
+        "batchapproval_mail_footer" : ""
+    },
+    "hooks": {
+        "batch_approval_post_init": {
+            "post_init" : {
+                "component" : "BatchApproval",
+                "priority"  : 10000,
+                "method" : "post_init"
+            }
+        }
+    }
+}

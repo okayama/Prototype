@@ -1,0 +1,17 @@
+<mt:for merge_linefeeds="1">
+<mt:trans phrase="The status of the %1$s %2$s you are in charge has been changed to %3$s by user %4$s and the responsible user has been changed." params="'$count_objects','$object_label_plural','$status_text','$by_user'">
+
+<mt:trans phrase="(List of %s)" params="$object_label_plural">
+<mt:var name="list_url">
+
+<mt:loop name="object_loop" trim_space="2">
+<mt:if name="__first__">--------------------------------------------------------------------<mt:else>-------------------------------------------------------------------</mt:if>
+
+<mt:var name="object_name"> (ID: <mt:var name="object_id">)
+<mt:if name="object_permalink"><mt:var name="object_permalink"></mt:if>
+<mt:if name="__last__">
+--------------------------------------------------------------------</mt:if>
+</mt:loop>
+
+<mt:include file="mail_footer.tmpl">
+</mt:for>

@@ -1,0 +1,71 @@
+<div class="row form-group">
+  <div class="col-lg-2">
+    <label for="setting_tinymce_menubar">
+      <mt:trans phrase="Menu Bar" component="TinyMCE">
+    </label>
+  </div>
+  <div class="col-lg-10">
+    <input type="text" id="setting_tinymce_menubar" name="setting_tinymce_menubar" class="form-control" value="<mt:var name="setting_tinymce_menubar" escape>">
+  </div>
+</div>
+<div class="row form-group">
+  <div class="col-lg-2">
+    <label for="setting_tinymce_toolbar">
+      <mt:trans phrase="Tool Bar" component="TinyMCE">
+    </label>
+  </div>
+  <div class="col-lg-10">
+    <input type="text" id="setting_tinymce_toolbar" name="setting_tinymce_toolbar" class="form-control" value="<mt:var name="setting_tinymce_toolbar" escape>">
+  </div>
+</div>
+<div class="row form-group">
+  <div class="col-lg-2">
+    <label for="setting_tinymce_plugins">
+      <mt:trans phrase="Plugins" component="TinyMCE">
+    </label>
+  </div>
+  <div class="col-lg-10">
+    <input type="text" id="setting_tinymce_plugins" name="setting_tinymce_plugins" class="form-control" value="<mt:var name="setting_tinymce_plugins" escape>">
+  </div>
+</div>
+<div class="row form-group">
+  <div class="col-lg-2">
+    <label for="setting_tinymce_content_css">
+      <mt:trans phrase="Content CSS" component="TinyMCE">
+    </label>
+  </div>
+  <div class="col-lg-10">
+    <input type="text" id="setting_tinymce_content_css" name="setting_tinymce_content_css" class="form-control" value="<mt:var name="setting_tinymce_content_css" escape>">
+  </div>
+</div>
+<div class="row form-group">
+  <div class="col-lg-2">
+    <label for="setting_tinymce_relative_urls">
+      <mt:trans phrase="Relative URLs" component="TinyMCE">
+    </label>
+  </div>
+  <div class="col-lg-10">
+    <select class="form-control short" id="setting_tinymce_relative_urls" name="setting_tinymce_relative_urls">
+      <option value="none" <mt:if name="setting_tinymce_relative_urls" eq="true">selected</mt:if>>none</option>
+      <option value="true" <mt:if name="setting_tinymce_relative_urls" eq="true">selected</mt:if>>true</option>
+      <option value="false" <mt:if name="setting_tinymce_relative_urls" eq="false">selected</mt:if>>false</option>
+    </select>
+  </div>
+</div>
+<div class="row form-group">
+  <div class="col-lg-2">
+    <label for="setting_tinymce_use_mobile">
+      <mt:trans phrase="Mobile" component="TinyMCE">
+    </label>
+  </div>
+  <div class="col-lg-10">
+    <input type="hidden" name="setting_tinymce_use_mobile" value="0">
+    <label class="custom-control custom-checkbox">
+    <input id="setting_tinymce_use_mobile" class="custom-control-input watch-changed"
+     type="checkbox" name="setting_tinymce_use_mobile" value="1" <mt:if name="setting_tinymce_use_mobile">checked</mt:if>>
+        <span class="custom-control-indicator"></span>
+        <span class="custom-control-description"> 
+        <mt:trans phrase="Use Mobile mode" component="TinyMCE"></span>
+    </label>
+  </div>
+</div>

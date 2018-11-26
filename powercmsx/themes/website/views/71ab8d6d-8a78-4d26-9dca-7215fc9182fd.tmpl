@@ -1,0 +1,28 @@
+<mt:include module="(Website) Site Config">
+<mt:setvar name="entries_limit" value="9999">
+<mt:archivetitle setvar="archive_title">
+<mt:if name="current_archive_type" eq="fiscal-yearly">
+  <mt:trans phrase="\F\i\s\c\a\l Y" language="$language" setvar="date_format">
+  <mt:archivetitle format_ts="$date_format" setvar="archive_title">
+<mt:elseif name="current_archive_type" eq="yearly">
+  <mt:trans phrase="\Y" language="$language" setvar="date_format">
+  <mt:archivetitle format_ts="$date_format" setvar="archive_title">
+<mt:elseif name="current_archive_type" eq="monthly">
+  <mt:trans phrase="\F, \Y" language="$language" setvar="date_format">
+  <mt:archivetitle format_ts="$date_format" setvar="archive_title">
+<mt:else>
+  <mt:trans phrase="Latest News" language="$language" setvar="archive_title">
+  <mt:setvar name="entries_limit" value="20">
+</mt:if>
+<mt:include module="(Website) HTML Header" >
+    <div class="full-band-dark page-top-item">
+      <div>
+        <h1 class="text-center"><mt:var name="archive_title"></h1>
+      </div>
+    </div>
+<mt:include module="(Website) Breadcrumbs" archive_title="$archive_title">
+<mt:setvarblock name="page_content">
+<mt:include module="(Website) List of Entries" entries_limit="$entries_limit">
+</mt:setvarblock>
+<mt:include module="(Website) Page Detail" page_content="$page_content">
+<mt:include module="(Website) HTML Footer" cache_key="$footer_cache_key">

@@ -1,0 +1,86 @@
+<mt:if name="object_model">
+<h3><mt:trans phrase="List Screen" component="DisplayOptions"></h3>
+<mt:gettableid name="$object_model" setvar="model_id">
+<mt:objectloop model="column" sort_by="order" table_id="$model_id">
+  <mt:if name="__first__">
+    <div class="row form-group">
+      <div class="col-lg-2">
+        <label class="custom-control custom-checkbox">
+          <input name="list_all" value="0" type="hidden">
+          <input type="checkbox" id="columns-list-all" class="custom-control-input watch-changed" <mt:if name="object_list_all">checked</mt:if> name="list_all" value="1">
+          <span class="custom-control-indicator"></span>
+          <span class="custom-control-description"><strong><mt:trans phrase="Columns(List Screen)"></strong></span>
+        </label>
+      </div>
+      <div class="col-lg-10">
+        <div id="list-column-group">
+  </mt:if>
+  <mt:if name="list">
+    <mt:setvar name="__diaplay" value="1">
+    <mt:if name="workspace_id">
+    <mt:if name="name" eq="workspace_id">
+      <mt:setvar name="__diaplay" value="0">
+    </mt:if>
+    </mt:if>
+<mt:if name="__diaplay">
+<label id="_cb-<mt:var name="name" escape>" class="custom-control custom-checkbox">
+  <input name="_list_column-<mt:var name="name" escape>" value="<mt:if name="list" eq="primary">1<mt:else>0</mt:if>" type="hidden">
+  <input <mt:if name="list" eq="primary">disabled</mt:if> type="checkbox" <mt:ifinarray name="show_list_columns" value="$name">checked</mt:ifinarray> class="custom-control-input watch-changed column-list-cb" name="_list_column-<mt:var name="name" escape>" value="1">
+  <span class="custom-control-indicator"></span>
+  <span class="custom-control-description"><mt:var name="label" translate="1" escape></span>
+</label>
+</mt:if>
+  </mt:if>
+  <mt:if name="__last__">
+      </div>
+    </div>
+  </div>
+</mt:if>
+</mt:objectloop>
+
+<div class="row form-group">
+  <div class="col-lg-2">
+    <mt:trans phrase="Customize" component="DisplayOptions">
+  </div>
+  <div class="col-lg-10">
+<label id="_cb-<mt:var name="name" escape>" class="custom-control custom-checkbox">
+  <input name="_customize_list-can_hide_in_list" value="0" type="hidden">
+  <input type="checkbox" <mt:if name="can_hide_in_list">checked</mt:if> class="custom-control-input watch-changed" name="_customize_list-can_hide_in_list" value="1">
+  <span class="custom-control-indicator"></span>
+  <span class="custom-control-description"><mt:trans phrase="Allow Hiding Fields"></span>
+</label>
+  </div>
+</div>
+<script>
+$('#columns-list-all').click(function(){
+    var checked = $(this).prop('checked');
+    $('.column-list-cb').each(function(){
+        $(this).prop('checked', checked);
+    });
+});
+<mt:if name="object_list_all">
+$('.column-list-cb').each(function(){
+    $(this).prop('checked', true);
+});
+</mt:if>
+$('.column-list-cb').change(function(){
+    var checked = $(this).prop('checked');
+    if ( checked == false ) {
+        $('#columns-list-all').prop('checked', false);
+    } else {
+        _list_all_cheched = true;
+        $('.column-list-cb').each(function(){
+            var checked = $(this).prop('checked');
+            if ( checked == false ) {
+                _list_all_cheched = false;
+            }
+        });
+        if ( _list_all_cheched ) {
+            $('#columns-list-all').prop('checked', true);
+        }
+    }
+});
+</script>
+<mt:else>
+<!--Do not Display-->
+</mt:if>

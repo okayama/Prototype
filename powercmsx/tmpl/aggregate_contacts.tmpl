@@ -1,0 +1,86 @@
+<mt:trans phrase="Aggregate Result" setvar="page_title">
+<mt:setvarblock name="html_head" append="1">
+    <script src="<mt:var name="prototype_path">assets/Chart.js/Chart.min.js"></script>
+</mt:setvarblock>
+<mt:include file="include/header.tmpl">
+<div id="header-aggregate" class="alert alert-success" role="alert" tabindex="0">
+  <button onclick="$('#header-aggregate').hide();" type="button" id="header-alert-close" class="close" aria-label="<mt:trans phrase="Close">">
+  <span aria-hidden="true">&times;</span>
+  </button>
+  <mt:trans phrase="Totalization of Contacts was carried out."> (<mt:trans phrase="Aggregate Count : %s" params="$aggregate_total">)
+</div>
+<mt:loop name="aggregate_results">
+<h2 class="box-heading rounded"><mt:var name="__key__" escape><mt:ifinarray name="multiple_cols" value="$__key__"> (<mt:trans phrase="Multiple Answers Allowed">)</mt:ifinarray></h2>
+<div class="row">
+<div class="col-lg-2">
+<mt:var name="aggregate_data" index="$__index__" setvar="aggregate_nums">
+<mt:var name="aggregate_counts" index="$__index__" setvar="aggregate_total">
+<mt:var name="aggregate_colors" index="$__index__" setvar="aggregate_itemColors">
+<mt:var name="aggregate_raw_colors" index="$__index__" setvar="aggregate_itemRawColors">
+<mt:var name="aggregate_labels" index="$__index__" setvar="aggregate_itemLabels">
+<mt:var name="aggregate_percents" index="$__index__" setvar="aggregate_per_cents">
+<div style="width:120px;height:120px;margin-left:auto;margin-right:auto;margin-bottom:20px;">
+<canvas id="chart-<mt:var name="__counter__">" height="120" width="120"></canvas>
+</div>
+<script>
+var ctx = document.getElementById('chart-<mt:var name="__counter__">').getContext('2d');
+var data = {
+  datasets: [{
+    data: [<mt:var name="aggregate_nums" join=", ">],
+    backgroundColor: [<mt:var name="aggregate_itemColors" join=", ">],
+    borderColor : 'rgb(100,100,100)',
+    borderWidth: 1
+  }],
+  labels: [<mt:var name="aggregate_itemLabels" join=", ">]
+};
+var options = {
+    legend: {
+        display: false
+    },
+    cutoutPercentage: 40
+};
+var PieChart<mt:var name="__counter__"> = new Chart(ctx,{
+    type: 'doughnut',
+    data: data,
+    options: options
+});
+</script>
+</div>
+<div class="col-lg-10">
+  <mt:loop name="__value__">
+    <mt:if name="__first__">
+      <table class="table table-striped table-sm" style="border:1px solid rgb(100,100,100)">
+        <thead class="thead-inverse">
+          <tr>
+            <th scope="col" style="border-bottom:1px solid rgb(100,100,100);"><mt:trans phrase="Answer"></th>
+            <th scope="col" style="border-bottom:1px solid rgb(100,100,100);width: 120px" class="text-right"><mt:trans phrase="Count Answer"></th>
+            <th scope="col" style="border-bottom:1px solid rgb(100,100,100);width: 60px" class="text-right"><mt:trans phrase="Percentage"></th>
+          </tr>
+        </thead>
+    </mt:if>
+      <tr>
+        <td style="border-bottom:1px solid rgb(100,100,100);background-color:<mt:var name="aggregate_itemRawColors" index="$__index__">">
+        <mt:var name="__key__" trim_to="45+..." escape>
+        </td>
+        <td class="text-right" style="border-bottom:1px solid rgb(100,100,100);background-color:<mt:var name="aggregate_itemRawColors" index="$__index__">">
+        <mt:var name="__value__" escape numify="1">
+        </td>
+        <td class="text-right" style="border-bottom:1px solid rgb(100,100,100);background-color:<mt:var name="aggregate_itemRawColors" index="$__index__">">
+        <mt:var name="aggregate_per_cents" index="$__index__">
+        </td>
+      </tr>
+    <mt:if name="__last__">
+        <tfoot class="thead-inverse">
+          <tr>
+            <th><mt:trans phrase="Total"></th>
+            <th class="text-right"><mt:var name="aggregate_total" numify="1"></th>
+            <th class="text-right">100%</th>
+          </tr>
+        </tfoot>
+      </table>
+    </mt:if>
+  </mt:loop>
+  </div>
+</div>
+</mt:loop>
+<mt:include file="include/footer.tmpl">

@@ -1,0 +1,8 @@
+<mt:unless name="request.id">
+<mt:unless name="forward_params">
+  <mt:var name="default" escape setvar="value">
+  <mt:setvar name="object_back_color" value="$value">
+</mt:unless>
+</mt:unless>
+<mt:setvar name="__object_back_color" value="$object_back_color">
+<!--Do not display-->

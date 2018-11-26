@@ -1,0 +1,44 @@
+<mt:setvarblock name="error_name">question_<mt:var name="question_basename" escape>_error</mt:setvarblock>
+<tr class="<mt:if name="$error_name"> has-danger</mt:if>">
+  <th scope="row" class="cell-form-question">
+    <label class="form-control-label" for="question_<mt:var name="question_basename" escape>">
+      <mt:var name="question_label" language="$language" eval="1" escape>
+      <mt:if name="question_required">
+      <small><i class="fa fa-asterisk required text-muted" aria-hidden="true"></i>
+      <span class="sr-only"><mt:trans phrase="Required" language="$language"></span></small>
+      </mt:if>
+    </label>
+  </th>
+  <td class="cell-form-input">
+    <mt:setvarblock name="param_name">filename_<mt:var name="question_basename" escape></mt:setvarblock>
+    <mt:var name="$param_name" setvar="question_value">
+    <mt:if name="confirm_ok">
+      <mt:var name="question_value" escape>
+    <mt:else>
+    <input id="question_<mt:var name="question_basename" escape>" name="question_<mt:var name="question_basename" escape>" type="file" class="d-none">
+    <div class="input-group">
+      <input type="text" id="filename_<mt:var name="question_basename" escape>" class="form-control" placeholder="<mt:if name="question_placeholder"><mt:var name="question_placeholder" language="$language" escape><mt:else><mt:trans phrase="Select File..." language="$language"></mt:if>" value="<mt:var name="question_value" escape>">
+      <div class="input-group-append">
+        <button type="button" class="btn btn-primary" onclick="$('input[id=question_<mt:var name="question_basename" escape>]').click();"><mt:trans phrase="Select..." language="$language"></button>
+      </div>
+    </div>
+    </mt:if>
+    <script>
+      $('input[id=question_<mt:var name="question_basename" escape>]').change(function() {
+        $('#filename_<mt:var name="question_basename" escape>').val($(this).val().replace("C:\\fakepath\\", ""));
+      });
+    </script>
+  <mt:if name="question_hint">
+  <div class="text-muted">
+    <i class="fa fa-question-circle-o" aria-hidden="true"></i>
+    <span class="sr-only"><mt:trans phrase="Hint" language="$language"></span>
+    <mt:var name="question_hint" language="$language" eval="1">
+  </div>
+  </mt:if>
+  <mt:if name="$error_name">
+  <div class="form-control-feedback">
+    <mt:var name="$error_name" escape>
+  </div>
+  </mt:if>
+  </td>
+</tr>

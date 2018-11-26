@@ -1,0 +1,84 @@
+<link href="<mt:var name="prototype_path">assets/css/jquery-ui.css" rel="stylesheet">
+<style>
+#debug-footer-resizable {
+z-index:1000;font-size:80%;width:100%;padding:10px;
+position:fixed !important;bottom:5px !important;
+background-color:#cdf;height:70px;overflow-y:scroll }
+#debug-footer-dummy{
+z-index:999;width:100%;
+position:fixed !important;bottom:0px !important;
+background-color:#888;height:60px;
+}
+</style>
+<mt:unless name="request.dialog_view">
+<script>
+__originalBodyHeight = $('body').height();
+$( function() {
+$('#debug-footer-resizable').resizable({
+    handles: "s",
+    minHeight : 70,
+    resize: function (event, ui) {
+        $('#debug-footer-resizable').css('width','100%');
+        var outerHeight = $('#debug-footer-resizable').outerHeight();
+        outerHeight = parseInt( outerHeight, 10 );
+        __originalBodyHeight = parseInt( __originalBodyHeight, 10 );
+        $('body').height( outerHeight + __originalBodyHeight + 40 );
+        $.cookie('pt-debug-footer-height', outerHeight,
+            { expires: 366 });
+    }
+});
+} );
+</script>
+</mt:unless>
+<div id="debug-footer-resizable" class="ui-widget-content">
+Request completed in <mt:var name="processing_time"> seconds.
+<mt:loop name="errors">
+<mt:if name="__first__">
+<h2 style="font-size:110%;margin-top:6px;margin-bottom:3px;">Errors or Warnings</h2>
+<ul></mt:if>
+<li><mt:var name="__value__" escape></li>
+<mt:if name="__last__"></ul></mt:if>
+</mt:loop>
+<mt:if name="query_string">
+<h2 style="font-size:110%;margin-top:6px;margin-bottom:3px;">Query Parameters</h2>
+<ul>
+<mt:var name="query_string" split="
+" setvar="query_strings">
+<mt:loop name="query_strings">
+<li><mt:var name="__value__" escape></li>
+</mt:loop>
+</ul>
+</mt:if>
+<mt:loop name="queries">
+<mt:if name="__first__">
+<h2 style="font-size:110%;margin-top:6px;margin-bottom:3px;">SQL Queries (<mt:var name="query_count"> Queries)</h2>
+<ul></mt:if>
+<li><mt:var name="__value__" escape></li>
+<mt:if name="__last__"></ul></mt:if>
+</mt:loop>
+<mt:loop name="db_errors">
+<mt:if name="__first__">
+<h2 style="font-size:110%;margin-top:4px;">Database Errors</h2>
+<ul></mt:if>
+<li><mt:var name="__value__" escape></li>
+<mt:if name="__last__"></ul></mt:if>
+</mt:loop>
+</div>
+<div id="debug-footer-dummy">
+</div>
+<mt:unless name="request.dialog_view">
+<script>
+$( function() {
+  var debug_footer_height = $.cookie('pt-debug-footer-height');
+  if ( debug_footer_height ) {
+    $('#debug-footer-resizable').css('height', debug_footer_height);
+  } else {
+    debug_footer_height = 90;
+  }
+  var bodyHeight = $('body').height();
+  bodyHeight = parseInt( bodyHeight, 10 );
+  debug_footer_height = parseInt( debug_footer_height, 10 );
+  $('body').height( bodyHeight + debug_footer_height + 40 );
+} );
+</script>
+</mt:unless>

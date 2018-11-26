@@ -1,0 +1,191 @@
+<mt:var name="edit" split=":" setvar="edit_props">
+<mt:var name="edit_props[1]" setvar="rel_model">
+<mt:var name="edit_props[2]" setvar="rel_col">
+<mt:var name="edit_props[3]" setvar="rel_type">
+    <mt:if name="type" eq="relation">
+    <mt:setvar name="has_thumbnail" value="">
+    <mt:ifhasthumbnail model="$rel_model">
+      <mt:ifusercan model="$rel_model" action="list" workspace_id="$workspace_id">
+        <mt:setvar name="has_thumbnail" value="1">
+      </mt:ifusercan>
+    </mt:ifhasthumbnail>
+      <mt:setvarblock name="__rel_name__">object_<mt:var name="__col_name__"></mt:setvarblock>
+      <ul id="<mt:var name="__col_name__">" class="relation-list">
+        <li <mt:if name="$__rel_name__">style="display:none" </mt:if>class="badge badge-default badge-relation" id="<mt:var name="__col_name__">-none">
+        <span><mt:trans phrase="(None selected)">&nbsp;<span>
+        </li>
+        <li style="margin-right: 4px" class="hidden badge badge-default badge-relation badge-draggable" id="<mt:var name="__col_name__">-tmpl">
+        <mt:if name="has_thumbnail">
+        <div class="assets-child-thumb" data-model="<mt:var name="rel_model" escape>"></div>
+        </mt:if>
+        <span><mt:trans phrase="Default"></span>
+        <a href="" class="asset-download-btn btn btn-secondary btn-sm attachment-download-btn-<mt:var name="__col_name__">" aria-label="<mt:trans phrase="Download">">
+          <i class="fa fa-download"></i>
+        </a>
+        <button type="button" class="label_edit_btn _<mt:var name="__col_name__">-edit btn btn-info btn-sm" aria-label="<mt:trans phrase="Edit">" data-name="" data-label="">
+          <i class="fa fa-pencil"></i>
+        </button>
+        <mt:unless name="readonly">
+        <button type="button" class="btn btn-secondary btn-sm close-sm detach-relation" aria-label="<mt:trans phrase="Detach">" data-name="<mt:var name="__col_name__">">
+          <span aria-hidden="true">&times;</span>
+        </button>
+        </mt:unless>
+        <input type="hidden" class="insert-file-id" name="<mt:var name="__col_name__">[]" value="">
+        <input type="hidden" name="" value="" class="insert-file-name">
+        </li>
+      <mt:setvarblock name="selected_ids"><mt:loop name="$__rel_name__" glue=","><mt:var name="__value__"></mt:loop></mt:setvarblock>
+      <mt:loop name="$__rel_name__">
+        <li class="<mt:var name="__col_name__">-child badge badge-default badge-relation badge-draggable">
+        <mt:if name="has_thumbnail">
+        <div class="assets-child-thumb" data-model="<mt:var name="rel_model" escape>" data-id="<mt:var name="__value__" escape>" style="background-image:url('<mt:var name="script_uri">?__mode=get_thumbnail&amp;square=1&amp;_model=<mt:var name="rel_model" escape>&amp;id=<mt:var name="__value__" escape>')"></div>
+        </mt:if>
+        <span id="_<mt:var name="__col_name__">_name_<mt:var name="__value__" escape>">
+          <mt:getobjectname id="$__value__" type="$edit" escape setvar="_related_object">
+          <mt:var name="_related_object">
+        </span>
+        <mt:assetproperty name="file" model="asset" id="$__value__" property="class" setvar="_asset_class">
+        <mt:assetproperty name="file" model="asset" id="$__value__" property="url" setvar="_asset_url">
+        <mt:assetproperty name="file" model="asset" id="$__value__" property="extension" setvar="_asset_extension">
+        <mt:setvar name="__show_external" value="1">
+        <mt:ifinarray array="extensions_inline" value="$_asset_extension">
+          <mt:setvar name="__show_external" value="">
+        </mt:ifinarray>
+        <mt:unless name="_asset_url">
+          <mt:setvarblock name="_asset_url"><mt:var name="script_uri">?__mode=view&_type=edit&_model=asset&id=<mt:var name="__value__">&view=file&workspace_id=<mt:var name="workspace_id"></mt:setvarblock>
+        </mt:unless>
+        <mt:if name="__show_external">
+        <a target="_blank" href="<mt:var name="_asset_url">" class="btn btn-secondary btn-sm attachment-download-btn-<mt:var name="__col_name__">" aria-label="<mt:trans phrase="View">">
+          <i class="fa fa-external-link-square"></i>
+        </a>
+        <mt:else>
+        <a href="<mt:var name="_asset_url">" class="draggable-inner btn btn-secondary btn-sm attachment-download-btn-<mt:var name="__col_name__">" aria-label="<mt:trans phrase="Download">">
+          <i class="fa fa-download"></i>
+        </a>
+        </mt:if>
+        <mt:unless name="readonly">
+        <input type="hidden" value="" name="_<mt:var name="__col_name__">_label_<mt:var name="__value__" escape>" id="_<mt:var name="__col_name__">_label_<mt:var name="__value__" escape>">
+        <mt:ifusercan action="edit" model="$this_model" id="$__value__" workspace_id="$workspace_id">
+        <button type="button" class="_<mt:var name="__col_name__">-edit btn btn-info btn-sm" aria-label="<mt:trans phrase="Edit">" data-name="_<mt:var name="__col_name__">_label_<mt:var name="__value__" escape>"
+          data-label="<mt:var name="_related_object">">
+          <i class="fa fa-pencil"></i>
+        </button>
+        </mt:ifusercan>
+        <button type="button" class="btn btn-secondary btn-sm close-sm detach-relation" aria-label="<mt:trans phrase="Detach">" data-name="<mt:var name="__col_name__">">
+          <span aria-hidden="true">&times;</span>
+        </button>
+        </mt:unless>
+        <input type="hidden" name="<mt:var name="__col_name__">[]" value="<mt:var name="__value__" escape>"></li>
+      </mt:loop>
+      </ul>
+      <mt:unless name="readonly">
+      <button type="button" id="add_<mt:var name="__col_name__">" class="btn btn-primary btn-sm dialog-chooser" data-toggle="modal" data-target="#modal"
+        data-href="<mt:var name="script_uri">?__mode=view&amp;_type=list&amp;_model=<mt:var name="rel_model" escape><mt:ifworkspacemodel model="$rel_model"><mt:if name="workspace_id">&amp;workspace_id=<mt:var name="workspace_id"></mt:if></mt:ifworkspacemodel>&amp;dialog_view=1&amp;target=<mt:var name="__col_name__">&amp;get_col=<mt:var name="rel_col" escape>&amp;select_add=1"><mt:trans phrase="Add..."></button>
+      <script>
+        var <mt:var name="__col_name__">_add_objects = [];
+        $('#<mt:var name="__col_name__">').sortable ( {
+        // TODO keyboard oparation
+            stop: function( evt, ui ) {
+                editContentChanged = true;
+            }
+        });
+        $("#<mt:var name="__col_name__">").ksortable();
+      </script>
+      </mt:unless>
+    <mt:else>
+      <mt:ifhasthumbnail model="$rel_model">
+        <mt:ifusercan model="$rel_model" action="list" workspace_id="$workspace_id">
+          <mt:setvar name="has_thumbnail" value="1">
+        </mt:ifusercan>
+      </mt:ifhasthumbnail>
+      <mt:setvar name="thumbnail" value="">
+      <mt:getobjectname id="$__col_value__" type="$edit" wants="id" escape setvar="__col_value__">
+      <mt:assetthumbnail id="$__col_value__" type="default" square="1" model="$rel_model" data_uri="1" setvar="thumbnail">
+      <ul class="relation-list">
+      <li class="<mt:var name="__col_name__">-child badge badge-default badge-relation">
+      <div <mt:unless name="thumbnail">style="display:none"</mt:unless> id="<mt:var name="__col_name__">-img" class="assets-child-thumb" data-model="<mt:var name="rel_model" escape>" data-id="<mt:var name="__col_value__" escape>" style="background-image:url('<mt:var name="thumbnail">')"></div>
+      <span id="_<mt:var name="__col_name__">_name">
+      <mt:if name="__col_value__">
+        <mt:getobjectname id="$__col_value__" type="$edit" escape setvar="_related_object">
+        <mt:var name="_related_object">
+      <mt:else>
+        <mt:trans phrase="(None selected)">&nbsp;
+      </mt:if>
+      </span>
+      <mt:setvar name="__show_external" value="">
+      <mt:if name="__col_value__">
+        <mt:assetproperty name="file" model="asset" id="$__col_value__" property="url" setvar="_asset_url">
+        <mt:assetproperty name="file" model="asset" id="$__col_value__" property="extension" setvar="_asset_extension">
+        <mt:setvar name="__show_external" value="1">
+        <mt:ifinarray array="extensions_inline" value="$_asset_extension">
+          <mt:setvar name="__show_external" value="">
+        </mt:ifinarray>
+        <mt:unless name="_asset_url">
+          <mt:setvarblock name="_asset_url"><mt:var name="script_uri">?__mode=view&_type=edit&_model=asset&id=<mt:var name="__value__">&view=file&workspace_id=<mt:var name="workspace_id"></mt:setvarblock>
+        </mt:unless>
+      </mt:if>
+        <a id="<mt:var name="__col_name__">-view-asset-link" <mt:if name="__show_external"> target="_blank" </mt:if> href="<mt:var name="_asset_url">" class="btn btn-secondary btn-sm attachment-download-btn-<mt:var name="__col_name__"> <mt:unless name="__col_value__">hidden</mt:unless>" aria-label="<mt:if name="__show_external"><mt:trans phrase="View"><mt:else><mt:trans phrase="Download"></mt:if>">
+          <i class="fa <mt:if name="__show_external">fa-external-link-square<mt:else>fa-download</mt:if>"></i>
+        </a>
+      <mt:unless name="readonly">
+      <input type="hidden" value="" name="_<mt:var name="__col_name__">_label" id="_<mt:var name="__col_name__">_label">
+      <mt:if name="__col_value__">
+        <mt:ifusercan action="edit" model="$this_model" id="$__col_value__" workspace_id="$workspace_id">
+        <button type="button" class="_<mt:var name="__col_name__">-edit btn btn-info btn-sm" aria-label="<mt:trans phrase="Edit">" data-name="_<mt:var name="__col_name__">_label"
+          data-label="<mt:var name="_related_object">">
+          <i class="fa fa-pencil"></i>
+        </button>
+        </mt:ifusercan>
+      <mt:else>
+        <button type="button" id="_<mt:var name="__col_name__">-edit" class="_<mt:var name="__col_name__">-edit btn btn-info btn-sm hidden" aria-label="<mt:trans phrase="Edit">" data-name="_<mt:var name="__col_name__">_label"
+          data-label="">
+          <i class="fa fa-pencil"></i>
+        </button>
+      </mt:if>
+      <button id="<mt:var name="__col_name__">-close" type="button" class="btn btn-secondary btn-sm close-sm detach-relation <mt:unless name="__col_value__"> hidden</mt:unless>" aria-label="<mt:trans phrase="Detach">" data-name="<mt:var name="__col_name__">">
+        <span aria-hidden="true">&times;</span>
+      </button>
+      </mt:unless>
+      <input id="<mt:var name="__col_name__">" type="hidden" name="<mt:var name="__col_name__">" value="<mt:var name="__col_value__" escape>">
+      </li>
+      </ul>
+      <mt:unless name="readonly">
+      <button type="button" class="btn btn-primary btn-sm dialog-chooser" data-toggle="modal" data-target="#modal"
+        data-href="<mt:var name="script_uri">?__mode=view&amp;_type=list&amp;_model=<mt:var name="rel_model" escape><mt:if name="workspace_id">&amp;workspace_id=<mt:var name="workspace_id"></mt:if>&amp;dialog_view=1&amp;single_select=1&amp;target=<mt:var name="__col_name__">&amp;get_col=<mt:var name="rel_col" escape>&amp;selected_ids=<mt:ignore>todo<mt:var name="__col_value__" escape></mt:ignore>"><mt:trans phrase="Select..."></button>
+      </mt:unless>
+    </mt:if>
+<script>
+$('._<mt:var name="__col_name__">-edit').click(function(){
+    var field_name = $(this).attr('data-name');
+    var span_name = field_name.replace( '_label_','_name_' );
+    if ( field_name.indexOf('_label_') == -1) {
+        span_name = field_name.replace( '_label','_name' );
+    }
+    var field_label = $(this).attr('data-label');
+    field_label = unescape_html( field_label );
+    var new_label = prompt('<mt:trans phrase="Please specify label(text alternative) for the file.">', field_label);
+    if ( new_label ) {
+        new_label = escape_html( new_label );
+        $('#' + field_name).val( new_label );
+        $(this).attr('data-label', new_label);
+        $('#' + span_name).html( '<span>' + new_label + '</span>' );
+        editContentChanged = true;
+    } else {
+        if ( new_label != null ) {
+            alert( '<mt:trans phrase="The label can not be empty.">' );
+        }
+    }
+});
+$('.attachment-download-btn-<mt:var name="__col_name__">').click(function(){
+    $(window).off('beforeunload');
+    setTimeout(after_download_<mt:var name="__col_name__">, 1000);
+});
+function after_download_<mt:var name="__col_name__"> () {
+    $(window).on('beforeunload', function() {
+        if (! editContentChanged ) {
+            $(window).off('beforeunload');
+            return;
+        }
+        return '<mt:trans phrase="Are you sure you want to move from this page? The changes you made are not reflected.">';
+    });
+}
+</script>

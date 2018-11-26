@@ -1,0 +1,26 @@
+<mt:for merge_linefeeds="1">
+<mt:if name="old_user_id" ne="$by_user_id">
+<mt:trans phrase="%1$s for %2$s'%3$s' has been sent for you from another user %4$s by user %5$s." params="'$workflow_label','$object_label','$object_name','$from_user','$by_user'">
+<mt:else>
+<mt:trans phrase="%1$s for %2$s'%3$s' has been sent for you from another user %4$s" params="'$workflow_label','$object_label','$object_name','$from_user'">
+</mt:if>
+
+<mt:if name="workflow_message">
+<mt:trans phrase="(Message)">
+<mt:var name="workflow_message"></mt:if>
+
+<mt:trans phrase="(%s)" params="$object_label">
+<mt:var name="object_name"> (ID: <mt:var name="object_id">)
+
+<mt:loop name="difference"><mt:if name="__first__"><mt:trans phrase="(Changes)">
+</mt:if>・ <mt:var name="__key__">
+<mt:if name="__value__" ne="1"><mt:var name="__value__">
+
+</mt:if></mt:loop>
+
+<mt:trans phrase="(URLs)">
+<mt:if name="object_permalink"><mt:var name="object_permalink">
+</mt:if><mt:var name="edit_link">
+
+<mt:include file="mail_footer.tmpl">
+</mt:for>

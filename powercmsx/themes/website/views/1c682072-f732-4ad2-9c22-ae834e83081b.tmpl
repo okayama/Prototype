@@ -1,0 +1,24 @@
+<div class="container-fluid">
+<div class="row">
+  <div class="col-lg-9">
+    <mt:if name="page_content">
+      <div class="mb-3 page-body">
+      <mt:var name="page_content">
+      </div>
+    </mt:if>
+    <mt:if name="page_more">
+      <div class="mb-3 page-body">
+      <mt:var name="page_more">
+      </div>
+    </mt:if>
+    <mt:if name="page_footer">
+      <div class="mb-3 page-body">
+      <mt:var name="page_footer">
+      </div>
+    </mt:if>
+  </div>
+  <div class="col-lg-3">
+    <mt:include module="(Website) Side Bar" chache_key="$side_bar_cache_key">
+  </div>
+</div>
+</div>

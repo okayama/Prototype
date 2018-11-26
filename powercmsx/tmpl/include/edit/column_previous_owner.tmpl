@@ -1,0 +1,27 @@
+<mt:ignore>
+<div class="row form-group">
+  <div class="col-lg-2">
+    <label for="<mt:var name="__col_name__">">
+      <mt:var name="label" escape>
+      <mt:if name="not_null"><mt:var name="field_required"></mt:if>
+    </label>
+  </div>
+  <div class="col-lg-10">
+    <mt:setvar name="thumbnail" value="">
+    <mt:getobjectname id="$__col_value__" type="$edit" wants="id" escape setvar="__col_value__">
+    <mt:assetthumbnail id="$__col_value__" type="default" square="1" model="$rel_model" data_uri="1" setvar="thumbnail">
+    <img src="<mt:var name="thumbnail">" id="<mt:var name="__col_name__">-img" class="<mt:unless name="thumbnail">hidden</mt:unless>" alt="<mt:trans phrase="Preview">" width="32">
+    <span class="badge badge-default badge-relation">
+    <span id="<mt:var name="__col_name__">-label">
+    <mt:if name="__col_value__">
+    <mt:getobjectname id="$__col_value__" type="$edit" escape>
+    <mt:else>
+    <mt:trans phrase="(None selected)">
+    </mt:if>
+    </span>
+    </span>
+    <input id="<mt:var name="__col_name__">" type="hidden" name="<mt:var name="__col_name__">" value="<mt:var name="__col_value__" escape>">
+  </div>
+</div>
+</mt:ignore>
+<!--Do not display-->

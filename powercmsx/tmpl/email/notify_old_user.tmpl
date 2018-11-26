@@ -1,0 +1,16 @@
+<mt:for merge_linefeeds="1">
+<mt:trans phrase="Your responsible %1$s'%2$s' has been sent %3$s to another user %4$s by user %5$s." params="'$object_label','$object_name','$workflow_label','$to_user','$by_user'">
+
+<mt:if name="workflow_message">
+<mt:trans phrase="(Message)">
+<mt:var name="workflow_message"></mt:if>
+
+<mt:trans phrase="(%s)" params="$object_label">
+<mt:var name="object_name"> (ID: <mt:var name="object_id">)
+
+<mt:trans phrase="(URLs)">
+<mt:if name="object_permalink"><mt:var name="object_permalink">
+</mt:if><mt:if name="old_user_can_edit"><mt:var name="edit_link"></mt:if>
+
+<mt:include file="mail_footer.tmpl">
+</mt:for>

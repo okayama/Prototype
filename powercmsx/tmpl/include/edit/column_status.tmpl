@@ -1,0 +1,208 @@
+<mt:var name="options" split="," setvar="_options_loop">
+<div class="row form-group">
+  <div class="col-lg-2">
+    <label for="<mt:var name="__col_name__">">
+      <mt:var name="label" escape="1">
+      <mt:if name="not_null"><mt:var name="field_required"></mt:if>
+    </label>
+  </div>
+  <div class="col-lg-10 form-inline">
+    <mt:if name="status_published" gt="3">
+    <select <mt:if name="readonly">readonly onmousedown="return false;" onkeydown="return false;"</mt:if> id="status-selector" class="form-control short custom-select" name="<mt:var name="__col_name__">">
+    <mt:loop name="_options_loop">
+      <mt:if name="__index__" le="$max_status">
+      <mt:unless name="request.edit_revision">
+        <option <mt:unless name="object_status"><mt:isset name="object_status"><mt:else><mt:if name="_default_status" eq="$__index__">selected</mt:if></mt:isset></mt:unless><mt:if name="object_status" eq="$__index__">selected</mt:if> value="<mt:var name="__index__">"><mt:trans phrase="$__value__" escape></option>
+      <mt:else>
+        <mt:if name="__index__" ne="$status_published">
+            <mt:if name="__index__" eq="3">
+              <mt:setvar name="__value" value="Reserved(Replace)">
+            <mt:else>
+              <mt:var name="__value__" setvar="__value">
+            </mt:if>
+        <option <mt:unless name="object_status"><mt:isset name="object_status"><mt:else><mt:if name="_default_status" eq="$__index__">selected</mt:if></mt:isset></mt:unless><mt:if name="object_status" eq="$__index__">selected</mt:if> value="<mt:var name="__index__">"><mt:trans phrase="$__value" escape></option>
+        </mt:if>
+      </mt:unless>
+      </mt:if>
+    </mt:loop>
+    </select>
+    <mt:if name="_has_workflow">
+      <span id="status-alterative" class="hidden badge left-margin badge-warning-lite status-alterative"></span>
+    </mt:if>
+    <mt:else>
+    <select id="status-selector" class="form-control short custom-select " name="<mt:var name="__col_name__">">
+    <mt:loop name="_options_loop">
+      <mt:if name="__counter__" le="$max_status">
+      <mt:unless name="request.edit_revision">
+        <option <mt:unless name="object_status"><mt:if name="_default_status" eq="$__counter__">selected</mt:if></mt:unless><mt:if name="object_status" eq="$__counter__">selected</mt:if> value="<mt:var name="__counter__">"><mt:trans phrase="$__value__" escape></option>
+      <mt:else>
+        <mt:if name="__counter__" ne="$status_published">
+            <mt:if name="__counter__" eq="3">
+              <mt:setvar name="__value" value="Reserved(Replace)">
+            <mt:else>
+              <mt:var name="__value__" setvar="__value">
+            </mt:if>
+        <option <mt:unless name="object_status"><mt:if name="_default_status" eq="$__counter__">selected</mt:if></mt:unless><mt:if name="object_status" eq="$__counter__">selected</mt:if> value="<mt:var name="__counter__">"><mt:trans phrase="$__value" escape></option>
+        </mt:if>
+      </mt:unless>
+      </mt:if>
+    </mt:loop>
+    </select>
+    </mt:if>
+<mt:tablehascolumn column="published_on">
+    <input type="hidden" name="has_deadline" value="0">
+    <label class="custom-control custom-checkbox status-has_deadline-cb">
+    <input <mt:if name="readonly">disabled</mt:if> id="has_deadline" class="status-has_deadline-cb form-control custom-control-input" type="checkbox" name="has_deadline" value="1" <mt:if name="object_has_deadline">checked</mt:if>>
+        <span class="custom-control-indicator"></span>
+        <span class="custom-control-description"> 
+        <mt:trans phrase="Specify the Deadline">
+        </span>
+    </label>
+</mt:tablehascolumn>
+  </div>
+</div>
+
+<mt:if name="_has_workflow">
+<div class="row form-group" style="margin:-1em 0 0 -10px" id="status-alert-block">
+  <div class="col-lg-2">
+  </div>
+  <div class="col-lg-10">
+  <p class="text-muted text-danger hint-block">
+    <i class="fa fa-exclamation-triangle" aria-hidden="true"></i>
+    <span class="sr-only"><mt:trans phrase="Caution"></span>
+    <span id="status-alert-message"></span>
+  </p>
+  </div>
+</div>
+<script>
+$('#status-alert-block').hide();
+</script>
+</mt:if>
+
+<mt:if name="request.edit_revision">
+<mt:tablehascolumn column="rev_type">
+<div class="row form-group" style="margin:-1em 0 0 -10px" id="status-hint">
+  <div class="col-lg-2">
+  </div>
+  <div class="col-lg-10">
+  <p class="text-muted hint-block">
+    <i class="fa fa-question-circle-o" aria-hidden="true"></i>
+    <span class="sr-only"><mt:trans phrase="Hint"></span>
+    <mt:trans phrase="The status at replacement will be status of the master.">
+    ( <mt:trans phrase="Current status of Master"> : <mt:statustext status="$_master_status" text="1" icon="1" model="$model">)
+  </p>
+  </div>
+</div>
+</mt:tablehascolumn>
+</mt:if>
+<mt:if name="_has_workflow">
+<script>
+  __workflow_owner_max_status = 0;
+  <mt:if name="_workflow_owner_type" eq="creator">
+  __workflow_owner_max_status = 0;
+  <mt:elseif name="_workflow_owner_type" eq="reviewer">
+  __workflow_owner_max_status = 1;
+  <mt:elseif name="_workflow_owner_type" eq="publisher">
+  __workflow_owner_max_status = 5;
+</mt:if>
+  __workflow_orig_max_status = __workflow_owner_max_status;
+  __workflow_current_status = $('#status-selector').val();
+  __workflow_orig_status = __workflow_current_status;
+$('#status-selector').change(function(){
+    $('#status-alert-block').hide();
+    if ( $(this).val() > __workflow_owner_max_status ) {
+        if( window.confirm('<mt:trans phrase="You are trying to specify a status that can not be set by the current user. Changing the status will change the user to you. Are you sure you want to change the status?">') ) {
+            __workflow_current_status = $(this).val();
+            $('[name=__workflow_type]:eq(0)').prop('checked', true);
+            if ( __enable_workflow ) {
+                __reset_workflow();
+            }
+            $('#badge-change-user').html('<span><mt:var name="user_nickname" escape></span>');
+            $('#badge-change-user').show();
+            $('#badge-change-arrow').show();
+            $('#__workflow_message-wrapper').show();
+        } else {
+            $(this).val( __workflow_current_status );
+            return;
+        }
+    }
+});
+</script>
+</mt:if>
+<mt:tablehascolumn column="published_on">
+<div class="row form-group published_on-col">
+  <div class="col-lg-2">
+      <label for="published_on_date"><mt:trans phrase="Publish Date"></label>
+  </div>
+  <div class="col-lg-10 form-inline">
+    <span class="date-input">
+    <input id="published_on_date" <mt:if name="readonly">disabled</mt:if> type="date" class="form-control date" name="published_on_date" value="<mt:if name="object_published_on"><mt:var name="object_published_on" format_ts="Y-m-d"></mt:if>">
+    </span>
+    <span class="date-input time-input">
+    <input id="published_on_time" <mt:if name="readonly">disabled</mt:if> type="time" step="1" class="form-control time" name="published_on_time" value="<mt:if name="object_published_on"><mt:var name="object_published_on" format_ts="H:i:s"></mt:if>">
+    </span>
+<mt:tablehascolumn column="unpublished_on">
+<span class="period-separator" class="unpublished-on-col">
+<i class="fa fa-arrows-h unpublished-on-col" aria-hidden="true"></i>
+  <label for="unpublished_on_date"><span class="sr-only"><mt:trans phrase="To"></span></label>
+</span>
+<span class="date-input">
+<span class="unpublished-on-col">
+    <input id="unpublished_on_date" type="date" class="form-control date" name="unpublished_on_date" value="<mt:if name="object_unpublished_on"><mt:var name="object_unpublished_on" format_ts="Y-m-d"></mt:if>">
+</span>
+</span>
+<span class="date-input time-input">
+<span class="unpublished-on-col">
+    <input id="unpublished_on_time" type="time" step="1" class="form-control time" name="unpublished_on_time" value="<mt:if name="object_unpublished_on"><mt:var name="object_unpublished_on" format_ts="H:i:s"></mt:if>">
+</span>
+</span>
+</mt:tablehascolumn>
+  </div>
+</div>
+<mt:if name="request.edit_revision">
+<mt:tablehascolumn column="rev_type">
+<div class="row form-group">
+  <div class="col-lg-2">
+      <mt:trans phrase="Revision Type">
+  </div>
+  <div class="col-lg-10">
+    <select class="form-control short custom-select" name="rev_type">
+      <option <mt:if name="object_rev_type" eq="1">selected</mt:if> value="1"><mt:trans phrase="Auto Save"></option>
+      <option <mt:if name="object_rev_type" eq="2">selected</mt:if> value="2"><mt:trans phrase="Revision"></option>
+    </select>
+  </div>
+</div>
+</mt:tablehascolumn>
+</mt:if>
+<script>
+var object_rev_type = '<mt:var name="object_rev_type">';
+<mt:if name="request.edit_revision">
+<mt:tablehascolumn column="rev_type">
+<mt:if name="object_status" ne="3">
+$('#status-hint').hide();
+</mt:if>
+$('#status-selector').change(function(){
+    if ( $(this).val() == 3 ) {
+        $('#status-hint').show();
+        $('select[name="rev_type"]').val(2);
+    } else {
+        $('#status-hint').hide();
+        $('select[name="rev_type"]').val(object_rev_type);
+    }
+});
+</mt:tablehascolumn>
+</mt:if>
+$(function () {
+    if ( $('#has_deadline').prop('checked') == false ) {
+        $('.unpublished-on-col').hide();
+    }
+});
+$('#has_deadline').click(function(){
+    if ( $(this).prop('checked') ) {
+        $('.unpublished-on-col').show();
+    } else {
+        $('.unpublished-on-col').hide();
+    }
+});
+</script>
+</mt:tablehascolumn>

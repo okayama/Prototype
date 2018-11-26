@@ -1,0 +1,28 @@
+<script>
+var HTML_CodeSniffer_wrapper = $('<label>').attr({
+  id: '__HTML_CodeSniffer_label',
+  class : 'custom-control custom-checkbox'
+});
+var HTML_CodeSniffer_checkbox = $('<input>').attr({
+  type: 'checkbox',
+  name: '__html_codesniffer',
+  class : 'custom-control-input',
+  value: 1
+});
+var HTML_CodeSniffer_indicator = $('<span>').attr({
+  class : 'custom-control-indicator',
+  id : '__html_codesniffer'
+});
+var HTML_CodeSniffer_label = $('<span>').attr({
+  class : 'custom-control-description',
+  id : '__html_codesniffer_label'
+});
+HTML_CodeSniffer_label.html('<span><mt:trans phrase="Check WCAG2.0" trans="HTML_CodeSniffer"></span>');
+HTML_CodeSniffer_wrapper.insertAfter('#__preview');
+HTML_CodeSniffer_checkbox.appendTo('#__HTML_CodeSniffer_label');
+HTML_CodeSniffer_indicator.appendTo('#__HTML_CodeSniffer_label');
+HTML_CodeSniffer_label.appendTo('#__HTML_CodeSniffer_label');
+$('#__html_codesniffer').css('margin-top','11px');
+$('#__html_codesniffer').css('margin-left','11px');
+$('#__html_codesniffer_label').css('margin-left','10px');
+</script>

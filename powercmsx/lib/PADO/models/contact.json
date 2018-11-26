@@ -1,0 +1,184 @@
+{
+    "label": "Contact",
+    "plural": "Contacts",
+    "version": "1.5",
+    "primary": "subject",
+    "order": 390,
+    "menu_type": 4,
+    "taggable": 1,
+    "display_space": 1,
+    "display_system": 1,
+    "has_attachments": 1,
+    "show_activity": 1,
+    "column_defs": {
+        "id": {
+            "type": "int",
+            "size": 11,
+            "not_null": 1
+        },
+        "subject": {
+            "type": "string",
+            "size": 255
+        },
+        "email": {
+            "type": "string",
+            "size": 255
+        },
+        "identifier": {
+            "type": "string",
+            "size": 255
+        },
+        "data": {
+            "type": "text"
+        },
+        "question_map": {
+            "type": "text"
+        },
+        "attachmentfiles": {
+            "type": "relation"
+        },
+        "tags": {
+            "type": "relation"
+        },
+        "memo": {
+            "type": "text"
+        },
+        "state": {
+            "type": "int",
+            "size": 11
+        },
+        "created_on": {
+            "type": "datetime"
+        },
+        "model": {
+            "type": "string",
+            "size": 255
+        },
+        "form_id": {
+            "type": "int",
+            "size": 11
+        },
+        "object_id": {
+            "type": "int",
+            "size": 11
+        },
+        "remote_ip": {
+            "type": "string",
+            "size": 255
+        },
+        "workspace_id": {
+            "type": "int",
+            "size": 11,
+            "default" : 0
+        },
+        "modified_on": {
+            "type": "datetime"
+        },
+        "modified_by": {
+            "type": "int",
+            "size": 11
+        }
+    },
+    "indexes": {
+        "PRIMARY": "id",
+        "id": "id",
+        "subject": "subject",
+        "email": "email",
+        "identifier": "identifier",
+        "state": "state",
+        "created_on": "created_on",
+        "form_id": "form_id",
+        "model": "model",
+        "remote_ip": "remote_ip",
+        "workspace_id": "workspace_id",
+        "modified_on": "modified_on",
+        "modified_by": "modified_by"
+    },
+    "translate": [
+        "state",
+        "model",
+        "object_id"
+    ],
+    "relations": {
+        "attachmentfiles": "attachmentfile",
+        "tags": "tag"
+    },
+    "options": {
+        "data": "10",
+        "memo": "6",
+        "state": "Unread,Already Read,In Progress,Resolved,Flagged,Closed"
+    },
+    "sort_by": {
+        "created_on": "descend"
+    },
+    "autoset": [
+        "attachmentfiles",
+        "form_id",
+        "model",
+        "object_id",
+        "workspace_id",
+        "created_on",
+        "modified_on",
+        "modified_by"
+    ],
+    "unchangeable": [
+        "subject",
+        "email",
+        "data",
+        "attachmentfiles",
+        "form_id",
+        "model",
+        "object_id",
+        "remote_ip",
+        "workspace_id"
+    ],
+    "edit_properties": {
+        "id": "hidden",
+        "subject": "primary",
+        "email": "text_short",
+        "identifier": "text_short",
+        "data": "textarea",
+        "attachmentfiles": "relation:attachmentfile:name:dialog",
+        "tags": "relation:tag:name:dialog",
+        "memo": "textarea",
+        "state": "selection",
+        "created_on": "datetime",
+        "form_id": "relation:form:name:select",
+        "object_id": "number",
+        "modified_by": "reference:user:nickname",
+        "remote_ip": "text_short"
+    },
+    "list_properties": {
+        "id": "number",
+        "subject": "primary",
+        "email": "text",
+        "identifier": "text_short",
+        "attachmentfiles": "reference:attachmentfile:name",
+        "tags": "reference:tag:name",
+        "memo": "text",
+        "state": "text_short",
+        "form_id": "reference:form:name",
+        "object_id": "number",
+        "remote_ip": "text_short",
+        "workspace_id": "reference:workspace:name",
+        "created_on": "datetime",
+        "modified_on": "datetime",
+        "modified_by": "reference:user:name"
+    },
+    "default_list_items" : [
+        "subject",
+        "email",
+        "identifier",
+        "tags",
+        "state",
+        "memo",
+        "created_on",
+        "workspace_id"
+    ],
+    "disp_edit": {
+        "state": "select"
+    },
+    "column_labels": {
+        "created_on": "Date Posted"
+    }
+}

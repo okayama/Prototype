@@ -1,0 +1,60 @@
+<div class="row form-group">
+  <div class="col-lg-2">
+    <label for="<mt:var name="__col_name__">">
+      <mt:var name="label" escape>
+      <mt:if name="not_null"><mt:var name="field_required"></mt:if>
+    </label>
+  </div>
+  <div class="col-lg-<mt:if name="edit" like="select">3<mt:else>10</mt:if>">
+    <mt:if name="edit" like="reference">
+    <mt:getobjectname id="$value" type="$edit" escape>
+    <input type="hidden" id="<mt:var name="__col_name__">" name="<mt:var name="__col_name__">" value="<mt:var name="value">">
+    </mt:if>
+    <mt:var name="edit" split=":" setvar="edit_props">
+    <mt:var name="edit_props[1]" setvar="rel_model">
+    <mt:var name="edit_props[2]" setvar="rel_col">
+    <mt:var name="edit_props[3]" setvar="rel_type">
+      <mt:if name="edit" like="dialog">
+        <mt:if name="type" eq="relation">
+          <mt:setvarblock name="__rel_name__">object_<mt:var name="__col_name__"></mt:setvarblock>
+          <ul id="<mt:var name="__col_name__">" class="group-relation-list">
+            <li <mt:if name="$__rel_name__">style="display:none" </mt:if>class="card" id="<mt:var name="__col_name__">-none">
+            <mt:trans phrase="(None selected)">
+            </li>
+            <li class="hidden card card-inverse group-item badge-draggable" id="<mt:var name="__col_name__">-tmpl">
+            <span><mt:trans phrase="Default"></span>
+            <button type="button" class="btn btn-secondary btn-sm close-sm detach-relation" aria-label="<mt:trans phrase="Detach">" data-name="<mt:var name="__col_name__">">
+              <span aria-hidden="true">&times;</span>
+            </button>
+            <input type="hidden" name="<mt:var name="__col_name__">[]" value="">
+            </li>
+          <mt:setvarblock name="selected_ids"><mt:loop name="$__rel_name__" glue=","><mt:var name="__value__"></mt:loop></mt:setvarblock>
+          <mt:loop name="$__rel_name__">
+            <li class="<mt:var name="__col_name__">-child card card-inverse group-item badge-draggable">
+            <span>
+              <mt:getobjectname id="$__value__" type="$edit" escape setvar="_related_object">
+              <mt:var name="_related_object" trans="$translate">
+            </span>
+            <button type="button" class="btn btn-secondary btn-sm close-sm detach-relation" aria-label="<mt:trans phrase="Detach">" data-name="<mt:var name="__col_name__">">
+              <span aria-hidden="true">&times;</span>
+            </button>
+            <input type="hidden" name="<mt:var name="__col_name__">[]" value="<mt:var name="__value__" escape>"></li>
+          </mt:loop>
+          </ul>
+          <button style="margin-left:0px" type="button" id="add_<mt:var name="__col_name__">" class="btn btn-primary btn-sm dialog-chooser" data-toggle="modal" data-target="#modal"
+            data-href="<mt:var name="script_uri">?__mode=view&amp;_type=list&amp;_model=<mt:var name="rel_model" escape><mt:ifworkspacemodel model="$rel_model"><mt:if name="workspace_id">&amp;workspace_id=<mt:var name="workspace_id"></mt:if></mt:ifworkspacemodel>&amp;dialog_view=1&amp;target=<mt:var name="__col_name__">&amp;get_col=<mt:var name="rel_col" escape>&amp;select_add=1"><mt:trans phrase="Add..."></button>
+          <script>
+            var <mt:var name="__col_name__">_add_objects = [];
+            $('#<mt:var name="__col_name__">').sortable ( {
+                stop: function( evt, ui ) {
+                    editContentChanged = true;
+                }
+            });
+            $("#<mt:var name="__col_name__">").ksortable();
+          </script>
+        <mt:else>
+        </mt:if>
+      </mt:if>
+    <mt:var name="_hint">
+  </div>
+</div>

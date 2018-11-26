@@ -1,0 +1,179 @@
+{
+    "label"    : "User",
+    "plural"   : "Users",
+    "version"  : "1.3",
+    "primary"  : "name",
+    "display_system": 1,
+    "order"    : 80,
+    "auditing" : 1,
+    "menu_type": 5,
+    "has_status": 1,
+    "column_defs": {
+        "id": {
+            "type": "int",
+            "size": 11,
+            "not_null": 1
+        },
+        "name": {
+            "type": "string",
+            "size": 255
+        },
+        "password": {
+            "type": "string",
+            "size": 255,
+            "not_null": 1
+        },
+        "email": {
+            "type": "string",
+            "size": 255,
+            "not_null": 1
+        },
+        "nickname": {
+            "type": "string",
+            "size": 255,
+            "not_null": 1
+        },
+        "photo": {
+            "type": "blob"
+        },
+        "text_format": {
+            "type": "string",
+            "size": 255
+        },
+        "space_order": {
+            "type": "string",
+            "size": 255
+        },
+        "fix_spacebar": {
+            "type": "tinyint",
+            "size": 4,
+            "default": null
+        },
+        "language": {
+            "type": "string",
+            "size": 255
+        },
+        "control_border": {
+            "type": "string",
+            "size": 255,
+            "default": null
+        },
+        "is_superuser": {
+            "type": "tinyint",
+            "size": 4,
+            "default": "0"
+        },
+        "status": {
+            "type": "int",
+            "size": 11,
+            "default": "1"
+        },
+        "created_by": {
+            "type": "int",
+            "size": 11
+        },
+        "lock_out": {
+            "type": "tinyint",
+            "size": 4
+        },
+        "modified_by": {
+            "type": "int",
+            "size": 11
+        },
+        "lock_out_on": {
+            "type": "datetime"
+        },
+        "created_on": {
+            "type": "datetime"
+        },
+        "modified_on": {
+            "type": "datetime"
+        },
+        "last_login_on": {
+            "type": "datetime"
+        }
+    },
+    "indexes": {
+        "PRIMARY": "id",
+        "name": "name",
+        "email": "email",
+        "nickname": "nickname",
+        "is_superuser": "is_superuser",
+        "status": "status",
+        "created_by": "created_by",
+        "lock_out": "lock_out",
+        "modified_by": "modified_by",
+        "lock_out_on": "lock_out_on",
+        "created_on": "created_on",
+        "modified_on": "modified_on",
+        "last_login_on": "last_login_on"
+    },
+    "unique":  [
+        "name",
+        "email"
+    ],
+    "unchangeable": [
+        "name"
+    ],
+    "autoset": [
+        "created_by",
+        "modified_by",
+        "lock_out_on",
+        "created_on",
+        "modified_on",
+        "last_login_on"
+    ],
+    "options": {
+        "photo": "image",
+        "text_format": "None,Convert Line Breaks,Markdown,RichText",
+        "space_order": "Default,by Updated",
+        "status": "Disable,Enable"
+    },
+    "sort_by": {
+        "id": "ascend"
+    },
+    "child_tables" : [
+        "permission"
+    ],
+    "list_properties": {
+        "id": "number",
+        "name": "primary",
+        "email": "text",
+        "nickname": "text",
+        "is_superuser": "checkbox",
+        "status": "number",
+        "lock_out": "checkbox",
+        "modified_by": "reference:user:name",
+        "created_on": "date",
+        "last_login_on": "datetime"
+    },
+    "edit_properties": {
+        "id": "hidden",
+        "name": "primary",
+        "password": "password(hash)",
+        "email": "text",
+        "nickname": "text",
+        "photo": "file",
+        "text_format": "selection",
+        "space_order": "selection",
+        "fix_spacebar": "checkbox",
+        "language": "languages",
+        "control_border": "text",
+        "is_superuser": "checkbox",
+        "status": "selection",
+        "lock_out": "checkbox",
+        "lock_out_on": "datetime",
+        "created_on": "datetime",
+        "last_login_on": "datetime"
+    },
+    "translate": [
+        "text_format"
+    ],
+    "hint": {
+        "space_order": "Specify the display order of the WorkSpace selector of the top of the screen."
+    },
+    "disp_edit": {
+        "text_format": "select",
+        "space_order": "radio"
+    }
+}

@@ -1,0 +1,138 @@
+{
+    "label": "Question Type",
+    "plural": "Question Types",
+    "version": "1.5",
+    "primary": "name",
+    "auditing": 1,
+    "order": 370,
+    "sortable": 1,
+    "menu_type": 4,
+    "has_basename": 1,
+    "revisable": 1,
+    "display_system": 1,
+    "column_defs": {
+        "id": {
+            "type": "int",
+            "size": 11,
+            "not_null": 1
+        },
+        "name": {
+            "type": "string",
+            "size": 255
+        },
+        "template": {
+            "type": "text"
+        },
+        "order": {
+            "type": "int",
+            "size": 11
+        },
+        "basename": {
+            "type": "string",
+            "size": 255,
+            "not_null": 1
+        },
+        "class": {
+            "type": "string",
+            "size": 255,
+            "default": null
+        },
+        "rev_type": {
+            "type": "int",
+            "size": 11,
+            "not_null": 1,
+            "default": "0"
+        },
+        "rev_object_id": {
+            "type": "int",
+            "size": 11
+        },
+        "rev_changed": {
+            "type": "string",
+            "size": 255
+        },
+        "rev_note": {
+            "type": "string",
+            "size": 255
+        },
+        "rev_diff": {
+            "type": "text"
+        },
+        "created_on": {
+            "type": "datetime"
+        },
+        "modified_on": {
+            "type": "datetime"
+        },
+        "created_by": {
+            "type": "int",
+            "size": 11
+        },
+        "modified_by": {
+            "type": "int",
+            "size": 11
+        }
+    },
+    "indexes": {
+        "PRIMARY": "id",
+        "id": "id",
+        "name": "name",
+        "order": "order",
+        "basename": "basename",
+        "rev_type": "rev_type",
+        "rev_object_id": "rev_object_id",
+        "rev_note": "rev_note",
+        "created_on": "created_on",
+        "modified_on": "modified_on",
+        "created_by": "created_by",
+        "modified_by": "modified_by"
+    },
+    "translate": [
+        "name",
+        "class"
+    ],
+    "options": {
+        "template": "10",
+        "class": "text,textarea,text_input_group,radio,checkbox,checkboxes,dropdown,date,file"
+    },
+    "sort_by": {
+        "id": "ascend"
+    },
+    "autoset": [
+        "rev_type",
+        "rev_object_id",
+        "rev_changed",
+        "rev_diff",
+        "created_on",
+        "modified_on",
+        "created_by",
+        "modified_by"
+    ],
+    "unique": [
+        "name"
+    ],
+    "hint": {
+        "class": "Please select the basename of the question type to be customized."
+    },
+    "disp_edit": {
+        "class": "select"
+    },
+    "edit_properties": {
+        "id": "hidden",
+        "name": "primary",
+        "template": "textarea",
+        "order": "number",
+        "basename": "text_short",
+        "class": "selection"
+    },
+    "list_properties": {
+        "id": "number",
+        "name": "primary",
+        "order": "number",
+        "basename": "text_short",
+        "rev_note": "text",
+        "rev_diff": "popover",
+        "modified_on": "datetime",
+        "modified_by": "reference:user:name"
+    }
+}

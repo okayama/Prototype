@@ -1,0 +1,85 @@
+{
+    "label"       : "EntryImporter",
+    "id"          : "entryimporter",
+    "component"   : "EntryImporter",
+    "version"     : "1.0",
+    "author"      : "Alfasado Inc.",
+    "author_link" : "https://alfasado.net/",
+    "description" : "It provides entries import function.",
+    "menus": {
+        "start_import": {
+            "display_system" : 1,
+            "display_space" : 1,
+            "component"  : "EntryImporter",
+            "permission" : "create_entry",
+            "mode"       : "start_import",
+            "label"      : "Import Entries",
+            "order"      : 10
+        }
+    },
+    "methods": {
+        "start_import": {
+            "component"  : "EntryImporter",
+            "permission" : "create_entry",
+            "method"     : "start_import"
+        },
+        "import_entry": {
+            "component"  : "EntryImporter",
+            "permission" : "create_entry",
+            "method"     : "import_entry"
+        },
+        "upload_import_file": {
+            "component"  : "EntryImporter",
+            "permission" : "create_entry",
+            "method"     : "upload_import_file"
+        }
+    },
+    "import_format": {
+        "wordpress": {
+            "component"  : "EntryImporter",
+            "label"      : "WordPress",
+            "method"     : "import_wordpress",
+            "order"      : 10,
+            "options"    : [ "author_setting", "new_author_password", "comment_status",
+                             "field_settings" ]
+        },        
+        "movabletype": {
+            "component"  : "EntryImporter",
+            "label"      : "Movable Type",
+            "method"     : "import_movabletype",
+            "order"      : 20,
+            "options"    : [ "author_setting", "new_author_password", "comment_status",
+                             "field_settings" ]
+        },
+        "noren": {
+            "component"  : "EntryImporter",
+            "label"      : "NOREN",
+            "method"     : "import_noren",
+            "order"      : 30,
+            "options"    : [ "author_setting", "new_author_password",
+                             "field_settings", "keywords_to", "text_format" ]
+        }
+    },
+    "export_format": {
+        "movabletype": {
+            "component"  : "EntryImporter",
+            "label"      : "Movable Type",
+            "method"     : "export_movabletype"
+        }
+    },
+    "list_actions": {
+        "export_entry" : {
+            "entry" : {
+                "export_entry": {
+                    "name" : "export_entry",
+                    "label" : "Export Entries",
+                    "component" : "EntryImporter",
+                    "method"    : "export_entry",
+                    "input"     : 1,
+                    "scope"     : ["system", "workspace"],
+                    "input_options": "list_options"
+                }
+            }
+        }
+    }
+}

@@ -1,0 +1,28 @@
+<mt:include module="(Website) Site Config">
+<mt:if tag="pageexcerpt">
+<mt:pageexcerpt setvar="page_description">
+</mt:if>
+<mt:if tag="pagekeywords">
+<mt:pagekeywords setvar="page_keywords">
+</mt:if>
+<mt:pagetitle language="$language" setvar="archive_title">
+<mt:include module="(Website) HTML Header">
+    <div class="full-band-dark page-top-item">
+      <div>
+        <h1 class="text-center"><mt:var name="archive_title"></h1>
+      </div>
+    </div>
+<mt:include module="(Website) Breadcrumbs">
+<mt:pagebody setvar="page_content">
+<mt:pagemore nl2br setvar="page_more">
+<mt:setvarblock name="page_footer">
+<mt:pagewidgets>
+<mt:widgetclass setvar="widget_class">
+<mt:if name="widget_class" ne="col-lg-4">
+<mt:include module="(Website) Page Widget" widget_class="$widget_class">
+</mt:if>
+</mt:pagewidgets>
+<mt:include module="(Website) Widgets 3 Columns">
+</mt:setvarblock>
+<mt:include module="(Website) Page Detail" page_content="$page_content" page_more="$page_more">
+<mt:include module="(Website) HTML Footer" cache_key="$footer_cache_key">

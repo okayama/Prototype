@@ -1,0 +1,11 @@
+{
+    "SiteMap dashboard widget." : "サイトマップ・ダッシュボードを追加します。",
+    "Site Map"  : "サイトマップ",
+    "Open All"  : "すべて開く",
+    "Close All" : "すべて閉じる",
+    "Target"    : "対象",
+    "Contains Assets" : "アセットを含む",
+    "Contains Attachment Files" : "添付ファイルを含む",
+    "Contains Files" : "ファイルを含む",
+    "Contains Thumbnails" : "サムネイルを含む"
+}

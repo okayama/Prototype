@@ -1,0 +1,12 @@
+<mt:for merge_linefeeds="1">
+<mt:trans phrase="The %1$s'%2$s' you creadted (or edited) has been approved and published by %3$s." params="'$object_label','$object_name','$by_user'">
+
+<mt:trans phrase="(%s)" params="$object_label">
+<mt:var name="object_name"> (ID: <mt:var name="object_id">)
+
+<mt:trans phrase="(URLs)">
+<mt:if name="object_permalink"><mt:var name="object_permalink">
+</mt:if>
+
+<mt:include file="mail_footer.tmpl">
+</mt:for>

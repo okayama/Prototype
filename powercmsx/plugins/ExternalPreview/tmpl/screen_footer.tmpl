@@ -1,0 +1,129 @@
+<script>
+var epStatusPublished = '<mt:var name="_externalpreview_status_published">';
+$('#status-selector').change(function(){
+    toggle_external_link ();
+});
+show_external_link ();
+function toggle_external_link () {
+    if ( epStatusPublished ) {
+        var targetStatus = $('#status-selector').val();
+        if ( epStatusPublished == 4 ) {
+            if ( targetStatus == 1 || targetStatus == 2 || targetStatus == 3 ) {
+                $('#__ExternalPreview_label').show();
+                if ( $('#__ExternalPreview_cb').prop('checked') ) {
+                    $('.external_link_item').show();
+                } else {
+                    $('.external_link_item').hide();
+                }
+            } else {
+                $('#__ExternalPreview_label').hide();
+                $('.external_link_item').hide();
+            }
+        } else {
+            if ( targetStatus == 1 ) {
+                $('#__ExternalPreview_label').show();
+                if ( $('#__ExternalPreview_cb').prop('checked') ) {
+                    $('.external_link_item').show();
+                }
+            } else {
+                $('#__ExternalPreview_label').hide();
+                $('.external_link_item').hide();
+            }
+        }
+    }
+}
+function show_external_link () {
+    var permalink = $('#__permalink-clipboard').val();
+    if (! permalink ) {
+        return;
+    }
+    if ( $('#uuid').length ) {
+        return;
+    }
+    var targetUUID = $('#uuid');
+    var objUUID = targetUUID.val();
+    if ( objUUID ) {
+        targetUUID.css('margin-bottom', '10px');
+        var externalLink = permalink + '?uuid=' + objUUID;
+        var ExternalPreview_link = $('<a>').attr({
+          target : '_blank',
+          href : externalLink,
+          class: 'external_link_item'
+        });
+        var ExternalPreview_space = $('<span>').attr({
+          style : 'margin-left:10px',
+          class: 'external_link_item'
+        });
+        var ExternalPreview_mail_space = $('<span>').attr({
+          style : 'margin-left:10px',
+          class: 'external_link_item'
+        });
+        var ExternalPreview_mail = $('<a>').attr({
+          href : 'mailto:?body=' + externalLink,
+          class: 'external_link_item'
+        });
+        ExternalPreview_mail.html('<span><i class="fa fa-envelope fa-sm" aria-hidden="true"></i>');
+        ExternalPreview_link.html('<span class="sr-only"><mt:trans phrase="External Preview Link" trans="ExternalPreview"></span><i class="fa fa-external-link fa-sm" aria-hidden="true"></i>');
+        ExternalPreview_mail.insertAfter(targetUUID);
+        ExternalPreview_mail_space.insertAfter(targetUUID);
+        ExternalPreview_link.insertAfter(targetUUID);
+        ExternalPreview_space.insertAfter(targetUUID);
+        var ExternalPreview_date = $('<input>').attr({
+          id    : '__ExternalPreview_date',
+          type  : 'date',
+          name  : '__external_preview_date',
+          value : '<mt:var name="_externalpreview_date_expires">',
+          class : 'external_link_item form-control form-control-sm control-inline',
+          style : 'width: 160px'
+        });
+        var ExternalPreview_time = $('<input>').attr({
+          id    : '__ExternalPreview_time',
+          type  : 'time',
+          name  : '__external_preview_time',
+          value : '<mt:var name="_externalpreview_time_expires">',
+          class : 'external_link_item form-control form-control-sm control-inline',
+          style : 'width: 96px; margin-left: 5px'
+        });
+        ExternalPreview_time.insertAfter(targetUUID);
+        ExternalPreview_date.insertAfter(targetUUID);
+        var ExternalPreview_date_label = $('<label>').attr({
+          class : 'external_link_item',
+          style : 'margin-right: 8px',
+          for   : '__ExternalPreview_date'
+        });
+        ExternalPreview_date_label.html('<span><mt:trans phrase="Expires" trans="ExternalPreview"></span>');
+        ExternalPreview_date_label.insertAfter(targetUUID);
+        var ExternalPreview_wrapper = $('<label>').attr({
+          id    : '__ExternalPreview_label',
+          class : 'custom-control custom-checkbox'
+        });
+        var ExternalPreview_checkbox = $('<input>').attr({
+          id    : '__ExternalPreview_cb',
+          type  : 'checkbox',
+          name  : '__external_preview',
+          class : 'custom-control-input',
+          onchange: 'toggle_external_link()',
+          value: 1
+        });
+        var ExternalPreview_indicator = $('<span>').attr({
+          class : 'custom-control-indicator'
+        });
+        var ExternalPreview_label = $('<span>').attr({
+          class : 'custom-control-description',
+          id    : '__external_preview_wrapper'
+        });
+        ExternalPreview_label.html('<span><mt:trans phrase="Enable External Preview" component="ExternalPreview"></span>');
+        ExternalPreview_wrapper.insertAfter(targetUUID);
+        ExternalPreview_checkbox.appendTo('#__ExternalPreview_label');
+        ExternalPreview_indicator.appendTo('#__ExternalPreview_label');
+        ExternalPreview_label.appendTo('#__ExternalPreview_label');
+        toggle_external_link();
+    }
+}
+<mt:if name="_externalpreview_specified">
+$('#__ExternalPreview_cb').prop('checked',true);
+if ($('#__ExternalPreview_cb').is(':visible')) {
+    $('.external_link_item').show();
+}
+</mt:if>
+</script>

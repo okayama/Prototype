@@ -1,0 +1,32 @@
+<mt:for merge_linefeeds="1">
+<mt:if name="changed_count_objects">
+<mt:if name="changed_count_objects" eq="1">
+<mt:trans phrase="%s %s you requested for approval was approved by %s." params="'$changed_count_objects','$object_label_plural','$by_user'">
+<mt:else>
+<mt:trans phrase="%s %s you requested for approval were approved by %s." params="'$changed_count_objects','$object_label_plural','$by_user'">
+</mt:if>
+
+<mt:unless name="assigned_count_objects">
+<mt:if name="workflow_message">
+<mt:trans phrase="(Message)">
+<mt:var name="workflow_message"></mt:if>
+
+<mt:trans phrase="(List of %s)" params="$object_label_plural">
+<mt:var name="list_url">
+</mt:unless>
+
+<mt:loop name="changed_object_loop">
+<mt:if name="__first__">====================================================================<mt:else>-------------------------------------------------------------------</mt:if>
+
+<mt:var name="object_name"> (ID: <mt:var name="object_id">)
+<mt:trans phrase="(Changing)">
+<mt:if name="object_status_changed"> - <mt:var name="object_status_changed"></mt:if>
+<mt:trans phrase="(URLs)">
+<mt:if name="object_permalink"><mt:var name="object_permalink"></mt:if>
+<mt:if name="edit_link"><mt:var name="edit_link"></mt:if>
+<mt:if name="__last__">
+====================================================================</mt:if>
+</mt:loop>
+</mt:if>
+<mt:if name="mail_footer"><mt:var name="mail_footer"></mt:if>
+</mt:for>

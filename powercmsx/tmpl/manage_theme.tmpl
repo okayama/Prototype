@@ -1,0 +1,116 @@
+<mt:include file="include/header.tmpl">
+
+<mt:if name="request.apply_theme">
+  <div id="theme-alert-message" class="alert alert-success" role="alert" tabindex="0">
+    <mt:trans phrase="The theme '%s' has been applied." params="$current_label">
+    <mt:if name="request.skipped">
+      <mt:var name="request.skipped" setvar="object_skipped">
+      ( <mt:trans phrase="%s object(s) has been skipped because it already existed." params="$object_skipped" escape> 
+      <mt:trans phrase="To see the details, go to the list of Logs."> )
+    </mt:if>
+  </div>
+    <script>
+    $('#theme-alert-message').focus();
+    </script>
+</mt:if>
+<mt:if name="current_theme">
+  <div class="alert alert-info" role="alert" tabindex="0">
+    <span id="current_theme"><mt:trans phrase="Current theme is '%s'." params="$current_label"></span>
+  </div>
+<mt:else>
+  <div class="alert alert-info" role="alert" tabindex="0">
+    <span id="current_theme"><mt:trans phrase="The theme not selected."></span>
+  </div>
+</mt:if>
+
+<div class="table-screen">
+<mt:setvarblock name="table_header">
+  <tr>
+  <th class="cb-col"></th>
+  <th><mt:trans class="short-col" phrase="Name"></th>
+  <th class="short-col"><mt:trans phrase="Version"></th>
+  <th><mt:trans phrase="Description"></th>
+  <th><mt:trans phrase="Creator"></th>
+</tr>
+</mt:setvarblock>
+
+<form action="<mt:var name="script_uri">" method="POST">
+<input type="hidden" name="__mode" value="manage_theme">
+<input type="hidden" name="magic_token" value="<mt:var name="magic_token" escape>">
+<input type="hidden" name="_type" value="apply_theme">
+<input type="hidden" name="workspace_id" value="<mt:var name="workspace_id">">
+<table class="table table-striped table-sm listing-table table-hover">
+<thead>
+  <mt:var name="table_header">
+</thead>
+<tbody id="list_body">
+<mt:loop name="theme_loop">
+<tr id="line_<mt:var name="theme_id" escape>">
+  <th class="cb-col">
+    <label class="custom-control custom-radio">
+      <input class="custom-control-input selector" type="radio" id="box_<mt:var name="theme_id" escape>"
+        name="theme_id" value="<mt:var name="theme_id" escape>">
+      <span class="custom-control-indicator"></span>
+    </label>
+  </th>
+  <td><mt:var name="label" escape><mt:if name="current_theme" eq="$theme_id"> ( <mt:trans phrase="Applied"> )</mt:if></td>
+  <td><mt:var name="version" escape></td>
+  <td><mt:var name="description" escape></td>
+  <td><mt:if name="author_link"><a target="_blank" href="<mt:var name="author_link" escape>"></mt:if><mt:var name="author" escape><mt:if name="author_link"></a></mt:if></td>
+</tr>
+</mt:loop>
+</tbody>
+<tfoot>
+  <mt:var name="table_header">
+</tfoot>
+</table>
+<div class="form-group">
+  <button type="submit" class="apply-btn btn btn-primary"><mt:trans phrase="Apply"></button>
+</div>
+</form>
+</div>
+<script>
+var in_link = false;
+$('input').mouseover(function() {
+    in_link = true;
+});
+$('input').mouseout(function() {
+    in_link = false;
+});
+$('#list_body tr').click(function() {
+    if ( in_link ) {
+        return true;
+    }    
+    line_id = $(this).prop('id');
+    line = line_id.replace( /line_/, '' );
+    checked = $('#box_'+line).prop('checked');
+    if ( checked ) {
+        $('#box_'+line).prop('checked', false);
+    } else {
+        $('#box_'+line).prop('checked', true);
+    }
+});
+$('.selector').click(function(){
+    return false;
+});
+$('.apply-btn').click(function() {
+    if (! $('input[name=theme_id]:checked').val() ) {
+        alert('<mt:trans phrase="The theme not selected.">');
+        return false;
+    }
+    if(! confirm('<mt:trans phrase="Are you sure you want to apply this theme?">') ) {
+        return false;
+    }
+});
+$(":radio").keypress(function(e) {
+    if ( e.keyCode == 13 ) {
+        if ( $(this).prop('checked') ) {
+            $(this).prop('checked', false);
+        } else {
+            $(this).prop('checked', true);
+        }
+    }
+    return false;
+});
+</script>
+<mt:include file="include/footer.tmpl">

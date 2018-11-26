@@ -1,0 +1,9 @@
+<mt:columnproperty model="$this_model" name="state" property="options" split="," setvar="state_options">
+<mt:unless name="__col_value__">
+<mt:setvar name="__state_index__" value="0">
+<mt:else>
+<mt:math eq="x - 1" x="$__col_value__" setvar="__state_index__">
+</mt:unless>
+<a href="<mt:var name="script_uri">?__mode=view&amp;_model=<mt:var name="this_model" escape>&amp;_type=list&amp;_filter=<mt:var name="this_model" escape>&amp;_filter_cond_state[]=eq&amp;_filter_value_state[]=<mt:var name="__col_value__">">
+<mt:var name="state_options" index="$__state_index__" translate>
+</a>

@@ -1,0 +1,317 @@
+    <div class="alert alert-success hidden" id="<mt:var name="__col_name__">-alert" role="alert" tabindex="0">
+      <button onclick="$('#<mt:var name="__col_name__">-alert').hide();" type="button" id="header-alert-close" class="close" aria-label="<mt:trans phrase="Detach">">
+        <span aria-hidden="true">&times;</span>
+      </button>
+      <span id="<mt:var name="__col_name__">-alert-message"><mt:trans phrase="The file has successfully uploaded. The uploaded file will not be reflected until you save this page."></span>
+    </div>
+  <div class="container-fluid" id="drop-zone-<mt:var name="__col_name__">">
+    <span id="file-chooser-<mt:var name="__col_name__">" class="btn btn-success fileinput-button">
+        <span><mt:trans phrase="Select File..."></span>
+        <!-- The file input field used as target for the file upload widget -->
+        <input id="fileupload-<mt:var name="__col_name__">" type="file" name="files[]" multiple
+            onfocus="$('#file-chooser-<mt:var name="__col_name__">').css('border','2px solid green');"
+            onblur="$('#file-chooser-<mt:var name="__col_name__">').css('border','none');">
+    </span>
+    <!-- The container for the uploaded files -->
+    <div id="files-<mt:var name="__col_name__">" class="files"></div>
+    <!-- The global progress bar -->
+    <div id="progress-<mt:var name="__col_name__">" class="progress attachment-bar">
+      <div class="progress-bar progress-bar-success"></div>
+    </div>
+<script src="assets/js/jquery.fileupload.js"></script>
+<script>
+var this_url = '<mt:var name="script_uri">?<mt:if name="workspace_id">workspace_id=<mt:var name="workspace_id">&</mt:if><mt:var name="_query_string" regex_replace="'/&selected_ids=.*$/',''">&sort=id&direction=desc';
+var selected_ids = [];
+var upload_count = 0;
+var receive_count = 0;
+var DropZone = document.getElementById('drop-zone-<mt:var name="__col_name__">');
+DropZone.addEventListener('dragover', function (event) {
+    $('#drop-zone-<mt:var name="__col_name__">').css('background-color','#ddf');
+});
+DropZone.addEventListener('dragleave', function (event) {
+    $('#drop-zone-<mt:var name="__col_name__">').css('background-color','#fff');
+});
+$('#drop-zone-<mt:var name="__col_name__">').css('border','3px dashed <mt:if name="user_control_border"><mt:var name="user_control_border" escape><mt:else>#ccc</mt:if>');
+$('#drop-zone-<mt:var name="__col_name__">').css('margin','1px');
+$('#drop-zone-<mt:var name="__col_name__">').css('padding','8px');
+$(function () {
+    'use strict';
+    var url = '<mt:var name="script_uri">?__mode=upload_multi&magic_token=<mt:var name="magic_token">&workspace_id=<mt:var name="workspace_id">&file_attachment=1&_screen_id=<mt:var name="screen_id">&name=<mt:var name="__col_name__">&model=attachmentfile&column=file&permission=<mt:var name="model">';
+    $('#fileupload-<mt:var name="__col_name__">').fileupload({
+        url: url,
+        dataType: 'json',
+        dropZone: $("#drop-zone-<mt:var name="__col_name__">"),
+        // formData: {extra_path: $('#extra_path').val()},
+        add: function (e, data) {
+            data.submit();
+            upload_count++;
+        },
+        done: function (e, data) {
+            if (!data.result.files) {
+                var error = data.result.message;
+                $('#progress-<mt:var name="__col_name__"> .progress-bar').css(
+                    'width', 0
+                );
+                alert("<mt:trans phrase="An error occurred while uploading.">"+' (' + error + ')');
+                upload_count--;
+                if ( receive_count == upload_count ) {
+                    setTimeout(finish_<mt:var name="__col_name__">, 1000);
+                }
+                return;
+            }
+            $.each(data.result.files, function (index, file) {
+                // $('<p/>').text(file.name).appendTo('#files');
+                var file_name = escape_html( decodeURI(file.name) );
+                var file_class = escape_html( file.class );
+                var tmpl_li = $('#<mt:var name="__col_name__">-tmpl');
+                var add_li = tmpl_li.clone( true ).appendTo('#<mt:var name="__col_name__">-list' );
+                add_li.removeClass('hidden');
+                add_li.children('span').html(file_name);
+                add_li.children('span').attr( 'id', '_attachmentfiles_name_session-' + file.session_id );
+                add_li.children('span').attr( 'class', 'badge-short' );
+                add_li.children('input').val( 'session-' + file.session_id );
+                add_li.children('.foward-file-name').val( file_name );
+                add_li.children('.foward-file-name').attr('name', '_<mt:var name="__col_name__">_foward_session-' + file.session_id );
+                add_li.removeAttr('id');
+                add_li.addClass( '<mt:var name="__col_name__">-child');
+                add_li.children('.assets-child-thumb-attachment').css('background-image','url(\'data:'+file.type+';base64,'+file.thumbnail_square+ '\')');
+                add_li.children('.assets-child-thumb-attachment').attr('data-image', file.thumbnail);
+                add_li.children('.assets-child-thumb-attachment').attr('data-type', file.type);
+                // add_li.children('a').attr('href', 'https://alfasado.net/');
+                add_li.children('button').attr('data-session', file.session_id);
+                add_li.children('.assets-child-thumb-attachment').show();
+                var download_url = '<mt:var name="script_uri">?__mode=view&_type=edit&_model=<mt:var name="_model" escape>&_screen_id=<mt:var name="screen_id">&workspace_id=<mt:var name="workspace_id">';
+                download_url += '&view=attachmentfiles&session_id=' + file.session_id;
+                var fInfo = file_name.split('.');
+
+                var fileExtension = fInfo[fInfo.length-1].toLowerCase();
+                var extensionsInline = ['csv', 'xls', 'xlsx', 'doc', 'docx', 'ppt', 'pptx'];
+                if (extensionsInline.indexOf(fileExtension) < 0){
+                    add_li.children('a').children('.fa').removeClass('fa-download');
+                    add_li.children('a').children('.fa').addClass('fa-external-link-square');
+                    add_li.children('a').attr( 'target', '_blank' );
+                    add_li.children('a').attr('aria-label', '<mt:trans phrase="View">');
+                } else {
+                    download_url += '&download=1';
+                }
+                if ( file.resized == true ) {
+                    alert( '<mt:trans phrase="It has been reduced as it exceeds the maximum size of the image.">( ' + file_name + ' )' );
+                }
+                add_li.children('a').attr('href', download_url);
+                add_li.children('.new-file-label').val( file_name );
+                add_li.children('.new-file-label').attr('id', '_<mt:var name="__col_name__">_label_session-' + file.session_id );
+                add_li.children('.new-file-label').attr('name', '_<mt:var name="__col_name__">_label_session-' + file.session_id );
+                var data_name = add_li.children('._<mt:var name="__col_name__">-edit').attr('data-name');
+                data_name += 'session-' + file.session_id;
+                add_li.children('._<mt:var name="__col_name__">-edit').attr('data-name', data_name);
+                add_li.children('._<mt:var name="__col_name__">-edit').attr('data-label', file_name);
+                add_li.show();
+                receive_count++;
+                if ( upload_count == receive_count ) {
+                    setTimeout(finish_<mt:var name="__col_name__">, 1000);
+                }
+                editContentChanged = true;
+            });
+        },
+        progressall: function (e, data) {
+            var progress = parseInt(data.loaded / data.total * 100, 10);
+            $('#progress-<mt:var name="__col_name__"> .progress-bar').css(
+                'width',
+                progress + '%'
+            );
+        }
+    }).prop('disabled', !$.support.fileInput)
+        .parent().addClass($.support.fileInput ? undefined : 'disabled');
+});
+function finish_<mt:var name="__col_name__"> () {
+    $('#progress-<mt:var name="__col_name__"> .progress-bar').css(
+        'width', 0
+    );
+    $('#<mt:var name="__col_name__">-alert-message').html('<mt:trans phrase="The file has successfully uploaded. The uploaded file will not be reflected until you save this page.">');
+    $('#<mt:var name="__col_name__">-alert').show();
+    $('#<mt:var name="__col_name__">-alert').focus();
+}
+;(function(){
+    var event_type = 'mouseenter mousemove mouseleave';
+    if(/Android/.test(navigator.userAgent) || /(iPhone)|(iPad)|(iPod)/.test(navigator.userAgent)){
+        event_type = 'touchstart touchmove touchend';
+    }
+    $(document).on(event_type,'.assets-child-thumb-attachment',function(e){
+        var $preview = $('#asset-preview-popup');
+        var $this = $(this);
+        var dataModel = $(this).attr('data-model');
+        var type = e.type;
+        var e_orig = e;
+        if(e.originalEvent.touches){
+            e_orig = e.originalEvent.touches[0];
+        }
+        if($this.closest('.ui-sortable-helper').length){
+            $preview.hide();
+            return;
+        }
+        var set_position = function($preview,e_orig){
+            var size   = 200;
+            var offset = 10;
+            var pos_x = e_orig.clientX + offset;
+            var pos_y = e_orig.clientY + offset;
+            if((pos_x + size) > $(window).width()){
+                pos_x = e_orig.clientX - (size + offset);
+            }
+            if((pos_y + size) > $(window).height()){
+                pos_y = e_orig.clientY - (size + offset);
+            }
+            $preview.css({
+                left : pos_x + 'px',
+                top  : pos_y + 'px'
+            });
+        }
+        if(type == 'mouseenter' || type == 'touchstart'){
+            var thumb = 'data:'+$this.attr('data-type')+';base64,'+$this.attr('data-image');
+            if(!$preview.length){
+                $preview = $('<div>').attr('id','asset-preview-popup').appendTo('body');
+            }
+            $preview.css('background-image','url(' + thumb + ')');
+            $preview.show();
+            $this.css({
+                '-moz-user-select': 'none',  
+                '-webkit-user-select': 'none', 
+                '-ms-user-select': 'none',
+                'user-select': 'none'
+            });
+            set_position($preview,e_orig);
+        }else
+        if(type == 'mouseleave' || type == 'touchend'){
+            $preview.hide();
+        }else
+        if(type == 'mousemove' || type == 'touchmove'){
+            set_position($preview,e_orig);
+        }
+    });
+})();
+</script>
+    <mt:if name="edit" like="relation">
+    <mt:var name="edit" split=":" setvar="edit_props">
+    <mt:var name="edit_props[1]" setvar="rel_model">
+    <mt:var name="edit_props[2]" setvar="rel_col">
+    <mt:var name="edit_props[3]" setvar="rel_type">
+    <mt:setvar name="has_thumbnail" value="">
+    <mt:ifhasthumbnail model="$rel_model">
+      <mt:setvar name="has_thumbnail" value="1">
+    </mt:ifhasthumbnail>
+      <mt:setvarblock name="__rel_name__">object_<mt:var name="__col_name__"></mt:setvarblock>
+      <ul id="<mt:var name="__col_name__">-list" class="relation-list">
+        <li style="margin-right: 4px" class="hidden badge badge-default badge-relation badge-draggable" id="<mt:var name="__col_name__">-tmpl">
+        <div class="assets-child-thumb-attachment" data-image="" data-type=""></div>
+        <span><mt:trans phrase="Default"></span>
+        <a href="" class="btn btn-secondary btn-sm" aria-label="<mt:trans phrase="Download">">
+          <i class="fa fa-download"></i>
+        </a>
+        <input class="new-file-label" type="hidden" value="" name="_<mt:var name="__col_name__">_label_">
+        <button type="button" class="_<mt:var name="__col_name__">-edit btn btn-info btn-sm" aria-label="<mt:trans phrase="Edit">"
+            data-name="_<mt:var name="__col_name__">_label_"
+            data-label="">
+          <i class="fa fa-pencil"></i>
+        </button>
+        <button type="button" class="btn btn-secondary btn-sm close-sm detach-file detach-relation" aria-label="<mt:trans phrase="Detach">" data-name="<mt:var name="__col_name__">" data-session="">
+          <span aria-hidden="true">&times;</span>
+        </button>
+        <input type="hidden" name="<mt:var name="__col_name__">[]" value="">
+        <input type="hidden" name="" value="" class="foward-file-name">
+        </li>
+      <mt:setvarblock name="selected_ids"><mt:loop name="$__rel_name__" glue=","><mt:var name="__value__"></mt:loop></mt:setvarblock>
+      <mt:loop name="$__rel_name__">
+        <li class="<mt:var name="__col_name__">-child badge badge-default badge-relation badge-draggable">
+        <mt:if name="has_thumbnail">
+        <div <mt:ifusercan model="attachmentfile" action="list">class="assets-child-thumb"</mt:ifusercan> data-model="<mt:var name="rel_model" escape>" data-id="<mt:var name="__value__" escape>" style="background-image:url('<mt:var name="script_uri">?__mode=get_thumbnail&amp;square=1&amp;_model=<mt:var name="rel_model" escape>&amp;id=<mt:var name="__value__" escape>')"></div>
+        </mt:if>
+        <span>
+          <mt:var name="__value__" mb_instr="session-" setvar="instr_session">
+          <mt:if name="instr_session" eq="1">
+            <mt:setvarblock name="foward_name">request._<mt:var name="__col_name__">_foward_<mt:var name="__value__"></mt:setvarblock>
+            <mt:var name="$foward_name" escape>
+          <mt:else>
+          <mt:getobjectname id="$__value__" type="$edit" escape setvar="_related_object">
+          <span id="_<mt:var name="__col_name__">_name_<mt:var name="__value__" escape>"><mt:var name="_related_object"></span>
+          </mt:if>
+        <mt:ignore>
+        <mt:ifusercan model="attachmentfile" action="list" workspace_id="$workspace_id">
+        <a href="<mt:var name="script_uri">?__mode=view&amp;_type=edit&amp;_model=attachmentfile&amp;id=<mt:var name="__value__" escape>&amp;view=file&amp;download=1" class="btn btn-secondary btn-sm attachment-download-btn-<mt:var name="__col_name__">" aria-label="<mt:trans phrase="Download">">
+          <i class="fa fa-download"></i>
+        </a>
+        </mt:ifusercan>
+        </mt:ignore>
+        <mt:assetproperty name="file" model="attachmentfile" id="$__value__" property="class" setvar="_attachfile_class">
+        <mt:assetproperty name="file" model="attachmentfile" id="$__value__" property="url" setvar="_attachfile_url">
+        <mt:assetproperty name="file" model="attachmentfile" id="$__value__" property="extension" setvar="_attachfile_extension">
+        <mt:setvar name="__show_external" value="1">
+        <mt:ifinarray array="extensions_inline" value="$_attachfile_extension">
+          <mt:setvar name="__show_external" value="">
+        </mt:ifinarray>
+        <mt:unless name="_attachfile_url">
+          <mt:setvarblock name="_attachfile_url"><mt:var name="script_uri">?__mode=view&_type=edit&_model=attachmentfile&id=<mt:var name="__value__">&view=file&workspace_id=<mt:var name="workspace_id"></mt:setvarblock>
+        </mt:unless>
+        </span>
+        <mt:if name="__show_external">
+        <a target="_blank" href="<mt:var name="_attachfile_url">" class="btn btn-secondary btn-sm attachment-download-btn-<mt:var name="__col_name__">" aria-label="<mt:trans phrase="View">">
+          <i class="fa fa-external-link-square"></i>
+        </a>
+        <mt:else>
+        <a href="<mt:var name="_attachfile_url">" class="btn btn-secondary btn-sm attachment-download-btn-<mt:var name="__col_name__">" aria-label="<mt:trans phrase="Download">">
+          <i class="fa fa-download"></i>
+        </a>
+        </mt:if>
+        <input type="hidden" value="" name="_<mt:var name="__col_name__">_label_<mt:var name="__value__" escape>" id="_<mt:var name="__col_name__">_label_<mt:var name="__value__" escape>">
+        <button type="button" class="_<mt:var name="__col_name__">-edit btn btn-info btn-sm" aria-label="<mt:trans phrase="Edit">" data-name="_<mt:var name="__col_name__">_label_<mt:var name="__value__" escape>"
+          data-label="<mt:var name="_related_object">">
+          <i class="fa fa-pencil"></i>
+        </button>
+        <button type="button" class="btn btn-secondary btn-sm close-sm detach-file detach-relation" aria-label="<mt:trans phrase="Detach">" data-name="<mt:var name="__col_name__">">
+          <span aria-hidden="true">&times;</span>
+        </button>
+        <input type="hidden" name="<mt:var name="__col_name__">[]" value="<mt:var name="__value__" escape>"></li>
+      </mt:loop>
+      </ul>
+    <mt:else>
+    </mt:if>
+    <mt:var name="_hint">
+    </div>
+<script>
+$('._<mt:var name="__col_name__">-edit').click(function(){
+    var field_name = $(this).attr('data-name');
+    var span_name = field_name.replace( '_label_','_name_' );
+    var field_label = $(this).attr('data-label');
+    field_label = unescape_html( field_label );
+    var new_label = prompt('<mt:trans phrase="Please specify label(text alternative) for the file.">', field_label);
+    if ( new_label ) {
+        new_label = escape_html( new_label );
+        $('#' + field_name).val( new_label );
+        $(this).attr('data-label', new_label);
+        $('#' + span_name).html( '<span>' + new_label + '</span>' );
+        editContentChanged = true;
+    } else {
+        if ( new_label != null ) {
+            alert( '<mt:trans phrase="The label can not be empty.">' );
+        }
+    }
+});
+$('.attachment-download-btn-<mt:var name="__col_name__">').click(function(){
+    $(window).off('beforeunload');
+    setTimeout(after_download_<mt:var name="__col_name__">, 1000);
+});
+function after_download_<mt:var name="__col_name__"> () {
+    $(window).on('beforeunload', function() {
+        if (! editContentChanged ) {
+            $(window).off('beforeunload');
+            return;
+        }
+        return '<mt:trans phrase="Are you sure you want to move from this page? The changes you made are not reflected.">';
+    });
+}
+$('#<mt:var name="__col_name__">-list').sortable ( {
+// TODO keyboard oparation
+    stop: function( evt, ui ) {
+        editContentChanged = true;
+    }
+});
+$("#<mt:var name="__col_name__">-list").ksortable();
+</script>

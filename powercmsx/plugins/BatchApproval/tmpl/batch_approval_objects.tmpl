@@ -1,0 +1,88 @@
+<mt:trans phrase="Batch Approval of %s" params="$plural" component="BatchApproval" setvar="page_title">
+<mt:include file="include/dialog_header.tmpl">
+
+<mt:if name="workflows">
+
+<form action="<mt:var name="script_uri">" method="POST" id="batch_approval-form" target="_top">
+<input type="hidden" name="__mode" value="list_action">
+<input type="hidden" name="_model" value="<mt:var name="model" escape>">
+<input type="hidden" name="magic_token" value="<mt:var name="magic_token">">
+<input type="hidden" name="workspace_id" value="<mt:var name="workspace_id">">
+<input type="hidden" name="_type" value="list">
+<input type="hidden" name="action_name" value="batch_approval_objects">
+<input type="hidden" name="itemset_action_input" value="2">
+<input type="hidden" name="do_action" value="1">
+<mt:loop name="object_ids"><input name="id[]" type="hidden"value="<mt:var name="__value__">">
+</mt:loop>
+  <mt:loop name="workflows">
+<mt:if name="__first__"><hr></mt:if>
+<div class="row form-group">
+  <div class="col-lg-2">
+  <h2><mt:var name="_workflow_workspace_name" escape> &nbsp; <small style="font-size:70%">(
+    <mt:if name="_workflow_object_count" eq="1">
+     <mt:trans phrase="%s %s is selected." params="'$_workflow_object_count','$label'">
+    <mt:else>
+     <mt:trans phrase="%s %s are selected." params="'$_workflow_object_count','$plural'">
+    </mt:if>
+  )</small></h2>
+  </div>
+  <div class="col-lg-10 form-inline form-inline-left-margin">
+  <label class="custom-control custom-radio">
+    <input class="custom-control-input" type="radio" name="__workflow_status_<mt:var name="_workflow_workspace_id">" value="3">
+    <span class="custom-control-indicator"></span>
+    <span class="custom-control-description"><mt:trans phrase="Reserved"></span>
+  </label>
+  <label class="custom-control custom-radio">
+    <input class="custom-control-input" type="radio" checked name="__workflow_status_<mt:var name="_workflow_workspace_id">" value="4">
+    <span class="custom-control-indicator"></span>
+    <span class="custom-control-description"><mt:trans phrase="Publish"></span>
+  </label>
+  </div>
+</div>
+<div class="row form-group has-danger" id="__workflow_message-wrapper_<mt:var name="_workflow_workspace_id">">
+  <div class="col-lg-2">
+    <label for="__workflow_message_<mt:var name="_workflow_workspace_id">">
+      <mt:trans phrase="Notify Message">
+    </label>
+  </div>
+  <div class="col-lg-10">
+  <textarea class="form-control alert-textarea" name="__workflow_message_<mt:var name="_workflow_workspace_id">" id="__workflow_message_<mt:var name="_workflow_workspace_id">"></textarea>
+  </div>
+</div>
+<hr>
+  </mt:loop>
+<button id="dialog-cancel-btn" class="btn btn-secondary" type="button"><mt:trans phrase="Cancel"></button>
+<button type="submit" id="do-action" class="btn btn-primary"><mt:trans phrase="Do Action"></button>
+</form>
+<mt:else>
+
+<div class="alert alert-warning" tabindex="0" id="alert-none">
+  <mt:trans phrase="Your responsible %s is not selected." params="$plural" component="BatchApproval">
+</div>
+<script>
+  $('#alert-none').focus();
+</script>
+
+<button id="dialog-cancel-btn" class="btn btn-secondary" type="button"><mt:trans phrase="Cancel"></button>
+</mt:if>
+<script>
+$('#do-action').click(function(){
+    if (! confirm( '<mt:trans phrase="Are you sure you want to do batch approval of %s?" params="$plural" component="BatchApproval">' ) ) {
+        return false;
+    }
+});
+$('#dialog-cancel-btn').click(function(){
+    window.parent.$('#modal').modal('hide');
+    window.location.href = '<mt:var name="script_uri">?__mode=loading';
+    return false;
+});
+$(document).keydown(evnt_keydown);
+function evnt_keydown(e) {
+    if ( e.keyCode == 27 ) {
+        window.parent.$('#modal').modal('hide');
+        window.location.href = '<mt:var name="script_uri">?__mode=loading';
+    }
+}
+</script>
+
+<mt:include file="include/dialog_footer.tmpl">

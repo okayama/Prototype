@@ -1,0 +1,141 @@
+{
+    "label"    : "WorkSpace",
+    "plural"   : "WorkSpaces",
+    "version"  : "1.4",
+    "primary"  : "name",
+    "display_system": 1,
+    "sortable" : true,
+    "order"    : 20,
+    "auditing" : 1,
+    "menu_type": 2,
+    "template_tags": 1,
+    "column_defs": {
+        "id": {
+            "type": "int",
+            "not_null": 1,
+            "size": "11"
+        },
+        "name": {
+            "type": "string",
+            "not_null": 1,
+            "size": 255
+        },
+        "description": {
+            "type": "text"
+        },
+        "copyright": {
+            "type": "string",
+            "size": 255
+        },
+        "site_url": {
+            "type": "string",
+            "not_null": 1,
+            "size": "255"
+        },
+        "image": {
+            "type": "blob"
+        },
+        "site_path": {
+            "type": "string",
+            "not_null": 1,
+            "size": "255"
+        },
+        "extra_path": {
+            "type": "string",
+            "size": "255"
+        },
+        "asset_publish": {
+            "type": "tinyint",
+            "size": "4",
+            "default": null
+        },
+        "preview_url": {
+            "type": "string",
+            "size": 255
+        },
+        "order": {
+            "type": "int",
+            "size": "11"
+        },
+        "language": {
+            "type": "string",
+            "size": 255,
+            "default": null
+        },
+        "barcolor": {
+            "type": "string",
+            "size": "255"
+        },
+        "bartextcolor": {
+            "type": "string",
+            "size": "255"
+        },
+        "modified_on": {
+            "type": "datetime"
+        },
+        "created_on": {
+            "type": "datetime"
+        },
+        "created_by": {
+            "type": "int",
+            "size": "11"
+        },
+        "modified_by": {
+            "type": "int",
+            "size": "11"
+        },
+        "last_update": {
+            "type": "int",
+            "size": "11"
+        }
+    },
+    "indexes": {
+        "PRIMARY": "id",
+        "name": "name",
+        "site_url": "site_url",
+        "site_path": "site_path",
+        "order": "order",
+        "modified_on": "modified_on",
+        "created_on": "created_on",
+        "created_by": "created_by",
+        "modified_by": "modified_by",
+        "last_update": "last_update"
+    },
+    "sort_by": {
+        "order": "ascend"
+    },
+    "options": {
+        "image": "image"
+    },
+    "child_tables" : [
+        "permission",
+        "tag"
+    ],
+    "list_properties": {
+        "id": "number",
+        "name": "primary",
+        "description": "text",
+        "copyright": "text",
+        "order": "number",
+        "language": "text",
+        "created_by": "reference:user:nickname",
+        "created_on": "datetime"
+    },
+    "edit_properties": {
+        "id": "hidden",
+        "name": "primary",
+        "description": "textarea",
+        "copyright": "text",
+        "site_url": "text",
+        "image": "file",
+        "site_path": "text",
+        "extra_path": "text_short",
+        "asset_publish": "checkbox",
+        "preview_url": "text",
+        "order": "number",
+        "language": "languages",
+        "barcolor": "color",
+        "bartextcolor": "color",
+        "last_update": "hidden"
+    }
+}

@@ -1,0 +1,62 @@
+  <div id="<mt:var name="field_uniqueid">-field-sortable">
+    <mt:if name="field.field_value_multi">
+    <mt:loop name="field.field_value_multi">
+    <div class="<mt:var name="field_uniqueid">-field-block form-inline field-multiple-sortable" <mt:if name="__first__">id="<mt:var name="field_uniqueid">-field-wrapper"</mt:if>>
+        <input class="form-control watch-changed" type="text" name="field_value_multi" value="<mt:var name="__value__" escape>">
+        <a href="javascript:void(0);" class="right-small <mt:var name="field_uniqueid">-add <mt:unless name="__first__"> hidden</mt:unless>"><i class="fa fa-plus-circle" aria-hidden="true"></i></a>
+        <a href="javascript:void(0);" class="right-small <mt:var name="field_uniqueid">-detach<mt:if name="__first__"> hidden</mt:if>"><i class="fa fa-times" aria-hidden="true"></i></a>
+    </div>
+    </mt:loop>
+    <mt:else>
+    <div class="<mt:var name="field_uniqueid">-field-block form-inline field-multiple-sortable" id="<mt:var name="field_uniqueid">-field-wrapper">
+        <input class="form-control watch-changed" type="text" name="field_value_multi" value="">
+        <a href="javascript:void(0);" class="right-small <mt:var name="field_uniqueid">-add"><i class="fa fa-plus-circle" aria-hidden="true"></i></a>
+        <a href="javascript:void(0);" class="right-small <mt:var name="field_uniqueid">-detach hidden"><i class="fa fa-times" aria-hidden="true"></i></a>
+    </div>
+    </mt:if>
+  </div>
+<script>
+$(function() {
+    $('#<mt:var name="field_uniqueid">-field-sortable').sortable ( {
+        stop: function( evt, ui ) {
+            var field_counter = 0;
+            $('.<mt:var name="field_uniqueid">-field-block').each(function(){
+                var element = $(this);
+                if ( field_counter == 0 ) {
+                    element.find('.<mt:var name="field_uniqueid">-add').show();
+                    element.attr('id', '<mt:var name="field_uniqueid">-field-wrapper');
+                    element.find('.<mt:var name="field_uniqueid">-detach').hide();
+                } else {
+                    element.find('.<mt:var name="field_uniqueid">-add').hide();
+                    element.find('.<mt:var name="field_uniqueid">-detach').show();
+                    element.removeAttr('id');
+                }
+                field_counter++;
+            });
+        }
+    });
+    $('#<mt:var name="field_uniqueid">-field-sortable input').bind('click.sortable mousedown.sortable',function(ev){
+        ev.target.focus();
+    });
+    $(document).on('click','.<mt:var name="field_uniqueid">-add',function(){
+        var element = $("#<mt:var name="field_uniqueid">-field-wrapper").clone(); 
+        $("#<mt:var name="field_uniqueid">-field-wrapper").parent().append(element); 
+        element.find('input').val('');
+        element.find('.<mt:var name="field_uniqueid">-add').hide();
+        element.find('.<mt:var name="field_uniqueid">-detach').show();
+        element.removeAttr('id');
+        return true;
+    });
+    $(document).on('click','.<mt:var name="field_uniqueid">-detach',function(){
+        if(!confirm('<mt:trans phrase="Are you sure you want to remove this field?">')){
+            return false;
+        }
+        $(this).parent().remove();
+        return true;
+    });
+});
+$('.<mt:var name="field_uniqueid">-field-block').mouseenter(function() {
+    $(this).css('cursor','move');
+});
+</script>
+<div style="height:2px;" role="presentation"></div>

@@ -1,0 +1,214 @@
+<mt:setvar name="_has_workflow" value="0">
+<mt:setvar name="_object_limit" value="5">
+<mt:setvartemplate name="_object_line">
+<tr>
+<td class="workflow-primary">
+<div>
+<span class="widget-cell-detail hidden workflow-icon"><mt:statustext status="$object_status" model="$count_group_by_model" icon="1"></span>
+<a href="<mt:var name="script_uri">?__mode=view&amp;_type=edit&_model=<mt:var name="count_group_by_model">&amp;id=<mt:var name="object_id"><mt:if name="object_workspace_id">&amp;workspace_id=<mt:var name="object_workspace_id"></mt:if>">
+<mt:if name="object_rev_type">
+<span class="badge badge-dark badge-pill badge-sm"><mt:trans phrase="Revision"></span>
+</mt:if>
+<mt:if name="object__primary">
+<mt:var name="object__primary" escape>
+<mt:else>
+(null)
+</mt:if>
+</a>
+<a class="widget-cell-detail btn toggle-infobox hidden"
+  id="toggle_<mt:var name="count_group_by_model">_<mt:var name="object_id">" href="javascript:void(0);">
+<i id="icon_<mt:var name="count_group_by_model">_<mt:var name="object_id">" class="fa fa-caret-down toggle-icn" aria-hidden="true"></i>
+<span class="sr-only"><mt:trans phrase="Toggle"></span>
+</a>
+</div>
+<div class="widget-cell-detail hidden">
+<table class="cell-detail table-sm hidden" id="detail_<mt:var name="count_group_by_model">_<mt:var name="object_id">">
+  <tr><th><mt:trans phrase="Status"></th><td><mt:statustext status="$object_status" text="1" model="$count_group_by_model" icon="1"></td></tr>
+  <tr><th><mt:trans phrase="Publish Date"></th><td><mt:var name="object_published_on" format_ts="Y-m-d h:m"></td></tr>
+  <mt:unless name="workspace_id">
+  <mt:objectvar model="workspace" id="$object_workspace_id" name="name" escape setvar="_object_workspace_name">
+  <mt:unless name="_object_workspace_name"><mt:trans phrase="System" setvar="_object_workspace_name"></mt:unless>
+  <tr><th><mt:trans phrase="WorkSpace"></th><td><mt:var name="_object_workspace_name"></td></tr>
+  </mt:unless>
+</table>
+</div>
+</td>
+<td class="workflow-status workflow-option">
+<mt:statustext status="$object_status" text="1" model="$count_group_by_model" icon="1">
+</td>
+<td class="workflow-published_on workflow-option">
+<mt:var name="object_published_on" format_ts="Y-m-d h:m">
+</td>
+<mt:unless name="workspace_id">
+<td class="workflow-workspace-name workflow-option">
+<mt:var name="_object_workspace_name">
+</td>
+</mt:unless>
+</tr>
+</mt:setvartemplate>
+<mt:setvartemplate name="_object_head">
+<tr>
+  <th class="workflow-primary"><mt:trans phrase="$_object_primary_label"></th>
+  <th class="workflow-status workflow-option"><mt:trans phrase="Status"></th>
+  <th class="workflow-published_on workflow-option"><mt:trans phrase="Publish Date"></th>
+  <mt:unless name="workspace_id">
+  <th class="workflow-workspace-name workflow-option"><mt:trans phrase="WorkSpace"></th>
+  </mt:unless>
+</tr>
+</mt:setvartemplate>
+<mt:setvartemplate name="_count_group_by">
+<div class="workflow-model-wrapper">
+  <mt:setvar name="_workspace_ids" value="">
+  <mt:if name="workspace_id">
+    <mt:ifusercan model="$count_group_by_model" workspace_id="$workspace_id" action="list">
+      <mt:gettableid model="$count_group_by_model" column="display_space" setvar="_display">
+    </mt:ifusercan>
+    <mt:var name="workspace_id" setvar="_workspace_ids">
+  <mt:else>
+    <mt:ifusercan model="$count_group_by_model" workspace_id="0" action="list">
+      <mt:gettableid model="$count_group_by_model" column="display_system" setvar="_display">
+    </mt:ifusercan>
+  <mt:objectloop model="workflow" prefix="workflow">
+    <mt:if name="workflow_model" eq="$count_group_by_model">
+      <mt:setvar name="_workspace_ids" value="$workflow_workspace_id" function="push">
+    </mt:if>
+  </mt:objectloop>
+  <mt:var name="_workspace_ids" join="," setvar="_workspace_ids">
+  </mt:if>
+  <mt:setvarblock name="_workflow_objects">
+  <h3>
+  <mt:gettableid model="$count_group_by_model" column="plural" translate setvar="_object_label">
+  <mt:trans phrase="%s that your responsible" params="$_object_label">
+  </h3>
+  <mt:setvar name="_object_count" value="0">
+  <mt:getobjectlabel model="$count_group_by_model" primary="1" setvar="_object_primary">
+  <mt:trans phrase="$_object_primary" language="default" setvar="_object_primary_label">
+  <mt:if name="_object_primary_label" eq="$_object_primary">
+  <mt:var name="_object_primary_label" title_case="1" setvar="_object_primary_label">
+  </mt:if>
+  <mt:setvar name="header_sent" value="0">
+  <mt:objectloop model="$count_group_by_model" prefix="object"
+    user_id="$user_id" sort_by="published_on" workflow="1" workspace_ids="$_workspace_ids"
+    sort_order="descend" limit="$_object_limit" status="2">
+    <mt:if name="object_id">
+      <mt:math eq="x + 1" x="$_object_count" setvar="_object_count">
+    </mt:if>
+    <mt:if name="_object_count" le="$_object_limit">
+    <mt:if name="__first__">
+    <table class="table table-sm table-striped table-widget">
+    <mt:var name="_object_head">
+    </mt:if>
+    <mt:var name="_object_line">
+    <mt:if name="__counter__">
+      <mt:if name="object_id">
+        <mt:setvar name="header_sent" value="$__counter__">
+      </mt:if>
+    </mt:if>
+    </mt:if>
+  </mt:objectloop>
+<mt:if name="_object_count" le="$_object_limit">
+  <mt:objectloop model="$count_group_by_model" prefix="object"
+    user_id="$user_id" sort_by="published_on" workflow="1" workspace_ids="$_workspace_ids"
+    sort_order="descend" limit="$_object_limit" status="1">
+    <mt:if name="object_id">
+      <mt:math eq="x + 1" x="$_object_count" setvar="_object_count">
+    </mt:if>
+    <mt:if name="_object_count" le="$_object_limit">
+    <mt:if name="__first__">
+    <mt:unless name="header_sent">
+    <table class="table table-sm table-striped table-widget">
+    <mt:var name="_object_head">
+    </mt:unless>
+    </mt:if>
+    <mt:var name="_object_line">
+    <mt:if name="__counter__">
+      <mt:if name="object_id">
+        <mt:setvar name="header_sent" value="$__counter__">
+      </mt:if>
+    </mt:if>
+    </mt:if>
+  </mt:objectloop>
+</mt:if>
+<mt:if name="_object_count" le="$_object_limit">
+  <mt:objectloop model="$count_group_by_model" prefix="object"
+    user_id="$user_id" sort_by="published_on" workflow="1" workspace_ids="$_workspace_ids"
+    sort_order="descend" limit="$_object_limit" status="0">
+    <mt:if name="object_id">
+      <mt:math eq="x + 1" x="$_object_count" setvar="_object_count">
+    </mt:if>
+    <mt:if name="_object_count" le="$_object_limit">
+    <mt:if name="__first__">
+    <mt:unless name="header_sent">
+    <table class="table table-sm table-striped table-widget">
+    <mt:var name="_object_head">
+    </mt:unless>
+    </mt:if>
+    <mt:var name="_object_line">
+    <mt:if name="__counter__">
+      <mt:if name="object_id">
+        <mt:setvar name="header_sent" value="$__counter__">
+      </mt:if>
+    </mt:if>
+    </mt:if>
+  </mt:objectloop>
+</mt:if>
+  <mt:if name="header_sent">
+    </table>
+    <mt:if name="_display">
+    <div class="text-right" id="workflow-footer-btn">
+      <a href="<mt:var name="script_uri">?__mode=view&_type=list&_model=<mt:var name="count_group_by_model"><mt:if name="workspace_id">&amp;workspace_id=<mt:var name="workspace_id"></mt:if>&amp;select_system_filters=responsible_objects&amp;_filter=<mt:var name="count_group_by_model">"
+        class="btn btn-info btn-sm"><mt:trans phrase="View all %s that your responsible" params="$_object_label"></a>
+    </div>
+    </mt:if>
+  </mt:if>
+  </mt:setvarblock>
+  <mt:if name="header_sent">
+    <mt:setvar name="_has_workflow" value="1">
+    <mt:var name="_workflow_objects">
+  <mt:else>
+    <table class="table table-sm table-striped table-widget">
+    <tr><td>
+    <mt:gettableid model="$count_group_by_model" column="plural" translate setvar="_object_label">
+    <span class="text-muted"><mt:trans phrase="No %s Found." params="$_object_label"></span>
+    </td></tr>
+    </table>
+  </mt:if>
+</div>
+</mt:setvartemplate>
+<mt:setvarblock name="_workflow_widget">
+<div id="widget-workflow" class="card dashboard-widget <mt:if name="workspace_id">dashboard-widget-workspace<mt:else>dashboard-widget-system</mt:if>">
+  <h2 class="card-header"><mt:trans phrase="Workflow">
+    <button type="button" class="detatch-widget" aria-label="<mt:trans phrase="Detach">" data-name="widget-workflow">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </h2>
+  <div class="card-block">
+<mt:if name="workspace_id">
+<mt:countgroupby model="workflow" count="model" group="model" sort_by="order" workspace_ids="$workspace_id">
+  <mt:var name="_count_group_by">
+</mt:countgroupby>
+<mt:else>
+<mt:countgroupby model="workflow" count="model" group="model" sort_by="order">
+  <mt:var name="_count_group_by">
+</mt:countgroupby>
+</mt:if>
+  </div>
+</div>
+</mt:setvarblock>
+<mt:if name="_has_workflow">
+<mt:var name="_workflow_widget">
+<script>
+$('.toggle-infobox').click(function(){
+    this_id = $(this).prop('id');
+    this_id = this_id.replace( /toggle_/, '' );
+    $('#detail_' + this_id).toggle();
+    if ($('#detail_' + this_id).is(':visible')) {
+        $('#icon_' + this_id).removeClass('fa-caret-down');
+        $('#icon_' + this_id).addClass('fa-caret-up');
+    } else {
+        $('#icon_' + this_id).addClass('fa-caret-down');
+        $('#icon_' + this_id).removeClass('fa-caret-up');
+    }
+});
+</script>
+</mt:if>

@@ -1,0 +1,56 @@
+<mt:setvarblock name="error_name">question_<mt:var name="question_basename" escape>_error</mt:setvarblock>
+<tr class="<mt:if name="$error_name"> has-danger</mt:if>">
+  <th scope="row" class="cell-form-question">
+    <label class="form-control-label" for="question_<mt:var name="question_basename" escape>">
+      <mt:var name="question_label" language="$language" eval="1" escape>
+      <mt:if name="question_required">
+      <small><i class="fa fa-asterisk required text-muted" aria-hidden="true"></i>
+      <span class="sr-only"><mt:trans phrase="Required"></span></small>
+      </mt:if>
+    </label>
+  </th>
+  <td class="cell-form-input">
+    <mt:setvarblock name="param_name">request.question_<mt:var name="question_basename" escape></mt:setvarblock>
+    <mt:var name="$param_name" setvar="question_value">
+    <mt:if name="confirm_ok">
+      <mt:if name="question_options">
+        <mt:var name="question_options" language="$language" escape>
+      <mt:else>
+        <mt:var name="question_value" language="$language" escape>
+      </mt:if>
+      <input type="hidden" name="question_<mt:var name="question_basename" escape>" value="<mt:var name="question_value" escape>">
+    <mt:else>
+      <mt:var name="question_options" setvar="question_option_value">
+      <mt:if name="question_values">
+        <mt:var name="question_values" setvar="question_option_value">
+      </mt:if>
+      <label class="custom-control custom-checkbox">
+      <input class="custom-control-input watch-changed"
+        <mt:if name="question_value">checked
+        <mt:else>
+          <mt:if name="question_default_value">
+          <mt:if name="question_default_value" eq="$question_option_value">
+            checked
+          </mt:if>
+          </mt:if>
+        </mt:if>
+        type="checkbox" name="question_<mt:var name="question_basename" escape>" value="<mt:if name="question_option_value"><mt:var name="question_option_value" escape><mt:else>1</mt:if>">
+          <span class="custom-control-indicator"></span>
+          <span class="custom-control-description"> 
+          <mt:var name="question_options" language="$language" escape></span>
+      </label>
+      <mt:if name="question_hint">
+      <div class="text-muted">
+        <i class="fa fa-question-circle-o" aria-hidden="true"></i>
+        <span class="sr-only"><mt:trans phrase="Hint"></span>
+        <mt:var name="question_hint" language="$language" eval="1">
+      </div>
+      </mt:if>
+      <mt:if name="$error_name">
+      <div class="form-control-feedback">
+        <mt:var name="$error_name" escape>
+      </div>
+      </mt:if>
+    </mt:if>
+  </td>
+</tr>

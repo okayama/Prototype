@@ -1,0 +1,35 @@
+<div class="row form-group">
+  <div class="col-lg-2">
+    <label for="<mt:var name="__col_name__">">
+      <mt:trans phrase="Anti-spam Measures">
+      <mt:if name="not_null"><mt:var name="field_required"></mt:if>
+    </label>
+  </div>
+  <div class="col-lg-10 form-inline row-more form-inline-left-margin">
+    <input type="hidden" name="<mt:var name="__col_name__">" value="0">
+    <label class="custom-control custom-checkbox">
+    <input id="<mt:var name="__col_name__">" class="custom-control-input watch-changed"
+    <mt:if name="readonly">onclick="return false;"</mt:if>
+     type="checkbox" name="<mt:var name="__col_name__">" value="1" <mt:if name="value">checked</mt:if>>
+        <span class="custom-control-indicator"></span>
+        <span class="custom-control-description"> 
+        <mt:var name="label" escape></span>
+    </label>
+    <label for="token_expires" class="token_expires"><mt:trans phrase="Token Expires"></label> <span class="token_expires"> &nbsp; : </span>
+    <input id="token_expires" type="number" class="token_expires num form-control watch-changed" name="token_expires" value="<mt:if name="object_token_expires"><mt:var name="object_token_expires" escape><mt:else>1200</mt:if>">
+    <span class="token_expires">&nbsp; <mt:trans phrase="seconds"></span>
+  </div>
+</div>
+<script>
+<mt:unless name="object_requires_token">
+  $('.token_expires').hide();
+</mt:unless>
+$('#<mt:var name="__col_name__">').change(function(){
+    if ( $(this).prop('checked') ) {
+        $('.token_expires').show();
+        $('#token_expires').focus();
+    } else {
+        $('.token_expires').hide();
+    }
+});
+</script>

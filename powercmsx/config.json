@@ -1,0 +1,14 @@
+{
+    "label"      : "Prototype",
+    "component"  : "Core",
+    "author"     : "Alfasado Inc.",
+    "author_link": "https://alfasado.net/",
+    "config_settings": {
+        "developer_mode" : false,
+        "debug" : false,
+        "logging" : true,
+        "set_names" : true,
+        "do_conditional" : false,
+        "temp_dir" : "/powercms/data/temp"
+    }
+}

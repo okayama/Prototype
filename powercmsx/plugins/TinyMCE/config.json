@@ -1,0 +1,43 @@
+{
+    "label"       : "TinyMCE",
+    "id"          : "tinymce",
+    "component"   : "TinyMCE",
+    "version"     : "1.0",
+    "author"      : "Alfasado Inc.",
+    "author_link" : "https://alfasado.net/",
+    "description" : "Provides customization for WYSIWYG HTML Editor.",
+    "cfg_template": "cfg_template.tmpl",
+    "cfg_system"  : 1,
+    "cfg_space"   : 1,
+    "settings"    : {
+        "tinymce_toolbar" : "undo redo | insert | styleselect | bold italic | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | template | link image | pt-file pt-image",
+        "tinymce_plugins" : "template advlist autolink lists link image charmap print preview anchor searchreplace visualblocks code fullscreen insertdatetime media table contextmenu paste code",
+        "tinymce_content_css": "<mt:var name=\"prototype_path\">assets/css/editor.css",
+        "tinymce_menubar" : "edit insert view format table tools",
+        "tinymce_relative_urls" : "false",
+        "tinymce_use_mobile" : 0
+    },
+    "tags": {
+        "conditional": {
+            "ifeditormobile" : {
+                "component" : "TinyMCE",
+                "method" : "hdlr_if_editormobile"
+            }
+        }
+    },
+    "methods": {
+        "tinymce_insert_boilerplate": {
+            "component"  : "TinyMCE",
+            "method"     : "tinymce_insert_boilerplate"
+        }
+    },
+    "hooks": {
+        "tinymce_post_init": {
+            "post_init" : {
+                "component" : "TinyMCE",
+                "priority"  : 1,
+                "method" : "post_init"
+            }
+        }
+    }
+}

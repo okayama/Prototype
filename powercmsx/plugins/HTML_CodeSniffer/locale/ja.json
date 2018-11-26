@@ -1,0 +1,9 @@
+{
+    "A client-side JavaScript that checks a HTML document or source code, and detects violations of a defined coding standard in preview screen."
+        : "プレビュー時にHTMLソースコードをチェックして JIS X8341-3 適合をチェックします。",
+    "Success Criteria" : "達成基準",
+    "Enabled" : "有効",
+    "Check WCAG2.0" : "JIS X8341-3 検証",
+    "HTML_CodeSniffer Enabled" : "HTML_CodeSnifferを有効化",
+    "HTML_CodeSniffer base URL" : "HTML_CodeSnifferディレクトリのURL"
+}

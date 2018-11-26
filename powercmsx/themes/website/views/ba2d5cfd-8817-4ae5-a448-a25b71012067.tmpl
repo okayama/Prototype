@@ -1,0 +1,6 @@
+<mt:for merge_linefeeds="1">
+<mt:var name="form_name" language="$language" setvar="form_name">
+<mt:trans phrase="(%s) The inquiry you posted for %s has been received." params="'$app_name','$form_name'">
+
+<mt:include module="(Website) Mail Footer">
+</mt:for>

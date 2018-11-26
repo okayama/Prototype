@@ -1,0 +1,25 @@
+{
+    "label"       : "Minifier",
+    "id"          : "minifier",
+    "component"   : "Minifier",
+    "version"     : "1.0",
+    "author"      : "Alfasado Inc.",
+    "author_link" : "https://alfasado.net/",
+    "description" : "Minifying HTML, JavaScript, CSS code.",
+    "tags": {
+        "block": {
+            "jsminifier" : {
+                "component" : "Minifier",
+                "method" : "hdlr_jsminifier"
+            },
+            "cssminifier" : {
+                "component" : "Minifier",
+                "method" : "hdlr_cssminifier"
+            },
+            "htmlminifier" : {
+                "component" : "Minifier",
+                "method" : "hdlr_htmlminifier"
+            }
+        }
+    }
+}

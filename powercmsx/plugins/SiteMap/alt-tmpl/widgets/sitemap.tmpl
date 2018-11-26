@@ -1,0 +1,66 @@
+<div class="card dashboard-widget" id="widget-sitemap">
+  <h2 class="card-header"><mt:trans phrase="Site Map" component="SiteMap">
+    <button type="button" class="detatch-widget" aria-label="<mt:trans phrase="Detach">" data-name="widget-sitemap">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </h2>
+  <div class="card-block">
+    <a class="btn" id="toggle-sitemap-tree" tabindex="0">
+      <i id="toggle-sitemap-tree-i" class="fa fa-caret-right" aria-hidden="true"></i>
+      <small id="toggle-sitemap-tree-text" class="text-muted text-sm"><mt:trans phrase="Open All" component="SiteMap"></small>
+    </a>
+    <div id="ajax_sitemap" class="sitemap-area"></div>
+  </div>
+</div>
+<script src="<mt:var name="prototype_path">plugins/SiteMap/assets/js/jstree.min.js"></script>
+<script>
+$('#ajax_sitemap').jstree({
+    'core' : {
+        'data' : {
+            "url" : "<mt:var name="script_uri">?__mode=get_sitemap_tree<mt:if name="workspace_id">&workspace_id=<mt:var name="workspace_id"></mt:if>",
+            "dataType" : "json"
+        }
+    }
+});
+$(document).on('click','#ajax_sitemap a',function(e){
+    var $anchor = $(this);
+    var link = '';
+    if( $anchor.attr('href') && !( /^javascript:/ ).test( $anchor.attr('href') ) ){
+        link = $anchor.attr('href');
+    } else
+    if( $anchor.attr('data-edit') ) {
+        link = $anchor.attr('data-edit');
+    }
+    if ( link ) {
+        var target = $anchor.attr('target');
+        if ( !target ){
+            location.href = link;
+        }else{
+            window.open( link, target );
+        }
+        e.preventDefault();
+        e.stopImmediatePropagation();
+        return false;
+    }
+});
+
+$('#toggle-sitemap-tree').keydown(function() {
+    toggle_sitemap_tree();
+});
+$('#toggle-sitemap-tree').click(function() {
+    toggle_sitemap_tree();
+});
+function toggle_sitemap_tree () {
+    if ( $('#toggle-sitemap-tree-i').hasClass('fa-caret-down') ) {
+        $('#ajax_sitemap').jstree('close_all');
+        $('#toggle-sitemap-tree-i').removeClass('fa-caret-down');
+        $('#toggle-sitemap-tree-i').addClass('fa-caret-right');
+        $('#toggle-sitemap-tree-text').html('<span><mt:trans phrase="Open All" component="SiteMap"></span>');
+    } else {
+        $('#ajax_sitemap').jstree('open_all');
+        $('#toggle-sitemap-tree-i').removeClass('fa-caret-right');
+        $('#toggle-sitemap-tree-i').addClass('fa-caret-down');
+        $('#toggle-sitemap-tree-text').html('<span><mt:trans phrase="Close All" component="SiteMap"></span>');
+    }
+}
+</script>

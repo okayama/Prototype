@@ -1,0 +1,54 @@
+<mt:categories ignore_archive_context="1" cols="label">
+<mt:if name="__first__">
+<div class="card mb-3">
+  <h3 class="card-header lead"><small><mt:trans phrase="Categories" language="$language"></small></h3>
+  <div class="card-body card-inner-list">
+  <ul class="list-group list-group-flush">
+</mt:if>
+<mt:if tag="entriescount">
+    <li class="list-group-item">
+      <a href="<mt:categorypermalink>"><mt:categorylabel language="$language" escape> (<mt:entriescount>)</a>
+    </li>
+</mt:if>
+<mt:if name="__last__">
+  </ul>
+  </div>
+</div>
+</mt:if>
+</mt:categories>
+<mt:setvartemplate name="date_based_list">
+<mt:archivelist type="$archive_type" sort_order="desc">
+<mt:if name="__first__">
+<div class="card mb-3">
+  <h3 class="card-header lead"><small><mt:var name="date_archive_title"></small></h3>
+  <div class="card-body card-inner-list">
+  <ul class="list-group list-group-flush">
+</mt:if>
+<mt:if tag="entriescount">
+    <li class="list-group-item">
+      <a href="<mt:archivelink>"><mt:archivetitle format="$date_format"> (<mt:entriescount include_workspaces="this">)</a>
+    </li>
+</mt:if>
+<mt:if name="__last__">
+  </ul>
+  </div>
+</div>
+</mt:if>
+</mt:archivelist>
+</mt:setvartemplate>
+<mt:ifarchivetype archive_type="fiscal-yearly">
+   <mt:setvar name="archive_type" value="fiscal-yearly">
+  <mt:trans phrase="Fiscal-Yearly" language="$language" setvar="date_archive_title">
+  <mt:trans phrase="\F\i\s\c\a\l Y" language="$language" setvar="date_format">
+  <mt:var name="date_based_list">
+</mt:ifarchivetype>
+<mt:ifarchivetype archive_type="yearly">
+  <mt:trans phrase="Yearly" language="$language" setvar="date_archive_title">
+  <mt:trans phrase="\Y" language="$language" setvar="date_format">
+  <mt:var name="date_based_list">
+</mt:ifarchivetype>
+<mt:ifarchivetype archive_type="monthly">
+  <mt:trans phrase="Monthly" language="$language" setvar="date_archive_title">
+  <mt:trans phrase="\F, \Y" language="$language" setvar="date_format">
+  <mt:var name="date_based_list">
+</mt:ifarchivetype>

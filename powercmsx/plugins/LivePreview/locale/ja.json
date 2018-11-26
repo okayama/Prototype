@@ -1,0 +1,35 @@
+{
+    "Live Preview" : "ライブプレビュー",
+    "It provides site preview in future." : "未来日のプレビュー機能を提供します。",
+    "Set Date and Time" : "日付と時刻をセット",
+    "Clear Date and Time" : "日付と時刻をクリア",
+    "Setting page's URL" : "設定ページのURL",
+    "Date-Based Archives" : "日付ベースアーカイブ",
+    "Live Preview Date" : "ライブプレビュー",
+    "Include status in Approval Pending" : "承認待ちを含む",
+    "Insert HTML" : "挿入するHTML",
+    "Insert HTML(MTML) just before the &lt;/body&gt; tag at Live Preview."
+        : "ライブプレビュー時に&lt;/body&gt;タグ直前にHTML(MTML)を挿入します。",
+    "Live preview is set on %s."
+        : "ライブプレビューは %s に設定されています。",
+    "Live preview is set on __."
+        : "ライブプレビューは __ に設定されています。",
+    "Live preview is not set."
+        : "ライブプレビューは設定されていません。",
+    "Set the date and time to live preview at %s."
+        : "ライブプレビューの日付と時刻を %s に設定しました。",
+    "Set the date and time to live preview at __."
+        : "ライブプレビューの日付と時刻を __ に設定しました。",
+    "Clear the date and time to live preview."
+        : "ライブプレビューの日付と時刻をクリアしました。",
+    "The past date can not be specified."
+        : "過去の日付は指定できません。",
+    "Are you sure you want to set preview date and time?"
+        : "ライブプレビューの日付と時刻を設定してもよろしいですか?",
+    "Are you sure you want to clear preview date and time?"
+        : "ライブプレビューの日付と時刻設定を削除してもよろしいですか?",
+    "Please specify when website and CMS domain are different."
+        : "WebサイトとCMSのドメインが違う時設定ページのURLを指定します。",
+    "Please enter comma-separated model names."
+        : "日付ベースアーカイブを持つモデル名をカンマ区切りで入力してください。"
+}

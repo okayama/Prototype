@@ -1,0 +1,47 @@
+<div class="row form-group">
+  <div class="col-lg-2">
+    <label for="<mt:var name="name" escape>">
+    <mt:var name="label" escape="1">
+    </label>
+  </div>
+  <div class="col-lg-10 form-inline">
+    <select id="container-selector" class="form-control short" name="<mt:var name="__col_name__">">
+    <mt:if name="workspace_id">
+      <mt:setvarblock name="table_option">'display_space','1','menu_type','1'</mt:setvarblock>
+    <mt:else>
+      <mt:setvarblock name="table_option">'display','1','menu_type','1'</mt:setvarblock>
+    </mt:if>
+    <mt:objectloop model="table" sort_by="order" options="$table_option">
+    <mt:if name="__first__">
+      <option value="">
+        <mt:trans phrase="Unspecified">
+      </option>
+    </mt:if>
+      <option <mt:if name="__col_value__" eq="$name">selected</mt:if> value="<mt:var name="name">"><mt:trans phrase="$label" escape>
+      </option>
+    </mt:objectloop>
+    </select>
+<mt:unless name="workspace_id">
+  <span class="<mt:unless name="object_container">hidden</mt:unless>" id="container_scope-wrapper">
+    <input type="hidden" name="container_scope" value="0">
+    <label class="custom-control custom-checkbox">
+    <input id="container_scope" class="custom-control-input"
+      <mt:if name="object_container_scope">checked</mt:if>
+      type="checkbox" name="container_scope" value="1">
+        <span class="custom-control-indicator"></span>
+        <span class="custom-control-description"> 
+        <mt:trans phrase="Trigger(s) only the same scope."></span>
+    </label>
+  </span>
+<script>
+$('#container-selector').change(function(){
+    if ( $(this).val() ) {
+        $('#container_scope-wrapper').show();
+    } else {
+        $('#container_scope-wrapper').hide();
+    }
+});
+</script>
+</mt:unless>
+  </div>
+</div>

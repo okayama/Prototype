@@ -1,0 +1,1289 @@
+{
+    "Welcome!"           : "ようこそ!",
+    "Dashboard"          : "ダッシュボード",
+    "Return to Dashboard": "ダッシュボードへ",
+    "WorkSpace"          : "スペース",
+    "WorkSpaces"         : "スペース",
+    "Child of WorkSpace" : "スペースの子テーブル",
+    "Workspace Order"    : "スペースの表示順",
+    "by Updated"         : "更新日順",
+    "Creator"            : "作成者",
+    "Reviewer"           : "レビュアー",
+    "Publisher"          : "公開者",
+    "Login"              : "ログイン",
+    "Logout"             : "ログアウト",
+    "Activity"           : "アクティビティ",
+    "No Activity Found." : "アクティビティがありません。",
+    "Top of Page"        : "ページの先頭へ",
+    "Backup"             : "バックアップ",
+    "Caution"            : "注意",
+    "Permission"         : "権限",
+    "Permissions"        : "権限",
+    "Permissions"        : "権限",
+    "Serial"             : "直列",
+    "Parallel"           : "並列",
+    "Key"                : "キー",
+    "Value"              : "値",
+    "More"               : "続き",
+    "Colors"             : "配色",
+    "Back Color"         : "背景色",
+    "Fore Color"         : "前景色",
+    "Background Image"   : "背景画像",
+    "Identifier"         : "識別子",
+    "Applied"            : "適用済み",
+    "Rebuild Triggers"   : "再構築トリガー",
+    "Scope of Triggers"  : "トリガーのスコープ",
+    "Scope of Container" : "コンテナのスコープ",
+    "View all Logs"      : "すべてのログを表示",
+    "View all %s"        : "すべての%sを表示",
+    "Clone of %s"        : "%sのクローン",
+    "Timestamp"          : "タイムスタンプ",
+    "Upload"             : "アップロード",
+    "Publish Files"      : "ファイル出力",
+    "File Type"          : "ファイルタイプ",
+    "Profile Picture"    : "プロフィール画像",
+    "Show Activity"      : "アクティビティを表示",
+    "Physical Delete"    : "物理削除",
+    "Reset URL"          : "URLのリセット",
+    "Has Form"           : "フォーム",
+    "Has Assets"         : "アセット",
+    "Has Attachments"    : "添付ファイル",
+    "Favorites"          : "お気に入り",
+    "Uncategorized"      : "未分類",
+    "Browse"             : "選択",
+    "URLs"               : "URL",
+    "Hint"               : "ヒント",
+    "Change"             : "変更",
+    "Profile"            : "プロフィール",
+    "Activity Log"       : "アクティビティ・ログ",
+    "Select a Widget..." : "ウィジェットを選択...",
+    "No %s Found."       : "%sはありません。",
+    "Unit"               : "ユニット",
+    "Duplicate"          : "複製",
+    "IP Address"         : "IPアドレス",
+    "IP Addresses"       : "IPアドレス",
+    "Hide Label"         : "ラベルを非表示",
+    "banned"             : "禁止",
+    "allow"              : "許可",
+    "administrator"      : "管理者",
+    "ja"                 : "日本語",
+    "en"                 : "英語",
+    "info"               : "情報",
+    "Dialog View"        : "ダイアログ・ビュー",
+    "Search Type"        : "検索タイプ",
+    "(Changing)"         : "【変更点】",
+    "(%s)"               : "【%s】",
+    "(URLs)"             : "【URL】",
+    "(Message)"          : "【メッセージ】",
+    "(List of %s)"       : "【%sの一覧】",
+    "(Changes)"          : "【変更内容】",
+    "Notify Message"     : "通知メッセージ",
+    "Static"             : "静的",
+    "Dynamic"            : "ダイナミック",
+    "Static(Delayed)"    : "静的(遅延)",
+    "Manually"           : "手動",
+    "On-Demand"          : "オンデマンド",
+    "Publish Type"       : "パブリッシュ・タイプ",
+    "Revision Type"      : "リビジョン・タイプ",
+    "Export Theme"       : "テーマのエクスポート",
+    "Re-Compile Cache"   : "キャッシュの再コンパイル",
+    "Template Markup"    : "テンプレート記法",
+    "PowerCMS Compatible": "PowerCMS互換",
+    "Smarty Compatible"  : "Smarty互換",
+    "Total"              : "合計",
+    "Aggregate"          : "集計する",
+    "Aggregate Result"   : "集計結果",
+    "Multiple Values"    : "複数の値",
+    "Answer"             : "回答",
+    "Count Answer"       : "回答数",
+    "Percentage"         : "比率",
+    "(No Answer)"        : "(回答なし)",
+    "*Deleted*"          : "*削除されました*",
+    "Clear"              : "クリア",
+    "Delete Flag"        : "削除フラグ",
+    "workspace"          : "スペース",
+    "Rotate Left"        : "左へ回転",
+    "Rotate Right"       : "右へ回転",
+    "Flip Horizontal"    : "左右反転",
+    "Flip Vertical"      : "上下反転",
+    "Lock Out Date"      : "ロックアウト日時",
+    "Install"            : "インストール",
+    "Compiled"           : "コンパイル済",
+    "Cache Key"          : "キャッシュ・キー",
+    "System Settings"    : "システムの設定",
+    "Communication"      : "コミュニケーション",
+    "monthly"            : "月別",
+    "yearly"             : "年別",
+    "daily"              : "日別",
+    "Yearly"             : "年別",
+    "Fiscal-Yearly"      : "年度別",
+    "Monthly"            : "月別",
+    "Daily"              : "日別",
+    "fiscal-yearly"      : "年度別",
+    "Text Format"        : "フォーマット",
+    "User Settings"      : "ユーザーの設定",
+    "Edit Image"         : "画像の編集",
+    "Image for Edit"     : "編集対象の画像",
+    "Include Modules"    : "インクルード先",
+    "Keep aspect ratio"  : "縦横比を維持",
+    "Save as Asset Label": "ラベルとして保存",
+    "Use Thumbnail"      : "サムネイルを利用",
+    "Page not found."    : "ページが見つかりません。",
+    "Insert"             : "挿入",
+    "Field"              : "フィールド",
+    "Fields"             : "フィールド",
+    "Field Type"         : "フィールド型",
+    "Field Types"        : "フィールド型",
+    "Meta ID"            : "メタID",
+    "Insert Image"       : "画像の挿入",
+    "Insert File"        : "ファイルの挿入",
+    "Text Alternative"   : "代替テキスト",
+    "Alignment"          : "位置",
+    "Left"               : "左",
+    "Center"             : "中央",
+    "Right"              : "右",
+    "Edit..."            : "編集...",
+    "Tool"               : "ツール",
+    "Tools"              : "ツール",
+    "Required"           : "必須項目",
+    "Copy to Clipboard"  : "クリップボードにコピー",
+    "Apply to Master"    : "マスタに適用",
+    "Upgrade"            : "アップグレード",
+    "Archive"            : "アーカイブ",
+    "Archives"           : "アーカイブ",
+    "menu"               : "メニュー",
+    "Menu"               : "メニュー",
+    "Menus"              : "メニュー",
+    "Module"             : "モジュール",
+    "Table"              : "モデル",
+    "Tables"             : "モデル",
+    "Model"              : "モデル",
+    "Models"             : "モデル",
+    "Object"             : "オブジェクト",
+    "Objects"            : "オブジェクト",
+    "Action..."          : "アクション...",
+    "Set Status"         : "ステータス変更",
+    "View List"          : "リスト",
+    "Phrase"             : "フレーズ",
+    "Phrases"            : "フレーズ",
+    "Asset"              : "アセット",
+    "Assets"             : "アセット",
+    "Thumbnail"          : "サムネイル",
+    "Thumbnails"         : "サムネイル",
+    "Object ID"          : "オブジェクトID",
+    "Menu Type"          : "メニュータイプ",
+    "System Object"      : "システムオブジェクト",
+    "System Objects"     : "システムオブジェクト",
+    "Read-only Object"   : "読み取り専用",
+    "Read-only Objects"  : "読み取り専用",
+    "Toggle Navigation"  : "ナビゲーションの開閉",
+    "Edit Revision of %s": "リビジョン(%s)の編集",
+    "View All List"      : "すべてのリスト",
+    "Fiscal Year Start"  : "年度の開始月",
+    "Date-Based"         : "日付ベース",
+    "Default Status"     : "ステータス(既定値)",
+    "Remote IP"          : "IPアドレス",
+    "Toggle"             : "開閉",
+    "Enable"             : "有効",
+    "Disable"            : "無効",
+    "Update(Owner)"      : "更新 (オーナー)",
+    "Update(All)"        : "更新 (すべて)",
+    "Activate(Publish)"  : "有効化 (公開)",
+    "Relative URL"       : "相対URL",
+    "Can Rebuild"        : "再構築",
+    "Can Rebuild"        : "再構築",
+    "Can Hierarchy"      : "階層",
+    "Can Revision"       : "リビジョン",
+    "Publish %s"         : "%sの再構築",
+    "Rebuilding..."      : "再構築中...",
+    "Rebuilding %s..."   : "%sの再構築中...",
+    "Done."              : "完了",
+    "All"                : "すべて",
+    "Close"              : "閉じる",
+    "Select"             : "選択",
+    "Select..."          : "選択...",
+    "Add..."             : "追加...",
+    "(None selected)"    : "選択されていません",
+    "%s %s is selected." : "%s件の%sが選択されています。",
+    "%s %s are selected.": "%s件の%sが選択されています。",
+    "Select all"         : "全てを選択する",
+    "Select all %s items": "全%s件を選択する",
+    "Config"             : "設定",
+    "Settings"           : "設定",
+    "%s Settings"        : "%sの設定",
+    "Photo"              : "写真",
+    "Create"             : "作成",
+    "Published"          : "パブリッシュ",
+    "Convert Line Breaks": "改行を変換",
+    "Site Path"          : "サイト・パス",
+    "Relative Path"      : "相対パス",
+    "Site URL"           : "サイトURL",
+    "Post"               : "投稿",
+    "Kind"               : "種別",
+    "Posts"              : "投稿",
+    "Entry"              : "記事",
+    "Entries"            : "記事",
+    "Page"               : "ページ",
+    "page"               : "ページ",
+    "Pages"              : "ページ",
+    "Category"           : "カテゴリ",
+    "Categories"         : "カテゴリ",
+    "Folder"             : "フォルダ",
+    "Folders"            : "フォルダ",
+    "Option"             : "オプション",
+    "Options"            : "オプション",
+    "attachmentfile"     : "添付ファイル",
+    "entry"              : "記事",
+    "asset"              : "アセット",
+    "category"           : "カテゴリ",
+    "folder"             : "フォルダ",
+    "template"           : "ビュー",
+    "table"              : "モデル",
+    "tag"                : "タグ",
+    "permission"         : "権限",
+    "role"               : "ロール",
+    "group"              : "グループ",
+    "workflow"           : "ワークフロー",
+    "Workflow"           : "ワークフロー",
+    "Workflows"          : "ワークフロー",
+    "Use Workflow"       : "ワークフローを利用",
+    "Hide Workflow"      : "ワークフローを隠す",
+    "log"                : "ログ",
+    "urlmapping"         : "URLマップ",
+    "urlinfo"            : "URL",
+    "field"              : "フィールド",
+    "phrase"             : "フレーズ",
+    "user"               : "ユーザー",
+    "queue"              : "キュー",
+    "fieldtype"          : "フィールド型",
+    "relation"           : "リレーション",
+    "Editor Height"      : "エディタの高さ",
+    "Manage Plugins"     : "プラグイン管理",
+    "Manage Scheme"      : "スキーマ管理",
+    "Manage Theme"       : "テーマの管理",
+    "Component"          : "コンポーネント",
+    "Version of Scheme"  : "スキーマバージョン",
+    "Version of Database": "DBバージョン",
+    "Specified"          : "指定済み",
+    "Unspecified"        : "指定なし",
+    "Multiple"           : "複数",
+    "Title"              : "タイトル",
+    "Text"               : "本文",
+    "Content"            : "コンテンツ",
+    "Option's Labels"    : "オプションのラベル",
+    "Single Column"      : "1カラム",
+    "Version"            : "バージョン",
+    "Keyword"            : "キーワード",
+    "Keywords"           : "キーワード",
+    "Tag"                : "タグ",
+    "Tags"               : "タグ",
+    "Normalized"         : "正規化",
+    "Editable"           : "編集可",
+    "Sortable"           : "ソート可",
+    "Detail"             : "詳細",
+    "Column Detail"      : "カラム詳細",
+    "Save Order"         : "表示順を保存",
+    "View"               : "ビュー",
+    "Views"              : "ビュー",
+    "Download"           : "ダウンロード",
+    "User"               : "ユーザー",
+    "Users"              : "ユーザー",
+    "Username"           : "ユーザー名",
+    "Previous Owner"     : "直前のユーザー",
+    "ID"                 : "ID",
+    "Table ID"           : "モデルID",
+    "Name"               : "名前",
+    "Data Type"          : "データ型",
+    "Size"               : "サイズ",
+    "Default"            : "既定値",
+    "Label"              : "ラベル",
+    "Labels"             : "ラベル",
+    "Plural"             : "複数形",
+    "Display"            : "表示",
+    "List"               : "リスト",
+    "Edit"               : "編集",
+    "Order"              : "表示順",
+    "None"               : "なし",
+    "Hidden"             : "隠し項目",
+    "Checkbox"           : "チェックボックス",
+    "Number"             : "数値",
+    "Text Box"           : "テキスト",
+    "Short Text"         : "短縮テキスト",
+    "Flag"               : "フラグ",
+    "Password(Hashed)"   : "パスワードハッシュ",
+    "Textarea"           : "テキストエリア",
+    "RichText"           : "リッチテキスト",
+    "Format"             : "フォーマット",
+    "Toggle Editor"      : "エディタ切替",
+    "Insert %s"          : "%sの挿入",
+    "Backup of %s(%s)."  : "%s のバックアップ (%s)",
+    "DateTime"           : "日付と時刻",
+    "Date"               : "日付",
+    "Languages"          : "言語設定",
+    "Control Border"     : "入力欄の境界色",
+    "Relation"           : "リレーション",
+    "Relations"          : "リレーション",
+    "From Model"         : "参照元モデル",
+    "From ID"            : "参照元ID",
+    "To Model"           : "参照先モデル",
+    "To ID"              : "参照先ID",
+    "Reference"          : "参照",
+    "Detach"             : "解除",
+    "Detach Filter"      : "フィルタを解除",
+    "Sort By"            : "ソート設定",
+    "Sort"               : "ソート",
+    "Input Text"         : "テキスト",
+    "Radio Buttons"      : "ラジオボタン",
+    "Checkboxes"         : "チェックボックス",
+    "Multiple Checkboxes": "チェックボックス (複数)",
+    "Tel"                : "電話番号",
+    "Tel (Separated)"    : "電話番号 (セパレート)",
+    "Dropdown"           : "ドロップダウン",
+    "Dialog"             : "ダイアログ",
+    "Custom"             : "カスタム",
+    "App Name"           : "アプリ名",
+    "Bar Color"          : "バーの色",
+    "Bar TextColor"      : "バーの文字色",
+    "Select a WorkSpace" : "スペースの選択",
+    "WorkSpace Settings" : "スペース設定",
+    "Color"              : "カラー",
+    "Copyright"          : "コピーライト",
+    "Index"              : "インデックス",
+    "index"              : "インデックス",
+    "Field not found."   : "フィールドが見つかりません。",
+    "Parent"             : "親",
+    "Child Models"       : "子モデル",
+    "Primary"            : "プライマリ",
+    "Password"           : "パスワード",
+    "Password (Confirm)" : "パスワード (確認)",
+    "Email"              : "メールアドレス",
+    "Your Name"          : "お名前",
+    "Privacy Policy"     : "プライバシーポリシー",
+    "Display Name"       : "表示名",
+    "Boolean"            : "真偽値",
+    "String"             : "テキスト(255)",
+    "Selection"          : "選択項目",
+    "Large Text"         : "テキスト",
+    "Blob"               : "バイナリ",
+    "Integer"            : "数値",
+    "Language"           : "言語",
+    "Administrator"      : "管理者",
+    "Created"            : "作成",
+    "Modified"           : "更新",
+    "Date Created"       : "作成日",
+    "Date Modified"      : "更新日",
+    "Date Posted"        : "投稿日",
+    "Publishing"         : "公開",
+    "Publish"            : "公開",
+    "Reserved"           : "公開予約",
+    "Reserved(Replace)"  : "差し替え予約",
+    "Between"            : "期間指定",
+    "Review"             : "レビュー",
+    "Approval Pending"   : "承認待ち",
+    "Approval Type"      : "承認タイプ",
+    "Remand"             : "差し戻し",
+    "Approval Request"   : "承認依頼",
+    "remand"             : "差し戻し",
+    "approval request"   : "承認依頼",
+    "Approval request"   : "承認依頼",
+    "Remand Type"        : "差し戻しタイプ",
+    "Ended"              : "終了",
+    "Publish Date"       : "公開日",
+    "Unpublish Date"     : "非公開日",
+    "Status"             : "ステータス",
+    "Unread"             : "未読",
+    "Already Read"       : "既読",
+    "In Progress"        : "対応中",
+    "Resolved"           : "対応済み",
+    "Flagged"            : "フラグ付き",
+    "Closed"             : "完了",
+    "Publish the File"   : "ファイル出力",
+    "Rebuild"            : "再構築",
+    "Publish Date"       : "公開日",
+    "Unpublish Date"     : "公開終了日",
+    "Created By"         : "作成者",
+    "Modified By"        : "更新者",
+    "Filters"            : "フィルタ",
+    "Add New Filter"     : "新しいフィルタ",
+    "Current Filter"     : "現在のフィルタ",
+    "Apply"              : "適用",
+    "Save and Apply"     : "保存して適用",
+    " is "               : " が ",
+    "Equal"              : "等しい",
+    "Not Equal"          : "等しくない",
+    "Less than"          : "より小さい",
+    "Grater than"        : "より大きい",
+    "Greater Equal"      : "以上",
+    "Less Equal"         : "以下",
+    "Contains"           : "を含む",
+    "Not Contains"       : "を含まない",
+    "Begin with"         : "で始まる",
+    "End with"           : "で終わる",
+    "Newer than"         : "より新しい",
+    "Older than"         : "より古い",
+    "Language"           : "言語",
+    "Translate"          : "翻訳",
+    "Paging"             : "表示数",
+    "items per Page"     : "件 / ページあたり",
+    "Display Options"    : "画面オプション",
+    "Last Login"         : "最終ログイン",
+    "Search"             : "検索",
+    "Save"               : "保存",
+    "Save Changes"       : "変更を保存",
+    "Save &amp; Duplicate": "保存して複製",
+    "Save &amp; Publish"  : "保存と再構築",
+    "Cancel"             : "キャンセル",
+    "Delete"             : "削除",
+    "Export"             : "エクスポート",
+    "CSV Export"         : "CSVエクスポート",
+    "New"                : "新規",
+    "List Type"          : "一覧表示",
+    "Edit Type"          : "編集表示",
+    "Uneditable"         : "変更不可",
+    "Unique"             : "ユニーク",
+    "Can Update Own"     : "自分のオブジェクト",
+    "Can Update All"     : "すべてのオブジェクト",
+    "Can Review"         : "レビュー",
+    "Can Review"         : "レビュー",
+    "Can Activate"       : "有効化 (公開)",
+    "Can Duplicate"      : "複製",
+    "New %s"             : "新しい%s",
+    "Removed %s."        : "%sを削除しました。",
+    "New %s (Confirm)"   : "新しい%s (確認)",
+    "New Password"       : "新しいパスワード",
+    "%s (Confirm)"       : "%s (確認)",
+    "Edit %s"            : "%sの編集",
+    "List of %s"         : "%sの一覧",
+    "List %s"            : "%sの一覧",
+    "Return to List"     : "一覧に戻る",
+    "Page navigation"    : "ページナビ",
+    "Previous"           : "前へ",
+    "Next"               : "次へ",
+    "Selected"           : "選択済み",
+    "Invalid type (%s)." : "不正なタイプです (%s)。",
+    "Invalid request."   : "不正なリクエストです。",
+    "Select File..."     : "ファイルを選択...",
+    "Columns"            : "カラム",
+    "Column"             : "カラム",
+    "column"             : "カラム",
+    "Type"               : "タイプ",
+    "Class"              : "クラス",
+    "Log"                : "ログ",
+    "Logs"               : "ログ",
+    "Role"               : "ロール",
+    "Roles"              : "ロール",
+    "Message"            : "メッセージ",
+    "Messages"           : "メッセージ",
+    "Data"               : "データ",
+    "IP Address"         : "IPアドレス",
+    "Level"              : "レベル",
+    "MIME Type"          : "MIMEタイプ",
+    "Width"              : "幅",
+    "Height"             : "高さ",
+    "Properties"         : "プロパティ",
+    "Preview"            : "プレビュー",
+    "ascend"             : "昇順",
+    "descend"            : "降順",
+    "Ascend"             : "昇順",
+    "Descend"            : "降順",
+    "Add"                : "追加",
+    "Not Delete"         : "削除不可",
+    "Sunday"             : "日曜日",
+    "Monday"             : "月曜日",
+    "Tuesday"            : "火曜日",
+    "Wednesday"          : "水曜日",
+    "Thursday"           : "木曜日",
+    "Friday"             : "金曜日",
+    "Saturday"           : "土曜日",
+    "File"               : "ファイル",
+    "Files"              : "ファイル",
+    "Attachment File"    : "添付ファイル",
+    "Attachment Files"   : "添付ファイル",
+    "File Name"          : "ファイル名",
+    "File Path"          : "ファイル・パス",
+    "Upload Path"        : "アップロード・パス",
+    "Output the File"    : "ファイルを出力",
+    "Output Path"        : "ファイルを出力先",
+    "Path"               : "パス",
+    "Extension"          : "拡張子",
+    "Bytes"              : "バイト",
+    "Pixel"              : "ピクセル",
+    "Resize"             : "リサイズ",
+    "Error"              : "エラー",
+    "Size Limit"         : "最大サイズ",
+    "Directory"          : "ディレクトリ",
+    "Excerpt"            : "概要",
+    "Description"        : "説明",
+    "Auditing"           : "自動監査",
+    "Template"           : "ビュー",
+    "Templates"          : "ビュー",
+    "Template Tags"      : "テンプレート・タグ",
+    "Taggable"           : "タグ付け",
+    "Note"               : "ノート",
+    "Body"               : "本文",
+    "Memo"               : "メモ",
+    "Status"             : "ステータス",
+    "Draft"              : "下書き",
+    "Users (Draft)"      : "ユーザー (下書き)",
+    "Users (Review)"     : "ユーザー (レビュー)",
+    "Users (Publish)"    : "ユーザー (公開)",
+    "Read-Only"          : "読取り専用",
+    "Questions"          : "設問",
+    "Question"           : "設問",
+    "question"           : "設問",
+    "Validation"         : "バリデーション",
+    "Values"             : "値",
+    "Max Length"         : "テキスト長",
+    "Max File Size"      : "最大サイズ",
+    "Multi-Byte"         : "マルチバイト",
+    "questiontype"       : "設問タイプ",
+    "Question Type"      : "設問タイプ",
+    "Question Types"     : "設問タイプ",
+    "Default Value"      : "初期値",
+    "Selected Items"     : "選択項目",
+    "Postal Code"        : "郵便番号",
+    "Form"               : "フォーム",
+    "Forms"              : "フォーム",
+    "form"               : "フォーム",
+    "View(Notify)"       : "ビュー(管理者宛)",
+    "View(Thanks)"       : "ビュー(送信者宛)",
+    "Redirect To"        : "リダイレクト先",
+    "Confirm"            : "確認する",
+    "Submit"             : "送信する",
+    "Mail"               : "メール",
+    "Contact"            : "コンタクト",
+    "Contacts"           : "コンタクト",
+    "contact"            : "コンタクト",
+    "Subject"            : "件名",
+    "Normarize"          : "正規化",
+    "File Attachment"    : "添付ファイル",
+    "Text Input Group"   : "テキスト(複数欄)",
+    "Count of Fields"    : "フィールド数",
+    "Rows"               : "行の高さ",
+    "Connector"          : "コネクタ",
+    "%s is invalid."     : "%sが正しくありません。",
+    "Date & Time"        : "日付と時刻",
+    "(Year)"             : "年",
+    "(Month)"            : "月",
+    "(Day)"              : "日",
+    "Send Email"         : "メールを送信する",
+    "Mail From"          : "メールのFrom",
+    "Notify To"          : "通知送信先",
+    "Notification"       : "通知",
+    "Requires Token"     : "トークンを要求する",
+    "Token Expires"      : "トークン有効期限",
+    "Anti-spam Measures" : "スパム対策",
+    "Hide in email"      : "メールには情報を含めない",
+    "spam"               : "スパム",
+    "Post not allowed."  : "投稿は許可されていません。",
+    "Send Notify Message": "管理者に通知メールを送る",
+    "Any"                : "任意",
+    "Image"              : "画像",
+    "Video"              : "ビデオ",
+    "Audio"              : "オーディオ",
+    "image"              : "画像",
+    "video"              : "ビデオ",
+    "pdf"                : "PDF",
+    "audio"              : "オーディオ",
+    "%s - %s of %s Items": "%s - %s / %s 項目",
+    "%s not found."      : "%sが見つかりません。",
+    "Category is '%s'"   : "カテゴリが「%s」",
+    "Level is '%s'"      : "レベルが「%s」",
+    "Sort by %s in %s"   : "%sの%sでソート",
+    "Remember me?"       : "ログイン情報を記憶する",
+    "Last Update"        : "最終更新",
+    "Last updated"       : "最終更新",
+    "Just Now"           : "たった今",
+    "%s mins ago"        : "%s分前",
+    "%s hours ago"       : "%s時間前",
+    "%s day(s) ago"      : "%s日前",
+    "%s week(s) ago"     : "%s週間前",
+    "More than month ago": "1ヶ月以上前",
+    "More than year ago" : "1年以上前",
+    "System"             : "システム",
+    "An error occurred"  : "エラーが発生しました",
+    "An error occurred." : "エラーが発生しました。",
+    "Permission denied." : "権限がありません。",
+    "Widget"             : "ウィジェット",
+    "widget"             : "ウィジェット",
+    "Widgets"            : "ウィジェット",
+    "Default Widget"     : "メインウィジェット",
+    "Password Recovery"  : "パスワードの再設定",
+    "Add Tags"           : "タグを追加",
+    "Remove Tags"        : "タグを削除",
+    "Reset"              : "リセット",
+    "Change Password"    : "パスワードの変更",
+    "Back"               : "戻る",
+    "System Email"       : "システムのメール",
+    "Basename"           : "ベースネーム",
+    "URL Map"            : "URLマップ",
+    "URL Maps"           : "URLマップ",
+    "Used in"            : "利用状況",
+    "Author"             : "ユーザー",
+    "Mapping"            : "マッピング",
+    "Mappings"           : "マッピング",
+    "Mapping ID"         : "URLマップID",
+    "Checked"            : "指定あり",
+    "Expiration Date"    : "有効期限対応",
+    "Has Status"         : "ステータス対応",
+    "Has Basename"       : "ベースネーム",
+    "Current User"       : "現在のユーザー",
+    "Assign User"        : "ユーザーをアサイン",
+    "Revisable"          : "リビジョン対応",
+    "Max Revisions"      : "最大リビジョン数",
+    "Revision"           : "リビジョン",
+    "Revisions"          : "リビジョン",
+    "Revision(s)"        : "リビジョン",
+    "Session(s)"         : "セッション",
+    "Auto Save"          : "自動保存",
+    "Save as Revision"   : "リビジョンとして保存",
+    "Live Preview"       : "ライブプレビュー",
+    "Manage"             : "管理",
+    "Group"              : "グループ",
+    "Groups"             : "グループ",
+    "Changed"            : "変更",
+    "Change Note"        : "変更メモ",
+    "Hierarchy"          : "階層",
+    "My %s"              : "自分の%s",
+    "System %s"          : "システムの%s",
+    "Your Filters"       : "自分のフィルタ",
+    "System Filters"     : "システムフィルタ",
+    "Show only errors"   : "エラーだけを表示",
+    "Manage Hierarchy"   : "階層の管理",
+    "Manage Revision"    : "リビジョン管理",
+    "Manage %s Hierarchy": "%s階層の管理",
+    "Drag"               : "ドラッグ",
+    "Diff"               : "差分",
+    "%s revision(s)"     : "%s件のリビジョン",
+    "Logical Deletion"   : "論理削除",
+    "Panel"              : "パネル",
+    "Container"          : "コンテナ",
+    "Popover"            : "ポップオーバー",
+    "Utility"            : "ユーティリティ",
+    "Utilities"          : "ユーティリティ",
+    "Definition"         : "システム定義",
+    "User and Permission": "ユーザーと権限",
+    "Queue"              : "キュー",
+    "Queues"             : "キュー",
+    "Comment"            : "コメント",
+    "Comments"           : "コメント",
+    "Metadata"           : "メタデータ",
+    "Linked with Status" : "ステータスと連動",
+    "Syetem's Role"      : "システムのロール",
+    "Archive Date"       : "アーカイブ日付",
+    "Archive Type"       : "アーカイブ種別",
+    "Accept Comments"    : "コメントを許可",
+    "Comment Count"      : "コメント数",
+    "Draft %s"           : "下書きの%s",
+    "%s Under Review"    : "レビュー中の%s",
+    "Reserved %s"        : "公開予約中の%s",
+    "Published %s"       : "公開中の%s",
+    "Unpublished %s"     : "公開終了された%s",
+    "Publish Again"      : "再構築しなおす",
+    "Publish Again"      : "再構築しなおす",
+    "Preview URL"        : "プレビューURL",
+    "Enabled %s"         : "有効な%s",
+    "Disabled %s"        : "無効な%s",
+    "Import Objects"     : "インポート",
+    "Export CSV"         : "CSVエクスポート",
+    "UTF8(without ID)"   : "UTF8(IDなし)",
+    "Shift_JIS(without ID)" : "Shift_JIS(IDなし)",
+    "Import &amp; Export": "インポート &amp; エクスポート",
+    "File Out Path"      : "ファイル出力パス",
+    "Do Import"          : "インポート開始",
+    "Do Action"          : "アクションを実行",
+    "Publish time: %s"   : "処理時間 : %s",
+    "Y-m-d H:i"          : "Y年m月d日 H時i分",
+    "Y-m-d"              : "Y年m月d日",
+    "seconds"            : "秒",
+    "%sseconds"          : "%s秒",
+    "%1$smin %2$sseconds": "%1$s分 %2$s秒",
+    "Lock Out"           : "ロックアウト",
+    "Unknown %s"         : "不明な%s",
+    "Unknown Model %s."  : "不明なモデルです (%s)。",
+    "Upgrade 1 scheme."  : "1件のスキーマをアップグレードしました。",
+    "Upgrade %s schemes.": "%s件のスキーマをアップグレードしました。",
+    "Enable this plugin" : "プラグインを有効化",
+    "Disable this plugin": "プラグインを無効化",
+    "Document"           : "ドキュメント",
+    "\\F\\i\\s\\c\\a\\l Y": "Y年度",
+    "\\Y"                : "Y年",
+    "\\F, \\Y"           : "Y年m月",
+    "Latest News"        : "ニュース",
+    "List News"          : "ニュース一覧",
+    "Your Location"      : "現在地",
+    "Press Release"      : "プレスリリース",
+    "About Us"           : "私たちについて",
+    "Contact Us"         : "お問い合わせ",
+    "To"                 : "〜",
+    "Authentication"     : "認証",
+    "User Lock Out"      : "ユーザーロックアウト",
+    "IP Lock Out"        : "IPロックアウト",
+    "Lock Out Limit"     : "認証ロック回数",
+    "Password Reset"     : "パスワードを再設定",
+    "Input Text (Multiple)" : "テキスト (可変長)",
+    "Column's Permissions" : "カラムの権限",
+    "The theme '%s' has been applied."
+        : "テーマ「%s」を適用しました。",
+    "The theme '%1$s' has been applied by %2$s."
+        : "ユーザー %2$s がテーマ「%1$s」を適用しました。",
+    "%s object(s) has been skipped because it already existed."
+        : "%sのオブジェクトについては重複があったためスキップされました。",
+    "To see the details, go to the list of Logs."
+        : "詳細を確認するには、ログの一覧を表示してください。",
+    "I have read and agree to the Privacy Policy." : "プライバシーポリシーを確認して同意します。",
+    "The %s '%s' has been skipped because it already existed."
+        : "%s「%s」は既に存在するためインポートはスキップされました。",
+    "Current status of Master" : "マスタの現在のステータス",
+    "Cleanup removed files" : "削除済みファイルのクリーンアップ",
+    "The theme not selected." : "テーマが選択されていません。",
+    "Current theme is '%s'." : "現在のテーマは「%s」です。",
+    "Are you sure you want to apply this theme?" : "このテーマを適用してもよろしいですか?",
+    "Please complete the form below and click Confirm button."
+        : "以下のフォームに入力して「確認」ボタンをクリックしてください。",
+    "Confirm the following and click Submit button."
+        : "内容を確認の上、よろしければ「送信」をクリックして投稿してください。",
+    "Thank you for your inquiry." : "お問い合わせありがとうございました。",
+    "Please check your entries." : "入力内容を確認してください。",
+    "Cleanup %s removed file(s)." : "削除済みの%sのファイルをクリーンアップしました。",
+    "There were no %s for action." : "対象の%sは見つかりませんでした。",
+    "You applied an action to %s %s." : "%s件の%sにアクションを適用しました。",
+    "Select or deselect %s in this row." : "この行の%sを選択・選択解除する",
+    "The recommended value of max_input_vars is %s or more (current value is %s)."
+        : "max_input_vars の推奨値は %s 以上です( 現在の設定 : %s )。",
+    "The Email address to notification is not specified."
+        : "通知送信先が指定されていません。",
+    "%s Waiting for Approval" : "承認待ちの%s",
+    "Saving %s ( %s )...": "%s (%s)を保存しています...",
+    "(Class not specified)" : "(クラス指定なし)",
+    "Do not output file(s)" : "ファイル出力しない",
+    "Notify at Change User" : "ユーザー変更時に通知する",
+    "You did not any input." : "値が入力されていません。",
+    "Multiple Answers Allowed" : "複数回答可",
+    "Target for Aggregation" : "集計対象にする",
+    "Remove from Aggregation target" : "集計対象から外す",
+    "Aggregate Count : %s" : "集計数 : %s件",
+    "Select a WorkSpace..." : "スペースを選択...",
+    "No WorkSpace Found." : "スペースがありません。",
+    "Unknown column '%s'." : "不明なカラム'%s'",
+    "The %s duplicated." : "%sが複製されました。",
+    "Remove old sessions": "期限切れのセッションのクリア",
+    "Set UUID(%s)" : "%sのUUIDをセット",
+    "Set UUID of %s %s." : "%s件の%sのUUIDをセットしました。",
+    "Remove old revisions(%s)" : "%sのリビジョンデータのクリーンアップ",
+    "Scheduled publish(%s)" : "%sの予約公開",
+    "Scheduled unpublish(%s)": "%sの予約非公開",
+    "Published %s %s." : "%s件の%sを公開しました。",
+    "Unpublished %s %s." : "%s件の%sを非公開にしました。",
+    "Publish queue" : "予約キュー",
+    "Removed %s %s.": "%s件の%sを削除しました。",
+    "Trigger(s) only the same scope." : "同一スコープのオブジェクトのみを対象とする",
+    "Target only object(s) with the same WorkSpace."
+        : "ワークスペースのオブジェクト更新のみを対象にします。",
+    "Target only system scope's object(s)."
+        : "システムスコープのオブジェクト更新のみを対象にします。",
+    "Compress the database"
+        : "データベースの圧縮",
+    "Scheduled replacement from revision(%s)"
+        : "%sのリビジョンの予約差し替え",
+    "Replaced %s %s from revision."
+        : "%s件の%sをリビジョンと差し替えました。",
+    "Your Dashboard has been updated."
+        : "ダッシュボードを更新しました。",
+    "Activity model has been changed to '%s'."
+        : "アクティビティのモデルを「%s」に変更しました。",
+    "Fix WorkSpace Menu to the Top"
+        : "スペースのメニューを上部に固定する",
+    "Are you sure you want to duplicate this %s?"
+        : "この%sを複製しますか?",
+    "Are you sure you want to save this %s and duplicate?"
+        : "この%sを保存して複製してもよろしいですか?",
+    "An error occurred while updating the URLs."
+        : "URLのアップデート中にエラーが発生しました。",
+    "The label can not be empty."
+        : "ラベルを空にすることはできません。",
+    "The upload that 0 byte size file is not allowed."
+        : "空のファイルはアップロードできません。",
+    "Create %s (%s / ID : %s)."
+        : "新規 : %s (%s / ID : %s).",
+    "Update %s (%s / ID : %s)."
+        : "更新 : %s (%s / ID : %s).",
+    "The %sth %s tag is not closed ( at line %s )."
+        : "%s番目の%sタグが閉じられていません(%s行目)。",
+    "The tag %s is not found ( at line %s )."
+        : "タグ%sは利用できません(%s行目)。",
+    "Import %s successfully( Insert : %s, Update : %s )."
+        : "%sをインポートしました (新規 %s件, 更新 %s件)。",
+    "Could not import %s. Please check upload file format."
+        : "%sをインポートできませんでした。ファイルのフォーマットを確認してください。",
+    "Please enter the file extension for allow(Comma separated list)."
+        : "許可するファイル拡張子をカンマで区切って入力してください。",
+    "%s object(s) were skipped because you have not permission."
+        : "%s件のオブジェクトについては権限がないため、インポートがスキップされました。",
+    "An error occurred while updating the related object(s)."
+        : "関連オブジェクトのアップデート中にエラーが発生しました。",
+    "Apply IP address restriction to Administrator login"
+        : "管理者ログインにIPアドレス制限を設定する",
+    "You need to register at least one administrator login IP address."
+        : "一つ以上の管理者ログインIPアドレスを登録する必要があります。",
+    "Lock Out Interval(Seconds)"
+        : "ロックアウト間隔 (秒)",
+    "Allowed ip address is not lockout"
+        : "許可されたIPアドレスはロックしない",
+    "Apply IP address restriction to all user"
+        : "すべてのユーザーにIPアドレス制限を適用する",
+    "When Lock Out Limit is set to 0, lockout is not performed."
+        : "認証ロック回数に0に指定すると、ロックアウトは行われません。",
+    "This IP address is locked out."
+        : "このIPアドレスはロックアウトされています。",
+    "This User is locked out."
+        : "このユーザーはロックアウトされています。",
+    "Alternative Text" :
+        "代替テキスト",
+    "A child object can not be specified as a parent."
+        : "子オブジェクトは親には指定できません。",
+    "You can not change the parent of the root object."
+        : "ルートオブジェクトの親は変更できません。",
+    "This IP address was locked out because you failed to log in continuously."
+        : "連続してログインに失敗したため、このIPアドレスはロックアウトされました。",
+    "This User was locked out because you failed to log in continuously."
+        : "連続してログインに失敗したため、このアカウントはロックアウトされました。",
+    "Administrator login from this IP address is not allowed."
+        : "このIPアドレスからの管理者ログインは許可されていません。",
+    "Login from this IP address is not allowed."
+        : "このIPアドレスからのログインは許可されていません。",
+    "Input label of the Theme." : "テーマのラベルを入力してください。",
+    "Scheduled tasks update."
+        : "スケジュールされたタスクを実行しました。",
+    "Two-factor Authentication"
+        : "2段階認証",
+    "Use Two-factor Authentication"
+        : "2段階認証を利用する",
+    "Enter Confirmation Code"
+        : "確認用コードを入力",
+    "Confirmation Code do not match."
+        : "確認用コードが一致しません。",
+    "The confirmation code has been expired."
+        : "確認用コードの有効期限が切れました。",
+    "The status at replacement will be status of the master."
+        : "予約差し替え時のステータスは、マスタのステータスになります。",
+    "The status at apply will be status of the master."
+        : "差し替え時のステータスは、マスタのステータスになります。",
+    "Because the master %s has been deleted, the %s can not be apply."
+        : "マスタの%sが削除されているため、適用できませんでした。",
+    "Because the copy source %s has been deleted, the %s can not be copied."
+        : "コピー元の%sが削除されているため、コピーできませんでした。",
+    "The file you uploaded is too large."
+        : "アップロードしたファイルは大きすぎます。",
+    "The file (%s) that you uploaded is too large."
+        : "アップロードしたファイル(%s)は大きすぎます。",
+    "The file you uploaded is too large(The file must be %s or less)."
+        : "アップロードしたファイルは大きすぎます(サイズを%s以下にしてください)。",
+    "Invalid File extension'%s'." : "拡張子(%s)のファイルアップロードは許可されていません。",
+    "The file (%s) that you uploaded is not allowed."
+        : "ファイル(%s)のアップロードは許可されていません。",
+    "The number of retry times limit was exceeded, the confirmation code was discarded."
+        : "リトライ回数制限を超えたため、確認用コードは破棄されました。",
+    "Are you sure you want to import this objects?"
+        : "このオブジェクトをインポートしてもよろしいですか?",
+    "Are you sure you want to remove this widget?"
+        : "このウィッジェットを非表示にしますか?",
+    "The status has been reset."
+        : "ステータスはリセットされました。",
+    "Events and News" : "イベントとニュース",
+    "PowerCMS X Events and News"
+        : "PowerCMS X イベントとニュース",
+    "Plugin %s's Settings"
+        : "プラグイン「%s」の設定",
+    "Plugin(s) enabled successfully."
+        : "プラグインを有効化しました。",
+    "Plugin(s) upgrade successfully."
+        : "プラグインをアップグレードしました。",
+    "Plugin(s) disabled successfully."
+        : "プラグインを無効化しました。",
+    "Plugin %s's settings has been saved."
+        : "プラグイン「%s」の設定を保存しました。",
+    "Plugin %s's settings has been reset."
+        : "プラグイン「%s」の設定をリセットしました。",
+    "There is no upgrade."
+        : "アップグレードはありません。",
+    "There is one upgrade."
+        : "1件のアップグレードが見つかりました。",
+    "You did not select any scheme."
+        : "スキーマが選択されていません。",
+    "Upgrade Scheme" : "スキーマのアップグレード",
+    "Upgrade Schemes" : "スキーマのアップグレード",
+    "There are %s upgrades."
+        : "%s件のアップグレードが見つかりました。",
+    "There is one scheme upgrade."
+        : "1件のスキーマアップグレードが見つかりました。",
+    "There are %s schemes upgrade."
+        : "%s件のスキーマアップグレードが見つかりました。",
+    "There is no upgrade."
+        : "アップグレードはありません。",
+    "You did not select any plugin."
+        : "プラグインが選択されていません。",
+    "Are you sure you want to enable this plugin?"
+        : "このプラグインを有効化してもよろしいですか?",
+    "Are you sure you want to disable this plugin?"
+        : "このプラグインを無効化してもよろしいですか?",
+    "Are you sure you want to enable plugin(s)?"
+        : "プラグインを有効化してもよろしいですか?",
+    "Are you sure you want to disable plugin(s)?"
+        : "プラグインを無効化してもよろしいですか?",
+    "Are you sure you want to upgrade plugin(s)?"
+        : "プラグインをアップグレードしてもよろしいですか?",
+    "%1$sh %2$smin %3$sseconds"
+        : "%1$s時間 %2$s分 %3$s秒",
+    "Workspace Administrator"
+        : "スペース管理者",
+    "Rebuilding dependencies..."
+        : "依存関係を再構築中...",
+    "New WorkSpace's Role"
+        : "新しいスペースのロール",
+    "List Revisions of %s"
+        : "%sのリビジョン一覧",
+    "You did not select any widget."
+        : "ウィッジェットが選択されていません。",
+    "Could not expand ZIP archive."
+        : "ZIPアーカイブを解凍できません。",
+    "You can not change the %s."
+        : "%s は変更できません。",
+    "File and Label are required."
+        : "「ファイル」と「ラベル」は必須です。",
+    "Are you sure you want to upgrade selected scheme(s)?"
+        : "選択されたスキーマをアップグレードしてもよろしいですか?",
+    "%1$s '%2$s(ID:%3$s)' created by %4$s."
+        : "%4$s が %1$s 「%2$s(ID:%3$s)」を作成しました。",
+    "%1$s '%2$s(ID:%3$s)' edited by %4$s."
+        : "%4$s が %1$s 「%2$s(ID:%3$s)」を更新しました。",
+    "%1$s '%2$s(ID:%3$s)' deleted by %4$s."
+        : "%4$s が %1$s 「%2$s(ID:%3$s)」を削除しました。",
+    "%1$s hierarchy changed by %2$s."
+        : "%2$s が %1$s の階層を変更しました。",
+    "%s hierarchy saved successfully."
+        : "%sの階層を保存しました。",
+    "Specify the Deadline"
+        : "公開終了日を指定",
+    "Filter not specified."
+        : "フィルタが指定されていません。",
+    "Please specify the Model name or click \\'Detail\\' and select a Model."
+        : "モデル名を入力するか「詳細」をクリックしてモデルを選択してください。",
+    "Please specify label(text alternative) for the file."
+        : "ファイルのラベル(代替テキスト)を入力してください。",
+    "View or Model not specified."
+        : "ビューまたはモデルが指定されていません。",
+    "Model not specified."
+        : "モデルが選択されていません。",
+    "Forgot your password?"
+        : "パスワードをお忘れですか?",
+    "The action '%1$s' was executed for %2$s %3$s by %4$s."
+        : "%4$s がアクション「%1$s」を %2$s件の%3$sに適用しました。",
+    "User %s updated the system settings."
+        : "ユーザー %s がシステムの設定を更新しました。",
+    "The files for %s have been published."
+        : "%sを再構築しました。",
+    "An error occurred while uploading."
+        : "ファイルのアップロード中にエラーが発生しました。",
+    "An error occurred while saving %s."
+        : "%sの保存中にエラーが発生しました。",
+    "An error occurred in task '%s'. (%s)"
+        : "タスク「%s」の実行中にエラーが発生しました。(%s)",
+    "An error occurred while deleting %s."
+        : "%sの削除中にエラーが発生しました。",
+    "Please enter the Name of this Filter."
+        : "フィルタ名を入力してください。",
+    "The Filter Name is required."
+        : "フィルタ名は必須です。",
+    "The name %s is reserved."
+        : "「%s」という名前はシステムに予約されています。",
+    "The name '%s' can not be specified."
+        : "「%s」という名前は利用できません。",
+    "The name starting with '%s' can not be specified(%s)."
+        : "「%s」から始まる名前(%s)は利用できません。",
+    "Cannot load %s (ID:%s)"
+        : "%s(ID:%s)が見つかりませんでした。",
+    "An error occurred while saving %s."
+        : "%sの保存中にエラーが発生しました。",
+    "An error occurred while removing %s."
+        : "%sの削除中にエラーが発生しました。",
+    "Display in System" 
+        : "システムに表示",
+    "Display in WorkSpace" 
+        : "スペースに表示",
+    "Display in Dashboard"
+        : "ダッシュボードに表示",
+    "Display in Edit Screen"
+        : "画面に表示",
+    "Start month of fiscal year"
+        : "年度の開始月",
+    "Welcome to %s!"
+        : "%sへようこそ!",
+    "PowerCMS X has been installed and create first user '%s'."
+        : "PowerCMS Xをインストールして最初のユーザー「%s」を作成しました。",
+    "%s that your responsible" : "あなたが担当の%s",
+    "View all %s that your responsible" : "あなたが担当のすべての%sを表示",
+    "Specify the display order of the WorkSpace selector of the top of the screen."
+        : "画面上部のスペースセレクタの表示順序を指定します。",
+    "The Model can not be hidden."
+        : "モデルは非表示にできません。",
+    "The Model or Column name must be %s characters or less."
+        : "モデル(カラム)名は%s文字以内でなければなりません。",
+    "Even if you do not specify it, you can add it in the edit screen."
+        : "指定のない場合でも、編集画面で追加することができます。",
+    "If the field is not display, the item is not checked."
+        : "フィールドが非表示の場合はチェックされません。",
+    "Comma separated values. The value is stored in the variable 'field_option' in the loop of the template variable 'field_options'."
+        : "カンマ区切りで値を入力すると、テンプレート変数 'field_options'のループの中で 'field_option'変数に値を格納します。",
+    "Comma separated values. The value is stored in the variable 'field_label' in the loop of the template variable 'field_options'."
+        : "カンマ区切りで値を入力すると、テンプレート変数 'field_options'のループの中で 'field_label'変数に値を格納します。",
+    "Click Detail button to continue settings."
+        : "カスタム設定を行うには「詳細」ボタンをクリックしてください。",
+    "When previewing with a URL different from the URL of the management screen, please enter the URL of the PHP application."
+        : "管理画面のURLと異なるURLでプレビューを行う場合、PHPアプリケーションのURLを入力してください。",
+    "Invalid list type (%s)."
+        : "不正な一覧表示タイプです (%s)。",
+    "%s cannot be deleted."
+        : "%sは削除できません。",
+    "Invalid edit type (%s)."
+        : "不正な編集表示タイプです (%s)。",
+    "%s is required."
+        : "%sは必須です。",
+    "App Name, System Email Site URL and Site Path are required."
+        : "アプリ名, システムのメール, サイトURLとサイト・パスは必須です。",
+    "To, From and subject are required."
+        : "To,Fromアドレスと件名は必須です。",
+    "You did not select any %s."
+        : "%sが選択されていません。",
+    "You did not select any field."
+        : "フィールドが選択されていません。",
+    "Your changes have been saved."
+        : "変更を保存しました。",
+    "%s's display options saved successfully."
+        : "%sの画面オプションを保存しました。",
+    "Are you sure you want to detach this relation?"
+        : "関連付けを解除してもよろしいですか?",
+    "Are you sure you want to remove this attachment file?"
+        : "この添付ファイルを削除してもよろしいですか?",
+    "Are you sure you want to remove selected filter?"
+        : "選択されたフィルタを削除してもよろしいですか?",
+    "Are you sure you want to remove this field?"
+        : "フィールドを削除してもよろしいですか?",
+    "Are you sure you want to apply the default template?"
+        : "デフォルトテンプレートを適用してもよろしいですか?",
+    "Are you sure you want to remove this filter condition?"
+        : "フィルタ条件を削除してもよろしいですか?",
+    "Model can not be set child of workspace."
+        : "モデルをスペースの子モデルにはできません。",
+    "Are you sure you want to remove this Column?"
+        : "カラムを削除してもよろしいですか?",
+    "Please select the basename of the question type to be customized."
+        :"カスタマイズ元の設問タイプがあればベースネームを指定してください。",
+    "Please enter comma-separated tags to add."
+        :"追加するタグをカンマ区切りで入力してください。",
+    "Are you sure you want to remove %s?"
+        : "%sを削除してもよろしいですか?",
+    "Are you sure you want to remove _1 %s?"
+        : "_1件の%sを削除してもよろしいですか?",
+    "Are you sure you want to export %s?"
+        : "%sをエクスポートしてもよろしいですか?",
+    "The file must be an %s."
+        : "ファイルは%sでなければなりません。",
+    "You did not select any %s to delete."
+        : "削除する%sが選択されていません。",
+    "You did not select any %s to save order."
+        : "表示順を保存する%sが選択されていません。",
+    "Are you sure you want to save order of selected %s?"
+        : "選択された%sの表示順を保存してもよろしいですか?",
+    "%s's order saved successfully."
+        : "%sの表示順の変更を保存しました。",
+    "A %1$s with the same %2$s already exists."
+        : "同じ値の%2$s「%1$s」が既に存在します。",
+    "Both passwords must match."
+        : "パスワードが一致しません。",
+    "Username, Password and Email are required."
+        : "ユーザー名, パスワードとメールアドレスは必須です。",
+    "Login failed: Username or Password was wrong."
+        : "ログインできませんでした。ユーザー名とパスワードを確認してください。",
+    "Please specify a valid email address."
+        : "正しいメールアドレスを指定してください。",
+    "System Email Address is not set in System."
+        : "システムのメールが設定されていません。",
+    "Please enter a valid URL."
+        : "正しいURLを入力してください。",
+    "An email with a link to reset your password has been sent to your email address (%s)."
+        : "「%s」にパスワードをリセットするためのリンクを含むメールを送信しました。",
+    "Your request to reset your password has expired."
+        : "パスワードリセットの有効期限が切れています。",
+    "Upload Path contains an illegal character."
+        : "アップロード・パスに利用できない文字が含まれています。",
+    "Password should be longer than %s characters."
+        : "パスワードは %s 文字以上である必要があります。",
+    "Password should contain symbols."
+        : "パスワードには記号を含める必要があります。",
+    "Password should include letters and numbers."
+        : "パスワードには英文字・数字の両方を含める必要があります。",
+    "Password should include lowercase and uppercase letters."
+        : "パスワードには英文字大文字と小文字を含める必要があります。",
+    "A valid model or column name starts with a letter, followed by any number of letters, numbers, or underscores."
+        : "モデル(カラム)名は文字から始まり、任意の数の文字、 数字、アンダースコアが続きます。",
+    "Please specify the height of the editor."
+        : "エディタの高さを指定してください。",
+    "Model and Column are required for the reference."
+        : "リファレンスにはモデルとカラムの指定が必須です。",
+    "Model, Column and Type are required for the relation."
+        : "リレーションにはモデル、カラムとタイプの指定が必須です。",
+    "The Model names of the list type and edit type do not match."
+        : "一覧表示と編集表示のモデル名が一致しません。",
+    "Revision applied to master."
+        : "リビジョンをマスタに適用しました。",
+    "Are you sure you want to process _1 _2?"
+        : "_1件の_2に適用してもよろしいですか?",
+    "You did not select any action."
+        : "アクションが選択されていません。",
+    "Publish your site to see these changes take effect."
+        : "変更を反映させるには再構築してください。",
+    "Are you sure you want to delete the file? Delete is reflected when saving this page."
+        : "ファイルを削除してもよろしいですか? (ファイルの削除はこのページを保存時に反映されます)",
+    "Are you sure you want to apply this revision to master?"
+        : "このリビジョンをマスタに適用してもよろしいですか?",
+    "Disable,Enable"
+        : "無効,有効",
+    "The Filter has successfully deleted."
+        : "選択されたフィルタを削除しました。",
+    "An error occurred while removing the Filter."
+        : "フィルタの削除中にエラーが発生しました。",
+    "Draft,Review,Approval Pending,Reserved,Publish,Ended"
+        : "下書き,レビュー,承認待ち,公開予約,公開,終了",
+    "Translate to the user's language."
+        : "ユーザーの設定言語に翻訳します。",
+    "Translate labels to the user's language."
+        : "ラベルをユーザーの設定言語に翻訳します。",
+    "The CSV format are Invalid. Please confirm the file."
+        : "CSVのファイルフォーマットが正しくありません。ファイルを確認してください。",
+    "Please enter keyword for search."
+        : "検索するキーワードを入力してください。",
+    "This operation cannot be undone. Would you like to proceed?"
+        : "この操作は取り消せません。続行しますか?",
+    "The default template was successfully applied. The applied template will not be reflected until you save this page."
+        : "デフォルトテンプレートを適用しました。適用されたテンプレートは、このページを保存するまで確定されません。",
+    "The file has successfully uploaded. The uploaded file will not be reflected until you save this page."
+        : "ファイルをアップロードしました。アップロードしたファイルは、このページを保存するまで反映されません。",
+    "The file has successfully edited. The edited file will not be reflected until you save this page."
+        : "ファイルを編集しました。編集されたファイルは、このページを保存するまで反映されません。",
+    "It has been reduced as it exceeds the maximum size of the image."
+        : "画像の最大サイズを超えていたため、画像は縮小されました。",
+    "It has been reduced as it exceeds the maximum size of the image. The uploaded file will not be reflected until you save this page."
+        : "画像の最大サイズを超えていたため、画像は縮小されました。アップロードしたファイルは、このページを保存するまで反映されません。",
+    "This view could not be deleted because it is being used for a URL map. To delete a view, delete the URL map first."
+        : "ビューがURLマップに利用されているため、ビューを削除できませんでした。ビューを削除するためには先にURLマップを削除してください。",
+    "Are you sure you want to move from this page? The changes you made are not reflected."
+        : "このページから移動してよろしいですか? あたなが行った変更は反映されません。",
+    "Please specify the type of selection. You can specify radio, option, or select."
+        : "選択の項目の表示タイプを指定してください。指定できるのは radio, option, select のいずれかです。",
+    "Please enter options for this field as a comma delimited list."
+        : "このフィールドのオプションをカンマで区切って入力してください。",
+    "Set status to %s." : "ステータスは「%s」に変更されました。",
+    "Your responsible %1$s'%2$s' has been sent %3$s to another user %4$s by user %5$s."
+        : "あなたの担当%1$s「%2$s」が %5$s によってユーザー %4$s に%3$sされました。",
+    "%1$s for %2$s'%3$s' has been sent for you from another user %4$s by user %5$s."
+        : "%2$s「%3$s」が %5$s によって %4$s からあなたに%1$sされました。",
+    "%1$s for %2$s'%3$s' has been sent for you from another user %4$s"
+        : "%2$s「%3$s」が %4$s からあなたに%1$sされました。",
+    "The %1$s'%2$s' you creadted (or edited) has been approved and published by %3$s."
+        : "あなたが作成(または編集)した%1$s「%2$s」が %3$s によって承認され、公開されました。",
+    "The %1$s'%2$s' you requested approval has been approved by %3$s(Status changed to %4$s)."
+        : "あなたが承認を依頼した%1$s「%2$s」が %3$s によって承認されました(ステータスは「%4$s」にされました)。",
+    "The status of the %1$s %2$s you are in charge has been changed to %3$s by user %4$s and the responsible user has been changed."
+        : "あなたの担当の%1$s件の%2$sがユーザー %4$s によって%3$sに変更され、担当者もあわせて変更されました。",
+    "Send Thank You Message"
+        : "送信者にメールを送る",
+    "Send Notification Email"
+        : "通知メール送信",
+    "When remanded back to the Creator, the status will be changed to Draft."
+        : "作成者に差し戻すと、ステータスは下書きになります。",
+    "When remanded back to the Reviewer, the status will be changed to Review."
+        : "レビュアーに差し戻すと、ステータスはレビューになります。",
+    "When remanded back to the Publisher, the status will be changed to Approval Pending."
+        : "公開者に差し戻すと、ステータスは承認待ちになります。",
+    "When you send approval request to the Creator, the status will be changed to Draft."
+        : "作成者に承認依頼すると、ステータスは下書きになります。",
+    "When you send approval request to the Reviewer, the status will be changed to Review."
+        : "レビュアーに承認依頼すると、ステータスはレビューになります。",
+    "When you send approval request to the Reviewer, the status will be changed to Review(You will not be able to edit this %s)."
+        : "レビュアーに承認依頼すると、ステータスはレビューになります(あなたはこの%sを編集できなくなります)。",
+    "When you send approval request to the Publisher, the status will be changed to Approval Pending."
+        : "公開者に承認依頼すると、ステータスは承認待ちになります。",
+    "When you send approval request to the Publisher, the status will be changed to Approval Pending(You will not be able to edit this %s)."
+        : "公開者に承認依頼すると、ステータスは承認待ちになります(あなたはこの%sを編集できなくなります)。",
+    "Because other User is in edit, Workflow can not be used."
+        : "他のユーザーが担当しているため、ワークフローは利用できません。",
+    "You are trying to edit %s to be processed by another User."
+        : "他のユーザーが担当している%sを編集しようとしています。",
+    "Your session has expired."
+        : "セッションの有効期限が切れました。",
+    "Combine multiple fields with connectors."
+        : "複数のフィールドをコネクタで連結します。",
+    "Totalization of Contacts was carried out."
+        : "コンタクトの集計を行いました。",
+    "Please enter all allowable options for this field as a comma separated list."
+        : "このフィールドで有効なすべてのオプションをカンマで区切って入力してください。",
+    "If you want to receive a value different from the value entered for the label, please enter alternative value."
+        : "ラベルに入力した値と異なる値を受け取る場合は、指定してください。",
+    "If you want to receive a value different from the value entered for the options, please enter alternative comma separated list."
+        : "オプションに入力した値と異なる値を受け取る場合は、別のカンマ区切りリストを入力してください。",
+    "You are trying to specify a status that can not be set by the current user. Changing the status will change the user to you. Are you sure you want to change the status?"
+        : "現在のユーザーが設定できないステータスを指定しようとしています。ステータスを変更すると、ユーザーがあなたに変更されます。ステータスを変更しますか?",
+    "Please enter the width (number) of the fields(Comma separated list)."
+        : "フィールドの幅(数字)をカンマ区切りで入力してください。",
+    "Failed to save a contact for %s."
+        : "フォーム %s へのコンタクトを保存できませんでした。",
+    "Failed to send a notification email.(%s)"
+        : "通知メールの送信に失敗しました。(%s)",
+    "Failed to resize image."
+        : "画像のサイズ変更に失敗しました。",
+    "Failed to resize image(%s)."
+        : "画像(%s)のサイズ変更に失敗しました。",
+    "The image (%s) was larger than the size limit, so it was reduced."
+        : "画像(%s)は既定のサイズより大きいため縮小されました。",
+    "It has been reduced because it exceeds the maximum size of the image. The uploaded file will not be reflected until you save this page."
+        : "画像の最大サイズを超えているため、画像は縮小されました。アップロードしたファイルは、このページを保存するまで反映されません。",
+    "A request was made to change your Movable Type password. To complete this process click on the link below to select a new password."
+        : "パスワードをリセットしようとしています。以下のリンクをクリックして、新しいパスワードを設定してください。",
+    "If you did not request this change, you can safely ignore this email."
+        : "このメールに心当たりがないときは、何もせずに無視してください。",
+    "Failed to send a thank you email.(%s)"
+        : "コンタクト投稿者へのメール送信に失敗しました。(%s)",
+    "(%s) The inquiry you posted for %s has been received."
+        : "【%s】「%s」へのお問合わせを承りました。",
+    "(%s) The inquiry posted for %s has been received."
+        : "【%s】「%s」へのコンタクト投稿を受け付けました。",
+    "The inquiry posted for %s has been received."
+        : "%s へのお問合わせが投稿されました。",
+    "Too many posts have been submitted from you in a short period of time."
+        : "続けてたくさんの投稿を送りすぎています。",
+    "Please try again in a short while."
+        : "しばらく立ってからやり直してください。",
+    "The reception on '%s' has been closed."
+        : "%s への受付は終了しています。",
+    "Are you sure you want to save this %s as a revision instead of a master?"
+        : "この%sをマスタでなくリビジョンとして保存しますか?",
+    "'%s' is not allowed to upload by system settings."
+        : "'%s'のアップロードはシステム設定にて許可されていません。",
+    "Model and View are required."
+        : "モデルとビューを選択してください。",
+    "[[The line was skipped because CSV conversion failed!]]"
+        : "[[CSV変換に失敗したため行がスキップされました!]]",
+    "This Page is WorkSpace %s's Dashboard!"
+        : "このページはワークスペース「%s」のダッシュボードです!",
+    "If you want to customize or delete this widget please click this link text."
+        : "このウィジェットをカスタマイズまたは削除するには、リンクをクリックしてください。",
+    "To activate this field, enable the display option of this field on the edit screen."
+        : "このフィールドを有効化するには、編集画面でこのフィールドの表示オプションを有効にしてください。",
+    "Please enter comma-delimited question labels to be summarized(When omitted, it counts everything)."
+        : "集計対象の設問のラベルをカンマで区切って入力してください(省略時はすべてを対象とします)。",
+    "You are about to edit the revision."
+        : "リビジョンを編集しようとしています。",
+    "You are about to edit the revision. To apply this revision to the master click the \\'Apply to Master\\' button."
+        : "リビジョンを編集しようとしています。このリビジョンをマスタに適用するには「マスタに適用」ボタンをクリックしてください。"
+}

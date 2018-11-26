@@ -1,0 +1,43 @@
+<div class="row form-group">
+  <div class="col-lg-2">
+    <label for="<mt:var name="__col_name__">">
+      <mt:var name="label" escape>
+      <mt:if name="not_null"><mt:var name="field_required"></mt:if>
+    </label>
+  </div>
+  <div class="col-lg-10 form-inline form-inline-left-margin">
+    <label>
+      <mt:trans phrase="Back Color"> :
+      <input id="back_color" type="color" class="color-picker form-control watch-changed" name="back_color" value="<mt:var name="object_back_color" escape>"
+      <mt:if name="readonly">readonly</mt:if>></label>
+    <label>
+      <mt:trans phrase="Fore Color"> :
+    <input id="fore_color" type="color" class="color-picker form-control watch-changed" name="fore_color" value="<mt:var name="object_fore_color" escape>"
+      <mt:if name="readonly">readonly</mt:if>>
+    </label>
+    <mt:var name="_hint">
+  </div>
+</div>
+<script>
+$('#back_color').change(function(){
+  var rgba = getConversionRgba($(this).val());
+  $('iframe#text_ifr')
+    .contents()
+    .find('body')
+    .css({
+      'backgroundColor': $(this).val(),
+      'textShadow' : '2px 2px 2px ' + $(this).val()
+                     + ',-2px 2px 2px ' + $(this).val()
+                     + ',2px -2px 2px ' + $(this).val()
+                     + ',-2px -2px 2px ' + $(this).val()
+    }).children().css( 'backgroundColor', 'rgba(' + rgba + ')' );
+});
+$('#fore_color').change(function(){
+  $('iframe#text_ifr')
+    .contents()
+    .find('body')
+    .css({
+      'color': $(this).val()
+    });
+});
+</script>

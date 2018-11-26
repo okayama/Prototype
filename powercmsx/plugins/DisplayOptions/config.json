@@ -1,0 +1,56 @@
+{
+    "label"       : "DisplayOptions",
+    "id"          : "displayoptions",
+    "component"   : "DisplayOptions",
+    "version"     : "1.0",
+    "author"      : "Alfasado Inc.",
+    "author_link" : "https://alfasado.net/",
+    "description" : "Make custom display options configurable for each workspace or system.",
+    "hooks": {
+        "displayoptions_post_init": {
+            "post_init" : {
+                "component" : "DisplayOptions",
+                "priority"  : 1,
+                "method" : "post_init"
+            }
+        }
+    },
+    "callbacks": {
+        "displayoptions_template_source_edit": {
+            "edit" : {
+                "template_source" : {
+                    "component" : "DisplayOptions",
+                    "priority"  : 10,
+                    "method" : "template_source_edit"
+                }
+            }
+        },
+        "displayoptions_template_source_list": {
+            "list" : {
+                "template_source" : {
+                    "component" : "DisplayOptions",
+                    "priority"  : 10,
+                    "method" : "template_source_list"
+                }
+            }
+        },
+        "displayoptions_pre_load_objects": {
+            "table" : {
+                "pre_load_objects" : {
+                    "component" : "DisplayOptions",
+                    "priority"  : 10,
+                    "method" : "pre_load_objects"
+                }
+            }
+        },
+        "pre_save_displayoption": {
+            "displayoption" : {
+                "pre_save" : {
+                    "component" : "DisplayOptions",
+                    "priority"  : 10,
+                    "method" : "pre_save_displayoption"
+                }
+            }
+        }
+    }
+}

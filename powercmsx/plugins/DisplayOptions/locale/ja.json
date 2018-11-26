@@ -1,0 +1,14 @@
+{
+    "Display Option" : "画面オプション",
+    "Customize" : "カスタマイズ",
+    "Exclude Publisher" : "公開者を対象外にする",
+    "Exclude Reviewer" : "レビュアーを対象外にする",
+    "Exclude Administrator" : "管理者を対象外にする",
+    "Exclude Workspace Administrator" : "スペース管理者を対象外にする",
+    "Screen Customize" : "画面のカスタマイズ",
+    "Edit Screen" : "編集画面",
+    "List Screen" : "一覧画面",
+    "Hidden" : "非表示にする",
+    "Make custom display options configurable for each workspace or system."
+        : "スペースまたはシステムごとにカスタム画面オプションを設定可能にします。"
+}

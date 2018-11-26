@@ -1,0 +1,37 @@
+{
+    "label"       : "HTML_CodeSniffer",
+    "id"          : "html_codesniffer",
+    "component"   : "HTML_CodeSniffer",
+    "version"     : "1.0",
+    "author"      : "Alfasado Inc.",
+    "author_link" : "https://alfasado.net/",
+    "description" : "A client-side JavaScript that checks a HTML document or source code, and detects violations of a defined coding standard in preview screen.",
+    "cfg_template": "cfg_template.tmpl",
+    "cfg_system"  : 1,
+    "cfg_space"   : 1,
+    "settings"    : {
+        "html_codesniffer_wcag_level" : "AA",
+        "html_codesniffer_base_path"  : "",
+        "html_codesniffer_enabled"    : 1
+    },
+    "callbacks": {
+        "html_codesniffer_post_preview": {
+            "preview" : {
+                "post_preview" : {
+                    "component" : "HTML_CodeSniffer",
+                    "priority"  : 10,
+                    "method" : "insert_html_codesniffer"
+                }
+            }
+        },
+        "html_codesniffer_template_source_edit": {
+            "edit" : {
+                "template_source" : {
+                    "component" : "HTML_CodeSniffer",
+                    "priority"  : 11,
+                    "method" : "insert_codesniffer_checkbox"
+                }
+            }
+        }
+    }
+}

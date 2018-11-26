@@ -1,0 +1,75 @@
+<div class="row form-group">
+  <div class="col-lg-2">
+    <label for="setting_externalpreview_models">
+      <mt:trans phrase="Target Models" component="ExternalPreview">
+    </label>
+  </div>
+  <mt:setvar name="count_target" value="0">
+  <div class="col-lg-10">
+    <mt:var name="setting_externalpreview_models" escape split="," setvar="externalpreview_target">
+    <mt:setvar name="menu_type" value="display_system">
+    <mt:if name="workspace_id">
+      <mt:setvar name="menu_type" value="display_space">
+    </mt:if>
+    <mt:tables type="$menu_type">
+      <mt:ifmodelhasurlmapping workspace_id="$workspace_id" model="$name">
+        <mt:if name="has_uuid">
+          <mt:setvar name="count_target" value="1">
+          <label class="custom-control custom-checkbox">
+          <input class="custom-control-input watch-changed externalpreview_target_model"
+            <mt:ifinarray array="externalpreview_target" value="$name">checked</mt:ifinarray>
+            type="checkbox" name="externalpreview_target_model" value="<mt:var name="name">">
+            <span class="custom-control-indicator"></span>
+            <span class="custom-control-description"> 
+            <mt:var name="label" translate></span>
+          </label>
+        </mt:if>
+      </mt:ifmodelhasurlmapping>
+    </mt:tables>
+    <mt:unless name="count_target">
+    <div class="alert alert-success" id="header-alert" role="alert" tabindex="0">
+      <span><mt:trans phrase="There is no target model." component="ExternalPreview"></span>
+    </div>
+    
+    <p class="text-muted hint-block">
+      <i class="fa fa-question-circle-o" aria-hidden="true"></i>
+      <span class="sr-only"><mt:trans phrase="Hint"></span>
+      <mt:trans phrase="In order to use this function, UUID is set in the model, and URL Map needs to be present." component="ExternalPreview">
+    </p>
+    
+    </mt:unless>
+    <input type="hidden" id="setting_externalpreview_models" name="setting_externalpreview_models" class="form-control" value="<mt:var name="setting_externalpreview_models" escape>">
+<script>
+$('.externalpreview_target_model').change(function(){
+    var all_models = $('#setting_externalpreview_models').val();
+    var this_model = $(this).val();
+    all_models = all_models.split(',');
+    var result = $.inArray( this_model, all_models );
+    if ( $(this).prop('checked') ) {
+        if ( result == -1 ) {
+            all_models.push( this_model );
+            $('#setting_externalpreview_models').val(all_models.join(','));
+        }
+    } else {
+        if ( result != -1 ) {
+            all_models.splice(result, 1); 
+            $('#setting_externalpreview_models').val(all_models.join(','));
+        }
+    }
+});
+</script>
+  </div>
+</div>
+<mt:if name="count_target">
+<div class="row form-group">
+  <div class="col-lg-2">
+    <label for="setting_externalpreview_default_expires">
+      <mt:trans phrase="Default Expires" component="ExternalPreview">
+    </label>
+  </div>
+  <div class="col-lg-10">
+    <input type="number" id="setting_externalpreview_default_expires" name="setting_externalpreview_default_expires" class="form-control short control-inline" value="<mt:var name="setting_externalpreview_default_expires" escape>">
+    <mt:trans phrase="day(s) after" component="ExternalPreview">
+  </div>
+</div>
+</mt:if>

@@ -1,0 +1,12 @@
+<mt:for merge_linefeeds="1">
+<mt:trans phrase="The %1$s'%2$s' you requested approval has been approved by %3$s(Status changed to %4$s)." params="'$object_label','$object_name','$by_user','$status_text'">
+
+<mt:trans phrase="(%s)" params="$object_label">
+<mt:var name="object_name"> (ID: <mt:var name="object_id">)
+
+<mt:trans phrase="(URLs)">
+<mt:if name="object_permalink"><mt:var name="object_permalink">
+</mt:if><mt:if name="previous_user_can_edit"><mt:var name="edit_link"></mt:if>
+
+<mt:include file="mail_footer.tmpl">
+</mt:for>

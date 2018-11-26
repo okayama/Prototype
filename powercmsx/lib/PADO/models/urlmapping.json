@@ -1,0 +1,173 @@
+{
+    "label"    : "URL Map",
+    "plural"   : "URL Maps",
+    "version"  : "1.6",
+    "auditing" : 1,
+    "display_system" : 1,
+    "sortable" : 1,
+    "order"    : 30,
+    "primary"  : "name",
+    "menu_type": 2,
+    "display_space": 1,
+    "column_defs": {
+        "id": {
+            "type": "int",
+            "size": 11,
+            "not_null": 1
+        },
+        "name": {
+            "type": "string",
+            "size": 255,
+            "not_null": 1
+        },
+        "model": {
+            "type": "string",
+            "size": 255,
+            "not_null": 1
+        },
+        "mapping": {
+            "type": "string",
+            "size": 255,
+            "not_null": 1
+        },
+        "container": {
+            "type": "string",
+            "size": 255
+        },
+        "container_scope": {
+            "type": "tinyint",
+            "size": 4
+        },
+        "triggers": {
+            "type": "relation"
+        },
+        "trigger_scope": {
+            "type": "tinyint",
+            "size": 4,
+            "default": null
+        },
+        "template_id": {
+            "type": "int",
+            "size": 11
+        },
+        "date_based": {
+            "type": "string",
+            "size": 255
+        },
+        "fiscal_start": {
+            "type": "int",
+            "size": 11,
+            "not_null": 1,
+            "default": null
+        },
+        "publish_file": {
+            "type": "int",
+            "size": 11
+        },
+        "link_status": {
+            "type": "tinyint",
+            "size": 4,
+            "default": null
+        },
+        "created_on": {
+            "type": "datetime"
+        },
+        "modified_on": {
+            "type": "datetime"
+        },
+        "created_by": {
+            "type": "int",
+            "size": 11
+        },
+        "modified_by": {
+            "type": "int",
+            "size": 11
+        },
+        "workspace_id": {
+            "type": "int",
+            "size": 11,
+            "default" : 0
+        },
+        "order": {
+            "type": "int",
+            "size": 11
+        }
+    },
+    "indexes": {
+        "PRIMARY": "id",
+        "name": "name",
+        "container": "container",
+        "date_based": "date_based",
+        "fiscal_start": "fiscal_start",
+        "model": "model",
+        "publish_file": "publish_file",
+        "created_on": "created_on",
+        "modified_on": "modified_on",
+        "created_by": "created_by",
+        "modified_by": "modified_by",
+        "workspace_id": "workspace_id",
+        "order": "order"
+    },
+    "sort_by": {
+        "id": "ascend"
+    },
+    "options" : {
+        "date_based" : "Yearly,Fiscal-Yearly,Monthly,Daily",
+        "publish_file": "Dynamic,Static,Static(Delayed),On-Demand,Queue,Manually"
+    },
+    "disp_edit": {
+        "publish_file": "select"
+    },
+    "autoset": [
+        "created_on",
+        "modified_on",
+        "created_by",
+        "modified_by"
+    ],
+    "translate": [
+        "model",
+        "container",
+        "triggers",
+        "date_based"
+    ],
+    "child_tables": [
+        "urlinfo"
+    ],
+    "relations": {
+        "triggers": "table"
+    },
+    "edit_properties": {
+        "id": "hidden",
+        "name": "primary",
+        "model": "text",
+        "mapping": "text",
+        "container": "text",
+        "triggers": "relation:table:plural:checkbox",
+        "template_id": "relation:template:name:dialog",
+        "date_based": "selection",
+        "publish_file": "selection",
+        "link_status": "hidden",
+        "order": "number"
+    },
+    "list_properties": {
+        "id": "number",
+        "name": "primary",
+        "model": "text",
+        "mapping": "text",
+        "container": "text",
+        "triggers": "reference:table:plural",
+        "trigger_scope": "checkbox",
+        "template_id": "reference:template:name",
+        "date_based": "text",
+        "publish_file": "text",
+        "modified_on": "datetime",
+        "modified_by": "reference:user:name",
+        "workspace_id": "reference:workspace:name",
+        "order": "number"
+    },
+    "column_labels": {
+        "container_scope": "Scope of Container",
+        "triggers": "Rebuild Triggers",
+        "trigger_scope": "Scope of Triggers"
+    }
+}

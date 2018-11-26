@@ -1,0 +1,68 @@
+{
+    "version"    : "1.1",
+    "column_defs": {
+        "id": {
+            "type": "int",
+            "not_null": 1,
+            "size": 11
+        },
+        "name": {
+            "type": "string",
+            "size": 255,
+            "not_null": 1
+        },
+        "user_id": {
+            "type": "int",
+            "not_null": 1,
+            "size": 11
+        },
+        "key": {
+            "type": "string",
+            "size": 60
+        },
+        "value": {
+            "type": "string",
+            "size": 255
+        },
+        "text": {
+            "type": "text"
+        },
+        "kind": {
+            "type": "string",
+            "size": 2
+        },
+        "data": {
+            "type": "blob"
+        },
+        "metadata": {
+            "type": "blob"
+        },
+        "extradata": {
+            "type": "blob"
+        },
+        "workspace_id": {
+            "type": "int",
+            "size": 11,
+            "default" : 0
+        },
+        "start": {
+            "type": "int",
+            "size": 11
+        },
+        "expires": {
+            "type": "int",
+            "size": 11
+        }
+    },
+    "indexes": {
+        "PRIMARY": "id",
+        "name": "name",
+        "user_id": "user_id",
+        "key": "key",
+        "value": "value",
+        "kind": "kind",
+        "workspace_id": "workspace_id",
+        "start": "start",
+        "expires": "expires"
+    }
+}

@@ -1,0 +1,21 @@
+<mt:entries limit="$entries_limit" cols="title,published_on" include_workspaces="this">
+  <mt:if name="__first__">
+  <ul class="list-group list-main mb-4">
+  </mt:if>
+    <li class="list-group-item">
+      <div class="row">
+        <div class="col-lg-2">
+        <mt:entrydate format="Y-m-d">
+        </div>
+        <div class="col-lg-10 d-flex justify-content-between align-items-center">
+          <a href="<mt:entrypermalink>"><mt:entrytitle language="$language" escape></a>
+          <mt:if name="current_archive_type" ne="category">
+            <mt:entrycategories limit="1" cols="label"><small class="badge badge-secondary"><mt:categorylabel language="$language" escape></small></mt:entrycategories>
+          </mt:if>
+        </div>
+      </div>
+    </li>
+  <mt:if name="__last__">
+  </ul>
+  </mt:if>
+</mt:entries>

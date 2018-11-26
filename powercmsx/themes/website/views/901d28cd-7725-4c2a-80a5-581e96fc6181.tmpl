@@ -1,0 +1,55 @@
+<mt:if name="request.__mode" eq="submit">
+  <mt:if name="error">
+  <p class="text-center text-danger"><mt:trans phrase="An error occurred." language="$language"></p>
+    <mt:loop name="errors">
+      <mt:if name="__first__"><ul></mt:if>
+      <li><mt:var name="__value__"></li>
+      <mt:if name="__last__"></ul></mt:if>
+    </mt:loop>
+  <mt:else>
+  <p class="text-center"><mt:trans phrase="Thank you for your inquiry." language="$language"></p>
+  </mt:if>
+<mt:elseif name="request.submit" eq="1">
+  <p class="text-center"><mt:trans phrase="Thank you for your inquiry." language="$language"></p>
+<mt:else>
+  <mt:if name="error">
+    <p class="text-center"><mt:trans phrase="Please check your entries." language="$language"></p>
+    <mt:loop name="errors">
+      <mt:if name="__first__"><ul></mt:if>
+      <li><mt:var name="__value__"></li>
+      <mt:if name="__last__"></ul></mt:if>
+    </mt:loop>
+  <mt:else>
+    <mt:if name="confirm_ok">
+      <p class="text-center"><mt:trans phrase="Confirm the following and click Submit button."  language="$language"></p>
+    <mt:else>
+      <p class="text-center"><mt:trans phrase="Please complete the form below and click Confirm button."  language="$language"></p>
+    </mt:if>
+  </mt:if>
+  <form action="<mt:formpermalink>" method="POST" enctype="multipart/form-data">
+  <input type="hidden" name="form_id" value="<mt:formid>">
+  <input type="hidden" name="__mode" value="<mt:if name="confirm_ok">submit<mt:else>confirm</mt:if>">
+  <input type="hidden" name="_type" value="form">
+  <input type="hidden" name="_language" value="<mt:var name="language">">
+  <input type="hidden" name="_identifier" value="<mt:if name="request._identifier"><mt:var name="request._identifier" escape><mt:else><mt:var name="form_identifier"></mt:if>">
+  <input type="hidden" name="object_id" value="<mt:if name="request.object_id"><mt:var name="request.object_id" escape><mt:else><mt:var name="current_object_id"></mt:if>">
+  <input type="hidden" name="model" value="<mt:if name="request.model"><mt:var name="request.model" escape><mt:else><mt:var name="current_archive_model"></mt:if>">  
+  <input type="hidden" name="magic_token" value="<mt:var name="magic_token" escape>">
+  <table class="table table-hover table-striped form-table">
+    <tbody>
+      <mt:formquestions>
+        <mt:objectcontext model="question" prefix="question">
+          <mt:questiontemplate eval="1">
+        </mt:objectcontext>
+      <mt:if name="__last__">
+        <tr>
+          <td colspan="2" class="text-center">
+            <button type="submit" class="btn btn-secondary btn-lg"><mt:if name="confirm_ok"><mt:trans phrase="Submit" language="$language"><mt:else><mt:trans phrase="Confirm" language="$language"></mt:if></button>
+          </td>
+        <tr>
+      </mt:if>
+      </mt:formquestions>
+    </tbody>
+  </table>
+  </form>
+</mt:if>

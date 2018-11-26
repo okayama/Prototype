@@ -1,0 +1,16 @@
+<mt:setvarblock name="card_text">
+    <mt:isadmin><a href="<mt:var name="script_uri">?__mode=config"><mt:trans phrase="If you want to customize or delete this widget please click this link text."></a></mt:isadmin>
+</mt:setvarblock>
+<div class="card dashboard-widget dashboard-widget-main">
+<mt:unless name="workspace_id">
+  <div class="card-image-wrapper"><img class="card-img-top img-fluid" src="assets/brand/PowerCMSX.svg" alt="PowerCMS X"></div>
+  <div class="card-block">
+    <p class="card-text"><mt:trans phrase="Welcome to %s!" params="PowerCMS X"><mt:var name="card_text"></p>
+  </div>
+<mt:else>
+  <h2 class="card-header"><mt:var name="workspace_name" escape></h2>
+  <div class="card-block">
+    <p class="card-text"><mt:trans phrase="This Page is WorkSpace %s's Dashboard!" params="$workspace_name"> <mt:var name="card_text"></p>
+  </div>
+</mt:unless>
+</div>

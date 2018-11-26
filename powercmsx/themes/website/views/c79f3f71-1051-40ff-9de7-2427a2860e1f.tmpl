@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="<mt:var name="language">">
+  <head>
+    <meta charset="utf-8">
+    <title><mt:websitename escape><mt:if name="archive_title"> | <mt:var name="archive_title" escape></mt:if></title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <link rel="stylesheet" href="<mt:var name="theme_static">website/css/bootstrap.min.css" media="screen">
+    <link rel="stylesheet" href="<mt:var name="theme_static">website/css/custom.css">
+    <link rel="stylesheet" href="<mt:var name="theme_static">website/css/font-awesome.min.css">
+    <link rel="stylesheet" href="<mt:websiteurl>css/theme.css">
+    <link href="https://fonts.googleapis.com/css?family=Noto+Sans+JP:300,500&amp;subset=japanese" rel="stylesheet">
+    <script src="<mt:var name="theme_static">website/js/jquery.min.js"></script>
+    <script src="<mt:var name="theme_static">website/js/popper.min.js"></script>
+    <script src="<mt:var name="theme_static">website/js/bootstrap.min.js"></script>
+    <script src="<mt:var name="theme_static">website/js/custom.js"></script>
+  </head>
+  <body class="<mt:var name="body_class">">
+    <span id="page-top" name="page-top"></span>
+    <div class="container-fluid">
+    <nav class="navbar navbar-expand-lg fixed-top navbar-dark bg-dark">
+      <a class="navbar-brand" href="<mt:var name="website_url">"><mt:var name="website_name" escape></a>
+      <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarColor01" aria-controls="navbarColor01" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarColor01">
+      <mt:menuitems basename="website_global_navigation" cols="id">
+      <mt:if name="__first__">
+        <ul class="navbar-nav mr-auto">
+      </mt:if>
+          <li class="nav-item<mt:if name="current_archive_url" eq="$__item_url__"> active</mt:if>">
+            <a class="nav-link" href="<mt:var name="__item_url__">"><mt:var name="__item_primary__" regex_replace="'/^\(Website\)\s/',''" language="$language" escape><mt:if name="current_archive_url" eq="$__item_url__"><span class="sr-only">(<mt:trans phrase="Your Location" language="$language">)</span></mt:if></a>
+          </li>
+        <mt:if name="__last__">
+        </ul>
+        </mt:if>
+        </mt:menuitems>
+        <mt:ignore>
+        <form class="form-inline my-2 my-lg-0">
+          <input class="form-control mr-sm-2" type="text" placeholder="<mt:trans phrase="Keywords" language="$language">">
+          <button class="btn btn-secondary my-2 my-sm-0" type="submit"><mt:trans phrase="Search" language="$language"></button>
+        </form>
+        </mt:ignore>
+      </div>
+    </nav>
+  </div>
+

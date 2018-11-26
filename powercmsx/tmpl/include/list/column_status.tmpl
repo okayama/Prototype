@@ -1,0 +1,32 @@
+<mt:if name="max_status" eq="5">
+<mt:if name="status" eq="5">
+  <mt:setvar name="class_name" value="unpublished">
+  <mt:setvar name="filter_name" value="filter_unpublished">
+<mt:elseif name="status" eq="4">
+  <mt:setvar name="class_name" value="published">
+  <mt:setvar name="filter_name" value="filter_published">
+<mt:elseif name="status" eq="3">
+  <mt:setvar name="class_name" value="reserved">
+  <mt:setvar name="filter_name" value="filter_reserved">
+<mt:elseif name="status" eq="2">
+  <mt:setvar name="class_name" value="approval">
+  <mt:setvar name="filter_name" value="filter_approval">
+<mt:elseif name="status" eq="1">
+  <mt:setvar name="class_name" value="review">
+  <mt:setvar name="filter_name" value="filter_review">
+<mt:else>
+  <mt:setvar name="class_name" value="draft">
+  <mt:setvar name="filter_name" value="filter_draft">
+</mt:if>
+<mt:else>
+<mt:if name="status" eq="1">
+  <mt:setvar name="class_name" value="draft">
+  <mt:setvar name="filter_name" value="filter_review">
+<mt:elseif name="status" eq="2">
+  <mt:setvar name="class_name" value="published">
+  <mt:setvar name="filter_name" value="filter_approval">
+</mt:if>
+</mt:if>
+<a class="col-status-<mt:var name="class_name">" href="<mt:var name="script_uri">?__mode=view&amp;_model=<mt:var name="this_model" escape>&amp;_type=list&amp;_filter=<mt:var name="this_model" escape>&amp;select_system_filters=<mt:var name="filter_name">">
+<mt:var name="_status_text">
+</a>

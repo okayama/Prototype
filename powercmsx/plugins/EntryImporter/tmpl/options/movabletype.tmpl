@@ -1,0 +1,87 @@
+<label class="custom-control custom-radio">
+<input id="movabletype_author_current" class="custom-control-input" type="radio" checked name="movabletype_author_setting" value="1">
+<span class="custom-control-indicator"></span>
+<span class="custom-control-description"><mt:trans phrase="Import as me" component="EntryImporter"></span>
+</label>
+<mt:ifusercan action="create" model="user">
+<label class="custom-control custom-radio">
+<input id="movabletype_author_create" class="custom-control-input" type="radio" name="movabletype_author_setting" value="2">
+<span class="custom-control-indicator"></span>
+<span class="custom-control-description"><mt:trans phrase="Preserve original user" component="EntryImporter"></span>
+</label>
+<div class="row form-group hidden" id="movabletype_password-wrapper">
+  <div class="form-inline-padding form-inline col-lg-10 option-content hidden">
+    <mt:trans phrase="Default password for new users:" component="EntryImporter">
+    <input id="movabletype_new_author_password" type="password" class="form-control" name="movabletype_new_author_password" value="">
+    <p class="text-muted hint-block">
+    <i class="fa fa-question-circle-o" aria-hidden="true"></i>
+    <span class="sr-only"><mt:trans phrase="Hint"></span>
+    <mt:trans phrase="Please set the new user's email address later." component="EntryImporter"></p>
+  </div>
+</div>
+</mt:ifusercan>
+<div class="row form-group" id="movabletype_comment_status-wrapper">
+  <div class="form-inline-padding form-inline col-lg-10 option-content">
+    <label>
+    <mt:trans phrase="Status for Comments:" component="EntryImporter">
+    <select class="form-control short" name="movabletype_comment_status">
+        <option value="1"><mt:trans phrase="Disable"></option>
+        <option value="2"><mt:trans phrase="Enable"></option>
+    </select>
+    </label>
+  </div>
+</div>
+<script>
+<mt:ifusercan action="create" model="user">
+$('#movabletype_author_current').change(function(){
+    if ( $(this).prop('checked') ) {
+        $('#movabletype_password-wrapper').hide();
+    }
+});
+$('#movabletype_author_create').change(function(){
+    if ( $(this).prop('checked') ) {
+        $('#movabletype_password-wrapper').show();
+    }
+});
+</mt:ifusercan>
+$('#import-form').submit(function(){
+    if ( $('#import_format').val() == 'movabletype' ) {
+        <mt:ifusercan action="create" model="user">
+        if ( $('#movabletype_author_create').prop('checked') ) {
+            if (! $('#movabletype_new_author_password').val() ) {
+                alert('<mt:trans phrase="Enter a default password for new users." component="EntryImporter">');
+                $('#movabletype_new_author_password').focus();
+                return false;
+            }
+        }
+        </mt:ifusercan>
+    }
+    return true;
+});
+<mt:ifusercan action="create" model="user">
+$('#movabletype_new_author_password').change(function(){
+    if ( $(this).val() ) {
+        if ( $('#movabletype_author_create').prop('checked') ) {
+            $('#save').removeClass('disabled');
+            $("#save").prop("disabled", false);
+        }
+    }
+});
+</mt:ifusercan>
+</script>
+<hr style="margin-bottom:1.5em" />
+<div>
+<textarea id="movabletype_field_settings" name="movabletype_field_settings" rows="4" class="form-control" placeholder="CF50_BASENAME1=text"><mt:var name="cookie.pt-movabletype_field_settings" escape></textarea>
+  <p class="text-muted hint-block">
+    <i class="fa fa-question-circle-o" aria-hidden="true"></i>
+    <span class="sr-only"><mt:trans phrase="Hint"></span>
+    <mt:trans phrase="Write 1 line 1 setting. Movable Type's Field name CF50_BASENAME=Field name of PowerCMS X(Duplicates are merged)." component="EntryImporter">
+  </p>
+</div>
+<script>
+$('#import-form').submit(function(){
+    var settings = $('#movabletype_field_settings').val();
+    document.cookie = 'pt-movabletype_field_settings=' + encodeURIComponent( settings ) + ';max-age=319740000'; 
+    return true;
+});
+</script>

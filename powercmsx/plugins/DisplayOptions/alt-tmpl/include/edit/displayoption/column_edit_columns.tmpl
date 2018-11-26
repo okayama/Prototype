@@ -1,0 +1,117 @@
+<mt:if name="object_model">
+<h3><mt:trans phrase="Edit Screen" component="DisplayOptions"></h3>
+<mt:gettableid name="$object_model" setvar="model_id">
+<mt:objectloop model="column" sort_by="order" table_id="$model_id">
+  <mt:if name="__first__">
+    <div class="row form-group">
+      <div class="col-lg-2">
+        <label class="custom-control custom-checkbox">
+          <input name="edit_all" value="0" type="hidden">
+          <input type="checkbox" id="columns-edit-all" class="custom-control-input watch-changed" <mt:if name="object_edit_all">checked</mt:if> name="edit_all" value="1">
+          <span class="custom-control-indicator"></span>
+          <span class="custom-control-description"><strong><mt:trans phrase="Columns(Edit Screen)"></strong></span>
+        </label>
+      </div>
+      <div class="col-lg-10">
+        <div id="column-group">
+  </mt:if>
+    <mt:if name="edit">
+      <mt:if name="edit" ne="hidden">
+<mt:ifinarray name="_hide_edit_options" value="$name">
+<mt:else>
+<label id="_cb-<mt:var name="name" escape>" class="custom-control custom-checkbox">
+  <input name="_column-<mt:var name="name" escape>" value="<mt:if name="edit" eq="primary">1<mt:else><mt:ifinarray name="_force_display" value="$name">1<mt:else>0</mt:ifinarray></mt:if>" type="hidden">
+  <input <mt:if name="edit" eq="primary">disabled checked<mt:else><mt:ifinarray name="_force_display" value="$name">disabled checked</mt:ifinarray></mt:if> type="checkbox" <mt:ifinarray name="show_edit_columns" value="$name">checked</mt:ifinarray> class="custom-control-input watch-changed column-edit-cb" name="_column-<mt:var name="name" escape>" value="1">
+  <span class="custom-control-indicator"></span>
+  <span class="custom-control-description"><mt:var name="label" translate="1" escape></span>
+</label>
+</mt:ifinarray>
+      </mt:if>
+    </mt:if>
+  <mt:if name="__last__">
+<mt:loop name="field_loop">
+    <mt:setvarblock name="customFieldName">field-<mt:var name="basename" escape></mt:setvarblock>
+    <label id="_cb-<mt:var name="customFieldName">" class="custom-control custom-checkbox">
+    <input name="_column-field-<mt:var name="basename" escape>" value="0" type="hidden">
+      <input type="checkbox" <mt:ifinarray name="show_edit_columns" value="$customFieldName">checked</mt:ifinarray> class="custom-control-input watch-changed column-edit-cb" name="_column-field-<mt:var name="basename" escape>" value="1">
+      <span class="custom-control-indicator"></span>
+      <span class="custom-control-description"><mt:var name="name" escape></span>
+    </label>
+</mt:loop>
+      </div>
+    </div>
+  </div>
+</mt:if>
+</mt:objectloop>
+<div class="row form-group">
+  <div class="col-lg-2">
+    <mt:trans phrase="Customize" component="DisplayOptions">
+  </div>
+  <div class="col-lg-10">
+<label id="_cb-<mt:var name="name" escape>" class="custom-control custom-checkbox">
+  <input name="_customize-can_hide_in_edit" value="0" type="hidden">
+  <input type="checkbox" <mt:if name="can_hide_in_edit">checked</mt:if> class="custom-control-input watch-changed" name="_customize-can_hide_in_edit" value="1">
+  <span class="custom-control-indicator"></span>
+  <span class="custom-control-description"><mt:trans phrase="Allow Hiding Fields"></span>
+</label>
+<label id="_cb-<mt:var name="name" escape>" class="custom-control custom-checkbox">
+  <input name="_customize-can_sort_in_edit" value="0" type="hidden">
+  <input type="checkbox" <mt:if name="can_sort_in_edit">checked</mt:if> class="custom-control-input watch-changed" name="_customize-can_sort_in_edit" value="1">
+  <span class="custom-control-indicator"></span>
+  <span class="custom-control-description"><mt:trans phrase="Allow Sort Fields"></span>
+</label>
+  </div>
+</div>
+<script>
+$('#columns-edit-all').click(function(){
+    var checked = $(this).prop('checked');
+    $('.column-edit-cb').each(function(){
+        $(this).prop('checked', checked);
+    });
+});
+<mt:unless name="object_edit_columns">
+$('#columns-edit-all').prop('checked', true);
+$('.column-edit-cb').each(function(){
+    $(this).prop('checked', true);
+});
+</mt:unless>
+$('#column-group').sortable ( {
+    stop: function( evt, ui ) {
+        editContentChanged = true;
+    }
+});
+<mt:if name="column_edit_orders">
+var column_orders = <mt:var name="column_edit_orders">;
+for ( var i = 0; i < column_orders.length; i++ ) {
+    var column_id = '_cb-' + column_orders[i];
+    var column_element = $('#' + column_id);
+    column_element.appendTo('#column-group');
+}
+$("#column-group").sortable('refresh');
+</mt:if>
+<mt:if name="object_edit_all">
+$('.column-edit-cb').each(function(){
+    $(this).prop('checked', true);
+});
+</mt:if>
+$('.column-edit-cb').change(function(){
+    var checked = $(this).prop('checked');
+    if ( checked == false ) {
+        $('#columns-edit-all').prop('checked', false);
+    } else {
+        _edit_all_cheched = true;
+        $('.column-edit-cb').each(function(){
+            var checked = $(this).prop('checked');
+            if ( checked == false ) {
+                _edit_all_cheched = false;
+            }
+        });
+        if ( _edit_all_cheched ) {
+            $('#columns-edit-all').prop('checked', true);
+        }
+    }
+});
+</script>
+<mt:else>
+<!--Do not Display-->
+</mt:if>

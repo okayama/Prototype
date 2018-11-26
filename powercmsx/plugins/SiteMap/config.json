@@ -1,0 +1,42 @@
+{
+    "label"       : "SiteMap",
+    "id"          : "sitemap",
+    "component"   : "SiteMap",
+    "version"     : "1.0",
+    "author"      : "Alfasado Inc.",
+    "author_link" : "https://alfasado.net/",
+    "description" : "SiteMap dashboard widget.",
+    "cfg_template": "cfg_template.tmpl",
+    "cfg_system"  : 1,
+    "cfg_space"   : 1,
+    "settings"    : {
+        "sitemap_contains_assets"          : 1,
+        "sitemap_contains_attachmentfiles" : 0,
+        "sitemap_contains_files"           : 0,
+        "sitemap_contains_thumbnails"      : 0
+    },
+    "widgets": {
+        "sitemap": {
+            "component" : "SiteMap",
+            "label"     : "Site Map",
+            "order"     : 20
+        }
+    },
+    "methods": {
+        "get_sitemap_tree": {
+            "component"  : "SiteMap",
+            "method"     : "get_sitemap_tree"
+        }
+    },
+    "callbacks": {
+        "sitemap_template_source_dashboard": {
+            "dashboard" : {
+                "template_source" : {
+                    "component" : "SiteMap",
+                    "priority"  : 10,
+                    "method" : "template_source_dashboard"
+                }
+            }
+        }
+    }
+}

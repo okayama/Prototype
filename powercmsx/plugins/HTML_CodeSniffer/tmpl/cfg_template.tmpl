@@ -1,0 +1,43 @@
+<div class="row form-group">
+  <div class="col-lg-2">
+    <label for="setting_html_codesniffer_enabled">
+      <mt:trans phrase="HTML_CodeSniffer Enabled" component="HTML_CodeSniffer">
+    </label>
+  </div>
+  <div class="col-lg-10">
+    <input type="hidden" name="setting_html_codesniffer_enabled" value="0">
+    <label class="custom-control custom-checkbox">
+    <input id="setting_html_codesniffer_enabled" class="custom-control-input"
+     type="checkbox" <mt:if name="setting_html_codesniffer_enabled">checked</mt:if> name="setting_html_codesniffer_enabled" value="1">
+        <span class="custom-control-indicator"></span>
+        <span class="custom-control-description"> 
+        <mt:trans phrase="Enabled" component="HTML_CodeSniffer"></span>
+    </label>
+  </div>
+</div>
+<mt:ignore>
+<div class="row form-group">
+  <div class="col-lg-2">
+    <label for="setting_html_codesniffer_base_path">
+      <mt:trans phrase="HTML_CodeSniffer base URL" component="HTML_CodeSniffer">
+    </label>
+  </div>
+  <div class="col-lg-10">
+    <input type="text" id="setting_html_codesniffer_base_path" name="setting_html_codesniffer_base_path" class="form-control" value="<mt:var name="setting_html_codesniffer_base_path" escape>">
+  </div>
+</div>
+</mt:ignore>
+<div class="row form-group">
+  <div class="col-lg-2">
+    <label for="setting_html_codesniffer_wcag_level">
+      <mt:trans phrase="Success Criteria" component="HTML_CodeSniffer">
+    </label>
+  </div>
+  <div class="col-lg-10">
+    <select class="form-control short" name="setting_html_codesniffer_wcag_level" id="setting_html_codesniffer_wcag_level">
+      <option value="A" <mt:if name="setting_html_codesniffer_wcag_level" eq="A">selected</mt:if>>A</option>
+      <option value="AA" <mt:if name="setting_html_codesniffer_wcag_level" eq="AA">selected</mt:if>>AA</option>
+      <option value="AAA" <mt:if name="setting_html_codesniffer_wcag_level" eq="AAA">selected</mt:if>>AAA</option>
+    </select>
+  </div>
+</div>
