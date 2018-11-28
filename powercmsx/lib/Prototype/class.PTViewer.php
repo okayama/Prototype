@@ -162,7 +162,7 @@ class PTViewer {
             $pub = new PTPublisher;
             $magic_token = $app->param( 'magic_token' )
                          ? $app->param( 'magic_token' ) : $app->request_id;
-            $ctx->vars['magic_token'] = $magic_token;
+            $ctx->local_vars['magic_token'] = $magic_token;
             if ( $mtime ) {
                 $mtime = ( $mtime > $url->filemtime ) ? $mtime : $url->filemtime;
             } else {
