@@ -58,6 +58,8 @@ class PTViewer {
             $app->theme_static = $theme_static;
         }
         $ctx->vars['theme_static'] = $theme_static;
+        $ctx->vars['application_dir'] = __DIR__;
+        $ctx->vars['application_path'] = $app->path;
         $ctx->stash( 'current_urlinfo', $url );
         $ctx->vars['current_archive_url'] = $url->url;
         $ctx->stash( 'current_archive_url', $url->url );

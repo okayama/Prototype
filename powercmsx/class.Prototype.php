@@ -2327,6 +2327,8 @@ class Prototype {
         $app = $this;
         $ctx = $ctx ? $ctx : $app->ctx;
         $ctx->vars['theme_static'] = $app->theme_static;
+        $ctx->vars['application_dir'] = __DIR__;
+        $ctx->vars['application_path'] = $app->path;
         $tmpl_markup = $app->tmpl_markup;
         if ( $tmpl_markup === 'mt' ) {
             return $ctx->build( $text );
@@ -5673,6 +5675,8 @@ class Prototype {
             $app->theme_static = $theme_static;
         }
         $ctx->vars['theme_static'] = $theme_static;
+        $ctx->vars['application_dir'] = __DIR__;
+        $ctx->vars['application_path'] = $app->path;
         $mapping = $map ? $map->mapping : 'preview.html';
         if ( isset( $obj ) && isset( $map ) && isset( $table ) ) {
             $ts = $ctx->stash( 'current_timestamp' )
@@ -7727,6 +7731,8 @@ class Prototype {
                         $ctx->vars['current_archive_title'] =
                             $ctx->stash( 'current_archive_title' );
                         $ctx->vars['theme_static'] = $theme_static;
+                        $ctx->vars['application_dir'] = __DIR__;
+                        $ctx->vars['application_path'] = $app->path;
                         $ctx->vars['current_archive_type'] =
                             $ctx->stash( 'current_archive_type' );
                         $ctx->vars['current_archive_url'] = $url;
