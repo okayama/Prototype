@@ -986,7 +986,7 @@ class PTUtil {
         $images = $app->images;
         $videos = $app->videos;
         $audios = $app->audios;
-        $upload_dir = dirname( $upload_path );
+        $upload_dir = $app->mode == 'manage_theme' ? $app->upload_dir() : dirname( $upload_path );
         $data = [];
         $ext = strtolower( pathinfo( $upload_path, PATHINFO_EXTENSION ) );
         $pathdata = pathinfo( $upload_path );
@@ -1031,7 +1031,9 @@ class PTUtil {
             $width = 128;
             $height = 128;
             $mode = Imagine\Image\ImageInterface::THUMBNAIL_OUTBOUND;
-            mkdir( $upload_dir . DS . "thumbnails-{$basename}", 0777, true );
+            if (! is_dir( $upload_dir . DS . "thumbnails-{$basename}" ) ) {
+                mkdir( $upload_dir . DS . "thumbnails-{$basename}", 0777, true );
+            }
             // $app->fmgr->mkpath( $upload_dir . DS . "thumbnails-{$basename}" );
             $thumbnail = $image->thumbnail( new Imagine\Image\Box( $width, $height ), $mode );
             $thumbnail_square = $upload_dir . DS . "thumbnails-{$basename}" . DS . "thumb-square.{$ext}";
@@ -1772,6 +1774,7 @@ class PTUtil {
         }
         $imginfo = @getimagesize( $file );
         if (! $imginfo ) return false;
+        if (! isset( $exif['Orientation'] ) ) return false;
         $orientation = (int)@$exif['Orientation'];
         if ( $orientation < 2 || $orientation > 8 ) {
             if ( $app->remove_exif ) {
