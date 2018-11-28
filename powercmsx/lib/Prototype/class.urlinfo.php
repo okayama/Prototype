@@ -12,7 +12,7 @@ class urlinfo extends PADOBaseModel {
                 $fmgr = $app->fmgr;
                 $this->fmgr = $fmgr;
             }
-            if ( $fmgr->exists( $file_path ) ) {
+            if ( $fmgr->exists( $file_path ) && !$fmgr->is_dir( $file_path ) ) {
                 $fmgr->unlink( $file_path );
             }
         }

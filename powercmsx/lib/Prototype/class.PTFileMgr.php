@@ -27,6 +27,10 @@ class PTFileMgr {
         $this->unlink( $path );
     }
 
+    public function is_dir ( $path ) {
+        return is_dir( $path );
+    }
+
     public function unlink ( $path ) {
         if ( is_dir( $path ) ) {
             return $this->rmdir( $path );
