@@ -2,7 +2,7 @@
 <tr class="<mt:if name="$error_name"> has-danger</mt:if>">
   <th scope="row" class="cell-form-question">
     <label class="form-control-label" for="question_<mt:var name="question_basename" escape>">
-      <mt:var name="question_label" escape>
+      <mt:var name="question_label" language="$language" escape>
       <mt:if name="question_required">
       <small><i class="fa fa-asterisk required text-muted" aria-hidden="true"></i>
       <span class="sr-only"><mt:trans phrase="Required"></span></small>
@@ -21,7 +21,7 @@
     <mt:if name="confirm_ok">
 <mt:loop name="question_vars" strip_linefeeds="1">
 <mt:var name="__value__" escape>
-<mt:if name="connector_split"><mt:var name="question_connectors" index="$__index__" escape><mt:else><mt:var name="question_connector" escape></mt:if>
+<mt:if name="connector_split"><mt:var name="question_connectors" index="$__index__" escape><mt:else><mt:unless name="__last__"><mt:var name="question_connector" escape></mt:unless></mt:if>
 </mt:loop>
       <mt:setvar name="connector_var" value="">
     </mt:if>
@@ -30,12 +30,12 @@
     </mt:unless>
     <mt:var name="question_placeholder" split="," setvar="placeholders">
     <mt:var name="question_options" split="," setvar="cell_widths">
-<mt:for from="1" to="$question_count_fields" glue="$connector_var"><mt:unless name="__first__"><mt:if name="question_connectors">&nbsp;</mt:if></mt:unless><input type="<mt:if name="confirm_ok">hidden<mt:else>text</mt:if>" <mt:if name="__first__">
+<mt:for from="1" to="$question_count_fields" glue="$connector_var"><mt:unless name="__first__"><mt:if name="question_connector"> &nbsp; &nbsp; </mt:if></mt:unless><input type="<mt:if name="confirm_ok">hidden<mt:else>text</mt:if>" <mt:if name="__first__">
     id="question_<mt:var name="question_basename" escape>"</mt:if>
     class="col-<mt:if name="question_options"><mt:var name="$cell_widths" index="$__index__" escape></mt:if> input-text-1of<mt:Var name="question_count_fields" escape> watch-changed short<mt:if name="$error_name"> form-control-danger</mt:if>"
     name="question_<mt:var name="question_basename" escape>[]"
     value="<mt:var name="$question_vars" index="$__index__" escape>"
-    placeholder="<mt:var name="$placeholders" index="$__index__" escape>"><mt:if name="question_connectors"> &nbsp;</mt:If><mt:unless name="confirm_ok"><mt:var name="question_connectors" index="$__index__" escape></mt:unless></mt:for>
+    placeholder="<mt:var name="$placeholders" index="$__index__" escape>"> <mt:unless name="confirm_ok"><mt:var name="question_connectors" index="$__index__" escape></mt:unless></mt:for>
   <mt:if name="question_hint">
     <div class="text-muted">
       <i class="fa fa-question-circle-o" aria-hidden="true"></i>
