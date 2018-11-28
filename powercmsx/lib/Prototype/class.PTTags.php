@@ -2822,6 +2822,9 @@ class PTTags {
                 if ( isset( $args['limit'] ) ) {
                     $params['limit'] = (int) $args['limit'];
                 }
+                if ( isset( $args['offset'] ) ) {
+                    $params['offset'] = (int) $args['offset'];
+                }
                 if ( isset( $args['sort_by'] ) ) {
                     $params['sort'] = $args['sort_by'];
                 }
@@ -2836,6 +2839,7 @@ class PTTags {
                     }
                 }
                 $select_cols = isset( $args['cols'] ) ? $args['cols'] : '*';
+                $caching = $app->db->caching;
                 if ( isset( $args['cols'] ) ) {
                     $select_cols = $this->select_cols( $app, $to_model, $select_cols );
                 }
@@ -2845,6 +2849,7 @@ class PTTags {
                 $callback = ['name' => 'post_load_objects', 'model' => $to_obj ];
                 $count_obj = count( $objects );
                 $app->run_callbacks( $callback, $model, $objects, $count_obj );
+                $app->db->caching = $caching;
             }
             if ( isset( $orig_args['__object_count'] ) ) {
                 $ctx->restore( [ $model, 'current_context', 'to_object'] );
@@ -3416,6 +3421,7 @@ class PTTags {
                 $terms['rev_type'] = 0;
             }
             $cols = isset( $args['cols'] ) ? $args['cols'] : '*';
+            $caching = $app->db->caching;
             if ( isset( $args['cols'] ) ) {
                 $cols = $this->select_cols( $app, $obj, $cols );
             }
@@ -3434,6 +3440,7 @@ class PTTags {
             $objects = $ctx->stash( 'children_object_' . $model . '_' . $parent_id )
                 ? $ctx->stash( 'children_object_' . $model . '_' . $parent_id )
                 : $obj->load( $terms, $args, $cols, $extra );
+            $app->db->caching = $caching;
             if (! is_array( $objects ) || empty( $objects ) ) {
                 $repeat = $ctx->false();
                 return;
@@ -3918,6 +3925,7 @@ class PTTags {
                         }
                     }
                 }
+                $caching = $app->db->caching;
                 if ( $cols == '*' && $scheme ) {
                     $column_defs = $scheme['column_defs'];
                     $blobs = 0;
@@ -3946,7 +3954,7 @@ class PTTags {
                 }
                 $count_obj = $obj->count( $terms, $count_args, $cols, $extra );
                 $loop_objects = $obj->load( $terms, $args, $cols, $extra );
-                $app->db->caching = true;
+                $app->db->caching = $caching;
                 $app->init_callbacks( $model, 'post_load_objects' );
                 $callback = ['name' => 'post_load_objects', 'model' => $model,
                              'table' => $table ];
@@ -4114,6 +4122,7 @@ class PTTags {
             if ( $select_cols == '*' ) return '*';
             $select_cols = preg_split( '/\s*,\s*/', $select_cols, -1, PREG_SPLIT_NO_EMPTY );
         }
+        $app->db->caching = false;
         if (! $column_defs ) {
             $scheme = $app->get_scheme_from_db( $obj->_model );
             $column_defs = $scheme['column_defs'];
@@ -4139,6 +4148,10 @@ class PTTags {
             if ( $obj->has_column( 'workspace_id' ) &&
                 !in_array( 'workspace_id', $_select_cols ) ) {
                 $_select_cols[] = 'workspace_id';
+            }
+            if ( $obj->has_column( 'basename' ) &&
+                !in_array( 'basename', $_select_cols ) ) {
+                $_select_cols[] = 'basename';
             }
         }
         $select_cols = !empty( $_select_cols )
