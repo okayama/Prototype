@@ -321,6 +321,12 @@
             "class": "Archive",
             "basename": "website_widgets_3_columns"
         },
+        "2918660b-b625-4c23-96f3-5e288717dccc": {
+            "name": "(Website) Widgets 2 Columns",
+            "subject": "",
+            "class": "Module",
+            "basename": "website_widgets_2_columns"
+        },
         "e2d8d4a4-8fef-4f83-b2b5-ffd2db146629": {
             "name": "(Website) Notification of Inquiry",
             "subject": "<mt:var name=\"form_name\" language=\"$language\" setvar=\"form_name\"><mt:trans phrase=\"(%s) The inquiry posted for %s has been received.\" params=\"'$app_name','$form_name'\">",
