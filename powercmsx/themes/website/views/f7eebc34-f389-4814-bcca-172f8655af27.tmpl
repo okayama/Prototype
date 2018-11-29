@@ -26,14 +26,14 @@
 }
 .black .full-band-dark a {
   color: #eee !important;
-  background: linear-gradient(transparent 88%, #fff 40%);
+  background: linear-gradient(transparent 80%, #fff 100%);
 }
 .black .card a {
-  background: linear-gradient(transparent 70%, #ddd 40%);
+  background: linear-gradient(transparent 80%, #ddd 100%);
 }
 .black .plain-style a {
   color: #444 !important;
-  background: linear-gradient(transparent 70%, #ddd 40%);
+  background: linear-gradient(transparent 80%, #ddd 100%);
 }
 .black .card {
   border-color: #000 !important;
@@ -71,14 +71,14 @@
 }
 .cerezo .full-band-dark a {
   color: #FFE5FF !important;
-  background: linear-gradient(transparent 88%, #fff 40%);
+  background: linear-gradient(transparent 80%, #fff 100%);
 }
 .cerezo .card a {
-  background: linear-gradient(transparent 70%, #FFE5FF 40%);
+  background: linear-gradient(transparent 80%, #FFE5FF 100%);
 }
 .cerezo .plain-style a {
   color: #444 !important;
-  background: linear-gradient(transparent 70%, #FFE5FF 40%);
+  background: linear-gradient(transparent 80%, #FFE5FF 100%);
 }
 .cerezo .card {
   border-color: #C2007C !important;
@@ -143,6 +143,7 @@ blockquote cite {
   border-left: 4px solid #aaa;
   padding-left: 14px;
   font-weight: bold;
+  font-size: 24px;
 }
 .page-body div h1,.page-body div h2,.page-body div h3 {
   border-left : none;
@@ -155,7 +156,7 @@ blockquote cite {
 }
 .list-group-item.active a {
   color: white !important;
-  background: linear-gradient(transparent 85%, #ddd 30%);
+  background: linear-gradient(transparent 80%, #ddd 100%);
 }
 .navbar-brand {
   font-weight: bold !important;
@@ -164,8 +165,7 @@ blockquote cite {
 .form-table {
   width: 100%;
 }
-.form-table input[type="text"], .form-table textarea, .form-table select {
-  /*display: block;*/
+.form-table input[type="text"], .form-table input[type="number"], form-table input[type="email"], .form-table textarea, .form-table select {
   box-sizing: border-box;
   height: calc(0.75rem + 2.25rem + 2px);
   padding: 0.375rem 0.75rem;
@@ -184,31 +184,41 @@ blockquote cite {
 .has-danger .form-control-feedback {
   color: #b00 !important;
 }
-.form-table input[type="text"].input-text-short {
+.form-table input[type="text"].input-text-short,
+.form-table input[type="number"].input-text-short,
+.form-table input[type="email"].input-text-short {
   width: 5rem;
 }
-.form-table input[type="text"].input-text-1of2 {
+.form-table input[type="text"].input-text-1of2,
+.form-table input[type="number"].input-text-1of2 {
   width: calc(50% - 0.5rem);
 }
-.form-table input[type="text"].input-text-1of2:first-of-type {
+.form-table input[type="text"].input-text-1of2:first-of-type,
+.form-table input[type="number"].input-text-1of2:first-of-type {
   margin-right: 1rem;
 }
-.form-table input[type="text"].input-text-1of3 {
+.form-table input[type="text"].input-text-1of3,
+.form-table input[type="number"].input-text-1of3 {
   width: calc(33.3% - 0.6666rem);
 }
-.form-table input[type="text"].input-text-1of3:not(:last-of-type) {
+.form-table input[type="text"].input-text-1of3:not(:last-of-type),
+.form-table input[type="number"].input-text-1of3:not(:last-of-type) {
   margin-right: 1rem;
 }
-.form-table input[type="text"].input-text-multitier:not(:last-of-type) {
+.form-table input[type="text"].input-text-multitier:not(:last-of-type),
+.form-table input[type="number"].input-text-multitier:not(:last-of-type) {
   margin-bottom: 1rem;
 }
-.form-table input[type="text"].input-text-with-connector {
+.form-table input[type="text"].input-text-with-connector,
+.form-table input[type="number"].input-text-with-connector {
   width: 40%;
 }
-.form-table input[type="text"].input-text-with-connector.connector-1char {
+.form-table input[type="text"].input-text-with-connector.connector-1char,
+.form-table input[type="number"].input-text-with-connector.connector-1char {
   width: calc(50% - 2.25rem);
 }
-.form-table input[type="text"].input-text-with-connector.connector-2chars {
+.form-table input[type="text"].input-text-with-connector.connector-2chars,
+.form-table input[type="number"].input-text-with-connector.connector-2chars {
   width: calc(50% - 3.25rem);
 }
 .form-table select {
@@ -342,10 +352,10 @@ nav .btn-secondary {
 }
 .full-band-dark a {
   color: #eee !important;
-  background: linear-gradient(transparent 88%, #fff 40%);
+  background: linear-gradient(transparent 80%, #fff 100%);
 }
 .card a {
-  background: linear-gradient(transparent 70%, #ddd 40%);
+  background: linear-gradient(transparent 80%, #ddd 100%);
 }
 .card .btn {
   background: none;
@@ -358,10 +368,10 @@ a {
 }
 .plain-style a {
   color: #444 !important;
-  background: linear-gradient(transparent 70%, #ddd 40%);
+  background: linear-gradient(transparent 80%, #ddd 100%);
 }
 .list-main a {
-  background: linear-gradient(transparent 70%, #ddd 40%);
+  background: linear-gradient(transparent 80%, #ddd 100%);
 }
 .page-top-item {
   margin-top: 0em !important;
@@ -371,5 +381,17 @@ a {
 }
 .breadcrumb-item {
   color: #444 !important;
+}
+.plain-style div {
+  padding-top: 12px;
+  padding-bottom: 12px;
+}
+.full-band {
+  background-color: #444;
+  color:white;
+  text-align: center;
+  padding: 10px;
+  margin-top: 24px;
+  font-size: 24px;
 }
 </mt:for>
