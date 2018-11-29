@@ -2,7 +2,7 @@
 
 ## 設定
 
-package.sh 中の下記の変数でパッケージ名に含まれるバージョンを決定します。
+make.sh 中の下記の変数でパッケージ名に含まれるバージョンを決定します。
 
     basename='PowerCMSX'
     version='1.00'
@@ -12,7 +12,7 @@ package.sh 中の下記の変数でパッケージ名に含まれるバージョ
 
 ## 作業ディレクトリを掃除する
 
-    $ bash package.sh clean
+    $ bash make.sh clean
 
 clean オプションをつけて実行すると `src` と `zip` ディレクトリが削除されます
 
@@ -25,4 +25,4 @@ clean オプションをつけて実行すると `src` と `zip` ディレクト
 
 ### PowerCMS X のパッケージを作成する
 
-    $ bash package.sh
+    $ bash make.sh
