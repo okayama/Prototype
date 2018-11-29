@@ -207,6 +207,9 @@ class PTForm {
                                 if ( $template && $template->text ) {
                                     $body = $template->text;
                                 }
+                                if ( is_object( $template ) ) {
+                                    $ctx->stash( 'current_template', $template );
+                                }
                             }
                             if (! $body ) {
                                 $body = $app->get_mail_tmpl( 'form_thanks', $template );
@@ -248,6 +251,9 @@ class PTForm {
                                     db->model( 'template' )->load( (int) $template_id );
                                 if ( $template && $template->text ) {
                                     $body = $template->text;
+                                }
+                                if ( is_object( $template ) ) {
+                                    $ctx->stash( 'current_template', $template );
                                 }
                             }
                             if (! $body ) {
