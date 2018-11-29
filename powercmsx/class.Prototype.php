@@ -8392,6 +8392,7 @@ class Prototype {
     }
 
     function get_relations ( $obj, $to_obj = null, $name = null, $args = [] ) {
+        if (! $obj->id ) return [];
         $app = $this;
         if (!$obj ) return [];
         $terms = ['from_id'  => $obj->id, 
@@ -8540,6 +8541,7 @@ class Prototype {
     }
 
     function get_meta ( &$obj, $kind = null, $key = null, $name = null ) {
+        if (! $obj->id ) return [];
         $app = $this;
         if ( $kind == 'customfield' && $obj->_customfields !== null && $key ) {
             return $obj->_customfields;
