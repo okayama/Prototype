@@ -1,4 +1,12 @@
 {
+    "version": "1.1",
+    "label": "IP Address",
+    "plural": "IP Addresses",
+    "primary": "ip_address",
+    "auditing": 1,
+    "order": 300,
+    "menu_type": 2,
+    "display_system": 1,
     "column_defs": {
         "id": {
             "type": "int",
@@ -41,14 +49,6 @@
     "disp_edit": {
         "class": "select"
     },
-    "version": "1.0",
-    "label": "IP Address",
-    "plural": "IP Addresses",
-    "primary": "ip_address",
-    "auditing": 1,
-    "order": 300,
-    "menu_type": 2,
-    "display_system": 1,
     "translate": [
         "class"
     ],
