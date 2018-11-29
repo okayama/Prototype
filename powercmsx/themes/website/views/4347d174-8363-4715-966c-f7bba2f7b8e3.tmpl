@@ -42,14 +42,16 @@
 <mt:include module="(Website) Main Page Widget" widget_class="full-band-dark">
 <mt:if name="__last__"><div class="container-fluid"></mt:if>
 </mt:pagewidgets>
+<mt:include module="(Website) Widgets 2 Columns">
 <mt:include module="(Website) Widgets 3 Columns">
 </mt:pages>
 </mt:setcontext>
+</div>
 <mt:templateformcontext>
 <div class="container-fluid">
   <hr>
   <h2 id="tables"><span class="title"><mt:formname language="$language" escape></span></h2>
   <mt:include module="(Website) Form" form_identifier="main_page">
-  </div>
+</div>
 </mt:templateformcontext>
 <mt:include module="(Website) HTML Footer" cache_key="$footer_cache_key">

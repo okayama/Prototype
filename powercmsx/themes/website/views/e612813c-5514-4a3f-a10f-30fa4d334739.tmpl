@@ -5,9 +5,9 @@
   <mt:widgetbackcolor escape setvar="widgetbackcolor">
   <div style="background-color:rgba(<mt:hex2rgba hex="$widgetbackcolor">)">
     <mt:if name="widget_class" eq="jumbotron">
-      <mt:widgetbody convert_breaks decode_html _eval="1">
+      <mt:widgetbody convert_breaks="auto" decode_html _eval="1">
     <mt:else>
-      <mt:widgetbody convert_breaks _eval="1">
+      <mt:widgetbody convert_breaks="auto" _eval="1">
     </mt:if>
   </div>
 </div>

@@ -1,0 +1,5 @@
+RewriteEngine On
+RewriteCond %{HTTP_COOKIE} .*pt-user.*$ [NC]
+RewriteCond %{REQUEST_METHOD} ^POST$
+RewriteRule ^(.*)$ <mt:var name="application_dir">/site/pt-view.php
+ErrorDocument 404 <mt:var name="application_path">site/pt-view.php
