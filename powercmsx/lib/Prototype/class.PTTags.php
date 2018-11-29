@@ -3099,25 +3099,27 @@ class PTTags {
             $args = [];
             $container = $ctx->stash( 'current_container' );
             $ws_attr = '';
-            if (! $container && $model ) {
-                if ( $_model->has_column( 'workspace_id' ) ) {
-                    $ws_attr = $this->include_exclude_workspaces( $app, $args );
-                    if ( $ws_attr ) {
-                        $ws_attr = " AND {$model}_workspace_id ${ws_attr}";
-                        $extra .= $ws_attr;
+            if ( $context != $model && $container != $context ) {
+                if ( (! $container && $model ) || ( $container && ( $container != $model ) ) ) {
+                    if ( $_model->has_column( 'workspace_id' ) ) {
+                        $ws_attr = $this->include_exclude_workspaces( $app, $args );
+                        if ( $ws_attr ) {
+                            $ws_attr = " AND {$model}_workspace_id ${ws_attr}";
+                            $extra .= $ws_attr;
+                        }
                     }
+                    if (! $extra && $workspace ) {
+                        $terms['workspace_id'] = $workspace->id;
+                    }
+                    $start = $ctx->stash( 'current_timestamp' );
+                    $end = $ctx->stash( 'current_timestamp_end' );
+                    if ( $start && $end ) {
+                        $date_based_col = $app->get_date_col( $_model );
+                        $terms[ $date_based_col ] = ['BETWEEN' => [ $start, $end ] ];
+                    }
+                    $app->run_callbacks( $callback, $model, $terms, $args, $extra );
+                    return $_model->count( $terms, [], '', $extra );
                 }
-                if (! $extra && $workspace ) {
-                    $terms['workspace_id'] = $workspace->id;
-                }
-                $start = $ctx->stash( 'current_timestamp' );
-                $end = $ctx->stash( 'current_timestamp_end' );
-                if ( $start && $end ) {
-                    $date_based_col = $app->get_date_col( $_model );
-                    $terms[ $date_based_col ] = ['BETWEEN' => [ $start, $end ] ];
-                }
-                $app->run_callbacks( $callback, $model, $terms, $args, $extra );
-                return $_model->count( $terms, [], '', $extra );
             }
             $obj = $ctx->stash( $context );
             if (! $obj ) return 0;
