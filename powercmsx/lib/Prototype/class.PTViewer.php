@@ -151,6 +151,9 @@ class PTViewer {
             if ( $mapping && $mapping->container ) {
                 $ctx->stash( 'current_container', $mapping->container );
             }
+            $magic_token = $app->param( 'magic_token' )
+                         ? $app->param( 'magic_token' ) : $app->request_id;
+            $ctx->local_vars['magic_token'] = $magic_token;
             if ( $app->param( '_type' ) == 'form' ) {
                 require_once( $pt_path . 'lib' . DS . 'Prototype'
                               . DS . 'class.PTForm.php' );
@@ -162,9 +165,6 @@ class PTViewer {
             }
             require_once( $pt_path . 'lib' . DS . 'Prototype' . DS . 'class.PTPublisher.php' );
             $pub = new PTPublisher;
-            $magic_token = $app->param( 'magic_token' )
-                         ? $app->param( 'magic_token' ) : $app->request_id;
-            $ctx->local_vars['magic_token'] = $magic_token;
             if ( $mtime ) {
                 $mtime = ( $mtime > $url->filemtime ) ? $mtime : $url->filemtime;
             } else {

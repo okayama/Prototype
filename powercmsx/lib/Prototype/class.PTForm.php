@@ -356,9 +356,9 @@ class PTForm {
                 $form_expires = $form->token_expires
                               ? $form->token_expires : $app->form_expires;
                 $sess->expires( time() + $form_expires );
+                $sess->save();
                 $ctx->vars['magic_token'] = $token;
                 $ctx->local_vars['magic_token'] = $token;
-                $sess->save();
             }
         }
     }
