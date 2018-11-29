@@ -356,6 +356,7 @@ class PTForm {
                 $form_expires = $form->token_expires
                               ? $form->token_expires : $app->form_expires;
                 $sess->expires( time() + $form_expires );
+                $ctx->vars['magic_token'] = $token;
                 $ctx->local_vars['magic_token'] = $token;
                 $sess->save();
             }
@@ -640,6 +641,10 @@ class PTForm {
                     }
                 }
                 if (! $error_msg && $question->validation_type ) {
+                    if (! $question->required && $question->connector ) {
+                        $raw_value = str_replace( $question->connector, '', $value );
+                        if (! $raw_value ) continue;
+                    }
                     $vtype = $question->validation_type;
                     // Email,Select Items,Tel,Postal Code,URL
                     if ( $vtype == 'Email' ) {
