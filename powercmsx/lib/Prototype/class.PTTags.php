@@ -3927,35 +3927,23 @@ class PTTags {
                     }
                 }
                 $caching = $app->db->caching;
-                if ( $cols == '*' && $scheme ) {
-                    $column_defs = $scheme['column_defs'];
-                    $blobs = 0;
-                    foreach ( $column_defs as $col_name => $column_def ) {
-                        if ( $column_def['type'] == 'blob' ) {
-                            $blobs++;
-                        }
-                        if ( $blobs > 2 ) {
-                            break;
-                        }
-                    }
-                    $select_cols = isset( $args['cols'] ) ? $args['cols'] : null;
-                    if ( $select_cols ) {
-                        $select_cols = $this->select_cols( $app, $obj, $select_cols, $column_defs );
-                        $args['cols'] = $select_cols;
-                    }
-                    $ctx->stash( 'select_cols', $select_cols );
-                    $ctx->stash( 'load_only_ids', false );
-                    if ( $blobs > 2 ) {
-                        $app->db->caching = false;
-                        $ctx->stash( 'load_only_ids', true );
-                        $cols = 'id';
-                    } else {
-                        $cols = isset( $args['cols'] ) ? $args['cols'] : $cols;
-                    }
+                $select_cols = isset( $args['cols'] ) ? $args['cols'] : null;
+                if ( $select_cols ) {
+                    $select_cols = $this->select_cols( $app, $obj, $select_cols, $column_defs );
+                    $args['cols'] = $select_cols;
+                }
+                $ctx->stash( 'select_cols', $select_cols );
+                $ctx->stash( 'load_only_ids', false );
+                if (! isset( $args['cols'] ) && count( $app->db->get_blob_cols( $model ) ) > 5 ) {
+                    $app->db->caching = false;
+                    $ctx->stash( 'load_only_ids', true );
+                    $cols = 'id';
+                } else {
+                    $cols = isset( $args['cols'] ) ? $args['cols'] : $cols;
                 }
                 $count_obj = $obj->count( $terms, $count_args, $cols, $extra );
                 $loop_objects = $obj->load( $terms, $args, $cols, $extra );
-                $app->db->caching = $caching;
+                // $app->db->caching = $caching;
                 $app->init_callbacks( $model, 'post_load_objects' );
                 $callback = ['name' => 'post_load_objects', 'model' => $model,
                              'table' => $table ];
