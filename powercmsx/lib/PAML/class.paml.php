@@ -773,6 +773,7 @@ class PAML {
  * @return string $value: Value of variable.
  */
     function get_any ( $name ) {
+        if ( is_array( $name ) ) return null;
         if ( preg_match( "/(.{1,})\[(.*?)]$/", $name, $mts ) )
             list( $name, $idx ) = [ trim( $mts[1] ), trim( $mts[2] ) ];
         $v = isset( $this->local_vars[ $name ] ) ? $this->local_vars[ $name ]

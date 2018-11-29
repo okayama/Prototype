@@ -1,0 +1,18 @@
+<mt:setvar name="widget_class" value="col-lg-6">
+<mt:pagewidgets class="col-lg-6">
+  <mt:if name="__odd__">
+    <div class="row mt-4 plain-style">
+    <mt:if name="__last__">
+      <mt:setvar name="widget_class" value="col-lg-12">
+    </mt:if>
+  </mt:if>      
+  <mt:include module="(Website) Main Page Widget" widget_class="$widget_class">
+  <mt:if name="__even__">
+    </div>
+  </mt:if>
+  <mt:if name="__odd__">
+      <mt:if name="__last__">
+    </div>
+    </mt:if>
+  </mt:if>
+</mt:pagewidgets>

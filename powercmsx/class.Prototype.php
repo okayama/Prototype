@@ -477,7 +477,8 @@ class Prototype {
         $app_version = 0;
         $upgrade_count = null;
         if ( $table ) {
-            $cfgs = $db->model( 'option' )->load( ['kind' => 'config', null, 'key,value,data'] );
+            $cfgs = $db->model( 'option' )->load( ['kind' => 'config',
+                                                   'workspace_id' => 0] , null, 'key,value,data' );
             list( $site_url, $site_path ) = ['', ''];
             $this->stash( 'configs', [] );
             $configs = [];
@@ -2325,6 +2326,7 @@ class Prototype {
     function build ( $text, $ctx = null ) {
         $app = $this;
         $ctx = $ctx ? $ctx : $app->ctx;
+        $ctx->vars['theme_static'] = $app->theme_static;
         $tmpl_markup = $app->tmpl_markup;
         if ( $tmpl_markup === 'mt' ) {
             return $ctx->build( $text );
@@ -6073,12 +6075,12 @@ class Prototype {
                 $obj->rev_type == 0 ) ) {
                 if ( count( $objects ) == 1 ) {
                     $original = clone $obj;
-                    if ( isset( $status_published ) ) {
+                    if ( isset( $status_published ) && $obj->has_column( 'status' ) ) {
                         $obj->status( 1 );
                         $obj->save();
                         $original->status( $status_published );
+                        $app->publish_obj( $obj, $original, true );
                     }
-                    $app->publish_obj( $obj, $original, true );
                 } else {
                     if ( isset( $status_published ) ) {
                         if ( $obj->status == $status_published ) {
@@ -6598,6 +6600,10 @@ class Prototype {
         }
         if ( $required && is_string( $required ) && $required != '*' ) {
             $required = explode( ',', $required );
+        }
+        if ( $model === 'asset' ) {
+            $required[] = 'file_name';
+            $required[] = 'extra_path';
         }
         if ( is_array( $required ) ) {
             // For permission check.
