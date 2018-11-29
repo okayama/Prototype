@@ -17,6 +17,7 @@ class PTUpgrader {
                            'attachmentfiles', 'previous_owner', 'show_activity', 'has_assets'];
 
     private $reserved_models = ['queue'];
+    private $print_state = false;
 
     protected function core_upgrade_functions ( $version ) {
         $functions = [
@@ -118,6 +119,14 @@ class PTUpgrader {
                     echo $ctx->build_page( $tmpl );
                     exit();
                 }
+                $tmpl = TMPL_DIR . 'install.tmpl';
+                echo $ctx->build_page( $tmpl );
+                $msg = $app->translate( 'Start Install...', $item );
+                echo str_pad( ' ', 4096 ) . "<br />\n";
+                echo "<script>$('#print').html( $('#print').html() + '{$msg}' + '<hr>' );</script>";
+                ob_end_flush();
+                ob_start( 'mb_output_handler' );
+                $this->print_state = true;
                 $default_widget = TMPL_DIR . 'import' . DS . 'default_widget.tmpl';
                 $default_widget = file_get_contents( $default_widget );
                 $db = $app->db;
@@ -141,7 +150,7 @@ class PTUpgrader {
                 $nickname = $app->param( 'nickname' );
                 $password = password_hash( $password, PASSWORD_BCRYPT );
                 $db->upgrader = true;
-                $this->setup_db( true );
+                $tbl_count = $this->setup_db( true );
                 $app->set_config( $cfgs );
                 $plugin_models = $this->plugin_models( true );
                 if (! empty( $plugin_models ) ) {
@@ -183,6 +192,14 @@ class PTUpgrader {
                             'model'    => 'user',
                             'object_id'=> $user->id,
                             'level'    => 'info'] );
+                $msg = $app->translate( "Create %s tables.", $tbl_count );
+                echo "<script>$('#print').html( $('#print').html() + '<hr>' + '{$msg}' + '<br>' );</script>";
+                echo "<script>$('#print').html( $('#print').html() + '<hr>' + '{$message}' + '<br>' );</script>";
+                echo '<script>var $target = $(\'#print\');';
+                echo '$target.scrollTop($target[0].scrollHeight);</script>';
+                echo "<script>$('#move_login').show();</script>";
+                ob_flush();
+                flush();
                 $app->redirect( $app->admin_url );
             }
         } else {
@@ -562,6 +579,7 @@ class PTUpgrader {
         $items = array_flip( $items );
         $items = array_keys( $items );
         $default_models = [];
+        $tbl_count = 0;
         foreach ( $items as $item ) {
             if ( strpos( $item, '.' ) === 0 ) continue;
             $file = $m_dir . DS . $item;
@@ -582,6 +600,15 @@ class PTUpgrader {
             if ( $item === 'column' || $item === 'option' || $item === 'relation'
                 || $item === 'meta' || $item === 'session' ) continue;
             $table = $db->model( 'table' )->get_by_key( ['name' => $item ] );
+            $tbl_count++;
+            if ( $this->print_state ) {
+                $msg = $app->translate( "Creating TABLE \'%s\'...", $item );
+                echo "<script>$('#print').html( $('#print').html() + '{$msg}' + '<br>' );</script>";
+                echo '<script>var $target = $(\'#print\');';
+                echo '$target.scrollTop($target[0].scrollHeight);</script>';
+                ob_flush();
+                flush();
+            }
             if ( isset( $scheme['locale'] ) ) {
                 $locale = $scheme['locale'];
                 foreach ( $locale as $lang => $dict ) {
@@ -770,6 +797,7 @@ class PTUpgrader {
             $workspace->save();
         }
         $app->set_config( ['default_models' => join( ',', $default_models ) ] );
+        return $tbl_count;
     }
 
     function save_filter_table ( &$cb, $app, &$obj ) {
