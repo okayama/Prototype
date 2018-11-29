@@ -1,4 +1,4 @@
-# make.sh
+# make.sh - パッケージを作成するスクリプト
 
 ## 設定
 
@@ -12,7 +12,7 @@ package.sh 中の下記の変数でパッケージ名に含まれるバージョ
 
 ## 作業ディレクトリを掃除する
 
-    $ sh package.sh clean
+    $ bash package.sh clean
 
 clean オプションをつけて実行すると `src` と `zip` ディレクトリが削除されます
 
