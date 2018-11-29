@@ -75,6 +75,9 @@ class PTViewer {
                 $request_uri = $app->base . $app->request_uri;
                 $workspace = $this->get_workspace_from_url( $app, $request_uri );
             }
+            if ( $workspace ) {
+                $ctx->stash( 'workspace', $workspace );
+            }
             $this->page_not_found( $app, $workspace );
         }
         if ( $app->do_conditional && $url->filemtime && $url->mime_type ) {

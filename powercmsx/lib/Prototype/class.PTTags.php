@@ -1286,7 +1286,6 @@ class PTTags {
             } else {
                 $terms['workspace_id'] = 0;
             }
-            
         }
         return $app->db->model( 'urlinfo' )->count( $terms, null, null, $extra );
     }
@@ -3099,7 +3098,7 @@ class PTTags {
             $args = [];
             $container = $ctx->stash( 'current_container' );
             $ws_attr = '';
-            if ( $context != $model && $container != $context ) {
+            if ( $container != $context ) {
                 if ( (! $container && $model ) || ( $container && ( $container != $model ) ) ) {
                     if ( $_model->has_column( 'workspace_id' ) ) {
                         $ws_attr = $this->include_exclude_workspaces( $app, $args );
