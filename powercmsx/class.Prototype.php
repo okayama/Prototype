@@ -814,6 +814,7 @@ class Prototype {
             }
             $workspace_id = null;
             $workspace = $app->workspace();
+            $ctx->include_paths[ $app->site_path ] = true;
             if ( $workspace ) {
                 $workspace_id = $workspace->id;
                 $ctx->vars['workspace_scope'] = 1;
@@ -822,6 +823,7 @@ class Prototype {
                 foreach ( $ws_values as $ws_key => $ws_val ) {
                     $ctx->vars[ $ws_key ] = $ws_val;
                 }
+                $ctx->include_paths[ $workspace->site_path ] = true;
             }
             $user = $app->user();
             if ( isset( $app->registry['menus'] ) ) {
@@ -5579,6 +5581,10 @@ class Prototype {
         }
         $app->init_tags();
         $ctx = clone $app->ctx;
+        $ctx->include_paths[ $app->site_path ] = true;
+        if ( $workspace ) {
+            $ctx->include_paths[ $workspace->site_path ] = true;
+        }
         $table = $app->get_table( $model );
         $ctx->stash( 'current_urlmapping', $map );
         $ctx->stash( 'current_object', $obj );
@@ -6747,7 +6753,7 @@ class Prototype {
         $filter_primary = ['key' => $model, 'user_id' => $user_id,
                            'workspace_id' => $workspace_id,
                            'kind'  => 'list_filter_primary'];
-        if ( $user_id && $app->id == 'Prototype' ) {
+        if ( $user_id && $app->id == 'Prototype' && $app->mode == 'view' ) {
             $primary = $app->db->model( 'option' )->get_by_key( $filter_primary );
             if ( $app->param( '_detach_filter' ) ) {
                 $app->param( '_filter', 0 );

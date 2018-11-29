@@ -67,6 +67,7 @@ class PTViewer {
         $ctx->vars['app_version'] = $app->app_version;
         unset( $ctx->vars['magic_token'] );
         $ctx->vars['appname'] = $app->appname;
+        $ctx->include_paths[ $app->site_path ] = true;
         if (! $url->id ) {
             if ( $workspace_id ) {
                 $workspace_id = (int) $workspace_id;
@@ -77,6 +78,7 @@ class PTViewer {
             }
             if ( $workspace ) {
                 $ctx->stash( 'workspace', $workspace );
+                $ctx->include_paths[ $workspace->site_path ] = true;
             }
             $this->page_not_found( $app, $workspace );
         }
@@ -92,6 +94,7 @@ class PTViewer {
         }
         if ( $workspace ) {
             $ctx->vars['appname'] = $workspace->name;
+            $ctx->include_paths[ $workspace->site_path ] = true;
         } else {
             $ctx->vars['appname'] = $app->appname;
         }
