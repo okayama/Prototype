@@ -85,7 +85,7 @@ class PTListActions {
                                'hint' => $app->translate( 'Input label of the Theme.' ),
                                'label' => $app->translate( 'Export Theme' ),
                                'component' => $this,
-                               'columns' => ['id', 'name', 'text', 'subject',
+                               'columns' => ['id', 'name', 'text', 'subject', 'status',
                                              'class', 'basename', 'form_id', 'uuid'],
                                'method' => 'export_theme'];
             $list_actions[] = ['name' => 'recompile_cache', 'input' => 0,

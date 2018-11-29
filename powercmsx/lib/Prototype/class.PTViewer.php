@@ -58,6 +58,8 @@ class PTViewer {
             $app->theme_static = $theme_static;
         }
         $ctx->vars['theme_static'] = $theme_static;
+        $ctx->vars['application_dir'] = __DIR__;
+        $ctx->vars['application_path'] = $app->path;
         $ctx->stash( 'current_urlinfo', $url );
         $ctx->vars['current_archive_url'] = $url->url;
         $ctx->stash( 'current_archive_url', $url->url );
@@ -162,7 +164,7 @@ class PTViewer {
             $pub = new PTPublisher;
             $magic_token = $app->param( 'magic_token' )
                          ? $app->param( 'magic_token' ) : $app->request_id;
-            $ctx->vars['magic_token'] = $magic_token;
+            $ctx->local_vars['magic_token'] = $magic_token;
             if ( $mtime ) {
                 $mtime = ( $mtime > $url->filemtime ) ? $mtime : $url->filemtime;
             } else {

@@ -120,19 +120,21 @@ class PTImporter {
             $extension = pathinfo( $file, PATHINFO_EXTENSION );
             if ( strtolower( $extension ) == 'csv' && $dirname == dirname( $file ) ) {
                 $csv = $file;
-                $content = file_get_contents( $csv );
-                $encoding = mb_detect_encoding( $content );
-                if ( $encoding != 'UTF-8' ) {
-                    $content = mb_convert_encoding( $content, 'UTF-8', 'Shift_JIS' );
-                }
-                $content = preg_replace( "/\r\n|\r|\n/", PHP_EOL, $content );
-                file_put_contents( $csv, $content );
-                if ( strtoupper( substr( PHP_OS, 0, 3 ) ) !== 'WIN' ) {
-                    $mime = shell_exec( 'file -bi ' . escapeshellcmd( $csv ) );
-                    $mime = trim( $mime );
-                    $mime = preg_replace( "/(.*?)\/.*/s", "$1", $mime );
-                    if ( $mime != 'text' ) {
-                        continue;
+                if (! $this->apply_theme ) {
+                    $content = file_get_contents( $csv );
+                    $encoding = mb_detect_encoding( $content );
+                    if ( $encoding != 'UTF-8' ) {
+                        $content = mb_convert_encoding( $content, 'UTF-8', 'Shift_JIS' );
+                    }
+                    $content = preg_replace( "/\r\n|\r|\n/", PHP_EOL, $content );
+                    file_put_contents( $csv, $content );
+                    if ( strtoupper( substr( PHP_OS, 0, 3 ) ) !== 'WIN' ) {
+                        $mime = shell_exec( 'file -bi ' . escapeshellcmd( $csv ) );
+                        $mime = trim( $mime );
+                        $mime = preg_replace( "/(.*?)\/.*/s", "$1", $mime );
+                        if ( $mime != 'text' ) {
+                            continue;
+                        }
                     }
                 }
                 // $fh = fopen( $csv, 'r' );
