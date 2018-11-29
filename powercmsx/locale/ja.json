@@ -723,6 +723,10 @@
     "Password Reset"     : "パスワードを再設定",
     "Input Text (Multiple)" : "テキスト (可変長)",
     "Column's Permissions" : "カラムの権限",
+    "Start Install..."   : "インストールを開始します。...",
+    "Create %s tables."  : "%s個のテーブルを作成しました。",
+    "Creating TABLE \\'%s\\'..."
+        : "テーブル「%s」を作成しています。...",
     "The theme '%s' has been applied."
         : "テーマ「%s」を適用しました。",
     "The theme '%1$s' has been applied by %2$s."
