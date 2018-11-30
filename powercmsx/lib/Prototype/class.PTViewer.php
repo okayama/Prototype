@@ -42,6 +42,7 @@ class PTViewer {
             $regex = '<\${0,1}' . 'mt';
             if ( strpos( $mime_type, 'text' ) === false
                 || !preg_match( "/$regex/i", $data ) ) {
+                header( 'HTTP/1.1 200 OK' );
                 $app->print( $data, $mime_type, $mtime );
             } else {
                 $existing_data = $data;
@@ -155,6 +156,7 @@ class PTViewer {
                 $callback = ['name' => 'pre_view', 'model' => $obj->_model ];
                 $app->run_callbacks( $callback, $obj->_model, $obj, $url );
                 $data = $obj->$key;
+                header( 'HTTP/1.1 200 OK' );
                 $app->print( $data, $mime_type );
             }
         } else if ( $url->class === 'archive' ) {
@@ -198,6 +200,7 @@ class PTViewer {
                 $update = true;
             }
             if ( $update ) $url->save();
+            header( 'HTTP/1.1 200 OK' );
             $app->print( $data, $mime_type, $mtime );
         }
     }

@@ -19,7 +19,6 @@
     "display_dashboard": 1,
     "allow_comment": 1,
     "default_status": 2,
-    "can_duplicate" : 1,
     "has_uuid": 1,
     "show_activity": 1,
     "column_defs": {

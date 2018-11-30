@@ -18,7 +18,6 @@
     "assign_user": 1,
     "display_dashboard": 1,
     "default_status": 2,
-    "can_duplicate" : 1,
     "has_uuid": 1,
     "show_activity": 1,
     "column_defs": {
