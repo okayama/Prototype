@@ -24,11 +24,14 @@ class PTUpgrader {
             'upgrade_status' => ['component' => 'PTUpgrader',
                                  'method'    => 'upgrade_status',
                                  'version_limit' => 0.1 ],
+            'set_preferred'  => ['component' => 'PTUpgrader',
+                                 'method'    => 'set_preferred',
+                                 'version_limit' => '1.001' ],
         ];
         $upgrade_functions = [];
         foreach ( $functions as $func ) {
             $version_limit = $func['version_limit'];
-            if ( $version_limit >= $version ) {
+            if ( $version_limit > $version ) {
                 $upgrade_functions[] = $func;
             }
         }
@@ -1139,7 +1142,6 @@ class PTUpgrader {
                     $upgrade = true;
                 }
             }
-
             if ( $obj->has_assets ) {
                 $edit = "relation:asset:label:dialog";
                 $values = ['type' => 'relation',
@@ -1479,6 +1481,31 @@ class PTUpgrader {
                 $app->db->model( $table->name )->update_multi( $update_objects );
             }
             $table->save();
+        }
+    }
+
+    function set_preferred ( $app ) {
+        unset( $app->db->scheme['urlmapping'] );
+        $dir = LIB_DIR . 'PADO' . DS . 'models';
+        $this->setup_db( true, $app, [ 'urlmapping' ], $dir );
+        $app->get_scheme_from_db( 'urlmapping' );
+        $db = $app->db;
+        $workspaces = $db->model( 'workspace' )->load( [], null, 'id' );
+        $ws_ids = [0];
+        foreach ( $workspaces as $workspace ) {
+            $ws_ids[] = (int) $workspace->id;
+        }
+        foreach ( $ws_ids as $ws_id ) {
+            $urlmappings = $db->model( 'urlmapping' )->load(
+              ['workspace_id' => $ws_id ], ['sort' => 'id', 'direction' => 'ascend'] );
+            $models = [];
+            foreach ( $urlmappings as $urlmapping ) {
+                if ( $urlmapping->model == 'template' ) continue;
+                if ( isset( $models[ $urlmapping->model ] ) ) continue;
+                $models[ $urlmapping->model ] = true;
+                $urlmapping->is_preferred( 1 );
+                $urlmapping->save();
+            }
         }
     }
 

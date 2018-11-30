@@ -1474,6 +1474,14 @@ class PTTags {
         return false;
     }
 
+    function hdlr_phpstart ( $args, $ctx ) {
+        return '<?php';
+    }
+
+    function hdlr_phpend ( $args, $ctx ) {
+        return '?>';
+    }
+
     function hdlr_get_objectpath ( $args, $ctx ) {
         $app = $ctx->app;
         $current_context = $ctx->stash( 'current_context' );

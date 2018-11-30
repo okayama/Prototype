@@ -22,7 +22,20 @@ class PTViewer {
         $file_path = $document_root . $request;
         $existing_data = null;
         $mtime = null;
+        $ctx = $app->ctx;
+        if (! $theme_static = $app->theme_static ) {
+            $theme_static = $app->path . 'theme-static/';
+            $app->theme_static = $theme_static;
+        }
+        $ctx->vars['theme_static'] = $theme_static;
+        $ctx->vars['application_dir'] = __DIR__;
+        $ctx->vars['application_path'] = $app->path;
         if ( file_exists( $file_path ) && !$app->force_dynamic ) {
+            $extension = PTUtil::get_extension( $file_path );
+            $denied_exts = explode( ',', $app->denied_exts );
+            if ( in_array( $extension, $denied_exts ) ) {
+                $this->page_not_found( $app );
+            }
             $data = file_get_contents( $file_path );
             $mime_type = PTUtil::get_mime_type( $file_path );
             $mtime = filemtime( $file_path );
@@ -52,14 +65,6 @@ class PTViewer {
         $app->init_callbacks( 'urlinfo', 'post_load_object' );
         $callback = ['name' => 'post_load_object', 'model' => 'urlinfo' ];
         $app->run_callbacks( $callback, 'urlinfo', $url );
-        $ctx = $app->ctx;
-        if (! $theme_static = $app->theme_static ) {
-            $theme_static = $app->path . 'theme-static/';
-            $app->theme_static = $theme_static;
-        }
-        $ctx->vars['theme_static'] = $theme_static;
-        $ctx->vars['application_dir'] = __DIR__;
-        $ctx->vars['application_path'] = $app->path;
         $ctx->stash( 'current_urlinfo', $url );
         $ctx->vars['current_archive_url'] = $url->url;
         $ctx->stash( 'current_archive_url', $url->url );
@@ -197,7 +202,7 @@ class PTViewer {
         }
     }
 
-    function page_not_found ( $app, $workspace, $error = null, $mime_type = 'text/html' ) {
+    function page_not_found ( $app, $workspace = null, $error = null, $mime_type = 'text/html' ) {
         header( $app->protocol. ' 404 Not Found' );
         $tmpl = null;
         if (! $error ) $error = $app->translate( 'Page not found.' );
