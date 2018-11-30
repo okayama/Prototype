@@ -113,6 +113,10 @@ class PTImporter {
         list( $insert, $update, $skip, $errors ) = [0, 0, 0, 0];
         $log_info = [];
         $attachment_cols = PTUtil::attachment_cols( $model, $scheme );
+        $status_published = null;
+        if ( $app->db->model( $model )->has_column( 'status' ) ) {
+            $status_published = $app->status_published( $model );
+        }
         $app->db->begin_work();
         $header_out = false;
         $imported_objects = [];
@@ -128,14 +132,6 @@ class PTImporter {
                     }
                     $content = preg_replace( "/\r\n|\r|\n/", PHP_EOL, $content );
                     file_put_contents( $csv, $content );
-                    if ( strtoupper( substr( PHP_OS, 0, 3 ) ) !== 'WIN' ) {
-                        $mime = shell_exec( 'file -bi ' . escapeshellcmd( $csv ) );
-                        $mime = trim( $mime );
-                        $mime = preg_replace( "/(.*?)\/.*/s", "$1", $mime );
-                        if ( $mime != 'text' ) {
-                            continue;
-                        }
-                    }
                 }
                 // $fh = fopen( $csv, 'r' );
                 $i = 0;
@@ -650,7 +646,9 @@ class PTImporter {
                                 $app->publish_obj( $attachment );
                             }
                         }
-                        if ( $has_blob ) {
+                        if ( $status_published && $obj->status != $status_published ) {
+                            $app->publish_obj( $obj, $original );
+                        } else if ( $has_blob ) {
                             $app->publish_obj( $obj, $original, false, true );
                         }
                         $callback = ['name' => 'post_import', 'values' => $values ];

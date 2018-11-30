@@ -313,6 +313,9 @@ class EntryImporter extends PTPlugin {
                             // $app->db->commit();
                             $callback = ['name' => 'post_import',
                                          'format' => 'movabletype'];
+                            if ( $entry->status != 4 ) {
+                                $app->publish_obj( $entry );
+                            }
                             $app->run_callbacks( $callback, 'entry', $entry );
                         // } else {
                             // $app->db->rollback();
@@ -793,6 +796,9 @@ class EntryImporter extends PTPlugin {
                              'meta' => $meta_vars,
                              'categories' => $_categories,
                              'format' => 'wordpress', 'xml' => $item ];
+                if ( $entry->status != 4 ) {
+                    $app->publish_obj( $entry );
+                }
                 $app->run_callbacks( $callback, 'entry', $entry );
             }
         }
@@ -1119,6 +1125,9 @@ class EntryImporter extends PTPlugin {
                                  'from_obj' => 'entry',
                                  'to_obj'   => 'category'];
                         $app->set_relations( $args, $to_ids );
+                        if ( $entry->status != 4 ) {
+                            $app->publish_obj( $entry );
+                        }
                         $callback = ['name' => 'post_import',
                                      'articles' => $article_settings,
                                      'format' => 'noren', 'xml' => $content ];
