@@ -365,6 +365,26 @@
                 }
             ]
         },
+        "648d2c08-4b33-4960-9496-f250dfc3d08b": {
+            "name": "(Website) Bootstrapper",
+            "subject": "",
+            "status": "2",
+            "class": "Archive",
+            "basename": "website_bootstrapper",
+            "urlmappings": [
+                {
+                    "name": "(Website) Bootstrapper",
+                    "model": "template",
+                    "mapping": "pt-view.php",
+                    "date_based": "",
+                    "fiscal_start": "1",
+                    "publish_file": "1",
+                    "container": "",
+                    "container_scope": "0",
+                    "trigger_scope": "0"
+                }
+            ]
+        },
         "f7eebc34-f389-4814-bcca-172f8655af27": {
             "name": "(Website) Stylesheet",
             "subject": "",

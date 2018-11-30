@@ -6,7 +6,9 @@
         <h1 class="text-center"><mt:var name="archive_title"></h1>
       </div>
     </div>
+<mt:ignore>
 <mt:setvarblock name="page_content">
 </mt:setvarblock>
 <mt:include module="(Website) Page Detail" page_content="$page_content">
+</mt:ignore>
 <mt:include module="(Website) HTML Footer" cache_key="$footer_cache_key">
