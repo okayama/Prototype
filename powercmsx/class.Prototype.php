@@ -6616,9 +6616,10 @@ class Prototype {
                 $required[] = 'is_published';
                 $required[] = 'file_path';
                 $required[] = 'delete_flag';
-            }
-            if ( $model === 'table' ) {
+            } else if ( $model === 'table' ) {
                 $required[] = 'name';
+            } else if ( $model === 'urlmapping' ) {
+                $required[] = 'model';
             }
             if ( $table && $table->hierarchy ) {
                 $required[] = 'parent_id';
@@ -6773,6 +6774,7 @@ class Prototype {
     }
 
     function pre_listing ( &$cb, $app, &$terms, &$args, &$extra ) {
+        if ( $app->mode == 'rebuild_phase' || $app->mode == 'save' ) return true;
         $model = isset( $cb['model'] )
                ? $cb['model'] : $app->param( '_model' );
         $workspace_id = $app->workspace() ? $app->workspace()->id : 0;
