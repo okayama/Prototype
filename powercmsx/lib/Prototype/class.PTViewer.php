@@ -193,11 +193,13 @@ class PTViewer {
                     $update = true;
                 }
             }
-            $page = str_replace( $magic_token, '', $data );
-            $md5 = md5( $page );
-            if ( $md5 != $url->md5 ) {
-                $url->md5( $md5 );
-                $update = true;
+            if (! $app->query_string() ) {
+                $page = str_replace( $magic_token, '', $data );
+                $md5 = md5( $page );
+                if ( $md5 != $url->md5 ) {
+                    $url->md5( $md5 );
+                    $update = true;
+                }
             }
             if ( $update ) $url->save();
             header( 'HTTP/1.1 200 OK' );
