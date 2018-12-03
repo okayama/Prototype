@@ -1244,6 +1244,7 @@ class Prototype {
 
     function get_information ( $url = '', $key = 'system_info' ) {
         $app = $this;
+        $app->logging = false;
         if (! $url ) $url = $app->system_info_url;
         $lang = $app->user()->language;
         $sess = $app->db->model( 'session' )->get_by_key(

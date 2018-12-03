@@ -4,4 +4,8 @@ RewriteCond %{REQUEST_METHOD} !=GET [OR]
 RewriteCond %{REQUEST_URI}  /[^.php]$/
 RewriteRule ^(.*)$ <mt:var name="application_dir">/site/pt-view.php
 ErrorDocument 404 <mt:var name="application_path">site/pt-view.php
-# DirectoryIndex pt-view.php
+DirectoryIndex pt-view.php
+
+RewriteEngine On
+RewriteCond %{QUERY_STRING} (=)
+RewriteRule ^(.*)$ <mt:var name="application_dir">/site/pt-view.php
