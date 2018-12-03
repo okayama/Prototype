@@ -3956,6 +3956,9 @@ class PTTags {
                     }
                 }
                 $count_obj = $obj->count( $terms, $count_args, $cols, $extra );
+                if ( isset( $args['limit'] ) && $args['limit'] && $args['limit'] > $count_obj ) {
+                    $args['limit'] = $count_obj;
+                }
                 $loop_objects = $obj->load( $terms, $args, $cols, $extra );
                 // $app->db->caching = $caching;
                 $app->init_callbacks( $model, 'post_load_objects' );
