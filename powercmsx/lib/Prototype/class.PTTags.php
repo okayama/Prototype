@@ -3949,6 +3949,11 @@ class PTTags {
                     $cols = 'id';
                 } else {
                     $cols = isset( $args['cols'] ) ? $args['cols'] : $cols;
+                    if ( isset( $args['load_only_ids'] ) && $args['load_only_ids'] ) {
+                        $args['cols'] = $cols;
+                        $cols = 'id';
+                        $ctx->stash( 'load_only_ids', true );
+                    }
                 }
                 $count_obj = $obj->count( $terms, $count_args, $cols, $extra );
                 $loop_objects = $obj->load( $terms, $args, $cols, $extra );
