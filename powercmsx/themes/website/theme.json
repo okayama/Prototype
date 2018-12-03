@@ -388,6 +388,7 @@
         "f7eebc34-f389-4814-bcca-172f8655af27": {
             "name": "(Website) Stylesheet",
             "subject": "",
+            "status": "2",
             "class": "Archive",
             "basename": "website_stylesheet",
             "urlmappings": [
@@ -400,7 +401,10 @@
                     "publish_file": "1",
                     "container": "",
                     "container_scope": "0",
-                    "trigger_scope": "0"
+                    "trigger_scope": "1",
+                    "triggers": [
+                        "widget"
+                    ]
                 }
             ]
         }
