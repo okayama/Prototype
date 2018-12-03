@@ -1489,7 +1489,7 @@ class PTUpgrader {
         unset( $app->db->scheme['urlmapping'] );
         $app->logging = false;
         $dir = LIB_DIR . 'PADO' . DS . 'models';
-        $this->setup_db( true, $app, [ 'urlmapping' ], $dir );
+        $this->setup_db( true, 'core', [ 'urlmapping' ], $dir );
         $app->get_scheme_from_db( 'urlmapping' );
         $db = $app->db;
         $workspaces = $db->model( 'workspace' )->load( [], null, 'id' );
