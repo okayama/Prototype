@@ -20,10 +20,11 @@ class PTUpgrader {
     private $print_state = false;
 
     protected function core_upgrade_functions ( $version ) {
+        if (! $version ) return [];
         $functions = [
             'upgrade_status' => ['component' => 'PTUpgrader',
                                  'method'    => 'upgrade_status',
-                                 'version_limit' => 0.1 ],
+                                 'version_limit' => '0.1' ],
             'set_preferred'  => ['component' => 'PTUpgrader',
                                  'method'    => 'set_preferred',
                                  'version_limit' => '1.001' ],
@@ -1486,6 +1487,7 @@ class PTUpgrader {
 
     function set_preferred ( $app ) {
         unset( $app->db->scheme['urlmapping'] );
+        $app->logging = false;
         $dir = LIB_DIR . 'PADO' . DS . 'models';
         $this->setup_db( true, $app, [ 'urlmapping' ], $dir );
         $app->get_scheme_from_db( 'urlmapping' );
