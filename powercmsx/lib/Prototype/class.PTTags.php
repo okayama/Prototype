@@ -3296,6 +3296,7 @@ class PTTags {
                 $sql .= join( ' AND ', $wheres );
                 $request_id = $app->request_id;
                 $cache_key = md5( "archive-list-{$sql}-{$request_id}" );
+                $session = null;
                 if (! $app->no_cache ) {
                     $session = $app->db->model( 'session' )->get_by_key( [
                                'name'  => $cache_key, 
