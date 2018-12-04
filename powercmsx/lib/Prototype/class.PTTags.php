@@ -3017,10 +3017,15 @@ class PTTags {
             ['model' => $obj->_model, 'object_id' => $obj->id,
              'key' => $key, 'class' => 'file' ] );
         if (! $urlinfo->id ) {
-            if ( isset( $obj->__session ) && $obj->_model == 'attachmentfile' ) {
-                $session = $obj->__session;
-                $params = '?__mode=get_temporary_file&amp;data=1&amp;id=session-' . $session->id;
-                return $app->admin_url . $params;
+            if ( $app->user() ) {
+                if ( isset( $obj->__session ) && $obj->_model == 'attachmentfile' ) {
+                    $session = $obj->__session;
+                    $params = '?__mode=get_temporary_file&amp;data=1&amp;id=session-' . $session->id;
+                    return $app->admin_url . $params;
+                } else {
+                    $params = "?__mode=view&view={$key}&_type=edit&_model={$current_context}&id=" . $obj->id;
+                    return $app->admin_url . $params;
+                }
             }
         }
         return $urlinfo->url;
@@ -3106,8 +3111,10 @@ class PTTags {
             $args = [];
             $container = $ctx->stash( 'current_container' );
             $ws_attr = '';
-            if ( $container != $context ) {
-                if ( (! $container && $model ) || ( $container && ( $container != $model ) ) ) {
+            if ( $container != $context || $at == 'index' ) {
+                if ( ( $at == 'index' )
+                    || (! $container && $model )
+                    || ( $container && ( $container != $model ) ) ) {
                     if ( $_model->has_column( 'workspace_id' ) ) {
                         $ws_attr = $this->include_exclude_workspaces( $app, $args );
                         if ( $ws_attr ) {
@@ -3943,9 +3950,11 @@ class PTTags {
                 }
                 $ctx->stash( 'select_cols', $select_cols );
                 $ctx->stash( 'load_only_ids', false );
+                $load_only_ids = false;
                 if (! isset( $args['cols'] ) && count( $app->db->get_blob_cols( $model ) ) > 5 ) {
                     $app->db->caching = false;
                     $ctx->stash( 'load_only_ids', true );
+                    $load_only_ids = true;
                     $cols = 'id';
                 } else {
                     $cols = isset( $args['cols'] ) ? $args['cols'] : $cols;
@@ -3953,6 +3962,7 @@ class PTTags {
                         $args['cols'] = $cols;
                         $cols = 'id';
                         $ctx->stash( 'load_only_ids', true );
+                        $load_only_ids = true;
                     }
                 }
                 $count_obj = $obj->count( $terms, $count_args, $cols, $extra );
@@ -3960,7 +3970,6 @@ class PTTags {
                     $args['limit'] = $count_obj;
                 }
                 $loop_objects = $obj->load( $terms, $args, $cols, $extra );
-                // $app->db->caching = $caching;
                 $app->init_callbacks( $model, 'post_load_objects' );
                 $callback = ['name' => 'post_load_objects', 'model' => $model,
                              'table' => $table ];
