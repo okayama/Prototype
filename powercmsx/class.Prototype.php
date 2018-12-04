@@ -593,10 +593,11 @@ class Prototype {
         }
     }
 
-    function set_language ( $locale_dir, $lang = null ) {
+    function set_language ( $locale_dir = null, $lang = null ) {
         $locale__c = 'phrase' . DS . "locale_{$lang}__c";
         $dict = $this->get_cache( $locale__c );
         if (!$dict ) {
+            $locale_dir = $locale_dir ? $locale_dir : __DIR__ . DS . 'locale';
             $locale = $locale_dir . DS . $lang . '.json';
             if ( file_exists( $locale ) ) {
                 $dict = json_decode( file_get_contents( $locale ), true );
@@ -1238,6 +1239,10 @@ class Prototype {
             }
         }
         $app->assign_params( $app, $ctx );
+        if ( $mode == 'login' && !isset( $app->language[ $app->language ] ) ) {
+            $app->set_language( null, $app->language );
+            $ctx->vars['page_title'] = $app->translate( $ctx->vars['page_title'] );
+        }
         $ctx->params['this_mode'] = $mode;
         return $app->build_page( $tmpl );
     }
