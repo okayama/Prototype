@@ -191,8 +191,9 @@ class Text_Diff_Engine_native {
                     continue;
                 }
                 $matches = $ymatches[$line];
-                reset($matches);
-                while (list(, $y) = each($matches)) {
+                // reset($matches);
+                foreach ( $matches as $y ) {
+                // while (list(, $y) = each($matches)) {
                     if (empty($this->in_seq[$y])) {
                         $k = $this->_lcsPos($y);
                         assert($k > 0);
