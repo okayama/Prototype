@@ -5601,7 +5601,7 @@ class Prototype {
         } else {
             $template = $obj;
         }
-        if ( $map ) {
+        if ( is_object( $map ) && $map->id ) {
             $template = $map->template;
             $model = $map->model;
         } else {
@@ -5643,15 +5643,15 @@ class Prototype {
                 $ctx->stash( 'current_archive_type', 'index' );
             }
         } else {
-            $archive_type = $map ? $map->model : 'index';
+            $archive_type = is_object( $map ) ? $map->model : 'index';
             $ctx->stash( 'current_archive_type', $archive_type );
             $tmpl = $template->text;
             $primary = $table->primary;
-            if ( $map->model == $obj->_model ) {
+            if ( is_object( $map ) && $map->model == $obj->_model ) {
                 $ctx->stash( 'current_archive_title', $obj->$primary );
             }
         }
-        if ( $map && $map->container ) {
+        if ( is_object( $map ) && $map->container ) {
             $container = $app->get_table( $map->container );
             if ( is_object( $container ) ) {
                 $ctx->stash( 'current_container', $container->name );
@@ -5711,8 +5711,8 @@ class Prototype {
         $ctx->vars['theme_static'] = $theme_static;
         $ctx->vars['application_dir'] = __DIR__;
         $ctx->vars['application_path'] = $app->path;
-        $mapping = $map ? $map->mapping : 'preview.html';
-        if ( isset( $obj ) && isset( $map ) && isset( $table ) ) {
+        $mapping = is_object( $map ) ? $map->mapping : 'preview.html';
+        if ( isset( $obj ) && is_object( $map ) && isset( $table ) ) {
             $ts = $ctx->stash( 'current_timestamp' )
                 ? $ctx->stash( 'current_timestamp' ) : '';
             $url = $app->build_path_with_map( $obj, $map, $table, $ts, true );
