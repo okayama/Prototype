@@ -3965,7 +3965,21 @@ class PTTags {
                 $callback = ['name' => 'post_load_objects', 'model' => $model,
                              'table' => $table ];
                 $app->run_callbacks( $callback, $model, $loop_objects, $count_obj );
+                if ( empty( $loop_objects ) ) {
+                    $repeat = $ctx->false();
+                    $ctx->restore( $local_vars );
+                    return;
+                }
                 $ctx->stash( 'object_count', $count_obj );
+                if ( $load_only_ids && isset( $args['cols'] ) && $args['cols'] != '*' ) {
+                    $ids = [];
+                    foreach ( $loop_objects as $loop_object ) {
+                        $ids[] = (int) $loop_object->id;
+                    }
+                    $terms = ['id' => ['IN' => $ids ] ];
+                    $loop_objects = $obj->load( $terms, [], $args['cols'] );
+                    $ctx->stash( 'load_only_ids', false );
+                }
                 $offset_last = 0;
                 $next_offset = 0;
                 $prev_offset = 0;
