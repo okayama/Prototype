@@ -15,16 +15,6 @@
         <span class="custom-control-description"> 
         <mt:var name="label" escape></span>
     </label>
-    <div class="row form-group send_email" style="margin-top:1.2em !important">
-      <div class="col-lg-2">
-        <label for="email_from">
-          <mt:trans phrase="Mail From"> : 
-        </label>
-      </div>
-      <div class="col-lg-9">
-        <input id="email_from" type="text" class="form-control watch-changed" name="email_from" value="<mt:var name="object_email_from" escape>">
-      </div>
-    </div>
   </div>
 </div>
 <div class="row form-group send_email">
@@ -63,8 +53,40 @@
         </select>
       </div>
     </div>
+    <div class="row form-group send_thanks" style="margin-top:1.2em !important">
+      <div class="col-lg-2">
+        <label for="email_from">
+          <mt:trans phrase="Mail From"> : 
+        </label>
+      </div>
+      <div class="col-lg-9">
+        <input id="email_from" type="text" class="form-control watch-changed" name="email_from" value="<mt:var name="object_email_from" escape>">
+      </div>
+    </div>
+    <div class="row form-group send_thanks">
+      <div class="col-lg-2">
+        <label for="thanks_cc">
+          <mt:trans phrase="Thanks Cc"> : 
+        </label>
+      </div>
+      <div class="col-lg-9">
+        <input type="text" id="thanks_cc" name="thanks_cc" class="form-control" value="<mt:var name="object_thanks_cc" escape>">
+      </div>
+    </div>
+    <div class="row form-group send_thanks">
+      <div class="col-lg-2">
+        <label for="thanks_bcc">
+          <mt:trans phrase="Thanks Bcc"> : 
+        </label>
+      </div>
+      <div class="col-lg-9">
+        <input type="text" id="thanks_bcc" name="thanks_bcc" class="form-control" value="<mt:var name="object_thanks_bcc" escape>">
+      </div>
+    </div>
+
   </div>
 </div>
+<hr>
 <div class="row form-group send_email">
   <div class="col-lg-2">
   </div>
@@ -101,6 +123,16 @@
         </select>
       </div>
     </div>
+    <div class="row form-group send_notify" style="margin-top:1.2em !important">
+      <div class="col-lg-2">
+        <label for="notify_from">
+          <mt:trans phrase="Mail From"> : 
+        </label>
+      </div>
+      <div class="col-lg-9">
+        <input id="notify_from" type="text" class="form-control watch-changed" name="notify_from" value="<mt:var name="object_notify_from" escape>">
+      </div>
+    </div>
     <div class="row form-group send_notify">
       <div class="col-lg-2">
         <label for="notify_to">
@@ -109,6 +141,26 @@
       </div>
       <div class="col-lg-9">
         <input type="text" id="notify_to" name="notify_to" class="form-control" value="<mt:var name="object_notify_to" escape>">
+      </div>
+    </div>
+    <div class="row form-group send_notify">
+      <div class="col-lg-2">
+        <label for="notify_cc">
+          <mt:trans phrase="Notify Cc"> : 
+        </label>
+      </div>
+      <div class="col-lg-9">
+        <input type="text" id="notify_cc" name="notify_cc" class="form-control" value="<mt:var name="object_notify_cc" escape>">
+      </div>
+    </div>
+    <div class="row form-group send_notify">
+      <div class="col-lg-2">
+        <label for="notify_bcc">
+          <mt:trans phrase="Notify Bcc"> : 
+        </label>
+      </div>
+      <div class="col-lg-9">
+        <input type="text" id="notify_bcc" name="notify_bcc" class="form-control" value="<mt:var name="object_notify_bcc" escape>">
       </div>
     </div>
   </div>

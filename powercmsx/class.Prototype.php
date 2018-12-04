@@ -7206,31 +7206,42 @@ class Prototype {
     function save_filter_form ( &$cb, $app, &$obj ) {
         $errors = $cb['errors'];
         $success = true;
-        if ( $obj->send_email ) {
+        $msg = '';
+        $addrs = [];
+        if ( $obj->send_thanks ) {
             if ( $email_from = $obj->email_from ) {
                 if (!$app->is_valid_email( $email_from, $msg ) ) {
                     $errors[] = $msg;
                     $success = false;
                 }
             }
-            if ( $obj->form_send_notify ) {
-                $notify_to = $obj->notify_to;
-                if ( $notify_to ) {
-                    if ( strpos( $notify_to, ',' ) !== false ) {
-                        $notify_to = preg_split( '/\s*,\s*/', $notify_to );
+            $addrs = ['thanks_cc', 'thanks_bcc'];
+        }
+        if ( $obj->form_send_notify ) {
+            $addrs[] = 'notify_to';
+            $addrs[] = 'notify_cc';
+            $addrs[] = 'notify_bcc';
+            $notify_to = $obj->notify_to;
+            if (! $notify_to ) {
+                $success = false;
+                $errors[] =
+                  $app->translate( 'The Email address to notification is not specified.' );
+            }
+        }
+        if (! empty( $addrs ) ) {
+            foreach ( $addrs as $addr ) {
+                if ( $email = $obj->$addr ) {
+                    if ( strpos( $email, ',' ) !== false ) {
+                        $emails = preg_split( '/\s*,\s*/', $email );
                     } else {
-                        $notify_to = [ $notify_to ];
+                        $emails = [ $email ];
                     }
-                    foreach ( $notify_to as $email ) {
+                    foreach ( $emails as $email ) {
                         if (!$app->is_valid_email( $email, $msg ) ) {
                             $errors[] = $msg;
                             $success = false;
                         }
                     }
-                } else {
-                    $success = false;
-                    $errors[] =
-                      $app->translate( 'The Email address to notification is not specified.' );
                 }
             }
         }
@@ -8917,6 +8928,9 @@ class Prototype {
     }
 
     function is_valid_email ( $value, &$msg ) {
+        if ( preg_match( '/^.*?<(.*?\@.*)>$/', $value, $m ) ) {
+            $value = $m[1];
+        }
         $regex = '/^[a-zA-Z0-9\.!#$%&\'*+\/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-z'
                .'A-Z0-9-]+)*$/';
         if (!$value || ! preg_match( $regex, $value, $mts ) ) {

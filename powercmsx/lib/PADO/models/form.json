@@ -1,7 +1,7 @@
 {
     "label": "Form",
     "plural": "Forms",
-    "version": "1.5",
+    "version": "1.6",
     "primary": "name",
     "auditing": 1,
     "order": 380,
@@ -70,6 +70,12 @@
             "type": "tinyint",
             "size": 4
         },
+        "thanks_cc": {
+            "type": "text"
+        },
+        "thanks_bcc": {
+            "type": "text"
+        },
         "thanks_template": {
             "type": "int",
             "size": 11
@@ -78,7 +84,16 @@
             "type": "tinyint",
             "size": 4
         },
+        "notify_from": {
+            "type": "text"
+        },
         "notify_to": {
+            "type": "text"
+        },
+        "notify_cc": {
+            "type": "text"
+        },
+        "notify_bcc": {
             "type": "text"
         },
         "notify_template": {
@@ -205,5 +220,10 @@
         "rev_type": "text_short",
         "modified_on": "datetime",
         "modified_by": "reference:user:name"
-    }
+    },
+    "hide_edit_options": [
+        "status",
+        "published_on",
+        "unpublished_on"
+    ]
 }
