@@ -1620,7 +1620,7 @@ class Prototype {
             if ( $app->param( 'revision_select' ) || $app->param( 'manage_revision' ) ) {
                 $ctx->vars['page_title'] =
                     $app->translate( 'List Revisions of %s', $label );
-                $list_option->number = 0;
+                // $list_option->number = 0;
                 $cols = 'rev_note,rev_diff,rev_changed,modified_by,modified_on';
                 if ( $obj->has_column( 'has_deadline' ) && $obj->has_column( 'status' ) ) {
                     $cols = 'status,' . $cols;
