@@ -368,7 +368,7 @@
         "648d2c08-4b33-4960-9496-f250dfc3d08b": {
             "name": "(Website) Bootstrapper",
             "subject": "",
-            "status": "1",
+            "status": "2",
             "class": "Archive",
             "basename": "website_bootstrapper",
             "urlmappings": [

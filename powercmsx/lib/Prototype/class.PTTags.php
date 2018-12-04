@@ -1683,6 +1683,11 @@ class PTTags {
         return $workspace ? $workspace->site_url : $ctx->app->site_url;
     }
 
+    function hdlr_websitepath ( $args, $ctx ) {
+        $workspace = $ctx->stash( 'workspace' );
+        return $workspace ? $workspace->site_path : $ctx->app->site_path;
+    }
+
     function hdlr_websitelanguage ( $args, $ctx ) {
         $workspace = $ctx->stash( 'workspace' );
         return $workspace ? $workspace->language : $ctx->app->sys_language;
