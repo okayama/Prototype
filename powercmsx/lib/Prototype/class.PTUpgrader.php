@@ -28,6 +28,9 @@ class PTUpgrader {
             'set_preferred'  => ['component' => 'PTUpgrader',
                                  'method'    => 'set_preferred',
                                  'version_limit' => '1.001' ],
+            'set_workspace'  => ['component' => 'PTUpgrader',
+                                 'method'    => 'set_workspace',
+                                 'version_limit' => '1.003' ],
         ];
         $upgrade_functions = [];
         foreach ( $functions as $func ) {
@@ -1509,6 +1512,33 @@ class PTUpgrader {
                 $urlmapping->save();
             }
         }
+    }
+
+    function set_workspace ( $app ) {
+        $tables = $app->db->show_tables();
+        $pfx = DB_PREFIX;
+        $db = $app->db;
+        $db->begin_work();
+        $app->txn_active = true;
+        foreach ( $tables as $table ) {
+            $t = $table[0];
+            $t = preg_replace( "/^$pfx/", '', $t );
+            $app->get_scheme_from_db( $t );
+            if ( $db->model( $t )->has_column( 'workspace_id' ) ) {
+                $sql = "SELECT {$t}_id FROM {$pfx}{$t} WHERE {$t}_workspace_id IS NULL";
+                $objects = $db->model( $t )->load( $sql );
+                $update_objs = [];
+                foreach ( $objects as $obj ) {
+                    $obj->workspace_id( 0 );
+                    $update_objs[] = $obj;
+                }
+                if ( count( $update_objs ) ) {
+                    $db->model( $t )->update_multi( $update_objs );
+                }
+            }
+        }
+        $db->commit();
+        $app->txn_active = false;
     }
 
     function upgrade_scheme_check ( $app ) {

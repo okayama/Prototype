@@ -136,7 +136,7 @@
                     "mapping": "index.html",
                     "date_based": "",
                     "fiscal_start": "1",
-                    "publish_file": "6",
+                    "publish_file": "1",
                     "container": "",
                     "container_scope": "0",
                     "trigger_scope": "0"
@@ -167,7 +167,7 @@
                     "mapping": "<mt:entrycategories limit=\"1\"><mt:categorypath \/>\/<\/mt:entrycategories><mt:entrybasename>.html",
                     "date_based": "",
                     "fiscal_start": "1",
-                    "publish_file": "6",
+                    "publish_file": "1",
                     "container": "",
                     "container_scope": "0",
                     "trigger_scope": "0"
@@ -192,7 +192,7 @@
                     "mapping": "<mt:pagefoldercontext><mt:folderpath>\/<\/mt:pagefoldercontext><mt:pagebasename>.html",
                     "date_based": "",
                     "fiscal_start": "1",
-                    "publish_file": "6",
+                    "publish_file": "1",
                     "container": "",
                     "container_scope": "0",
                     "trigger_scope": "0"
@@ -229,7 +229,7 @@
                     "mapping": "<mt:categorypath>\/index.html",
                     "date_based": "",
                     "fiscal_start": "1",
-                    "publish_file": "6",
+                    "publish_file": "1",
                     "container": "entry",
                     "container_scope": "0",
                     "trigger_scope": "0"
@@ -254,7 +254,7 @@
                     "mapping": "news\/index.html",
                     "date_based": "",
                     "fiscal_start": "1",
-                    "publish_file": "6",
+                    "publish_file": "1",
                     "container": "entry",
                     "container_scope": "0",
                     "trigger_scope": "0"
@@ -265,7 +265,7 @@
                     "mapping": "<mt:archivedate format=\"Y\">\/index.html",
                     "date_based": "Fiscal-Yearly",
                     "fiscal_start": "4",
-                    "publish_file": "6",
+                    "publish_file": "1",
                     "container": "entry",
                     "container_scope": "0",
                     "trigger_scope": "0"
@@ -290,7 +290,7 @@
                     "mapping": "contact\/<mt:formbasename>.html",
                     "date_based": "",
                     "fiscal_start": "1",
-                    "publish_file": "6",
+                    "publish_file": "1",
                     "container": "",
                     "container_scope": "0",
                     "trigger_scope": "0"

@@ -3941,7 +3941,7 @@ class PTTags {
                                 && ! $current_urlmap->workspace_id ) {
                                 $extra .= " AND {$model}_workspace_id=0 ";
                             } else if ( $table->hierarchy ) {
-                                $hierarchy_ws = $current_urlmap->workspace_id;
+                                $hierarchy_ws = $current_urlmap->workspace_id + 0;
                                 $extra .= " AND {$model}_workspace_id={$hierarchy_ws} ";
                             }
                         }

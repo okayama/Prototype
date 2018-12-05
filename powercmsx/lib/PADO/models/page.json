@@ -1,7 +1,7 @@
 {
     "label"    : "Page",
     "plural"   : "Pages",
-    "version"  : "1.4",
+    "version"  : "1.5",
     "primary"  : "title",
     "display_system": 1,
     "auditing" : 1,

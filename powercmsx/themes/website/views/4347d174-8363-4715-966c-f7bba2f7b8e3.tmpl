@@ -2,7 +2,7 @@
 <mt:include module="(Website) HTML Header">
 <div class="container-fluid">
 <mt:setcontext context="tag" name="@main_page" container="page">
-<mt:pages limit="1" include_draft="1">
+<mt:pages limit="1" include_draft="1" cols="id" include_workspaces="this">
 <mt:pagewidgets class="jumbotron">
 <mt:include module="(Website) Main Page Widget" widget_class="jumbotron">
 </mt:pagewidgets>
@@ -36,7 +36,7 @@
 </mt:if>
 </mt:entries>
 <mt:setcontext context="tag" name="@main_page" container="page">
-<mt:pages limit="1" include_draft="1">
+<mt:pages limit="1" include_draft="1" cols="id" include_workspaces="this">
 <mt:pagewidgets class="full-band-dark">
 <mt:if name="__first__"></div></mt:if>
 <mt:include module="(Website) Main Page Widget" widget_class="full-band-dark">
