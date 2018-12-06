@@ -2,6 +2,7 @@
     "label"       : "Website",
     "id"          : "website",
     "version"     : "1.0",
+    "thumbnail"   : "theme.png",
     "author"      : "Alfasado Inc.",
     "author_link" : "https://alfasado.net/",
     "description" : "Simple theme based on Bootstrap.",
