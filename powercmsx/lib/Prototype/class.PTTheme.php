@@ -45,6 +45,11 @@ class PTTheme {
                     $theme_vars['author_link'] = $configs['author_link'];
                 }
             }
+            if ( isset( $configs['thumbnail'] ) && $configs['thumbnail'] ) {
+                $theme_vars['thumbnail'] = $app->path . "themes/{$theme}/" . $configs['thumbnail'];
+            } else {
+                $theme_vars['thumbnail'] = $app->path . 'assets/img/model-icons/default.png';
+            }
             $theme_loop[] = $theme_vars;
         }
         $workspace_id = (int) $app->param( 'workspace_id' );
