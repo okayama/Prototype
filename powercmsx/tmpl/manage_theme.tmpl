@@ -53,9 +53,7 @@
       <span class="custom-control-indicator"></span>
     </label>
   </th>
-  <td><img src="<mt:var name="thumbnail">" width="48" height="48" alt="<mt:trans phrase="Thumbnail">">
-  &nbsp;
-  <mt:var name="label" escape><mt:if name="current_theme" eq="$theme_id"> ( <mt:trans phrase="Applied"> )</mt:if></td>
+  <td><mt:var name="label" escape><mt:if name="current_theme" eq="$theme_id"> ( <mt:trans phrase="Applied"> )</mt:if></td>
   <td><mt:var name="version" escape></td>
   <td><mt:var name="description" escape></td>
   <td><mt:if name="author_link"><a target="_blank" href="<mt:var name="author_link" escape>"></mt:if><mt:var name="author" escape><mt:if name="author_link"></a></mt:if></td>
