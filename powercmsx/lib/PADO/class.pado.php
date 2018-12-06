@@ -25,6 +25,7 @@ class PADO {
     private $dbhost      = '';
     private $dbuser      = '';
     private $dbpasswd    = '';
+    private $dbsocket    = '';
     private $dbport      =  3306;
     public  $dbcharset   = 'utf8mb4';
     public  $set_names   = false;
@@ -151,10 +152,16 @@ class PADO {
             $dbname = $this->dbname ? $this->dbname : PADO_DB_NAME;
             $dbhost = $this->dbhost ? $this->dbhost : PADO_DB_HOST;
             $dbport = $this->dbport ? $this->dbport : PADO_DB_PORT;
+            $dbsocket = $this->dbsocket ? $this->dbsocket : PADO_DB_SOCKET;
             $dbcharset = $this->dbcharset ? $this->dbcharset : PADO_DB_CHARSET;
             $this->dbcompress = defined( 'PADO_DB_COMPRESS' ) ? PADO_DB_COMPRESS : $this->dbcompress;
             $dsn = "{$driver}:host={$dbhost};dbname={$dbname};"
-                 . "charset={$dbcharset};port={$dbport}";
+                 . "charset={$dbcharset}";
+            if ( $dbsocket ) {
+                $dsn .= ";unix_socket=$dbsocket";
+            } else {
+                $dsn .= ";port=$dbport";
+            }
             $this->dsn = $dsn;
         } else {
             list( $driver ) = explode( ':', $dsn );
