@@ -6824,6 +6824,14 @@ class Prototype {
         }
         $_filter = $app->param( '_filter' );
         if ( $_filter && $_filter == $model ) {
+            if ( $app->param( 'limit' ) ) {
+                $offset = (int) $app->param( 'offset' );
+                $limit = (int) $app->param( 'limit' );
+                if ( $limit ) {
+                    $args['offset'] = $offset;
+                    $args['limit'] = $limit;
+                }
+            }
             $params = $app->param();
             $conditions = [];
             $scheme = $cb['scheme'];
