@@ -183,16 +183,19 @@ class PTForm {
                     $ctx->vars['contact_name'] = $contact->name;
                     $ctx->vars['contact_email'] = $contact->email;
                     $ctx->vars['contact_id'] = $contact->id;
+                    $err = '';
                     if ( $form->send_email ) {
                         $from = $form->email_from ? $form->email_from : '';
-                        if (! $from ) {
+                        $from = $from ? $app->build( $from ) : '';
+                        $system_email = '';
+                        if (! $from || ! $app->is_valid_email( $from, $err ) ) {
                             $system_email = $app->get_config( 'system_email' );
                             if (!$system_email ) {
                                 return $app->error( 'System Email Address is not set in System.' );
                             }
                             $from = $system_email->value;
+                            $system_email = $from;
                         }
-                        $from = $app->build( $from );
                         $headers = ['From' => $from ];
                         $app->set_mail_param( $ctx );
                         $ctx->vars['form_name'] = $form->name;
@@ -224,6 +227,18 @@ class PTForm {
                             $ctx->vars['mail_type'] = 'thanks';
                             $subject = $app->build( $subject );
                             $body = $app->build( $body );
+                            if ( $thanks_cc = $form->thanks_cc ) {
+                                $thanks_cc = $app->build( $thanks_cc );
+                                if ( $thanks_cc ) {
+                                    $headers['Cc'] = $thanks_cc;
+                                }
+                            }
+                            if ( $thanks_bcc = $form->thanks_bcc ) {
+                                $thanks_bcc = $app->build( $thanks_bcc );
+                                if ( $thanks_bcc ) {
+                                    $headers['Bcc'] = $thanks_bcc;
+                                }
+                            }
                             $mail_error = '';
                             if (! PTUtil::send_mail( $contact->email,
                                 $subject, $body, $headers, $mail_error, false ) ) {
@@ -242,6 +257,16 @@ class PTForm {
                             }
                         }
                         if ( $form->send_notify ) {
+                            $from = $form->notify_from ? $form->notify_from : $system_email;
+                            $from = $from ? $app->build( $from ) : '';
+                            if (! $from || ! $app->is_valid_email( $from, $err ) ) {
+                                $system_email = $app->get_config( 'system_email' );
+                                if (!$system_email ) {
+                                    return $app->error( 'System Email Address is not set in System.' );
+                                }
+                                $from = $system_email->value;
+                            }
+                            $headers = ['From' => $from ];
                             $subject = null;
                             $body = null;
                             $template = null;
@@ -289,6 +314,20 @@ class PTForm {
                                 }
                             }
                             $to = $app->build( $to );
+                            unset( $headers['Cc'] );
+                            unset( $headers['Bcc'] );
+                            if ( $notify_cc = $form->notify_cc ) {
+                                $notify_cc = $app->build( $notify_cc );
+                                if ( $notify_cc ) {
+                                    $headers['Cc'] = $notify_cc;
+                                }
+                            }
+                            if ( $notify_bcc = $form->notify_bcc ) {
+                                $notify_bcc = $app->build( $notify_bcc );
+                                if ( $notify_bcc ) {
+                                    $headers['Bcc'] = $notify_bcc;
+                                }
+                            }
                             if (! PTUtil::send_mail( $to,
                                 $subject, $body, $headers, $mail_error, false ) ) {
                                 $message =

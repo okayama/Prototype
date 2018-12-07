@@ -1296,6 +1296,7 @@ class PADOBaseModel {
                     elseif ( $key === 'limit' ) $limit = (int) $arg;
                     elseif ( $key === 'offset' ) $offset = (int) $arg;
                     elseif ( $key === 'direction' ) $direction = strtoupper( $arg );
+                    if ( $key === 'sort' && !$this->has_column( $opt ) ) $opt = null;
                 }
                 if ( $opt ) {
                     $opt = str_replace( $illegals, '', $opt );

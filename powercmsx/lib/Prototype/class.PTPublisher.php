@@ -96,6 +96,11 @@ class PTPublisher {
                         $mtime = $comp;
                     }
                 }
+                $compiled = $template->compiled;
+                $cache_key = $template->cache_key;
+                if ( $compiled && $cache_key ) {
+                    $ctx->compiled[ $cache_key ] = $compiled;
+                }
                 $ctx->stash( $model, $obj );
                 $ctx->stash( 'current_timestamp', '' );
                 $ctx->stash( 'current_timestamp_end', '' );

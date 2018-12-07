@@ -614,12 +614,14 @@ $('.dropdown-sub').each(function(){
           </mt:if>
         </mt:if>
       </mt:if>
+      <mt:if name="user_id">
       <mt:if name="this_mode" ne="login">
       <mt:if name="this_mode" ne="dashboard">
         <a class="btn btn-sm header-btn-icon" href="<mt:var name="script_uri">?__mode=dashboard&amp;<mt:var name="workspace_param">">
           <i class="hidden fa fa-home" data-toggle="tooltip" data-placement="right" title="<mt:trans phrase="Return to Dashboard">" aria-label="<mt:trans phrase="Return to Home">"></i>
           <span class="shrink-button"><mt:trans phrase="Return to Dashboard"></span>
         </a>
+      </mt:if>
       </mt:if>
       </mt:if>
           </h1>

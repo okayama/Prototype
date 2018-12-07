@@ -394,4 +394,10 @@ a {
   margin-top: 24px;
   font-size: 24px;
 }
+<mt:widgets>
+.<mt:widgetbasename> a {
+  color: <mt:widgetforecolor escape> !important;
+  background-color:rgba(<mt:hex2rgba hex="$widgetbackcolor">);
+  background: linear-gradient(transparent 80%, <mt:widgetforecolor escape> 100%);
+}</mt:widgets>
 </mt:for>

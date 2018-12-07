@@ -707,6 +707,7 @@ class PTListActions {
         if (! $obj->has_column( 'state' ) ) {
             return $app->error( 'Invalid request.' );
         }
+        $table = $app->get_table( $model );
         $column = $app->db->model( 'column' )->get_by_key(
             ['table_id' => $table->id, 'name' => 'state'] );
         $status_text = '';

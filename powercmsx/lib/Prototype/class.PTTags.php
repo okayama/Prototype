@@ -1474,6 +1474,14 @@ class PTTags {
         return false;
     }
 
+    function hdlr_phpstart ( $args, $ctx ) {
+        return '<?php';
+    }
+
+    function hdlr_phpend ( $args, $ctx ) {
+        return '?>';
+    }
+
     function hdlr_get_objectpath ( $args, $ctx ) {
         $app = $ctx->app;
         $current_context = $ctx->stash( 'current_context' );
@@ -1673,6 +1681,11 @@ class PTTags {
     function hdlr_websiteurl ( $args, $ctx ) {
         $workspace = $ctx->stash( 'workspace' );
         return $workspace ? $workspace->site_url : $ctx->app->site_url;
+    }
+
+    function hdlr_websitepath ( $args, $ctx ) {
+        $workspace = $ctx->stash( 'workspace' );
+        return $workspace ? $workspace->site_path : $ctx->app->site_path;
     }
 
     function hdlr_websitelanguage ( $args, $ctx ) {
@@ -3009,10 +3022,15 @@ class PTTags {
             ['model' => $obj->_model, 'object_id' => $obj->id,
              'key' => $key, 'class' => 'file' ] );
         if (! $urlinfo->id ) {
-            if ( isset( $obj->__session ) && $obj->_model == 'attachmentfile' ) {
-                $session = $obj->__session;
-                $params = '?__mode=get_temporary_file&amp;data=1&amp;id=session-' . $session->id;
-                return $app->admin_url . $params;
+            if ( $app->user() ) {
+                if ( isset( $obj->__session ) && $obj->_model == 'attachmentfile' ) {
+                    $session = $obj->__session;
+                    $params = '?__mode=get_temporary_file&amp;data=1&amp;id=session-' . $session->id;
+                    return $app->admin_url . $params;
+                } else {
+                    $params = "?__mode=view&view={$key}&_type=edit&_model={$current_context}&id=" . $obj->id;
+                    return $app->admin_url . $params;
+                }
             }
         }
         return $urlinfo->url;
@@ -3098,8 +3116,10 @@ class PTTags {
             $args = [];
             $container = $ctx->stash( 'current_container' );
             $ws_attr = '';
-            if ( $container != $context ) {
-                if ( (! $container && $model ) || ( $container && ( $container != $model ) ) ) {
+            if ( $container != $context || $at == 'index' ) {
+                if ( ( $at == 'index' )
+                    || (! $container && $model )
+                    || ( $container && ( $container != $model ) ) ) {
                     if ( $_model->has_column( 'workspace_id' ) ) {
                         $ws_attr = $this->include_exclude_workspaces( $app, $args );
                         if ( $ws_attr ) {
@@ -3276,6 +3296,7 @@ class PTTags {
                 $sql .= join( ' AND ', $wheres );
                 $request_id = $app->request_id;
                 $cache_key = md5( "archive-list-{$sql}-{$request_id}" );
+                $session = null;
                 if (! $app->no_cache ) {
                     $session = $app->db->model( 'session' )->get_by_key( [
                                'name'  => $cache_key, 
@@ -3920,7 +3941,7 @@ class PTTags {
                                 && ! $current_urlmap->workspace_id ) {
                                 $extra .= " AND {$model}_workspace_id=0 ";
                             } else if ( $table->hierarchy ) {
-                                $hierarchy_ws = $current_urlmap->workspace_id;
+                                $hierarchy_ws = $current_urlmap->workspace_id + 0;
                                 $extra .= " AND {$model}_workspace_id={$hierarchy_ws} ";
                             }
                         }
@@ -3935,21 +3956,45 @@ class PTTags {
                 }
                 $ctx->stash( 'select_cols', $select_cols );
                 $ctx->stash( 'load_only_ids', false );
+                $load_only_ids = false;
                 if (! isset( $args['cols'] ) && count( $app->db->get_blob_cols( $model ) ) > 5 ) {
                     $app->db->caching = false;
                     $ctx->stash( 'load_only_ids', true );
+                    $load_only_ids = true;
                     $cols = 'id';
                 } else {
                     $cols = isset( $args['cols'] ) ? $args['cols'] : $cols;
+                    if ( isset( $args['load_only_ids'] ) && $args['load_only_ids'] ) {
+                        $args['cols'] = $cols;
+                        $cols = 'id';
+                        $ctx->stash( 'load_only_ids', true );
+                        $load_only_ids = true;
+                    }
                 }
                 $count_obj = $obj->count( $terms, $count_args, $cols, $extra );
+                if ( isset( $args['limit'] ) && $args['limit'] && $args['limit'] > $count_obj ) {
+                    $args['limit'] = $count_obj;
+                }
                 $loop_objects = $obj->load( $terms, $args, $cols, $extra );
-                // $app->db->caching = $caching;
                 $app->init_callbacks( $model, 'post_load_objects' );
                 $callback = ['name' => 'post_load_objects', 'model' => $model,
                              'table' => $table ];
                 $app->run_callbacks( $callback, $model, $loop_objects, $count_obj );
+                if ( empty( $loop_objects ) ) {
+                    $repeat = $ctx->false();
+                    $ctx->restore( $local_vars );
+                    return;
+                }
                 $ctx->stash( 'object_count', $count_obj );
+                if ( $load_only_ids && isset( $args['cols'] ) && $args['cols'] != '*' ) {
+                    $ids = [];
+                    foreach ( $loop_objects as $loop_object ) {
+                        $ids[] = (int) $loop_object->id;
+                    }
+                    $terms = ['id' => ['IN' => $ids ] ];
+                    $loop_objects = $obj->load( $terms, [], $args['cols'] );
+                    $ctx->stash( 'load_only_ids', false );
+                }
                 $offset_last = 0;
                 $next_offset = 0;
                 $prev_offset = 0;

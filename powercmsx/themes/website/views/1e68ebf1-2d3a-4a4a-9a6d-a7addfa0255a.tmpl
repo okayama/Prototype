@@ -1,5 +1,11 @@
 RewriteEngine On
-RewriteCond %{HTTP_COOKIE} .*pt-user.*$ [NC]
-RewriteCond %{REQUEST_METHOD} ^POST$
-RewriteRule ^(.*)$ <mt:var name="application_dir">/site/pt-view.php
-ErrorDocument 404 <mt:var name="application_path">site/pt-view.php
+RewriteCond %{HTTP_COOKIE} .*pt-user.*$ [OR]
+RewriteCond %{REQUEST_METHOD} !=GET [OR]
+RewriteCond %{REQUEST_URI}  /[^.php]$/
+RewriteRule ^(.*)$ <mt:websitepath>/pt-view.php
+ErrorDocument 404 <mt:var name="websiteurl" relative="1">site/pt-view.php
+DirectoryIndex pt-view.php
+
+RewriteEngine On
+RewriteCond %{QUERY_STRING} (=)
+RewriteRule ^(.*)$ <mt:websitepath>/pt-view.php

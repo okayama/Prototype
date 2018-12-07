@@ -555,7 +555,7 @@ function toggle_detail_custom( type ) {
     } else {
         $('._detail_edit_type_relation').show();
     }
-    if ( type == 'string' || type == 'integer' ) {
+    if ( type == 'string' || type == 'integer' || type == 'text' ) {
         $('#_detail_edit_selection').show();
     } else {
         if ( $('#_detail_edit_selection').prop('selected') ) {

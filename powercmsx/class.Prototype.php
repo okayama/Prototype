@@ -29,7 +29,7 @@ spl_autoload_register( '\prototype_auto_loader' );
 class Prototype {
 
     public static $app = null;
-    public    $app_version   = '1.00'; // RC1
+    public    $app_version   = '1.0013';
     public    $id            = 'Prototype';
     public    $name          = 'Prototype';
     public    $db            = null;
@@ -126,6 +126,7 @@ class Prototype {
     protected $errors        = [];
     public    $tmpl_markup   = 'mt';
     public    $admin_protect = false;
+    public    $build_published_only = true;
     public    $ip_protect    = false;
     public    $delayed       = [];
     public    $versions      = [];
@@ -287,6 +288,9 @@ class Prototype {
         }
         $this->document_root = $this->document_root ? $this->document_root
                                                     : $_SERVER['DOCUMENT_ROOT'];
+        if (! $this->document_root ) {
+            $this->document_root = dirname( __DIR__ );
+        }
         if ( $mode = $this->param( '__mode' ) ) {
             $this->mode = $mode;
         }
@@ -412,7 +416,8 @@ class Prototype {
                              'gettableid', 'customfieldvalue', 'currenturlmappingvalue',
                              'columnproperty', 'pluginsetting', 'geturlprimary', 'getactivity',
                              'getchildrenids', 'websitename', 'websiteurl', 'websitelanguage',
-                             'websiteid', 'websitecopyright', 'websitedescription', 'hex2rgba'],
+                             'websiteid', 'websitepath', 'websitecopyright', 'websitedescription',
+                             'hex2rgba', 'phpstart', 'phpend'],
             'block'      => ['objectcols', 'objectloop', 'tables', 'nestableobjects',
                              'countgroupby', 'fieldloop', 'archivelist', 'grouploop',
                              'workspacecontext', 'referencecontext', 'workflowusers',
@@ -591,10 +596,11 @@ class Prototype {
         }
     }
 
-    function set_language ( $locale_dir, $lang = null ) {
+    function set_language ( $locale_dir = null, $lang = null ) {
         $locale__c = 'phrase' . DS . "locale_{$lang}__c";
         $dict = $this->get_cache( $locale__c );
         if (!$dict ) {
+            $locale_dir = $locale_dir ? $locale_dir : __DIR__ . DS . 'locale';
             $locale = $locale_dir . DS . $lang . '.json';
             if ( file_exists( $locale ) ) {
                 $dict = json_decode( file_get_contents( $locale ), true );
@@ -949,6 +955,7 @@ class Prototype {
     }
 
     function component ( $component ) {
+        if ( is_object( $component ) ) return $component;
         $components = $this->components;
         if ( isset( $components[ strtolower( $component ) ] ) )
             return $components[ strtolower( $component ) ];
@@ -1235,12 +1242,17 @@ class Prototype {
             }
         }
         $app->assign_params( $app, $ctx );
+        if ( $mode == 'login' && !isset( $app->language[ $app->language ] ) ) {
+            $app->set_language( null, $app->language );
+            $ctx->vars['page_title'] = $app->translate( $ctx->vars['page_title'] );
+        }
         $ctx->params['this_mode'] = $mode;
         return $app->build_page( $tmpl );
     }
 
     function get_information ( $url = '', $key = 'system_info' ) {
         $app = $this;
+        $app->logging = false;
         if (! $url ) $url = $app->system_info_url;
         $lang = $app->user()->language;
         $sess = $app->db->model( 'session' )->get_by_key(
@@ -1611,7 +1623,7 @@ class Prototype {
             if ( $app->param( 'revision_select' ) || $app->param( 'manage_revision' ) ) {
                 $ctx->vars['page_title'] =
                     $app->translate( 'List Revisions of %s', $label );
-                $list_option->number = 0;
+                // $list_option->number = 0;
                 $cols = 'rev_note,rev_diff,rev_changed,modified_by,modified_on';
                 if ( $obj->has_column( 'has_deadline' ) && $obj->has_column( 'status' ) ) {
                     $cols = 'status,' . $cols;
@@ -2456,9 +2468,14 @@ class Prototype {
         if (! $system && $obj->has_column( 'workspace_id' ) ) {
             $terms['workspace_id'] = (int) $obj->workspace_id;
         }
+        $terms['is_preferred'] = 1;
         $cache_key = 'urlmapping_cache_' . $this->make_cache_key( $terms, $args );
         $urlmapping = $app->stash( $cache_key ) ? $app->stash( $cache_key )
                     : $app->db->model( 'urlmapping' )->load( $terms, $args );
+        if ( empty( $urlmapping ) ) {
+            unset( $terms['is_preferred'] );
+            $urlmapping = $app->db->model( 'urlmapping' )->load( $terms, $args );
+        }
         if ( empty( $urlmapping ) && ! $system && $obj->workspace_id ) {
             $app->get_permalink( $obj, $has_map, $rebuild, true );
         }
@@ -3512,6 +3529,7 @@ class Prototype {
         $ctx = $app->ctx;
         $per_rebuild = $app->per_rebuild;
         $app->get_scheme_from_db( 'urlinfo' );
+        $db = $app->db;
         $tmpl = 'rebuild_phase.tmpl';
         $model = $app->param( '_model' );
         if ( $app->param( '_type' ) && $app->param( '_type' ) == 'start_rebuild' ) {
@@ -3534,6 +3552,13 @@ class Prototype {
         $rebuild_last = false;
         $current_model = $app->param( 'current_model' );
         $ctx->vars['current_model'] = $current_model;
+        $status_published = null;
+        if ( $app->build_published_only ) {
+            if (! $app->param('_return_args')
+                && $db->model( $model )->has_column( 'status' ) ) {
+                $status_published = $app->status_published( $model );
+            }
+        }
         if ( $app->param( '_type' ) && $app->param( '_type' ) == 'rebuild_archives' ) {
             $model = $app->param( 'next_models' );
             $models = explode( ',', $model );
@@ -3546,6 +3571,9 @@ class Prototype {
                 $terms = [];
                 if ( $obj->has_column( 'workspace_id' ) && $app->workspace() ) {
                     $terms['workspace_id'] = $app->workspace()->id;
+                }
+                if ( $status_published ) {
+                    $terms['status'] = $status_published;
                 }
                 $extra = '';
                 if ( $table->revisable ) {
@@ -3615,10 +3643,16 @@ class Prototype {
         $next_ids = array_slice( $ids , $per_rebuild );
         $rebuilt = $apply_actions - ( count( $ids ) - count( $rebuild_ids ) );
         $ctx->vars['current_model'] = $model;
-        $db = $app->db;
+        $db->begin_work();
+        $app->txn_active = true;
         if ( $app->build_one_by_one ) { 
             foreach ( $rebuild_ids as $id ) {
-                $obj = $db->model( $model )->get_by_key( ['id' => (int) $id ] );
+                $terms = ['id' => (int) $id ];
+                if ( $status_published ) {
+                    $terms['status'] = $status_published;
+                }
+                $obj = $db->model( $model )->get_by_key( $terms );
+                if (! $obj->id ) continue;
                 $cached_vars = $app->ctx->vars;
                 $cached_local_vars = $app->ctx->local_vars;
                 $app->publish_obj( $obj, null, false );
@@ -3626,9 +3660,11 @@ class Prototype {
                 $app->ctx->local_vars = $cached_local_vars;
             }
         } else {
-            $objects = $db->model( $model )->load( ['id' => ['IN' => $rebuild_ids ] ] );
-            $db->begin_work();
-            $app->txn_active = true;
+            $terms = ['id' => ['IN' => $rebuild_ids ] ];
+            if ( $status_published ) {
+                $terms['status'] = $status_published;
+            }
+            $objects = $db->model( $model )->load( $terms );
             foreach ( $objects as $obj ) {
                 $cached_vars = $app->ctx->vars;
                 $cached_local_vars = $app->ctx->local_vars;
@@ -5573,7 +5609,7 @@ class Prototype {
         } else {
             $template = $obj;
         }
-        if ( $map ) {
+        if ( is_object( $map ) && $map->id ) {
             $template = $map->template;
             $model = $map->model;
         } else {
@@ -5615,15 +5651,15 @@ class Prototype {
                 $ctx->stash( 'current_archive_type', 'index' );
             }
         } else {
-            $archive_type = $map ? $map->model : 'index';
+            $archive_type = is_object( $map ) ? $map->model : 'index';
             $ctx->stash( 'current_archive_type', $archive_type );
             $tmpl = $template->text;
             $primary = $table->primary;
-            if ( $map->model == $obj->_model ) {
+            if ( is_object( $map ) && $map->model == $obj->_model ) {
                 $ctx->stash( 'current_archive_title', $obj->$primary );
             }
         }
-        if ( $map && $map->container ) {
+        if ( is_object( $map ) && $map->container ) {
             $container = $app->get_table( $map->container );
             if ( is_object( $container ) ) {
                 $ctx->stash( 'current_container', $container->name );
@@ -5683,8 +5719,10 @@ class Prototype {
         $ctx->vars['theme_static'] = $theme_static;
         $ctx->vars['application_dir'] = __DIR__;
         $ctx->vars['application_path'] = $app->path;
-        $mapping = $map ? $map->mapping : 'preview.html';
-        if ( isset( $obj ) && isset( $map ) && isset( $table ) ) {
+        $ctx->vars['current_archive_type'] = $ctx->stash( 'current_archive_type' );
+        $ctx->vars['current_archive_title'] = $ctx->stash( 'current_archive_title' );
+        $mapping = is_object( $map ) ? $map->mapping : 'preview.html';
+        if ( isset( $obj ) && is_object( $map ) && isset( $table ) ) {
             $ts = $ctx->stash( 'current_timestamp' )
                 ? $ctx->stash( 'current_timestamp' ) : '';
             $url = $app->build_path_with_map( $obj, $map, $table, $ts, true );
@@ -5781,6 +5819,9 @@ class Prototype {
             $ctx->local_vars[ $key ] = $value;
             $key = preg_replace( "/^$colprefix/", '', $key );
             $ctx->local_vars[ $key ] = $value;
+        }
+        if ( $app->mode === 'view' ) {
+            $obj = $db->model( $obj->_model )->get_by_key( ['id' => $obj->id ] );
         }
         $model_vars = $obj->get_values();
         $colprefix = $obj->_colprefix;
@@ -6586,9 +6627,10 @@ class Prototype {
                 $required[] = 'is_published';
                 $required[] = 'file_path';
                 $required[] = 'delete_flag';
-            }
-            if ( $model === 'table' ) {
+            } else if ( $model === 'table' ) {
                 $required[] = 'name';
+            } else if ( $model === 'urlmapping' ) {
+                $required[] = 'model';
             }
             if ( $table && $table->hierarchy ) {
                 $required[] = 'parent_id';
@@ -6743,6 +6785,7 @@ class Prototype {
     }
 
     function pre_listing ( &$cb, $app, &$terms, &$args, &$extra ) {
+        if ( $app->mode == 'rebuild_phase' || $app->mode == 'save' ) return true;
         $model = isset( $cb['model'] )
                ? $cb['model'] : $app->param( '_model' );
         $workspace_id = $app->workspace() ? $app->workspace()->id : 0;
@@ -6781,6 +6824,14 @@ class Prototype {
         }
         $_filter = $app->param( '_filter' );
         if ( $_filter && $_filter == $model ) {
+            if ( $app->param( 'limit' ) ) {
+                $offset = (int) $app->param( 'offset' );
+                $limit = (int) $app->param( 'limit' );
+                if ( $limit ) {
+                    $args['offset'] = $offset;
+                    $args['limit'] = $limit;
+                }
+            }
             $params = $app->param();
             $conditions = [];
             $scheme = $cb['scheme'];
@@ -7168,31 +7219,42 @@ class Prototype {
     function save_filter_form ( &$cb, $app, &$obj ) {
         $errors = $cb['errors'];
         $success = true;
-        if ( $obj->send_email ) {
+        $msg = '';
+        $addrs = [];
+        if ( $obj->send_thanks ) {
             if ( $email_from = $obj->email_from ) {
                 if (!$app->is_valid_email( $email_from, $msg ) ) {
                     $errors[] = $msg;
                     $success = false;
                 }
             }
-            if ( $obj->form_send_notify ) {
-                $notify_to = $obj->notify_to;
-                if ( $notify_to ) {
-                    if ( strpos( $notify_to, ',' ) !== false ) {
-                        $notify_to = preg_split( '/\s*,\s*/', $notify_to );
+            $addrs = ['thanks_cc', 'thanks_bcc'];
+        }
+        if ( $obj->form_send_notify ) {
+            $addrs[] = 'notify_to';
+            $addrs[] = 'notify_cc';
+            $addrs[] = 'notify_bcc';
+            $notify_to = $obj->notify_to;
+            if (! $notify_to ) {
+                $success = false;
+                $errors[] =
+                  $app->translate( 'The Email address to notification is not specified.' );
+            }
+        }
+        if (! empty( $addrs ) ) {
+            foreach ( $addrs as $addr ) {
+                if ( $email = $obj->$addr ) {
+                    if ( strpos( $email, ',' ) !== false ) {
+                        $emails = preg_split( '/\s*,\s*/', $email );
                     } else {
-                        $notify_to = [ $notify_to ];
+                        $emails = [ $email ];
                     }
-                    foreach ( $notify_to as $email ) {
+                    foreach ( $emails as $email ) {
                         if (!$app->is_valid_email( $email, $msg ) ) {
                             $errors[] = $msg;
                             $success = false;
                         }
                     }
-                } else {
-                    $success = false;
-                    $errors[] =
-                      $app->translate( 'The Email address to notification is not specified.' );
                 }
             }
         }
@@ -8879,6 +8941,9 @@ class Prototype {
     }
 
     function is_valid_email ( $value, &$msg ) {
+        if ( preg_match( '/^.*?<(.*?\@.*)>$/', $value, $m ) ) {
+            $value = $m[1];
+        }
         $regex = '/^[a-zA-Z0-9\.!#$%&\'*+\/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-z'
                .'A-Z0-9-]+)*$/';
         if (!$value || ! preg_match( $regex, $value, $mts ) ) {

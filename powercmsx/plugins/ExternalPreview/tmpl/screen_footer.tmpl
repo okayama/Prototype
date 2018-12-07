@@ -37,7 +37,7 @@ function show_external_link () {
     if (! permalink ) {
         return;
     }
-    if ( $('#uuid').length ) {
+    if (! $('#uuid').length ) {
         return;
     }
     var targetUUID = $('#uuid');

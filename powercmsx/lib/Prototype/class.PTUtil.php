@@ -1569,9 +1569,31 @@ class PTUtil {
         unset( $headers['From'] );
         $options = "From: {$from}\r\n";
         foreach ( $headers as $key => $value ) {
-            $options .= "{$key}: {$value}\r\n";
+            $key = ucwords( $key );
+            if ( $key == 'Cc' || $key == 'Bcc' ) {
+                $addrs = [];
+                if ( is_array( $value ) || strpos( $value, ',' ) !== false ) {
+                    if (! is_array( $value ) ) {
+                        $value = preg_split( '/\s*,\s*/', $value );
+                    }
+                    foreach ( $value as $addr ) {
+                        if ( $app->is_valid_email( $addr, $error ) ) {
+                            $addrs[] = $addr;
+                        }
+                    }
+                } else {
+                    if ( $app->is_valid_email( $value, $error ) ) {
+                        $addrs[] = $value;
+                    }
+                }
+                if (! empty( $addrs ) ) {
+                    $value = implode( ',', $addrs );
+                    $options .= "{$key}: {$value}\r\n";
+                }
+            } else {
+                $options .= "{$key}: {$value}\r\n";
+            }
         }
-        // $app->log( "{$from}, {$to}, {$subject}, {$body}" );
         return mb_send_mail( $to, $subject, $body, $options );
     }
 

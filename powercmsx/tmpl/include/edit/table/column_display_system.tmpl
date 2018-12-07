@@ -202,7 +202,12 @@ $("#<mt:var name="name" escape>").click(function(){
         <mt:trans phrase="Has Attachments"></span>
     </label>
 
-  <mt:if name="object_auditing">
+  <mt:if name="object_name" eq="contact">
+  <mt:setvar name="_object_auditing" value="1">
+  <mt:elseif name="object_auditing">
+  <mt:setvar name="_object_auditing" value="1">
+  </mt:if>
+  <mt:if name="_object_auditing">
     <input type="hidden" name="show_activity" value="0">
     <label id="show_activity-cb" class="custom-control custom-checkbox">
     <input id="show_activity" class="form-control custom-control-input watch-changed"

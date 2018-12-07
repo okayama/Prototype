@@ -18,6 +18,10 @@ class PTWorker {
         }
         $app->db->caching = false;
         $app->id = 'Worker';
+        if (! $theme_static = $app->theme_static ) {
+            $theme_static = $app->path . 'theme-static/';
+            $app->theme_static = $theme_static;
+        }
         $db = $app->db;
         $bulk_remove_per = $this->bulk_remove_per;
         $worker_labels = [];
@@ -152,6 +156,8 @@ class PTWorker {
         $wf_class = new PTWorkflow();
         $worker_label = '';
         $res_counter = 0;
+        $trigger_mappings = [];
+        $model_mappings = [];
         foreach ( $status_models as $table ) {
             // Scheduled publish
             $worker_label = $app->translate( 'Scheduled publish(%s)',
@@ -165,9 +171,23 @@ class PTWorker {
             }
             $scheme = $app->get_scheme_from_db( $model );
             $objects = $db->model( $model )->load( $terms );
+            // if (! count( $objects ) ) continue;
             $app->init_callbacks( $model, 'scheduled_published' );
             $callback = ['name' => 'scheduled_published', 'model' => $model,
                          'scheme' => $scheme, 'table' => $table ];
+            $mappings = $db->model( 'urlmapping' )->load( ['container' => $model] );
+            $triggers = $db->model( 'relation' )->load(
+                ['name' => 'triggers', 'from_obj' => 'urlmapping',
+                 'to_obj' => 'table', 'to_id' => $table->id ]
+            );
+            foreach ( $triggers as $trigger ) {
+                $map = $db->model( 'urlmapping' )->load( (int) $trigger->from_id );
+                if ( $map ) {
+                    $map->__is_trigger = 1;
+                    $mappings[] = $map;
+                }
+            }
+            $model_mappings[ $model ] = $mappings;
             try {
                 foreach ( $objects as $obj ) {
                     $res_counter++;
@@ -189,6 +209,26 @@ class PTWorker {
                     }
                     if ( $workflow->id ) {
                         $wf_class->publish_object( $app, $obj );
+                    }
+                    foreach ( $mappings as $map ) {
+                        if ( isset( $trigger_mappings[ $map->id ] ) ) continue;
+                        if ( isset( $map->__is_trigger ) && $map->__is_trigger ) {
+                            if ( $map->trigger_scope ) {
+                                if ( $obj->workspace_id == $map->workspace_id ) {
+                                    $trigger_mappings[ $map->id ] = $map;
+                                }
+                            } else {
+                                $trigger_mappings[ $map->id ] = $map;
+                            }
+                        } else {
+                            if ( $map->container_scope ) {
+                                if ( $obj->workspace_id == $map->workspace_id ) {
+                                    $trigger_mappings[ $map->id ] = $map;
+                                }
+                            } else {
+                                $trigger_mappings[ $map->id ] = $map;
+                            }
+                        }
                     }
                 }
                 if ( $res_counter ) {
@@ -308,6 +348,26 @@ class PTWorker {
                             $meta->save();
                         }
                         $app->publish_obj( $obj, $clone, true );
+                        foreach ( $mappings as $map ) {
+                            if ( isset( $trigger_mappings[ $map->id ] ) ) continue;
+                            if ( isset( $map->__is_trigger ) && $map->__is_trigger ) {
+                                if ( $map->trigger_scope ) {
+                                    if ( $obj->workspace_id == $map->workspace_id ) {
+                                        $trigger_mappings[ $map->id ] = $map;
+                                    }
+                                } else {
+                                    $trigger_mappings[ $map->id ] = $map;
+                                }
+                            } else {
+                                if ( $map->container_scope ) {
+                                    if ( $obj->workspace_id == $map->workspace_id ) {
+                                        $trigger_mappings[ $map->id ] = $map;
+                                    }
+                                } else {
+                                    $trigger_mappings[ $map->id ] = $map;
+                                }
+                            }
+                        }
                         $app->run_callbacks( $callback, $model, $obj, $clone );
                         $rem_obj = $db->model( $model )->load( ['id' => $rem_id ] );
                         if ( !empty( $rem_obj ) ) {
@@ -343,12 +403,33 @@ class PTWorker {
             }
             try {
                 $objects = $db->model( $model )->load( $terms );
+                if (! count( $objects ) ) continue;
                 foreach ( $objects as $obj ) {
                     $original = clone $obj;
                     $obj->status( 5 );
                     $obj->has_deadline( 0 );
                     $obj->save();
                     $app->publish_obj( $obj, $original, true );
+                    foreach ( $mappings as $map ) {
+                        if ( isset( $trigger_mappings[ $map->id ] ) ) continue;
+                        if ( isset( $map->__is_trigger ) && $map->__is_trigger ) {
+                            if ( $map->trigger_scope ) {
+                                if ( $obj->workspace_id == $map->workspace_id ) {
+                                    $trigger_mappings[ $map->id ] = $map;
+                                }
+                            } else {
+                                $trigger_mappings[ $map->id ] = $map;
+                            }
+                        } else {
+                            if ( $map->container_scope ) {
+                                if ( $obj->workspace_id == $map->workspace_id ) {
+                                    $trigger_mappings[ $map->id ] = $map;
+                                }
+                            } else {
+                                $trigger_mappings[ $map->id ] = $map;
+                            }
+                        }
+                    }
                     $res_counter++;
                 }
                 if ( $res_counter ) {
@@ -471,6 +552,16 @@ class PTWorker {
             $log = ['level' => 'info', 'category' => 'worker', 'message' => $message,
                     'metadata' => $metadata ];
             $app->log( $log );
+        }
+        if (! empty( $trigger_mappings ) ) {
+            $publisher = new PTPublisher();
+            foreach ( $trigger_mappings as $map_id => $trigger_mapping ) {
+                if ( $trigger_mapping->publish_file == 6 ) continue;
+                $urls = $db->model( 'urlinfo' )->load( ['urlmapping_id' => $map_id ] );
+                foreach ( $urls as $url ) {
+                    $publisher->publish( $url );
+                }
+            }
         }
     }
 

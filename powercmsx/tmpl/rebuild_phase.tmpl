@@ -1,5 +1,7 @@
 <mt:include file="include/popup_header.tmpl">
-
+<div id="__loader-bg" class="hidden">
+  <img src="<mt:var name="prototype_path">assets/img/loading.gif" alt="" width="45">
+</div>
 <mt:if name="workspace_id">
 <mt:var name="workspace_name" setvar="scope_name">
 <mt:setvarblock name="scope_link">
@@ -14,10 +16,8 @@
 </mt:if>
 
 <mt:if name="next_url">
-
     <script src="assets/js/pace.min.js"></script>
     <link href="assets/css/pace.css" rel="stylesheet">
-
 <p><mt:trans phrase="Rebuilding dependencies..."></p>
 <mt:var name="request.progress" escape setvar="progress">
 <div class="pt-progress-bar">
@@ -53,10 +53,8 @@ $('#header-alert-message').focus();
 </script>
 
 <mt:elseif name="rebuild_next">
-
     <script src="assets/js/pace.min.js"></script>
     <link href="assets/css/pace.css" rel="stylesheet">
-
 <form method="POST" id="rebuild_next" action="<mt:var name="script_uri">">
 <input type="hidden" name="__mode" value="rebuild_phase">
 <input type="hidden" name="workspace_id" value="<mt:var name="workspace_id">">
@@ -83,10 +81,8 @@ if ( $('#next_models').val() ) {
 
 <mt:else>
 <mt:unless name="request._type" eq="start_rebuild">
-
     <script src="assets/js/pace.min.js"></script>
     <link href="assets/css/pace.css" rel="stylesheet">
-
 <form method="POST" id="rebuild_next" action="<mt:var name="script_uri">">
 <input type="hidden" name="__mode" value="rebuild_phase">
 <input type="hidden" name="workspace_id" value="<mt:var name="workspace_id">">
@@ -119,7 +115,7 @@ setTimeout(function(){
 
 <main class="col-md-12 pt-3">
 
-<form method="POST" action="<mt:var name="script_uri">">
+<form method="POST" action="<mt:var name="script_uri">" id="rebuild-form-main">
 <input type="hidden" name="__mode" value="rebuild_phase">
 <input type="hidden" name="workspace_id" value="<mt:var name="workspace_id">">
 <input type="hidden" name="magic_token" value="<mt:var name="magic_token">">
@@ -144,9 +140,18 @@ setTimeout(function(){
 </div>
 <div class="row form-group">
 <button id="close-btn" class="btn btn-s btn-secondary"><mt:trans phrase="Cancel"></button>
-<button class="btn btn-primary"><mt:trans phrase="Rebuild"></button>
+<button id="__do_rebuild" class="btn btn-primary"><mt:trans phrase="Rebuild"></button>
 </div>
 </fotm>
+
+<script>
+$('#__do_rebuild').click(function(){
+    $(this).attr('disabled', true);
+    $('#__loader-bg').show();
+    $('#rebuild-form-main').submit();
+    return false;
+});
+</script>
 
 <script>
 $('#close-btn').click(function(){
