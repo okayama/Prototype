@@ -5716,6 +5716,8 @@ class Prototype {
         $ctx->vars['theme_static'] = $theme_static;
         $ctx->vars['application_dir'] = __DIR__;
         $ctx->vars['application_path'] = $app->path;
+        $ctx->vars['current_archive_type'] = $ctx->stash( 'current_archive_type' );
+        $ctx->vars['current_archive_title'] = $ctx->stash( 'current_archive_title' );
         $mapping = is_object( $map ) ? $map->mapping : 'preview.html';
         if ( isset( $obj ) && is_object( $map ) && isset( $table ) ) {
             $ts = $ctx->stash( 'current_timestamp' )
