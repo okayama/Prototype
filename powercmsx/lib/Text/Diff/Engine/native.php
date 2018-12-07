@@ -201,7 +201,8 @@ class Text_Diff_Engine_native {
                         break;
                     }
                 }
-                while (list(, $y) = each($matches)) {
+                foreach ( $matches as $y ) {
+                // while (list(, $y) = each($matches)) {
                     if ($y > $this->seq[$k - 1]) {
                         assert($y <= $this->seq[$k]);
                         /* Optimization: this is a common case: next match is
