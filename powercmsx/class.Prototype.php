@@ -288,6 +288,9 @@ class Prototype {
         }
         $this->document_root = $this->document_root ? $this->document_root
                                                     : $_SERVER['DOCUMENT_ROOT'];
+        if (! $this->document_root ) {
+            $this->document_root = dirname( __DIR__ );
+        }
         if ( $mode = $this->param( '__mode' ) ) {
             $this->mode = $mode;
         }
