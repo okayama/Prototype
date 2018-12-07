@@ -66,7 +66,7 @@
             newli.children('span').html( col_value );
             newli.removeAttr('id');
             newli.addClass( target_control+'-child');
-            newli.children('.assets-child-thumb').attr('data-id','<mt:var name="id">').css('background-image','url(\'<mt:var name="script_uri">?__mode=get_thumbnail&square=1&_model=<mt:var name="this_model" escape>&id=<mt:var name="id">\')');
+            newli.children('.assets-child-thumb').attr('data-id','<mt:var name="id">').css('background-image','url(\'<mt:var name="script_uri">?__mode=get_thumbnail&square=1&_model=asset&id=<mt:var name="id">\')');
             newli.children('.assets-child-thumb').show();
             newli.show();
         }
