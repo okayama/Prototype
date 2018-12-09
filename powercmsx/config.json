@@ -9,6 +9,6 @@
         "logging" : true,
         "set_names" : true,
         "do_conditional" : false,
-        "temp_dir" : "/powercms/data/temp"
+        "temp_dir" : "/tmp"
     }
 }
