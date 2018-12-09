@@ -67,7 +67,7 @@ data-href="" href="<mt:var name="script_uri">?__mode=view&amp;_type=list&amp;_mo
     </div>
 <mt:unless name="request.id"><mt:var name="default" escape setvar="value"></mt:unless>
     <textarea id="<mt:var name="__col_name__">" rows="<mt:if name="options"><mt:var name="options" escape><mt:else>20</mt:if>"
-    class="form-control richtext" name="<mt:var name="__col_name__">"><mt:var name="value"></textarea>
+    class="form-control richtext" name="<mt:var name="__col_name__">"><mt:if name="forward_params"><mt:var name="request.text" escape><mt:else><mt:var name="value"></mt:if></textarea>
   </div>
 </div>
 <script>
