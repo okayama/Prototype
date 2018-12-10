@@ -1195,11 +1195,9 @@ class PAML {
         if (! $hash ) {
             return '';
         }
-        if ( strpos( $key, ':' ) !== FALSE ) {
-            $keys = str_getcsv( $key, ':' );
-        }
         if ( is_array( $hash ) ) {
-            if ( $keys ) {
+            if ( is_array( $key ) ) {
+                $keys = $key;
                 $value = $hash;
                 foreach( $keys as $key ) {
                     if ( strpos( $key, 'Array.' ) === 0 ) {
