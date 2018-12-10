@@ -3,7 +3,7 @@
 /**
  * PAML : PHP Alternative Markup Language
  *
- * @version    1.0
+ * @version    1.01
  * @package    PAML
  * @author     Alfasado Inc. <webmaster@alfasado.jp>
  * @copyright  2017 Alfasado Inc. All Rights Reserved.
@@ -21,10 +21,10 @@ if (! defined( 'EP' ) ) {
 /**
  * PAMLVSN = Compile format version.
  */
-define( 'PAMLVSN', '1.0' );
+define( 'PAMLVSN', '1.01' );
 
 class PAML {
-    private   $version       = 1.0;
+    private   $version       = 1.01;
 
 /**
  * $prefix        : Tag prefix.
@@ -119,7 +119,7 @@ class PAML {
  */
     public   $tags = [
       'block'       => ['block', 'loop', 'foreach', 'for','section', 'literal', 'queries'],
-      'block_once'  => ['ignore', 'setvars', 'capture', 'setvarblock',
+      'block_once'  => ['ignore', 'setvars', 'sethashvars', 'capture', 'setvarblock',
                         'assignvars', 'setvartemplate', 'nocache', 'isinchild'],
       'conditional' => ['else', 'elseif', 'if', 'unless', 'ifgetvar', 'elseifgetvar',
                         'ifinarray', 'isarray', 'isset'],
@@ -132,7 +132,7 @@ class PAML {
                         'decode_html'],
       'function'    => ['getvar', 'trans', 'setvar', 'property', 'ldelim', 'include', 'math',
                         'rdelim', 'fetch', 'var', 'date', 'assign', 'count', 'vardump',
-                        'query'],
+                        'gethashvar', 'query'],
       'include'     => ['include', 'includeblock', 'extends'] ];
 
 /**
@@ -962,6 +962,32 @@ class PAML {
         }
     }
 
+    function block_sethashvars ( $args, &$content, $ctx, &$repeat, $counter ) {
+        if ( isset( $args['name'] ) ) $name = $args['name'];
+        if ( isset( $content ) ) {
+            if ( $name ) {
+                $vars = $ctx->vars;
+                if (!is_array( $vars ) ) {
+                    $vars = [];
+                    $ctx->vars = $vars;
+                }
+                $pairs = preg_split('/\r?\n/', trim( $content ) );
+                foreach ( $pairs as $line ) {
+                    list( $var, $value ) = preg_split( '/\s*=/', $line, 2 );
+                    if ( isset( $var ) && isset( $value ) ) {
+                        $var = trim( $var );
+                        $vars[ $name ][ $var ] = $value;
+                        $vars[ $name ][ strtolower( $var ) ] = $value;
+                        $vars[ strtolower( $name ) ][ $var ] = $value;
+                        $vars[ strtolower( $name ) ][ strtolower( $var ) ] = $value;
+                    }
+                }
+                $ctx->vars = $vars;
+            }
+        }
+        return '';
+    }
+
     function block_literal ( $args, &$content, $ctx, &$repeat, $counter ) {
         if (!$counter ) return;
         $request_cache = $this->request_cache;
@@ -1156,6 +1182,39 @@ class PAML {
             }
         }
         return $var;
+    }
+
+    function function_gethashvar ( $args, &$ctx ) {
+        if ( isset( $args['name'] ) ) $name = $args['name'];
+        if ( isset( $args['key'] ) ) $key = $args[ 'key' ];
+        if ( (! $name ) || (! $key ) ) return '';
+        $hash = $ctx->vars[ $name ];
+        if (! $hash ) {
+            $hash = $ctx->vars[ strtolower( $name ) ];
+        }
+        if (! $hash ) {
+            return '';
+        }
+        if ( strpos( $key, ':' ) !== FALSE ) {
+            $keys = str_getcsv( $key, ':' );
+        }
+        if ( is_array( $hash ) ) {
+            if ( $keys ) {
+                $value = $hash;
+                foreach( $keys as $key ) {
+                    if ( strpos( $key, 'Array.' ) === 0 ) {
+                        $key = str_replace( 'Array.', '', $key );
+                        $key = $ctx->vars[ $key ];
+                    }
+                    $value = $value[ $key ];
+                }
+                return $value;
+            }
+            if ( isset( $hash[ $key ] ) ) {
+                return $hash[ $key ];
+            }
+        }
+        return '';
     }
 
     function function_include ( $args, $ctx ) {
