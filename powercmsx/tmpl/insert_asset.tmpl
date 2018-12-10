@@ -79,7 +79,7 @@
 <mt:setvar name="body_class" value="insert-asset">
 <mt:include file="include/dialog_header.tmpl">
 
-<form action="<mt:var name="script_uri">" method="POST" class="form-inline">
+<form action="<mt:var name="script_uri">" method="POST" class="form-inline" id="insert-asset-form">
 
 <input type="hidden" name="__mode" value="insert_asset">
 <input type="hidden" name="insert" value="<mt:var name="request.insert" escape>">
@@ -191,7 +191,7 @@
 </mt:objectloop>
 
   <button id="dialog-cancel-btn" class="btn btn-secondary" type="button"><mt:trans phrase="Cancel"></button>
-  <button id="dialog-selector-btn" class="btn btn-primary" type="submit"><mt:trans phrase="Insert"></button>
+  <button id="dialog-selector-btn" class="btn btn-primary" type="button"><mt:trans phrase="Insert"></button>
 
 </form>
 <script>
@@ -212,6 +212,9 @@ function evnt_keydown(e) {
         close_dialog();
     }
 }
+$('#dialog-selector-btn').click(function() {
+    $('#insert-asset-form').submit();
+});
 $('#dialog-cancel-btn').click(function() {
     close_dialog();
     return false;
@@ -221,7 +224,25 @@ function close_dialog () {
     window.location.href = '<mt:var name="script_uri">?__mode=loading';
 }
 $('#list_body').sortable();
+$(":checkbox").keypress(function(e) {
+    if ( e.keyCode == 13 ) {
+        if ( $(this).prop('checked') ) {
+            $(this).prop('checked', false);
+        } else {
+            $(this).prop('checked', true);
+        }
+        if ( $(this).hasClass('cb-all-select') ) {
+            checked = $(this).prop('checked');
+            $("input[name='model[]']").each(function(){
+                $(this).prop('checked', checked);
+            });
+            $('.selector').prop('checked', checked);
+        } else {
+            set_all_select();
+        }
+    }
+    return false;
+});
 </script>
-
 <mt:include file="include/dialog_footer.tmpl">
 </mt:if>
