@@ -108,6 +108,7 @@ $('#status-alert-block').hide();
   __workflow_orig_max_status = __workflow_owner_max_status;
   __workflow_current_status = $('#status-selector').val();
   __workflow_orig_status = __workflow_current_status;
+<mt:if name="object_user_id" ne="$user_id">
 $('#status-selector').change(function(){
     $('#status-alert-block').hide();
     if ( $(this).val() > __workflow_owner_max_status ) {
@@ -127,6 +128,7 @@ $('#status-selector').change(function(){
         }
     }
 });
+</mt:if>
 </script>
 </mt:if>
 <mt:tablehascolumn column="published_on">
