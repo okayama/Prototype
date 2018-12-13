@@ -1419,7 +1419,7 @@ class PAML {
         return rawurlencode( $str );
     }
 
-    function encode_xml ( $str, $arg ) {
+    function modifier_encode_xml ( $str, $arg ) {
         return xmlrpc_encode( $str );
     }
 
