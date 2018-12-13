@@ -20,12 +20,18 @@
       <option value="">
         <mt:trans phrase="Unspecified">
       </option>
+      <option value="template" <mt:if name="__col_value__" eq="template">selected</mt:if>>
+        <mt:trans phrase="Index">
+      </option>
     </mt:if>
       <mt:if name="menu_type" ne="2">
         <mt:ifinarray array="no_disp" value="$label">
         <mt:else>
+        <mt:unless name="name" eq="template">
         <option <mt:if name="__col_value__" eq="$name">selected</mt:if> value="<mt:var name="name">">
-        <mt:trans phrase="$label" escape></option>
+        <mt:trans phrase="$label" escape>
+        </option>
+        </mt:unless>
         </mt:ifinarray>
       </mt:if>
     </mt:objectloop>
