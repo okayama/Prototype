@@ -7563,6 +7563,7 @@ class Prototype {
         } else {
             $ui = $db->model( 'urlinfo' )->get_by_key( ['file_path' => $file_path ] );
         }
+        $ui->delete_flag( 0 );
         if ( $ui->id ) {
             if ( $key == $ui->key && $ui->model == $table->name &&
                 $ui->urlmapping_id == $urlmapping_id && $ui->object_id == $obj->id ) {

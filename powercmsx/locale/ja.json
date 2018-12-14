@@ -788,6 +788,8 @@
     "Unpublished %s %s." : "%s件の%sを非公開にしました。",
     "Publish queue" : "予約キュー",
     "Removed %s %s.": "%s件の%sを削除しました。",
+    "Clean up urlinfo" : "URLの整理",
+    "Clean up %s URLInfo." : "%sのURLを整理しました。",
     "Trigger(s) only the same scope." : "同一スコープのオブジェクトのみを対象とする",
     "Target only object(s) with the same WorkSpace."
         : "ワークスペースのオブジェクト更新のみを対象にします。",

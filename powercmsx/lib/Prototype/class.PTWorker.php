@@ -469,7 +469,6 @@ class PTWorker {
                                       [ $worker_label, $error ] );
             $this->log( $error, 'error', $app );
         }
-        $res_counter = 0;
         /*
         // Compress the database
         if ( $db->dbcompress ) {
@@ -495,6 +494,38 @@ class PTWorker {
             }
         }
         */
+        // Clean up urlinfo
+        $res_counter = 0;
+        $worker_label = $app->translate( 'Clean up urlinfo' );
+        try {
+            $urls = $db->model( 'urlinfo' )->load( ['delete_flag' => 1] );
+            foreach ( $urls as $url ) {
+                $removeUrls = [];
+                if ( file_exists( $url->file_path ) ) {
+                    $res_counter++;
+                    $another = $db->model( 'urlinfo' )->count( ['file_path' => $url->file_path, 'id' => ['not' => $url->id ] ] );
+                    if ( $another ) {
+                        $removeUrls[] = $url;
+                    } else {
+                        $url->delete_flag( 0 );
+                        $url->save();
+                    }
+                }
+                if (! empty( $removeUrls ) ) {
+                    $db->model( 'urlinfo' )->remove_multi( $removeUrls );
+                }
+            }
+            if ( $res_counter ) {
+                $worker_messages[ $worker_label ] =
+                    $app->translate( 'Clean up %s URLInfo.', $res_counter );
+            }
+        } catch ( Exception $e ) {
+            $error = $e->getMessage();
+            $error = $app->translate( "An error occurred in task '%s'. (%s)",
+                                      [ $worker_label, $error ] );
+            $this->log( $error, 'error', $app );
+        }
+        $res_counter = 0;
         // Plugin's tasks
         $tasks = isset( $app->registry['tasks'] ) ? $app->registry['tasks'] : [];
         $tasks = array_merge( $tasks, $this->core_tasks() );
