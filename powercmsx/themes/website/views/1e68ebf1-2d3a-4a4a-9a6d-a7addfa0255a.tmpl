@@ -3,8 +3,8 @@ RewriteCond %{HTTP_COOKIE} .*pt-user.*$ [OR]
 RewriteCond %{REQUEST_METHOD} !=GET [OR]
 RewriteCond %{REQUEST_URI}  /[^.php]$/
 RewriteRule ^(.*)$ <mt:websitepath>/pt-view.php
-ErrorDocument 404 <mt:var name="websiteurl" relative="1">site/pt-view.php
-DirectoryIndex pt-view.php
+ErrorDocument 404 <mt:var name="websiteurl" relative="1">/pt-view.php
+# DirectoryIndex <mt:var name="websiteurl" relative="1">/pt-view.php
 
 RewriteEngine On
 RewriteCond %{QUERY_STRING} (=)
