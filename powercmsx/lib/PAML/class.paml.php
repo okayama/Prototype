@@ -3,7 +3,7 @@
 /**
  * PAML : PHP Alternative Markup Language
  *
- * @version    1.01
+ * @version    1.02
  * @package    PAML
  * @author     Alfasado Inc. <webmaster@alfasado.jp>
  * @copyright  2017 Alfasado Inc. All Rights Reserved.
@@ -21,10 +21,10 @@ if (! defined( 'EP' ) ) {
 /**
  * PAMLVSN = Compile format version.
  */
-define( 'PAMLVSN', '1.01' );
+define( 'PAMLVSN', '1.02' );
 
 class PAML {
-    private   $version       = 1.01;
+    private   $version       = 1.02;
 
 /**
  * $prefix        : Tag prefix.
@@ -127,8 +127,8 @@ class PAML {
                         'add_slash', 'strip_linefeeds', 'sprintf', 'encode_js', 'truncate',
                         'wrap', 'encode_url', 'trim_space', 'regex_replace', 'setvartemplate',
                         'replace', 'translate', 'count_chars', 'to_json', 'from_json',
-                        'nocache', 'split', 'join', 'format_size', 'encode_xml', 'instr',
-                        'mb_instr', 'absolute', 'numify', 'merge_linefeeds', 'array_pop',
+                        'nocache', 'split', 'join', 'format_size', 'encode_xml', 'encode_php',
+                        'instr', 'mb_instr', 'absolute', 'numify', 'merge_linefeeds', 'array_pop',
                         'decode_html'],
       'function'    => ['getvar', 'trans', 'setvar', 'property', 'ldelim', 'include', 'math',
                         'rdelim', 'fetch', 'var', 'date', 'assign', 'count', 'vardump',
@@ -1366,8 +1366,11 @@ class PAML {
 
     function modifier_escape ( $str, $arg, $ctx, $name = null ) {
         $arg = strtolower( $arg );
-        list( $obj, $metod ) = $ctx->component_method( 'modifier_encode_' . $arg );
-        return $obj ? $obj->$metod( $str,1, $ctx, 'modifier_encode_' . $arg ) : $str;
+        $meth = 'modifier_encode_' . $arg;
+        if ( method_exists( $this, $meth ) ) {
+            return $this->$meth( $str, 1, $ctx );
+        }
+        return htmlspecialchars( $str );
     }
 
     function modifier_decode_html ( $str, $arg, $ctx ) {
@@ -1420,7 +1423,14 @@ class PAML {
     }
 
     function modifier_encode_xml ( $str, $arg ) {
-        return xmlrpc_encode( $str );
+        if ( strtolower( $arg ) == 'cdata' && strpos( $str, ']]>' ) === false ) {
+            return '<![CDATA[' . $str . ']]>';
+        }
+        return htmlentities( $str, ENT_XML1 );
+    }
+
+    function modifier_encode_php ( $str, $arg ) {
+        return addslashes( $str );
     }
 
     function modifier_sprintf ( $str, $arg ) {

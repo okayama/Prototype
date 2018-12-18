@@ -9049,7 +9049,7 @@ class Prototype {
         }
         $func = 'htmlspecialchars';
         $func_map = ['url' => 'rawurlencode', 'uri' => 'rawurlencode',
-                     'xml' => 'xmlrpc_encode', 'js' => 'prototype_escape_js',
+                     'xml' => 'prototype_escape_xml', 'js' => 'prototype_escape_js',
                      'javascript' => 'prototype_escape_js', 'sql' => 'prototype_escape_sql',
                      'shell' => 'escapeshellarg', 'shellarg' => 'escapeshellarg', 
                      'shellcmd' => 'escapeshellcmd', 'php' => 'addslashes',
@@ -9126,6 +9126,10 @@ class Prototype {
             "\t" . $msg . "\n", 3, $this->log_path . 'error.log' );
     }
 
+}
+
+function prototype_escape_xml ( $str ) {
+    return htmlentities( $str, ENT_XML1 );
 }
 
 function prototype_escape_js ( $str ) {
