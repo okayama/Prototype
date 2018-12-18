@@ -175,10 +175,11 @@ class PTUtil {
             if ( $rel->number ) $terms['number'] = $rel->number;
             $comp = $app->db->model( 'meta' )->get_by_key( $terms );
             if (! $comp->id ) {
-                $changed_cols[ $rel->key ] = true;
+                if ( $rel->kind != 'thumbnail' ) {
+                    $changed_cols[ $rel->key ] = true;
+                }
             } else {
                 if ( $rel->text != $comp->text ) {
-                    // $rel->value != $comp->value
                     $changed_cols[ $rel->key ] = true;
                 } else {
                     foreach ( $blobs as $blob ) {
