@@ -394,8 +394,13 @@ a {
   margin-top: 24px;
   font-size: 24px;
 }
+.page-anchor {
+  display:block;
+  padding-top: 100px;
+  margin-top: -95px;
+}
 <mt:widgets>
-.<mt:widgetbasename> a {
+.bn-<mt:widgetbasename> a {
   color: <mt:widgetforecolor escape> !important;
   background-color:rgba(<mt:hex2rgba hex="$widgetbackcolor">);
   background: linear-gradient(transparent 80%, <mt:widgetforecolor escape> 100%);
