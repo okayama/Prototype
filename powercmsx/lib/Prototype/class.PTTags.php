@@ -326,8 +326,8 @@ class PTTags {
                                 $parent = $app->db->model( $container )->load( ['id' => $parent_id ] );
                                 $count_obj = count( $parent );
                                 $app->run_callbacks( $callback, $container, $parent, $count_obj );
-                                $parent = $parent[0];
-                                if ( $parent->id ) {
+                                if ( $count_obj ) {
+                                    $parent = $parent[0];
                                     if ( $status_published && $parent->status != $status_published ) {
                                         continue;
                                     }
@@ -368,8 +368,8 @@ class PTTags {
                         $parent = $app->db->model( $container )->load( ['id' => $parent_id ] );
                         $count_obj = count( $parent );
                         $app->run_callbacks( $callback, $container, $parent, $count_obj );
-                        $parent = $parent[0];
-                        if ( $parent->id ) {
+                        if ( $count_obj ) {
+                            $parent = $parent[0];
                             if ( $status_published && $parent->status != $status_published ) {
                                 continue;
                             }
