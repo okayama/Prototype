@@ -49,7 +49,7 @@ class PAML {
     public    $unify_breaks  = true;
     public    $logging       = false;
     public    $log_path;
-    public    $csv_delimiter = ':';
+    public    $csv_delimiter = ',';
     public    $csv_enclosure = "'";
     public    $plugin_compat = 'smarty_';
     public    $path          = __DIR__;

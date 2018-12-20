@@ -67,6 +67,7 @@ class Prototype {
     public    $installed     = false;
     public    $do_conditional= true;
     public    $theme_static  = null;
+    public    $csv_delimiter = ',';
     public    $init_tags;
     public    $protocol;
     public    $log_path;
@@ -392,7 +393,7 @@ class Prototype {
         $ctx->prefix = 'mt';
         $ctx->app = $this;
         $ctx->default_component = $this;
-        $ctx->csv_delimiter = ',';
+        $ctx->csv_delimiter = $this->csv_delimiter;
         $ctx->force_compile = true;
         if ( $this->cache_driver && $this->cache_driver == 'File' ) {
             $this->cache_driver = null;
@@ -4373,6 +4374,7 @@ class Prototype {
         $has_attachment = false;
         $has_assets = false;
         $object_label = $app->param( $table->primary );
+        $require_blobs = [];
         foreach( $columns as $col => $props ) {
             if ( $col === $primary ) continue;
             if ( $obj->id && in_array( $col, $autoset ) ) continue;
@@ -4569,6 +4571,8 @@ class Prototype {
                             if ( $type != 'blob' ) {
                                 $errors[] = $app->translate( '%s is required.',
                                             $app->translate( $labels[ $col ] ) );
+                            } else {
+                                $require_blobs[] = $col;
                             }
                         }
                     }
@@ -5027,7 +5031,17 @@ class Prototype {
                 if ( $meta_save ) {
                     if (! $metadata->save() ) return $app->rollback( $errstr );
                 }
+                if (! $obj->$key && !empty( $require_blobs ) && in_array( $key, $require_blobs ) ) {
+                    $errors[] = $app->translate( '%s is required.',
+                                $app->translate( $labels[ $key ] ) );
+                }
             }
+        }
+        if (! empty( $errors ) ) {
+            $error = join( "\n", $errors );
+            $db->rollback();
+            $app->txn_active = false;
+            return $app->forward( $model, $error );
         }
         if ( $has_file ) {
             if (! $obj->save() ) return $app->rollback( $errstr );
