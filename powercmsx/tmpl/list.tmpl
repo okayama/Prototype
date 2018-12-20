@@ -390,7 +390,7 @@ $('#dialog-cancel-btn').click(function(){
     <label class="custom-control custom-checkbox">
       <input id="box_<mt:var name="id">" type="checkbox" name="id[]"
         value="<mt:var name="id">" class="custom-control-input"
-        aria-label="<mt:trans phrase="Select or deselect %s in this row." params="$label">">
+        aria-label="<mt:trans phrase="Select or deselect %s in this row." params="$label" escape>">
       <span class="custom-control-indicator"></span>
       <span class="custom-control-description"></span>
     </label>
