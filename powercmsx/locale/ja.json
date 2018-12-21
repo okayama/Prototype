@@ -56,6 +56,7 @@
     "Hint"               : "ヒント",
     "Change"             : "変更",
     "Profile"            : "プロフィール",
+    "Activity (%s)"      : "アクティビティ (%s)",
     "Activity Log"       : "アクティビティ・ログ",
     "Select a Widget..." : "ウィジェットを選択...",
     "No %s Found."       : "%sはありません。",
