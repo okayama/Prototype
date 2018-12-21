@@ -893,6 +893,33 @@ class PAML {
                     $arr[] = [ $key => $name, $item => $param ];
             }
             if ( isset( $arr ) ) $params = $arr;
+            if ( isset( $args['sort_by'] ) ) {
+                $sort = $args['sort_by'];
+                $sorts = preg_split( "/\s*,\s*/", $sort, 2, PREG_SPLIT_NO_EMPTY );
+                $sort = $sorts[ 0 ];
+                if ( $sort == 'key' || $sort == 'value' ) {
+                    $reverse = false;
+                    $numeric = false;
+                    if ( isset( $sorts[ 1 ] ) ) {
+                        $opt = $sorts[ 1 ];
+                        if ( stripos( $opt, 'reverse' ) !== false ) {
+                            $reverse = true;
+                        }
+                        if ( stripos( $opt, 'numeric' ) !== false ) {
+                            $numeric = true;
+                        }
+                    }
+                    $sort_func = $reverse ? 'krsort' : 'ksort'; // key
+                    if ( $sort == 'value' ) {
+                        $sort_func = $reverse ? 'rsort' : 'sort';
+                    }
+                    if ( $numeric ) {
+                        $sort_func( $params, SORT_NUMERIC );
+                    } else {
+                        $sort_func( $params );
+                    }
+                }
+            }
             $ctx->local_params = $params;
         }
         if (!isset( $params ) ) $params = $ctx->local_params;
