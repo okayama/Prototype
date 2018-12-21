@@ -52,7 +52,7 @@ class PTUtil {
         return [ $hours, $minutes, $seconds ];
     }
 
-    public static function clone_object ( $app, $obj ) {
+    public static function clone_object ( $app, $obj, $strict = true ) {
         $clone = clone $obj;
         $clone->id( null );
         $blob_cols = $app->db->get_blob_cols( $obj->_model, true );
@@ -91,6 +91,38 @@ class PTUtil {
         }
         if ( $obj->has_column( 'uuid' ) ) {
             $clone->uuid( $app->generate_uuid() );
+        }
+        if (! $strict ) {
+            if ( $obj->has_column( 'status' ) ) {
+                $workspace = $obj->workspace;
+                if ( $app->user() ) {
+                    $max_status = $app->max_status( $app->user(), $obj->_model, $workspace );
+                    if ( $obj->status > $max_status ) {
+                        $clone->status( $max_status );
+                    }
+                }
+                $status_published = $app->status_published( $obj->_model );
+                if ( $obj->status == $status_published ) {
+                    if ( $status_published == 4 ) {
+                        $clone->status = '0';
+                    } else {
+                        $clone->status( 1 );
+                    }
+                }
+            }
+            if ( $obj->has_column( 'created_by' ) ) {
+                $clone->created_by('');
+            }
+            if ( $obj->has_column( 'modified_by' ) ) {
+                $clone->modified_by('');
+            }
+            if ( $obj->has_column( 'created_on' ) ) {
+                $clone->created_on('');
+            }
+            if ( $obj->has_column( 'modified_on' ) ) {
+                $clone->modified_on('');
+            }
+            $app->set_default( $clone );
         }
         $clone->save();
         $orig_relations = $app->get_relations( $obj );
