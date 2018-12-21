@@ -2765,6 +2765,17 @@ class PTTags {
                     if ( isset( $args['limit'] ) ) {
                         $params['limit'] = (int) $args['limit'];
                     }
+                    $order_sort = true;
+                    if ( isset( $args['offset'] ) ) {
+                        $params['offset'] = (int) $args['offset'];
+                    }
+                    if ( isset( $args['sort_by'] ) ) {
+                        $params['sort'] = $args['sort_by'];
+                        $order_sort = false;
+                    }
+                    if ( isset( $args['sort_order'] ) ) {
+                        $params['direction'] = $args['sort_order'];
+                    }
                     $to_model = $app->db->model( $to_obj );
                     foreach ( $args as $arg => $v ) {
                         if ( $to_model->has_column( $arg ) ) {
@@ -2772,14 +2783,16 @@ class PTTags {
                         }
                     }
                     $objects = $app->db->model( $to_obj )->load( $terms, $params );
-                    if ( count( $objects ) > 1 ) {
+                    if ( $order_sort && count( $objects ) > 1 ) {
                         $arr = [];
                         foreach ( $objects as $obj ) {
                             $arr[ (int) $obj->id ] = $obj;
                         }
                         $objects = [];
                         foreach ( $ids as $id ) {
-                            $objects[] = $arr[ $id ];
+                            if ( isset( $arr[ $id ] ) ) {
+                                $objects[] = $arr[ $id ];
+                            }
                         }
                     }
                 }
