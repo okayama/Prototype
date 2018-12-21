@@ -4266,14 +4266,7 @@ class Prototype {
             return $app->error( 'Cannot load %s (ID:%s)', [ 
                 $app->translate( $table->label ), $id ] );
         }
-        $clone_obj = PTUtil::clone_object( $app, $obj );
-        if ( $obj->has_column( 'status' ) ) {
-            $max_status = $app->max_status( $app->user(), $model, $workspace );
-            if ( $obj->status > $max_status ) {
-                $clone_obj->status( $max_status );
-                $clone_obj->save();
-            }
-        }
+        $clone_obj = PTUtil::clone_object( $app, $obj, false );
         $app->redirect( $app->admin_url . '?__mode=view&_type=edit&_model=' . $model .
             '&id=' . $clone_obj->id . $app->workspace_param . '&cloned=1' );
     }
@@ -5189,7 +5182,7 @@ class Prototype {
                 $app->error( 'Permission denied.' );
             }
             $add_return_args .= '&cloned=1';
-            $clone_obj = PTUtil::clone_object( $app, $obj );
+            $clone_obj = PTUtil::clone_object( $app, $obj, false );
             $app->redirect( $app->admin_url . '?__mode=view&_type=edit&_model=' . $model .
                 '&id=' . $clone_obj->id . $app->workspace_param . $add_return_args );
         } else {
