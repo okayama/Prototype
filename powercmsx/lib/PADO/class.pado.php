@@ -25,7 +25,7 @@ class PADO {
     private $dbhost      = '';
     private $dbuser      = '';
     private $dbpasswd    = '';
-    private $dbport      =  3306;
+    private $dbport      = ''; // 3306
     public  $dbcharset   = 'utf8mb4';
     public  $set_names   = false;
     public  $dbcompress  = false;
