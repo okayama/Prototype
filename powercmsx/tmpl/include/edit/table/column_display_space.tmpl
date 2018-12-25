@@ -1,5 +1,4 @@
 <mt:tablehascolumn column="workspace_id">
-
 <div class="row form-group row-more">
   <div class="col-lg-2">
   </div>
@@ -22,7 +21,7 @@
         <span class="custom-control-description"> 
         <mt:trans phrase="Display in Dashboard"></span>
     </label>
-
+<mt:ignore>
     <input type="hidden" name="allow_comment" value="0">
     <label id="display_dashboard-wrapper" class="custom-control custom-checkbox">
     <input id="display_dashboard" class="custom-control-input"
@@ -32,10 +31,9 @@
         <span class="custom-control-description"> 
         <mt:trans phrase="Accept Comments"></span>
     </label>
-
+</mt:ignore>
   </div>
 </div>
-
 <script>
 $("#<mt:var name="name" escape>").click(function(){
     if ( $(this).prop('checked') == false ) {
@@ -46,5 +44,4 @@ $("#<mt:var name="name" escape>").click(function(){
     }
 });
 </script>
-
 </mt:tablehascolumn>
