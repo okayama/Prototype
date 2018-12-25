@@ -273,7 +273,7 @@
     <mt:if name="__first__">
     <select class="form-control short" id="language" name="language">
     </mt:if>
-      <option value="<mt:var name="__value__">" <mt:if name="language" eq="$__value__">selected</mt:if>><mt:var name="__value__"></option>
+      <option value="<mt:var name="__value__">" <mt:if name="language" eq="$__value__">selected</mt:if>><mt:var name="__value__" escape translate></option>
     <mt:if name="__last__">
     </select>
     </mt:if>
