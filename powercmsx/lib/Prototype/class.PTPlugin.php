@@ -300,4 +300,13 @@ class PTPlugin {
             }
         }
     }
+
+    function set_config_value ( $name, $value, $ws_id = 0 ) {
+        $app = Prototype::get_instance();
+        $plugin_id = strtolower( get_class( $this ) );
+        $terms = ['extra' => $plugin_id, 'key' => $name, 'workspace_id' => $ws_id ];
+        $setting_obj = $app->db->model( 'option' )->get_by_key( $terms );
+        $setting_obj->value( $value );
+        $setting_obj->save();
+    }
 }
