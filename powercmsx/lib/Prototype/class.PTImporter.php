@@ -169,6 +169,17 @@ class PTImporter {
                         foreach ( $columns as $column ) {
                             if ( $column == "{$model}_id" ) {
                                 $id = (int) $data[ $cnt ];
+                            } else if ( $column == "{$model}_workspace_id" ) {
+                                $workspace_id = (int) $data[ $cnt ];
+                                if ( $app->workspace() && $workspace_id != $app->workspace()->id ) {
+                                    $workspace_id = (int) $app->workspace()->id;
+                                } else if (! $app->workspace() ) {
+                                    $obj_workspace = $app->db->model( 'workspace' )->load( $workspace_id );
+                                    if (! $obj_workspace ) {
+                                        $workspace_id = 0;
+                                    }
+                                }
+                                $values[ $column ] = $workspace_id;
                             } else {
                                 $values[ $column ] = $data[ $cnt ];
                             }
@@ -500,14 +511,21 @@ class PTImporter {
                                         }
                                         foreach ( $csv as $path ) {
                                             $error = '';
-                                            $res = PTUtil::upload_check( $extra, $path, false, $error );
-                                            if ( $this->print_state && $res == 'resized' ) {
-                                                echo $app->translate(
-                                                "The image (%s) was larger than the size limit, so it was reduced.",
-                                                htmlspecialchars( basename( $path ) ) ), '<br>';
-                                            } else if ( $this->print_state && $error ) {
-                                                echo $error, '<br>';
-                                                continue;
+                                            $realpath = '';
+                                            if ( strpos( $path, '%r' ) === 0 ) {
+                                                $realpath = str_replace( '%r', $dirname, $path );
+                                                $realpath = preg_replace( "/\//", DS, $realpath );
+                                            }
+                                            if ( $realpath && file_exists( $realpath ) ) {
+                                                $res = PTUtil::upload_check( $extra, $path, false, $error );
+                                                if ( $this->print_state && $res == 'resized' ) {
+                                                    echo $app->translate(
+                                                    "The image (%s) was larger than the size limit, so it was reduced.",
+                                                    htmlspecialchars( basename( $path ) ) ), '<br>';
+                                                } else if ( $this->print_state && $error ) {
+                                                    echo $error, '<br>';
+                                                    continue;
+                                                }
                                             }
                                             $url_terms = ['workspace_id' => $ws_id,
                                                           'relative_path' => $path,
