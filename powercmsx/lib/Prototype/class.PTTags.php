@@ -1555,9 +1555,12 @@ class PTTags {
         if ( $workspace_id && $obj->has_column( 'workspace_id' ) ) {
             $workspace_id += 0;
             $extra = " WHERE {$model}_workspace_id={$workspace_id} ";
-            $extra.= "AND {$model}_{$column}<='{$_from}'";
+            $extra.= " AND {$model}_{$column}<='{$_from}' ";
         } else {
-            $extra = " WHERE {$model}_{$column}<='{$_from}'";
+            $extra = " WHERE {$model}_{$column}<='{$_from}' ";
+        }
+        if ( $table->revisable ) {
+            $extra.= " AND {$model}_rev_type=0 ";
         }
         $dbprefix = DB_PREFIX;
         $sql = "SELECT DATE_FORMAT({$model}_{$column}, '%Y%m%d000000') AS time, COUNT(*) ";
