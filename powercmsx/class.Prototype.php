@@ -1811,6 +1811,10 @@ class Prototype {
                     if ( in_array( 'can_create_' . $model, $perms ) ) {
                         $ctx->vars['can_create'] = 1;
                     }
+                } else if ( isset( $permissions[0] ) ) {
+                    if ( in_array( 'can_create_' . $model, $permissions[0] ) ) {
+                        $ctx->vars['can_create'] = 1;
+                    }
                 }
                 $user_id = $user->id;
                 if ( $table->has_status ) {
