@@ -271,13 +271,13 @@ $('#dialog-cancel-btn').click(function(){
 <nav aria-label="<mt:trans phrase="Page navigation">" class="pull-right">
   <ul class="pagination pagination-sm">
     <li class="page-item <mt:unless name="has_prev">disabled</mt:unless>">
-      <a class="page-link" href="<mt:if name="has_prev"><mt:var name="this_url">&amp;offset=<mt:var name="prev_offset"><mt:var name="sort_cond"><mt:var name="query_cond"><mt:var name="dialog_param"><mt:var name="filter_cond" strip_linefeeds="1"><mt:var name="selected_ids_cond" strip_linefeeds="1"><mt:if name="workspace_id">&amp;workspace_id=<mt:var name="workspace_id"></mt:if><mt:var name="filter_add_params"><mt:var name="selector_cond"><mt:else>#</mt:if>" aria-label="<mt:trans phrase="Previous">">
+      <a class="page-link" href="<mt:if name="has_prev"><mt:var name="this_url">&amp;offset=<mt:var name="prev_offset"><mt:var name="sort_cond"><mt:var name="query_cond"><mt:var name="dialog_param"><mt:var name="filter_cond" strip_linefeeds="1"><mt:var name="selected_ids_cond" strip_linefeeds="1"><mt:if name="workspace_id">&amp;workspace_id=<mt:var name="workspace_id"></mt:if><mt:var name="filter_add_params"><mt:var name="selector_cond"><mt:var name="insert_cond" strip_linefeeds="1"><mt:else>#</mt:if>" aria-label="<mt:trans phrase="Previous">">
         <span aria-hidden="true">&laquo;</span>
         <span class="sr-only"><mt:trans phrase="Previous"></span>
       </a>
     </li>
     <li class="page-item <mt:unless name="next_offset">disabled</mt:unless>">
-      <a class="page-link" href="<mt:if name="next_offset"><mt:var name="this_url">&amp;offset=<mt:var name="next_offset"><mt:var name="sort_cond"><mt:var name="query_cond"><mt:var name="dialog_param"><mt:var name="filter_cond" strip_linefeeds="1"><mt:var name="selected_ids_cond" strip_linefeeds="1"><mt:if name="workspace_id">&amp;workspace_id=<mt:var name="workspace_id"></mt:if><mt:var name="filter_add_params"><mt:var name="selector_cond"><mt:else>#</mt:if>" aria-label="<mt:trans phrase="Next">">
+      <a class="page-link" href="<mt:if name="next_offset"><mt:var name="this_url">&amp;offset=<mt:var name="next_offset"><mt:var name="sort_cond"><mt:var name="query_cond"><mt:var name="dialog_param"><mt:var name="filter_cond" strip_linefeeds="1"><mt:var name="selected_ids_cond" strip_linefeeds="1"><mt:if name="workspace_id">&amp;workspace_id=<mt:var name="workspace_id"></mt:if><mt:var name="filter_add_params"><mt:var name="selector_cond"><mt:var name="insert_cond" strip_linefeeds="1"><mt:else>#</mt:if>" aria-label="<mt:trans phrase="Next">">
         <span aria-hidden="true">&raquo;</span>
         <span class="sr-only"><mt:trans phrase="Next"></span>
       </a>
