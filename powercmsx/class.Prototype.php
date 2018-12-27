@@ -4358,7 +4358,7 @@ class Prototype {
             $obj->rev_object_id( $orig_id );
             $obj->rev_type( 2 );
             if ( $table->has_status ) {
-                $obj->status( 0 );
+                $obj->status = 0;
             }
         }
         if ( $model == 'user' ) {
