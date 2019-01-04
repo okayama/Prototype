@@ -4049,7 +4049,7 @@ class PTTags {
         $next_offset = $ctx->stash( 'next_offset' );
         $prev_offset = $ctx->stash( 'prev_offset' );
         $current_offset = $ctx->stash( 'current_offset' );
-        $ctx->local_vars['current_page'] = $current_page;
+        $ctx->local_vars['current_page'] = $current_page ? $current_page : 1;
         $ctx->local_vars['object_count'] = $count_obj;
         $ctx->local_vars['offset_last'] = $offset_last;
         $ctx->local_vars['next_offset'] = $next_offset;
