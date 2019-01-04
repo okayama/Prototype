@@ -35,7 +35,7 @@ function editorInit () {
                 tooltip: '<mt:trans phrase="Insert Image">',
                 icon: false,
                 onclick: function () {
-                    url = '<mt:var name="script_uri">?__mode=view&_type=list&_model=asset<mt:if name="workspace_id">&workspace_id=<mt:var name="workspace_id"></mt:if>&dialog_view=1&select_system_filters=filter_class_image&_system_filters_option=image&_filter=1&insert_editor=1&insert=' + ed.id;
+                    url = '<mt:var name="script_uri">?__mode=view&_type=list&_model=asset<mt:if name="workspace_id">&workspace_id=<mt:var name="workspace_id"></mt:if>&dialog_view=1&select_system_filters=filter_class_image&_system_filters_option=image&_filter=asset&insert_editor=1&insert=' + ed.id;
                     $('#modal').modal().find('iframe').attr( 'src', url );
                 }
             });
