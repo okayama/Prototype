@@ -5508,9 +5508,9 @@ class Prototype {
                                 $ts = $time . '01000000';
                             }
                             $file_path = $app->build_path_with_map( $obj, $mapping, $table, $ts );
+                            $app->publish( $file_path, $obj, $mapping, null, $ts );
                         }
                     }
-                    $app->publish( $file_path, $obj, $mapping, null, $ts );
                     if ( $app->resetdb_per_rebuild ) $app->db->reconnect();
                 }
             }

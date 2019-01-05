@@ -1783,29 +1783,53 @@ class PTTags {
         $format_ts = isset( $args['format_ts'] ) ? $args['format_ts'] : 0;
         $title = $ctx->stash( 'current_archive_title' );
         $ts = $title;
-        if ( $fmt || $format_ts ) {
-            $ts = preg_replace( "/[^0-9]/", '', $ts );
-            // $fmt = null;
-        }
+        $ts = preg_replace( "/[^0-9]/", '', $ts );
+        $at = $ctx->stash( 'current_archive_type' );
         if (! $format_ts && !$fmt ) {
-            $at = $ctx->stash( 'current_archive_type' );
             if ( $at === 'monthly' ) {
-                $fmt = $app->translate( '\F, \Y' );
-                $ts .= '01000000';
+                $fmt = $app->translate( 'F, Y' );
+                if ( strlen( $ts ) === 6 ) {
+                    $ts .= '01000000';
+                }
             } else if ( $at === 'yearly' ) {
-                $fmt = $app->translate( '\Y' );
-                $ts .= '0101000000';
+                $fmt = $app->translate( 'Y' );
+                if ( strlen( $ts ) === 4 ) {
+                    $ts .= '0101000000';
+                }
+                return $ts;
             } else if ( $at === 'fiscal-yearly' ) {
                 $fmt = $app->translate( '\F\i\s\c\a\l Y' );
-                $ts .= '0101000000';
+                if ( strlen( $ts ) === 4 ) {
+                    $ts .= '0101000000';
+                }
+            } else if ( $at === 'daily' ) {
+                $fmt = $app->translate( 'F d, Y' );
+                if ( strlen( $ts ) === 8 ) {
+                    $ts .= '0101000000';
+                }
+            }
+        } else if ( strpos( $at, 'yearly' ) !== false && strlen( $ts ) === 4 ) {
+            $ts .= '0101000000';
+            if (! $fmt ) {
+                $fmt = $at == 'yearly' ? $app->translate( 'Y' ) : $app->translate( '\F\i\s\c\a\l Y' );
+            }
+        } else if ( $at == 'monthly' && strlen( $ts ) === 6 ) {
+            $ts .= '01000000';
+            if (! $fmt ) {
+                $fmt = $app->translate( 'F, Y' );
+            }
+        } else if ( $at == 'daily' && strlen( $ts ) === 8 ) {
+            $ts .= '000000';
+            if (! $fmt ) {
+                $fmt = $app->translate( 'F d, Y' );
             }
         }
         if ( $fmt && ! $format_ts ) {
             $args['ts'] = $ts;
             $args['format'] = $fmt;
-            $title = $ctx->function_date( $args, $ctx );
+            $ts = $ctx->function_date( $args, $ctx );
         }
-        return $title;
+        return $ts;
     }
 
     function hdlr_getchildrenids ( $args, $ctx ) {
