@@ -1,7 +1,7 @@
 {
     "label"       : "Website",
     "id"          : "website",
-    "version"     : "1.0",
+    "version"     : "1.1",
     "thumbnail"   : "theme.png",
     "author"      : "Alfasado Inc.",
     "author_link" : "https://alfasado.net/",
@@ -327,6 +327,13 @@
             "subject": "",
             "class": "Module",
             "basename": "website_widgets_2_columns"
+        },
+        "0aab5b58-c031-4ac8-b3c9-762a71637927": {
+            "name": "(Website) Pagination",
+            "subject": "",
+            "status": "2",
+            "class": "Module",
+            "basename": "website_pagination"
         },
         "e2d8d4a4-8fef-4f83-b2b5-ffd2db146629": {
             "name": "(Website) Notification of Inquiry",
