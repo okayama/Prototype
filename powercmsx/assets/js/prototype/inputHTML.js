@@ -46,6 +46,9 @@ function surroundHTML(tag, obj, opt) {
       mark_end = "\n";
     } else if ( tag == 'a' ) {
       href = prompt( 'href=' );
+      if ( href == null ) {
+        return;
+      }
       mark = '[';
       if ( href ) {
         mark_end = '](' + href + ')';
@@ -64,6 +67,9 @@ function surroundHTML(tag, obj, opt) {
   } else {
     if ( tag == 'a' ) {
       href = prompt( 'href=' );
+      if ( href == null ) {
+        return;
+      }
       if ( href ) {
        tag = tag + ' href="' + href + '"';
       }
