@@ -1,37 +1,37 @@
 <mt:if name="object_count" gt="$pagination_limit">
-<mt:for from="0" to="$object_count" step="$pagination_limit">
-<mt:if name="__first__"><ul class="pagination justify-content-center">
-  <mt:if name="prev_offset" gt="-1">
-  <li class="page-item">
-    <a class="page-link" href="<mt:var name="current_archive_url"><mt:if name="prev_offset">?_filter=<mt:var name="filter_model">&amp;limit=<mt:var name="pagination_limit">&amp;offset=<mt:var name="prev_offset"></mt:if>" aria-label="<mt:trans phrase="Previous">">
-      <span aria-hidden="true">&laquo;</span>
-      <span class="sr-only"><mt:trans phrase="Previous"></span>
-    </a>
-  </li>
-  </mt:if>
-</mt:if>
-  <li class="page-item">
-  <mt:if name="__counter__" eq="$current_page">
-    <strong class="page-link"><mt:var name="__counter__"></strong>
-  <mt:else>
-    <a class="page-link" href="<mt:var name="current_archive_url"><mt:if name="__value__">?_filter=<mt:var name="filter_model">&amp;offset=<mt:var name="__value__">&amp;limit=<mt:var name="pagination_limit"></mt:if>"><mt:var name="__counter__"></a>
-  </mt:if>
-  </li>
-<mt:if name="__last__">
-  <mt:if name="current_page" le="$offset_last">
-      <mt:setvar name="has_next" value="1">
-  <mt:elseif name="current_page" eq="1">
-      <mt:setvar name="has_next" value="1">
-  </mt:if>
-  <mt:if name="has_next">
-  <li class="page-item">
-    <a class="page-link" href="<mt:var name="current_archive_url">?_filter=<mt:var name="filter_model">&amp;limit=<mt:var name="pagination_limit">&amp;offset=<mt:if name="next_offset"><mt:var name="next_offset"><mt:else><mt:var name="pagination_limit"></mt:if>" aria-label="<mt:trans phrase="Next">">
-      <span aria-hidden="true">&raquo;</span>
-      <span class="sr-only"><mt:trans phrase="Next"></span>
-    </a>
-  </li>
-  </mt:if>
-  </ul>
-</mt:if>
-</mt:for>
+  <mt:for from="0" to="$object_count" step="$pagination_limit">
+    <mt:if name="__first__"><ul class="pagination justify-content-center">
+      <mt:if name="prev_offset" gt="-1">
+      <li class="page-item">
+        <a class="page-link" href="<mt:var name="current_archive_url"><mt:if name="prev_offset">?_filter=<mt:var name="filter_model">&amp;limit=<mt:var name="pagination_limit">&amp;offset=<mt:var name="prev_offset"></mt:if>" aria-label="<mt:trans phrase="Previous">">
+          <span aria-hidden="true">&laquo;</span>
+          <span class="sr-only"><mt:trans phrase="Previous"></span>
+        </a>
+      </li>
+      </mt:if>
+    </mt:if>
+    <li class="page-item">
+    <mt:if name="__counter__" eq="$current_page">
+      <strong class="page-link"><mt:var name="__counter__"></strong>
+    <mt:else>
+      <a class="page-link" href="<mt:var name="current_archive_url"><mt:if name="__value__">?_filter=<mt:var name="filter_model">&amp;offset=<mt:var name="__value__">&amp;limit=<mt:var name="pagination_limit"></mt:if>"><mt:var name="__counter__"></a>
+    </mt:if>
+    </li>
+    <mt:if name="__last__">
+      <mt:if name="current_page" le="$offset_last">
+          <mt:setvar name="has_next" value="1">
+      <mt:elseif name="current_page" eq="1">
+          <mt:setvar name="has_next" value="1">
+      </mt:if>
+      <mt:if name="has_next">
+      <li class="page-item">
+        <a class="page-link" href="<mt:var name="current_archive_url">?_filter=<mt:var name="filter_model">&amp;limit=<mt:var name="pagination_limit">&amp;offset=<mt:if name="next_offset"><mt:var name="next_offset"><mt:else><mt:var name="pagination_limit"></mt:if>" aria-label="<mt:trans phrase="Next">">
+          <span aria-hidden="true">&raquo;</span>
+          <span class="sr-only"><mt:trans phrase="Next"></span>
+        </a>
+      </li>
+      </mt:if>
+      </ul>
+    </mt:if>
+  </mt:for>
 </mt:if>
