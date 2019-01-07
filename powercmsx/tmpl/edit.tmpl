@@ -1374,6 +1374,11 @@ $('#_field_chooser').click(function(){
 var editContentChanged = false;
 <mt:if name="forward_params">
 editContentChanged = true;
+<mt:else>
+setTimeout(setEditContentChanged, 500);
+function setEditContentChanged () {
+    editContentChanged = false;
+}
 </mt:if>
 $('.watch-changed').change(function(){
     editContentChanged = true;
