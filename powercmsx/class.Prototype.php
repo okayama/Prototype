@@ -7318,8 +7318,8 @@ class Prototype {
             $args = ['hex' => $obj->back_color, 'alpha' => '0.4'];
             $rgba = $tags->hdlr_hex2rgba( $args, $ctx );
             $text = $obj->text;
-            $regex = "/style=\"background-color:\s*rgba\(.*?\);\"/";
-            $newColor = "style=\"background-color: rgba({$rgba});\"";
+            $regex = "/style=\"background-color:\s*rgba\(.*?\)/";
+            $newColor = "style=\"background-color: rgba({$rgba})";
             $text = preg_replace( $regex, $newColor, $text );
             $obj->text( $text );
         }
