@@ -4247,7 +4247,7 @@ class Prototype {
                       'save_filter_workspace', 'post_save_workspace',
                       'pre_save_role', 'post_save_role', 'pre_save_question',
                       'post_save_permission', 'post_save_table', 'post_save_field',
-                      'save_filter_tag', 'pre_save_user']; // 'post_save_asset'
+                      'pre_save_widget', 'save_filter_tag', 'pre_save_user'];
         foreach ( $callbacks as $meth ) {
             $cb = explode( '_', $meth );
             $this->register_callback( $cb[2], $cb[0] . '_' . $cb[1], $meth, 1, $this );
@@ -7307,6 +7307,21 @@ class Prototype {
             'uuid', 'name', 'lock_out_on', 'created_on'];
         foreach ( $not_changes as $col ) {
             $obj->$col( $original->$col );
+        }
+        return true;
+    }
+
+    function pre_save_widget ( $cb, $app, $obj, $original ) {
+        if ( $original && $original->back_color != $obj->back_color ) {
+            $ctx = $app->ctx;
+            $tags = new PTTags();
+            $args = ['hex' => $obj->back_color, 'alpha' => '0.4'];
+            $rgba = $tags->hdlr_hex2rgba( $args, $ctx );
+            $text = $obj->text;
+            $regex = "/style=\"background-color:\s*rgba\(.*?\);\"/";
+            $newColor = "style=\"background-color: rgba({$rgba});\"";
+            $text = preg_replace( $regex, $newColor, $text );
+            $obj->text( $text );
         }
         return true;
     }
