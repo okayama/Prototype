@@ -29,7 +29,7 @@ spl_autoload_register( '\prototype_auto_loader' );
 class Prototype {
 
     public static $app = null;
-    public    $app_version   = '1.003';
+    public    $app_version   = '1.004';
     public    $id            = 'Prototype';
     public    $name          = 'Prototype';
     public    $db            = null;
@@ -38,6 +38,7 @@ class Prototype {
     public    $language      = null;
     public    $sys_language  = null;
     public    $copyright     = null;
+    public    $app_path      = null;
     protected $dbprefix      = 'mt_';
     protected $cookie_name   = 'pt-user';
     public    $encoding      = 'UTF-8';
@@ -215,6 +216,7 @@ class Prototype {
                 $this->$k = $v;
             }
         }
+        $this->configure_from_json( __DIR__ . DS . 'config.json' );
         $this->start_time = microtime( true );
         ini_set( 'memory_limit', -1 );
         $this->request_method = isset( $_SERVER['REQUEST_METHOD'] )
@@ -301,7 +303,7 @@ class Prototype {
         $path = preg_replace( "/^$search/", '', __DIR__ ) . DS;
         $path = str_replace( DS, '/', $path );
         $this->path = $path;
-        $this->admin_url = $this->base . $this->path . 'index.php';
+        $this->admin_url = $this->admin_url ? $this->admin_url : $this->base . $this->path . 'index.php';
         if ( isset( $_SERVER['HTTP_ACCEPT_LANGUAGE'] ) )
             $this->language = substr( $_SERVER['HTTP_ACCEPT_LANGUAGE'], 0, 2 );
     }
@@ -328,7 +330,7 @@ class Prototype {
         if ( $this->timezone ) date_default_timezone_set( $this->timezone );
         require_once( LIB_DIR . 'PADO' . DS . 'class.pado.php' );
         require_once( LIB_DIR . 'PAML' . DS .'class.paml.php' );
-        $this->configure_from_json( __DIR__ . DS . 'config.json' );
+        // $this->configure_from_json( __DIR__ . DS . 'config.json' );
         $core_menus = ['manage_plugins' => [
                        'display_system' => 1, 'display_space' => 1, 'component' => 'Core',
                        'permission' => 'manage_plugins', 'mode' => 'manage_plugins',
@@ -463,7 +465,7 @@ class Prototype {
         $ctx->vars['this_mode'] = $this->mode;
         $ctx->vars['languages'] = $this->languages;
         $ctx->vars['request_method'] = $this->request_method;
-        $ctx->vars['prototype_path'] = $this->path;
+        $ctx->vars['prototype_path'] = $this->app_path ? $this->app_path : $this->path;
         $ctx->vars['developer_mode'] = $this->developer_mode;
         $ctx->vars['app_version'] = $this->app_version;
         $lang = $this->language;
@@ -2421,7 +2423,7 @@ class Prototype {
             $processing_time = $time - $this->start_time;
             $debug_tmpl = TMPL_DIR . DS . 'include' . DS . 'footer_debug.tmpl';
             $ctx->vars['processing_time'] = round( $processing_time, 2 );
-            $ctx->vars['prototype_path'] = $this->path;
+            $ctx->vars['prototype_path'] = $this->app_path ? $this->app_path : $this->path;
             $ctx->vars['debug_mode'] = is_int( $app->debug ) ? $app->debug : 1;
             $ctx->vars['queries'] = $app->db->queries;
             $ctx->vars['query_count'] = count( $app->db->queries );
@@ -3475,7 +3477,7 @@ class Prototype {
                 echo json_encode( ['has_thumbnail' => false ] );
                 return;
             } else {
-                $icon_base = $app->base . $app->path . 'assets/img/model-icons/';
+                $icon_base = $this->app_path . 'assets/img/model-icons/';
                 $asset_dir = $app->document_root .
                         $app->path . 'assets' . DS . 'img' . DS . 'model-icons';
                 $icon_path = $asset_dir . DS . $_model . '.png';
