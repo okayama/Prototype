@@ -1,4 +1,5 @@
+RewriteEngine off
 <Files ~ "\.(log|json)$">
   deny from all
 </Files>
-php_value upload_max_filesize "8M"
+php_value upload_max_filesize "10M"
