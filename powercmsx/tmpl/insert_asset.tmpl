@@ -87,6 +87,10 @@
 <input type="hidden" name="_system_filters_option" value="<mt:var name="request._system_filters_option" escape>">
 <input type="hidden" name="insert_editor" value="1">
 <input type="hidden" name="do_insert" value="1">
+<mt:setvar name="asset_count" value="0">
+<mt:objectloop model="asset">
+<mt:var name="__counter__" setvar="asset_count">
+</mt:objectloop>
 <mt:objectloop model="asset">
 <mt:if name="__first__"><table class="table">
 <thead>
@@ -94,9 +98,14 @@
 </thead>
 <tbody id="list_body">
 </mt:if>
-<tr>
-  <td class="insert-asset-selector">
-    <label class="custom-control custom-checkbox">
+<tr <mt:if name="asset_count" gt="1">tabindex="0"</mt:if>>
+  <td class="insert-asset-selector" style="vertical-align:top !important">
+  <mt:if name="asset_count" gt="1">
+    <span style="color:gray;" class="dragHandle"><i class="fa fa-bars" aria-hidden="true"></i>
+    <span class="sr-only"><mt:trans phrase="Sort"></span>
+    </span>
+  </mt:if>
+    <label class="custom-control custom-checkbox" style="margin-top: 15px">
       <input class="custom-control-input" type="checkbox" checked name="id[]" value="<mt:var name="id">">
       <span class="custom-control-indicator"></span>
       <span class="custom-control-description"></span>
@@ -189,10 +198,8 @@
 <table>
 </mt:if>
 </mt:objectloop>
-
   <button id="dialog-cancel-btn" class="btn btn-secondary" type="button"><mt:trans phrase="Cancel"></button>
   <button id="dialog-selector-btn" class="btn btn-primary" type="button"><mt:trans phrase="Insert"></button>
-
 </form>
 <script>
 $('.specify-thumb-width').change(function() {
@@ -202,9 +209,6 @@ $('.specify-thumb-width').change(function() {
     } else {
         $( '.' + cell_class ).hide();
     }
-});
-$('#list_body tr').mouseover(function() {
-    $(this).css('cursor','move');
 });
 $(document).keydown(evnt_keydown);
 function evnt_keydown(e) {
@@ -223,7 +227,53 @@ function close_dialog () {
     window.parent.$('#modal').modal('hide');
     window.location.href = '<mt:var name="script_uri">?__mode=loading';
 }
-$('#list_body').sortable();
+<mt:if name="asset_count" gt="1">
+$('#list_body tr .dragHandle').mouseover(function() {
+    $(this).css('cursor','move');
+});
+$('#list_body').sortable(
+{handle:'.dragHandle'}
+);
+jQuery.fn.extend({
+  ksortable: function(options) {
+    this.sortable(options);
+    $(this).children().attr('tabindex', 0).bind('keydown', function(event) {
+    // $('li', this).attr('tabindex', 0).bind('keydown', function(event) {
+        if(event.which == 37 || event.which == 38) { // left or up
+          $(this).insertBefore($(this).prev());
+        } 
+        if(event.which == 39 || event.which == 40) { // right or down
+          $(this).insertAfter($(this).next()); 
+        }     
+        if (event.which == 84 || event.which == 33) { // "t" or page-up
+          $(this).parent().prepend($(this));
+        } 
+        if (event.which == 66 || event.which == 34) { // "b" or page-down
+          $(this).parent().append($(this));
+        } 
+        if(event.which == 82) { // "r"
+          var p = $(this).parent();
+          p.children().each(function(){p.prepend($(this))})
+        } 
+        if(event.which == 83) { // "s"
+          var p = $(this).parent();
+          p.children().each(function(){
+            if(Math.random()<.5)
+              p.prepend($(this));
+            else
+              p.append($(this));
+          })
+        }
+        var keyNums = [33, 34, 37, 38, 39, 40, 66, 82, 83, 84];
+        var keyNum = event.which + 0;
+        if (keyNums.indexOf(keyNum) >= 0){
+          $(this).focus();
+        }
+    });
+  }
+});
+$("#list_body").ksortable();
+</mt:if>
 $(":checkbox").keypress(function(e) {
     if ( e.keyCode == 13 ) {
         if ( $(this).prop('checked') ) {
