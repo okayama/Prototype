@@ -3046,7 +3046,9 @@ class PTTags {
         if ( $workspace_tags && in_array( $this_tag, $workspace_tags ) ) {
             $current_context = 'workspace';
         }
+        $in_preview = false;
         if ( $app->param( '_preview' ) ) {
+            $in_preview = true;
             $sess_name = $app->param( '_screen_id' );
             $sess_name = "{$sess_name}-{$key}";
             $session = $app->db->model( 'session' )->get_by_key( ['name' => $sess_name ] );
@@ -3067,11 +3069,12 @@ class PTTags {
                     $session = $obj->__session;
                     $params = '?__mode=get_temporary_file&amp;data=1&amp;id=session-' . $session->id;
                     return $app->admin_url . $params;
-                } else {
+                } else if ( $in_preview ) {
                     $params = "?__mode=view&view={$key}&_type=edit&_model={$current_context}&id=" . $obj->id;
                     return $app->admin_url . $params;
                 }
             }
+            return '';
         }
         return $urlinfo->url;
     }
