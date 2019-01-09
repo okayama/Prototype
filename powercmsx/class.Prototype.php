@@ -4519,11 +4519,8 @@ class Prototype {
                         $terms['rev_type'] = 0;
                     }
                     if ( $obj->has_column( 'workspace_id' ) ) {
-                        $workspace_ids = [0];
-                        if ( $obj->workspace_id ) {
-                            $workspace_ids[] = (int) $obj->workspace_id;
-                        }
-                        $terms['workspace_id'] = ['IN' => $workspace_ids ];
+                        $workspace_id = $obj->workspace_id ? $obj->workspace_id : 0;
+                        $terms['workspace_id'] = $workspace_id;
                     }
                     $compare = $db->model( $model )->load( $terms );
                     if ( is_array( $compare ) && !empty( $compare ) ) {
