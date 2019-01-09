@@ -58,10 +58,14 @@ class PTViewer {
             }
         }
         $app->init_tags();
-        $url = $app->db->model( 'urlinfo' )->get_by_key( ['relative_url' => $request ] );
+        $terms = ['relative_url' => $request ];
+        if ( $workspace_id ) {
+            $terms['workspace_id'] = (int) $workspace_id;
+        }
+        $url = $app->db->model( 'urlinfo' )->get_by_key( $terms );
         if (! $url->id ) {
             $request = urldecode( $request );
-            $url = $app->db->model( 'urlinfo' )->get_by_key( ['relative_url' => $request ] );
+            $url = $app->db->model( 'urlinfo' )->get_by_key( $terms );
         }
         $app->init_callbacks( 'urlinfo', 'post_load_object' );
         $callback = ['name' => 'post_load_object', 'model' => 'urlinfo' ];
