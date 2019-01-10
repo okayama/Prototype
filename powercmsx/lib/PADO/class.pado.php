@@ -2034,7 +2034,7 @@ class PADOBaseModel {
                             } else {
                                 $values[ $col ] = $default;
                             }
-                        } else {
+                        } else if ( $type == 'string' || $type == 'text' ) {
                             $values[ $col ] = '';
                         }
                     }
