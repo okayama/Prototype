@@ -2691,6 +2691,8 @@ class Prototype {
                     if ( $obj->status > $max_status ) {
                         return false;
                     }
+                } else if ( $action == 'edit' && ! $obj->has_column( 'user_id' ) ) {
+                    $range = 'can_create_' . $model;
                 }
             }
             if ( $name && in_array( $name, $perms ) ) {
