@@ -6927,6 +6927,7 @@ class Prototype {
                 $filter_params = [];
                 $filter_and = false;
                 $filter_add_params = [];
+                $filtered_ids = [];
                 foreach ( $params as $key => $conds ) {
                     if ( strpos( $key, '_filter' ) === 0 ) {
                         $filter_add_params[ $key ] = $conds;
@@ -7087,7 +7088,8 @@ class Prototype {
                                             }
                                         }
                                         $from_ids = array_unique( $from_ids );
-                                        $terms['id'] = ['AND' => ['IN' => $from_ids ] ];
+                                        $filtered_ids[] = $from_ids;
+                                        // $terms['id'] = ['AND' => ['IN' => $from_ids ] ];
                                     } else {
                                         $terms['id'] = 0; // No object found.
                                     }
@@ -7129,6 +7131,8 @@ class Prototype {
                     $_filter_and_or = strtoupper( $_filter_and_or );
                     $_filter_and_or = $_filter_and_or == 'OR' ? 'OR' : 'AND';
                     $args['array_and_or'] = $_filter_and_or;
+                } else {
+                    $_filter_and_or = 'AND';
                 }
                 if (! empty( $filter_add_params ) ) {
                     $app->ctx->vars['filter_add_params'] =
@@ -7140,6 +7144,35 @@ class Prototype {
                     $and_or = strtoupper( $and_or );
                     if ( $and_or != 'OR' ) $and_or = 'AND';
                     $terms[ $col ] = [ $and_or => $cond ];
+                }
+                if (! empty( $filtered_ids ) ) {
+                    $all_ids = [];
+                    foreach ( $filtered_ids as $filtered ) {
+                        $all_ids = array_merge( $all_ids, $filtered );
+                    }
+                    $all_ids = array_unique( $all_ids );
+                    if ( $_filter_and_or == 'AND' ) {
+                        if (! isset( $terms['id'] ) ) {
+                            $matche_ids = [];
+                            foreach ( $all_ids as $filtered_id ) {
+                                foreach ( $filtered_ids as $filtered ) {
+                                    if (! in_array( $filtered_id, $filtered ) ) {
+                                        unset( $matche_ids[ $filtered_id ] );
+                                        continue 2;
+                                    }
+                                    $matche_ids[ $filtered_id ] = true;
+                                }
+                            }
+                            if (! empty( $matche_ids ) ) {
+                                $matche_ids = array_keys( $matche_ids );
+                                $terms['id'] = ['AND' => ['IN' => $matche_ids ] ];
+                            } else {
+                                $terms['id'] = 0;
+                            }
+                        }
+                    } else {
+                        $terms['id'] = ['OR' => ['IN' => $all_ids ] ];
+                    }
                 }
                 if ( $filter_name = $app->param( '_save_filter_name' ) ) {
                     $filter_terms = ['user_id' => $app->user()->id,
