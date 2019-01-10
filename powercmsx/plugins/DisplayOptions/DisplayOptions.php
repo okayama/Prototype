@@ -63,14 +63,21 @@ class DisplayOptions extends PTPlugin {
                 foreach ( $exclude_models as $model ) {
                     $expressions[] = " table_name!='{$model}' ";
                 }
-                $_extra .= ' AND (' . implode( ' AND ', $expressions ) . ') ';
+                if (! empty( $expressions ) ) {
+                    $_extra .= ' AND (' . implode( ' AND ', $expressions ) . ') ';
+                }
             }
             if (! empty( $include_models ) ) {
                 $expressions = [];
                 foreach ( $include_models as $model ) {
+                    if (! $app->can_do( $model, 'list' ) ) {
+                        continue;
+                    }
                     $expressions[] = " table_name='{$model}' ";
                 }
-                $_extra .= ' OR (' . implode( ' OR ', $expressions ) . ') ';
+                if (! empty( $expressions ) ) {
+                    $_extra .= ' OR (' . implode( ' OR ', $expressions ) . ') ';
+                }
             }
             $extra .= "$_extra";
         }
