@@ -1102,7 +1102,8 @@ class Prototype {
                 $limit = isset( $cfgs['lockout_limit'] )
                      ? $cfgs['lockout_limit']->value : 0;
                 $user_locked_out = false;
-                $no_lockout_allowed = $cfgs['no_lockout_allowed_ip']->value;
+                $no_lockout_allowed = isset( $cfgs['no_lockout_allowed_ip'] )
+                                    ? $cfgs['no_lockout_allowed_ip']->value : false;
                 if ( $no_lockout_allowed ) {
                     $allowed_ip = $app->db->model( 'remote_ip' )->get_by_key(
                             ['ip_address' => $app->remote_ip,
