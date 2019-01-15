@@ -1811,7 +1811,8 @@ class Prototype {
                     $perms = ( $workspace && isset( $permissions[ $workspace->id ] ) )
                               ? $permissions[ $workspace->id ] : [];
                     $permissions = [ $workspace->id => $perms ];
-                    if ( in_array( 'can_create_' . $model, $perms ) ) {
+                    if ( in_array( 'workspace_admin', $perms )
+                        || in_array( 'can_create_' . $model, $perms ) ) {
                         $ctx->vars['can_create'] = 1;
                     }
                 } else if ( isset( $permissions[0] ) ) {
