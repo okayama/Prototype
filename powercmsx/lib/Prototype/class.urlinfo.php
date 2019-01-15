@@ -53,12 +53,18 @@ class urlinfo extends PADOBaseModel {
 
     function count ( $terms = [], $args = [], $cols = '*', $extra = '',
         $include_deleted = false ) {
+        if ( is_numeric( $terms ) ) {
+            $include_deleted = true;
+        }
         $this->pre_load( $terms, $args, $cols, $extra, $include_deleted );
         return parent::count( $terms, $args, $cols, $extra );
     }
 
     function load ( $terms = [], $args = [], $cols = '*', $extra = '',
         $include_deleted = false ) {
+        if ( is_numeric( $terms ) ) {
+            $include_deleted = true;
+        }
         $this->pre_load( $terms, $args, $cols, $extra, $include_deleted );
         return parent::load( $terms, $args, $cols, $extra );
     }
