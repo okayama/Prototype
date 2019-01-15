@@ -1,13 +1,8 @@
-/*
- * Base structure
- */
-
 html {
   position: relative;
   min-height: 100%;
 }
 
-/* Move down content because we have a fixed navbar that is 50px tall */
 body {
   padding-top: 50px;
   margin-bottom: 90px;
@@ -23,9 +18,9 @@ select:focus {
 }
 
 .field-multiple-sortable .form-control {
-  width: 97% !important;
-  margin-left: 2px !important;
-  margin-bottom: 1px !important;
+  width: 100% !important;
+  margin-left: 1px !important;
+  margin-bottom: 6px !important;
 }
 
 #header-alert {
@@ -93,12 +88,6 @@ select:focus {
   }
   .input-group-addon {
   border-left: none;
-  }
-  .custom-field-wrapper .form-control {
-    margin-left: -4px;
-  }
-  .field-multiple-sortable .form-control {
-    margin-left: -2px !important;
   }
   #workspace-selector {
     margin-top: 0px !important;
@@ -218,12 +207,9 @@ select:focus {
   height: 2em;
   margin-bottom: 4px;
   }
-/*
-  .published_on-col .date-input {
-  width: 100% !important;
-  display: block !important;
+  .cf-detach-btn {
+    top: 8px !important;
   }
-*/
   .disp-option-button {
   display: none;
   }
@@ -357,13 +343,16 @@ select.form-control-very-sm{
 }
 
 .right-small {
-  float: right;
-  line-height: 1;
-  color: #000;
-  opacity: .5;
-  padding: 2px !important;
+  position: absolute;
+  right: 10px;
+  color: #999;
+  opacity: 1;
+  margin-top: -3px;
+  padding: 0px !important;
   border: none;
-  margin-left: 5px;
+  font-size:90%;
+  background-color: white !important;
+  z-index: 3;
 }
 
 #navbars-ws {
@@ -1058,9 +1047,8 @@ div.mce-fullscreen {
   position: absolute;
   bottom: 0;
   width: 100%;
-  /* Set the fixed height of the footer here */
   height: 44px;
-  line-height: 44px; /* Vertically center the text there */
+  line-height: 44px;
   background-color: #000;
   color: #fff;
   padding-left: 18px;
@@ -1358,11 +1346,6 @@ i.required {
   margin-top: -11px;
 }
 
-.detach-field {
-  border: 1px solid gray !important;
-  margin-top: 2px;
-}
-
 .column-detail-conpact {
   margin-top: 0px;
   margin-bottom: 7px;
@@ -1396,39 +1379,22 @@ i.required {
   padding-bottom: 0px;
 }
 
-.custom-field-wrapper {
-  -webkit-border-radius: 4px;
-  -moz-border-radius: 4px;
-  border-radius: 4px;
-  border: 1px solid #eee !important;
-  padding-top: 3px;
-  padding-bottom: 3px;
-  padding-left: 0px;
-  margin-left: -10px;
-  margin-bottom: 10px;
-  margin-right: -5px;
-}
-
-.custom-field-wrapper div {
-  width: 99%;
+.custom-field-wrapper .form-inline {
   margin-left: -1px;
-}
-
-.field-multiple-sortable {
-  width: 104% !important;
-}
-
-.cf-label-wrapper {
-  padding-top: 7px;
-  padding-left: 11px
 }
 
 .cf-detach-btn {
   position: absolute;
-  right: 3px;
-  top: 0px;
-  margin: 0;
-  padding-top: 0px;
+  left: 6px;
+  top: 11px;
+  margin: 0px;
+  opacity: 1;
+  color: #999;
+  font-size: 90% !important;
+  padding: 0px !important;
+  border: none !important;
+  background-color: white !important;
+  z-index: 3;
 }
 
 .lockout-col input {

@@ -29,7 +29,7 @@ spl_autoload_register( '\prototype_auto_loader' );
 class Prototype {
 
     public static $app = null;
-    public    $app_version   = '1.004';
+    public    $app_version   = '1.005';
     public    $id            = 'Prototype';
     public    $name          = 'Prototype';
     public    $db            = null;
@@ -422,7 +422,7 @@ class Prototype {
                              'columnproperty', 'pluginsetting', 'geturlprimary', 'getactivity',
                              'getchildrenids', 'websitename', 'websiteurl', 'websitelanguage',
                              'websiteid', 'websitepath', 'websitecopyright', 'websitedescription',
-                             'hex2rgba', 'phpstart', 'phpend'],
+                             'customfieldcount','hex2rgba', 'phpstart', 'phpend'],
             'block'      => ['objectcols', 'objectloop', 'tables', 'nestableobjects',
                              'countgroupby', 'fieldloop', 'archivelist', 'grouploop',
                              'workspacecontext', 'referencecontext', 'workflowusers',
@@ -4623,10 +4623,50 @@ class Prototype {
         foreach ( $required_basenames as $fld ) {
             $fld_value = $app->param( "{$fld}__c" );
             if ( $fld_value !== null ) {
-                $fld_values = json_decode( $fld_value, true );
-                if ( empty( $fld_values ) ) {
-                    $errors[] =
-                        $app->translate( '%s is required.', $required_fields[ $fld ] );
+                if ( is_array( $fld_value ) ) {
+                    $var_exists = false;
+                    foreach ( $fld_value as $fld_val ) {
+                        $fld_values = json_decode( $fld_val, true );
+                        $fld_values = array_shift( $fld_values );
+                        if ( is_array( $fld_values ) ) {
+                            foreach ( $fld_values as $v ) {
+                                if ( $v ) {
+                                    $var_exists = true;
+                                    break 2;
+                                }
+                            }
+                        } else if ( $fld_values ) {
+                            $var_exists = $fld_values;
+                            break;
+                        }
+                    }
+                    if (! $var_exists ) {
+                        $errors[] =
+                            $app->translate( '%s is required.', $required_fields[ $fld ] );
+                    }
+                } else {
+                    $fld_values = json_decode( $fld_value, true );
+                    if ( empty( $fld_values ) ) {
+                        $errors[] =
+                            $app->translate( '%s is required.', $required_fields[ $fld ] );
+                    } else {
+                        $fld_values = array_shift( $fld_values );
+                        $var_exists = false;
+                        if ( is_array( $fld_values ) ) {
+                            foreach ( $fld_values as $v ) {
+                                if ( $v ) {
+                                    $var_exists = true;
+                                    break;
+                                }
+                            }
+                        } else {
+                            $var_exists = $fld_values;
+                        }
+                        if (! $var_exists ) {
+                            $errors[] =
+                                $app->translate( '%s is required.', $required_fields[ $fld ] );
+                        }
+                    }
                 }
             }
         }

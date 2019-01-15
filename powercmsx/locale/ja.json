@@ -722,6 +722,7 @@
     "Press Release"      : "プレスリリース",
     "About Us"           : "私たちについて",
     "Contact Us"         : "お問い合わせ",
+    "Translate Labels"   : "ラベルの翻訳",
     "To"                 : "〜",
     "Authentication"     : "認証",
     "User Lock Out"      : "ユーザーロックアウト",
@@ -729,6 +730,8 @@
     "Lock Out Limit"     : "認証ロック回数",
     "Password Reset"     : "パスワードを再設定",
     "Input Text (Multiple)" : "テキスト (可変長)",
+    "Multiple Fields"    : "複数のフィールド",
+    "Variable Length"    : "可変長",
     "Column's Permissions" : "カラムの権限",
     "Start Install..."   : "インストールを開始します。...",
     "Create %s tables."  : "%s個のテーブルを作成しました。",
@@ -1048,8 +1051,12 @@
         : "モデル(カラム)名は%s文字以内でなければなりません。",
     "Even if you do not specify it, you can add it in the edit screen."
         : "指定のない場合でも、編集画面で追加することができます。",
-    "If the field is not display, the item is not checked."
-        : "フィールドが非表示の場合はチェックされません。",
+    "Required field can not be hidden."
+        : "必須項目を非表示にすることはできません。",
+    "The input field can be increased or decreased dynamically."
+        : "入力フィールドを動的に増減できるようになります。",
+    "Allows you to dynamically copy fields and continue entering values."
+        : "動的にフィールドをコピーして値を続けて入力できるタイプのフィールドです。",
     "Comma separated values. The value is stored in the variable 'field_option' in the loop of the template variable 'field_options'."
         : "カンマ区切りで値を入力すると、テンプレート変数 'field_options'のループの中で 'field_option'変数に値を格納します。",
     "Comma separated values. The value is stored in the variable 'field_label' in the loop of the template variable 'field_options'."

@@ -31,6 +31,9 @@ class PTUpgrader {
             'set_workspace'  => ['component' => 'PTUpgrader',
                                  'method'    => 'set_workspace',
                                  'version_limit' => '1.003' ],
+            'remove_cf_hint' => ['component' => 'PTUpgrader',
+                                 'method'    => 'remove_cf_hint',
+                                 'version_limit' => '1.005' ],
         ];
         $upgrade_functions = [];
         foreach ( $functions as $func ) {
@@ -1511,6 +1514,22 @@ class PTUpgrader {
                 $urlmapping->is_preferred( 1 );
                 $urlmapping->save();
             }
+        }
+    }
+
+    function remove_cf_hint ( $app ) {
+        $cf = $app->get_table( 'field' );
+        $column = $app->db->model( 'column' )->get_by_key( ['table_id' => $cf->id,
+                                                            'name' => 'required'] );
+        if ( $column->id && $column->hint ) {
+            $column->hint( '' );
+            $column->save();
+        }
+        $column = $app->db->model( 'column' )->get_by_key( ['table_id' => $cf->id,
+                                                            'name' => 'translate_labels'] );
+        if ( $column->id && $column->label == 'Translate' ) {
+            $column->label( 'Translate Labels' );
+            $column->save();
         }
     }
 

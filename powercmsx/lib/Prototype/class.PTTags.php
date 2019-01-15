@@ -1634,16 +1634,30 @@ class PTTags {
                 $repeat = $ctx->false();
                 return;
             }
+            $index = isset( $args['index'] ) ? (int) $args['index'] : null;
+            if ( $index ) {
+                if (! isset( $meta[ $index ] ) ) {
+                    $repeat = $ctx->false();
+                    return;
+                } else {
+                    $meta = [ $meta[ $index ] ];
+                }
+            }
             $params = [];
             foreach ( $meta as $field ) {
                 $text = $field->text;
                 if (! $text ) continue;
                 $json = json_decode( $text, true );
-                if ( isset( $json['field_value_multi'] ) ) {
-                    $multi_vars = $json['field_value_multi'];
-                    $params = array_merge( $params, $multi_vars );
-                } else {
-                    $params[] = $field->value;
+                if ( $json !== null && count( $json ) == 1 ) {
+                    $key = array_keys( $json )[0];
+                    $value = $json[ $key ];
+                    if ( is_array( $value ) ) {
+                        $params = array_merge( $params, $value );
+                    } else {
+                        $params[] = $value;
+                    }
+                } else if ( $json !== null ) {
+                    $params[] = $text;
                 }
             }
             $ctx->localize( $localvars );
@@ -1733,9 +1747,49 @@ class PTTags {
         return $component->get_config_value( $name, (int) $workspace_id );
     }
 
+    function hdlr_customfieldcount ( $args, $ctx ) {
+        $model = isset( $args['model'] ) ? $args['model'] : '';
+        $basename = isset( $args['basename'] ) ? $args['basename'] : '';
+        if (! $model ) {
+            return 0;
+        }
+        $obj = $ctx->stash( $model );
+        if (! $obj ) return 0;
+        $meta = $obj->_customfields;
+        $app = $ctx->app;
+        if ( $meta === null ) {
+            $app->get_meta( $obj, 'customfield', true );
+            $meta = $obj->_customfields;
+        }
+        if ( $basename && isset( $meta[ $basename ] ) ) {
+            return count( $meta[ $basename ] );
+        } else if (! $basename ) {
+            $cf_count = 0;
+            foreach ( $meta as $m ) {
+                $cf_count += count( $m ); 
+            }
+            return $cf_count;
+        }
+        return 0;
+    }
+
     function hdlr_customfieldvalue ( $args, $ctx ) {
         $app = $ctx->app;
+        if (! isset( $args['name'] ) && isset( $args['key'] ) ) {
+            $args['name'] = $args['key'];
+        }
         if ( $ctx->stash( 'customfield_value' ) ) {
+            if ( isset( $args['name'] ) && $args['name'] ) {
+                $json = json_decode( $ctx->stash( 'customfield_value' ), true );
+                if ( $json !== null && isset( $json[ $args['name'] ] ) ) {
+                    $value = $json[ $args['name'] ];
+                    if ( isset( $args['index'] ) && is_array( $value ) ) {
+                        $index = (int) $args['index'];
+                        return isset( $value[ $index ] ) ? $value[ $index ] : '';
+                    }
+                    return is_array( $value ) ? json_encode( $value ) : $value;
+                }
+            }
             return $ctx->stash( 'customfield_value' );
         }
         $model = isset( $args['model'] ) ? $args['model'] : '';
@@ -1754,8 +1808,30 @@ class PTTags {
             return '';
         }
         if ( isset( $meta[ $basename ] ) ) {
-            $meta = $meta[ $basename ][0];
-            return $meta->value;
+            $index = isset( $args['index'] ) ? (int) $args['index'] : 0;
+            if (! isset( $meta[ $basename ][ $index ] ) ) return '';
+            $meta = $meta[ $basename ][ $index ];
+            if ( $meta->value ) {
+                return $meta->value;
+            }
+            $text = $meta->text;
+            $json = json_decode( $text, true );
+            if ( $json !== null && count( $json ) == 1 ) {
+                $key = array_keys( $json )[0];
+                return is_string( $json[ $key ] )
+                        ? $json[ $key ] : json_encode( $json[ $key ] );
+                if ( is_array( $json[ $key ] ) ) {
+                    return json_encode( $json[ $key ] );
+                }
+                return $json[ $key ];
+            } else if ( $json !== null && isset( $args['name'] )
+                && isset( $json[ $args['name'] ] ) ) {
+                if ( is_array( $json[ $args['name'] ] ) ) {
+                    return json_encode( $json[ $args['name'] ] );
+                }
+                return $json[ $args['name'] ];
+            }
+            return $text;
         }
     }
 
@@ -2497,7 +2573,6 @@ class PTTags {
             $restore_vars = ['field_name', 'field_required', 'field_basename',
                              'field_options', 'field_uniqueid', 'field_label_html',
                              'field_content_html'];
-            $param = [];
             $ctx->local_vars['field_name'] = $field->translate
                 ? $app->translate( $field->name ) : $field->name;
             $ctx->local_vars['field_required'] = $field->required;
@@ -2536,6 +2611,12 @@ class PTTags {
             $field_out = false;
             $field_contents = '';
             if (! empty( $object_fields ) ) {
+                $content_tmpl = file_get_contents(
+                    $ctx->get_template_path( 'field' . DS . 'content.tmpl' ) );
+                $label_tmpl = file_get_contents(
+                    $ctx->get_template_path( 'field' . DS . 'label.tmpl' ) );
+                $wrapper_tmpl = file_get_contents(
+                    $ctx->get_template_path( 'field' . DS . 'wrapper.tmpl' ) );
                 $basename = $field->basename;
                 if ( isset( $object_fields[ $basename ] ) ) {
                     $fields = $object_fields[ $basename ];
@@ -2561,15 +2642,15 @@ class PTTags {
                         $ctx->local_vars['field_uniqueid'] = $uniqueid;
                         $_fld_content = $ctx->build( $field_content );
                         $ctx->local_vars['field_content_html'] = $_fld_content;
-                        $_fld_content = $app->build_page( 'field' . DS . 'content.tmpl', $param, false );
+                        $_fld_content = $ctx->build( $content_tmpl );
                         if (! $field->hide_label ) {
                             $_field_label = $ctx->build( $field_label );
                             $ctx->local_vars['field_label_html'] = $_field_label;
-                            $_field_label = $app->build_page( 'field' . DS . 'label.tmpl', $param, false );
+                            $_field_label = $ctx->build( $label_tmpl );
                             $ctx->local_vars['field_label_html'] = $_field_label;
                         }
                         $ctx->local_vars['field_content_html'] = $_fld_content;
-                        $_fld_content = $app->build_page( 'field' . DS . 'wrapper.tmpl', $param, false );
+                        $_fld_content = $ctx->build( $wrapper_tmpl );
                         PTUtil::add_id_to_field( $_fld_content, $uniqueid, $basename );
                         $field_contents .= $_fld_content;
                         foreach ( $set_keys as $key ) {
@@ -4035,7 +4116,13 @@ class PTTags {
                         $ids[] = (int) $loop_object->id;
                     }
                     $terms = ['id' => ['IN' => $ids ] ];
-                    $loop_objects = $obj->load( $terms, [], $args['cols'] );
+                    $load_cols = $args['cols'];
+                    $load_args = [];
+                    if ( isset( $args['sort'] ) )
+                        $load_args['sort'] = $args['sort'];
+                    if ( isset( $args['direction'] ) )
+                        $load_args['direction'] = $args['direction'];
+                    $loop_objects = $obj->load( $terms, $load_args, $load_cols );
                     $ctx->stash( 'load_only_ids', false );
                 }
                 $offset_last = 0;

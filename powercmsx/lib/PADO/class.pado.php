@@ -785,6 +785,10 @@ class PADOBaseModel {
             $this->_original = $this->get_values();
     }
 
+    public function __debugInfo() {
+        return $this->get_values();
+    }
+
     public function model ( $_model = null ) {
         if ( $this->has_column( 'model' ) ) {
             $col = $this->_model . '_model';

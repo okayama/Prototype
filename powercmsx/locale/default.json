@@ -235,6 +235,5 @@
     "workspace_admin": "Workspace Administrator",
     "display_dashboard": "Display in Dashboard",
     "can_livepreview": "Live Preview",
-    "do_not_output"  : "Do not output file(s)",
-    "translate_labels" : "Translate"
+    "do_not_output"  : "Do not output file(s)"
 }

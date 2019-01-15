@@ -129,7 +129,7 @@ class PAML {
                         'replace', 'translate', 'count_chars', 'to_json', 'from_json',
                         'nocache', 'split', 'join', 'format_size', 'encode_xml', 'encode_php',
                         'instr', 'mb_instr', 'absolute', 'numify', 'merge_linefeeds', 'array_pop',
-                        'decode_html'],
+                        'decode_html', 'default'],
       'function'    => ['getvar', 'trans', 'setvar', 'property', 'ldelim', 'include', 'math',
                         'rdelim', 'fetch', 'var', 'date', 'assign', 'count', 'vardump',
                         'gethashvar', 'query'],
@@ -1110,7 +1110,8 @@ class PAML {
                 $cookie = preg_replace( '/^cookie\./', '', $args['name'] );
                 $v = isset( $_COOKIE[ $cookie ] ) ? $_COOKIE[ $cookie ] : '';
             } else {
-                if ( isset( $vars[ $args['name'] ] ) ) $v = $vars[ $args['name'] ];
+                $v = isset( $vars[ $args['name'] ] )
+                   ? $vars[ $args['name'] ] : $this->function_var( $args, $ctx );
             }
         }
         unset( $args['name'], $args['this_tag'] );
@@ -1271,7 +1272,9 @@ class PAML {
         $name = isset( $args['name'] ) ? $args['name'] : '';
         if (!$name ) return 0;
         if ( is_array( $name ) ) return count( $name );
-        $v = $ctx->get_any( $name );
+        $v = $ctx->get_any( $name )
+           ? $ctx->get_any( $name )
+           : $this->function_var( ['name' => $name ], $ctx );
         return ( $v ) ? count( $v ) : 0;
     }
 
@@ -1636,6 +1639,10 @@ class PAML {
             $i += 1;
         }
         return preg_replace( $args[0], $args[1], $str );
+    }
+
+    function modifier_default ( $str, $args, $ctx ) {
+        return $str ? $str : $args;
     }
 
 /**
