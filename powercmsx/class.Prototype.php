@@ -1464,6 +1464,10 @@ class Prototype {
                   ? $workspace->site_url : $app->site_url;
         $ctx->vars['app_name'] = $app_name;
         $ctx->vars['portal_url'] = $portal_url;
+        $script_uri = $ctx->vars['script_uri'];
+        if ( strpos( $script_uri, 'http' ) === false ) {
+            $ctx->vars['script_uri'] = $app->base . $script_uri;
+        }
     }
 
     function logout () {
