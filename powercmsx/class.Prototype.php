@@ -1869,7 +1869,8 @@ class Prototype {
                     if (! $dialog_view ) {
                         if (! in_array( 'workspace_admin', $perms ) ) {
                             if ( $table->has_status ) {
-                                if (! in_array( 'can_activate_' . $model, $perms ) ) {
+                                if (! in_array( 'can_activate_' . $model, $perms )
+                                    && ! in_array( 'can_all_list_' . $model, $perms ) ) {
                                     if ( $workspace ) {
                                         if ( $ws_permission ) $ws_permission .= ' AND ';
                                         if (! in_array( 'can_review_' . $model, $perms ) ) {
@@ -1889,7 +1890,8 @@ class Prototype {
                                 }
                             }
                             if ( $obj->has_column( 'user_id' ) ) {
-                                if (! in_array( 'can_update_all_' . $model, $perms ) ) {
+                                if (! in_array( 'can_update_all_' . $model, $perms )
+                                    && ! in_array( 'can_all_list_' . $model, $perms ) ) {
                                     if ( in_array( 'can_update_own_' . $model, $perms ) ) {
                                         if ( $workspace ) {
                                             if ( $ws_permission ) $ws_permission .= ' AND ';
@@ -1931,6 +1933,7 @@ class Prototype {
                 }
             }
             if (! empty( $ws_status_map ) ) {
+                unset( $terms['status'] );
                 $extra .= ' AND (';
                 $_loop_cnt = 0;
                 foreach ( $ws_status_map as $_ws_id => $condition ) {
@@ -1941,6 +1944,7 @@ class Prototype {
                 $extra .= ')';
             }
             if (! empty( $ws_user_map ) ) {
+                unset( $terms['user_id'] );
                 $extra .= ' AND (';
                 $_loop_cnt = 0;
                 foreach ( $ws_user_map as $_ws_id => $condition ) {
@@ -7537,7 +7541,6 @@ class Prototype {
     }
 
     function post_save_role ( $cb, $app, $obj ) {
-        if ( empty( $cb['changed_cols'] ) ) return;
         $relations = $app->db->model( 'relation' )->load( ['from_obj' => 'permission',
             'to_obj' => 'role', 'name' => 'roles', 'to_id' => $obj->id ] );
         $ids = [];
