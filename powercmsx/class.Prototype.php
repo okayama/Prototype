@@ -29,7 +29,7 @@ spl_autoload_register( '\prototype_auto_loader' );
 class Prototype {
 
     public static $app = null;
-    public    $app_version   = '1.005';
+    public    $app_version   = '1.006';
     public    $id            = 'Prototype';
     public    $name          = 'Prototype';
     public    $db            = null;
@@ -1563,11 +1563,13 @@ class Prototype {
             if (! $dialog_view ) {
                 $perms = $app->permissions();
                 if (!$app->can_do( $model, 'list', null, $workspace ) ) {
-                    if (! $workspace && $table->table_display_space ) {
+                    if (! $workspace ) {
                         foreach ( $perms as $wsId => $perm ) {
-                            if ( in_array( 'can_list_' . $model, $perm )
+                            if ( in_array( 'workspace_admin', $perm )
+                                || in_array( 'can_list_' . $model, $perm )
                                 || in_array( 'can_all_list_' . $model, $perm ) ) {
                                 $can_any = true;
+                                break;
                             }
                         }
                     }
@@ -1605,6 +1607,8 @@ class Prototype {
             $sort_props   = [];
             $filter_props = [];
             $indexes = $scheme['indexes'];
+            $ws_status_map = [];
+            $ws_user_map = [];
             foreach ( $column_defs as $col => $prop ) {
                 if ( $prop['type'] === 'string' || $prop['type'] === 'text' ) {
                     $search_props[ $col ] = true;
@@ -1633,7 +1637,6 @@ class Prototype {
             if ( $app->param( 'revision_select' ) || $app->param( 'manage_revision' ) ) {
                 $ctx->vars['page_title'] =
                     $app->translate( 'List Revisions of %s', $label );
-                // $list_option->number = 0;
                 $cols = 'rev_note,rev_diff,rev_changed,modified_by,modified_on';
                 if ( $obj->has_column( 'has_deadline' ) && $obj->has_column( 'status' ) ) {
                     $cols = 'status,' . $cols;
@@ -1839,7 +1842,8 @@ class Prototype {
                 $count_permission = [];
                 $ws_ids = [];
                 foreach ( $permissions as $ws_id => $perms ) {
-                    if (! in_array( 'can_list_' . $model, $perms )
+                    if (! in_array( 'workspace_admin', $perms ) &&
+                        ! in_array( 'can_list_' . $model, $perms )
                         && ! in_array( 'can_all_list_' . $model, $perms ) ) {
                         continue;
                     }
@@ -1850,36 +1854,58 @@ class Prototype {
                     }
                     $ws_permission = '';
                     if ( $obj->has_column( 'workspace_id' ) ) {
-                        // $ws_permission = "{$_colprefix}workspace_id={$ws_id}";
-                        if ( in_array( 'can_list_' . $model, $perms )
+                        if ( in_array( 'workspace_admin', $perms )
+                            || in_array( 'can_list_' . $model, $perms )
                             || in_array( 'can_all_list_' . $model, $perms ) ) {
                             $ws_ids[] = (int) $ws_id;
                         }
                     }
+                    if ( $table->has_status ) {
+                        $ws_status_map[ $ws_id ] = " {$_colprefix}status >= 0 ";
+                    }
+                    if ( $obj->has_column( 'user_id' ) ) {
+                        $ws_user_map[ $ws_id ] = " {$_colprefix}user_id >= 0 ";
+                    }
                     if (! $dialog_view ) {
-                        if ( $table->has_status ) {
-                            if (! in_array( 'can_activate_' . $model, $perms ) ) {
-                                if ( $ws_permission ) $ws_permission .= ' AND ';
-                                if (! in_array( 'can_review_' . $model, $perms ) ) {
-                                    $ws_permission .= " {$_colprefix}status < 2";
-                                } else {
-                                    $ws_permission .=
-                                        " {$_colprefix}status <= {$status_published}";
+                        if (! in_array( 'workspace_admin', $perms ) ) {
+                            if ( $table->has_status ) {
+                                if (! in_array( 'can_activate_' . $model, $perms ) ) {
+                                    if ( $workspace ) {
+                                        if ( $ws_permission ) $ws_permission .= ' AND ';
+                                        if (! in_array( 'can_review_' . $model, $perms ) ) {
+                                            $ws_permission .= " {$_colprefix}status < 2";
+                                        } else {
+                                            $ws_permission .=
+                                                " {$_colprefix}status <= {$status_published}";
+                                        }
+                                    } else {
+                                        if (! in_array( 'can_review_' . $model, $perms ) ) {
+                                            $ws_status_map[ $ws_id ] = " {$_colprefix}status < 2";
+                                        } else {
+                                            $ws_status_map[ $ws_id ] =
+                                                " {$_colprefix}status <= {$status_published}";
+                                        }
+                                    }
                                 }
                             }
-                        }
-                        if ( $obj->has_column( 'user_id' ) ) {
-                            if (! in_array( 'can_update_all_' . $model, $perms ) ) {
-                                if ( in_array( 'can_update_own_' . $model, $perms ) ) {
-                                    if ( $ws_permission ) $ws_permission .= ' AND ';
-                                    $ws_permission .= " {$_colprefix}user_id={$user_id}";
+                            if ( $obj->has_column( 'user_id' ) ) {
+                                if (! in_array( 'can_update_all_' . $model, $perms ) ) {
+                                    if ( in_array( 'can_update_own_' . $model, $perms ) ) {
+                                        if ( $workspace ) {
+                                            if ( $ws_permission ) $ws_permission .= ' AND ';
+                                            $ws_permission .= " {$_colprefix}user_id={$user_id}";
+                                        } else {
+                                            $ws_user_map[ $ws_id ] = " {$_colprefix}user_id={$user_id}";
+                                        }
+                                    }
                                 }
                             }
                         }
                     }
                     if ( $ws_permission ) {
                         $ws_permission = "($ws_permission)";
-                        if (! in_array( 'can_all_list_' . $model, $perms ) ) {
+                        if (! in_array( 'workspace_admin', $perms ) &&
+                            ! in_array( 'can_all_list_' . $model, $perms ) ) {
                             $extra_permission[] = $ws_permission;
                         } else {
                             $count_permission[] = $ws_permission;
@@ -1903,6 +1929,26 @@ class Prototype {
                     $extra .= " {$_colprefix}workspace_id IN ({$ws_ids})";
                     $count_extra .= " {$_colprefix}workspace_id IN ({$ws_ids})";
                 }
+            }
+            if (! empty( $ws_status_map ) ) {
+                $extra .= ' AND (';
+                $_loop_cnt = 0;
+                foreach ( $ws_status_map as $_ws_id => $condition ) {
+                    if ( $_loop_cnt ) $extra .= ' OR ';
+                    $extra .= "({$_colprefix}workspace_id={$_ws_id} AND {$condition})";
+                    $_loop_cnt++;
+                }
+                $extra .= ')';
+            }
+            if (! empty( $ws_user_map ) ) {
+                $extra .= ' AND (';
+                $_loop_cnt = 0;
+                foreach ( $ws_user_map as $_ws_id => $condition ) {
+                    if ( $_loop_cnt ) $extra .= ' OR ';
+                    $extra .= "({$_colprefix}workspace_id={$_ws_id} AND {$condition})";
+                    $_loop_cnt++;
+                }
+                $extra .= ')';
             }
             $ctx->vars['list_max_status'] = $list_max_status;
             if (!$app->param( 'revision_select' ) ) {
@@ -2380,7 +2426,7 @@ class Prototype {
     }
 
     function build_page ( $tmpl, $param = [], $output = true ) {
-        if ( $this->output_compression ) {
+        if ( $this->output_compression && !headers_sent() ) {
             ini_set( 'zlib.output_compression', 'On' );
         }
         $app = $this;

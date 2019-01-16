@@ -1440,11 +1440,25 @@ class PTTags {
         $app = $ctx->app;
         if ( $user = $app->user() ) {
             $action = isset( $args['action'] ) ? $args['action'] : 'edit';
-            $workspace_id = isset( $args['workspace_id'] )
+            $model = isset( $args['model'] ) ? $args['model'] : null;
+            if ( isset( $args['workspace_id'] )
+                && $args['workspace_id'] == 'any' && $model && $action ) {
+                $permissions = $app->permissions();
+                if ( empty( $permissions ) ) {
+                    return false;
+                }
+                foreach ( $permissions as $perms ) {
+                    if ( in_array( 'workspace_admin', $perms )
+                        || in_array( "can_{$action}_{$model}", $perms ) ) {
+                        return true;
+                    }
+                }
+            } else {
+                $workspace_id = isset( $args['workspace_id'] )
                           ? (int) $args['workspace_id'] : 0;
+            }
             $workspace_id = (int) $workspace_id;
             $id = isset( $args['id'] ) ? (int) $args['id'] : null;
-            $model = isset( $args['model'] ) ? $args['model'] : null;
             $obj = null;
             $workspace = null;
             if ( $model ) {
@@ -3717,7 +3731,7 @@ class PTTags {
             $extra = '';
             $terms = [ $type => 1];
             $menu_type = isset( $args['menu_type'] ) ? $args['menu_type'] : 0;
-            if ( $menu_type ) $terms['menu_type'] = $menu_type;
+            if ( $menu_type ) $terms['menu_type'] = (int) $menu_type;
             $permission = isset( $args['permission'] ) ? $args['permission'] : 0;
             $show_activity = isset( $args['show_activity'] ) ? $args['show_activity'] : 0;
             $models = [];
@@ -3731,15 +3745,23 @@ class PTTags {
                             continue;
                         }
                     }
-                    if ( $app->ws_menu_type == 1 &&
-                        in_array( 'workspace_admin', $perms ) !== false ) {
+                    if ( in_array( 'workspace_admin', $perms ) ) {
                         $ws_admin = true;
-                        continue;
-                    }
-                    foreach ( $perms as $perm ) {
-                        if ( strpos( $perm, 'can_list_' ) === 0 ) {
-                            $perm = str_replace( 'can_list_', '', $perm );
-                            $models[ $perm ] = true;
+                        if ( $type == 'display_system' ) {
+                            $show_tables = $app->stash( 'menu_show_tables' )
+                                ? $app->stash( 'menu_show_tables' )
+                                : $app->db->model( 'table' )->load( ['display_space' => 1] );
+                            $app->stash( 'menu_show_tables', $show_tables );
+                            foreach ( $show_tables as $show_table ) {
+                                $models[ $show_table->name ] = true;
+                            }
+                        }
+                    } else {
+                        foreach ( $perms as $perm ) {
+                            if ( strpos( $perm, 'can_list_' ) === 0 ) {
+                                $perm = str_replace( 'can_list_', '', $perm );
+                                $models[ $perm ] = true;
+                            }
                         }
                     }
                 }
@@ -3755,9 +3777,13 @@ class PTTags {
                     if (! empty( $models ) ) {
                         $models = array_keys( $models );
                         $terms['name'] = ['IN' => $models ];
+                    } else {
+                        $terms['display_space'] = 1;
                     }
+                    $terms['hierarchy'] = ['!=' => 1];
                     $extra = " OR ( table_menu_type=$menu_type AND table_display_system=1";
-                    $extra .= " AND table_display_space=1 AND table_space_child=1 )";
+                    $extra .= " AND table_display_space=1 AND table_space_child=1 ";
+                    $extra .= " AND table_hierarchy != 1 )";
                 }
             }
             $im_export = isset( $args['im_export'] ) ? $args['im_export'] : 0;

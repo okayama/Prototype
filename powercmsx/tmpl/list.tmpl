@@ -241,11 +241,20 @@ $('#dialog-cancel-btn').click(function(){
 <td class="list-actions-col">
 <mt:if name="can_action">
 <mt:unless name="request.dialog_view">
-<mt:ifusercan model="$_this_model" action="delete" workspace_id="$workspace_id">
+<mt:setvarblock name="delete_button">
   <button type="submit" class="__delete list-delete-btn btn btn-secondary btn-sm">
   <i class="fa fa-trash" aria-hidden="true"></i>
   <span class="sr-only"><mt:trans phrase="Delete"></span>
   </button>
+</mt:setvarblock>
+<mt:ifusercan model="$_this_model" action="delete" workspace_id="$workspace_id">
+  <mt:var name="delete_button">
+<mt:else>
+  <mt:unless name="request.workspace_id">
+    <mt:ifusercan model="$_this_model" action="delete" workspace_id="any">
+      <mt:var name="delete_button">
+    </mt:ifusercan>
+  </mt:unless>
 </mt:ifusercan>
 </mt:unless>
 <mt:unless name="request.dialog_view">
@@ -385,6 +394,12 @@ $('#dialog-cancel-btn').click(function(){
       <mt:setvar name="has_checkbox" value="1">
     </mt:if>
   </mt:unless>
+  <mt:tablehascolumn model="$_this_model" column="workspace_id">
+  <mt:ifusercan model="$_this_model" action="delete" workspace_id="$workspace_id">
+  <mt:else>
+    <mt:setvar name="has_checkbox" value="">
+  </mt:ifusercan>
+  </mt:tablehascolumn>
   <mt:unless name="_single_select">
   <mt:if name="has_checkbox">
     <label class="custom-control custom-checkbox">
