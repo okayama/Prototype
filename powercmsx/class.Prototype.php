@@ -1935,24 +1935,36 @@ class Prototype {
             if (! empty( $ws_status_map ) ) {
                 unset( $terms['status'] );
                 $extra .= ' AND (';
+                $count_extra .= ' AND (';
                 $_loop_cnt = 0;
                 foreach ( $ws_status_map as $_ws_id => $condition ) {
-                    if ( $_loop_cnt ) $extra .= ' OR ';
+                    if ( $_loop_cnt ) {
+                        $extra .= ' OR ';
+                        $count_extra .= ' OR ';
+                    }
                     $extra .= "({$_colprefix}workspace_id={$_ws_id} AND {$condition})";
+                    $count_extra .= "({$_colprefix}workspace_id={$_ws_id} AND {$condition})";
                     $_loop_cnt++;
                 }
                 $extra .= ')';
+                $count_extra .= ')';
             }
             if (! empty( $ws_user_map ) ) {
                 unset( $terms['user_id'] );
                 $extra .= ' AND (';
+                $count_extra .= ' AND (';
                 $_loop_cnt = 0;
                 foreach ( $ws_user_map as $_ws_id => $condition ) {
-                    if ( $_loop_cnt ) $extra .= ' OR ';
+                    if ( $_loop_cnt ) {
+                        $extra .= ' OR ';
+                        $count_extra .= ' OR ';
+                    }
                     $extra .= "({$_colprefix}workspace_id={$_ws_id} AND {$condition})";
+                    $count_extra .= "({$_colprefix}workspace_id={$_ws_id} AND {$condition})";
                     $_loop_cnt++;
                 }
                 $extra .= ')';
+                $count_extra .= ')';
             }
             $ctx->vars['list_max_status'] = $list_max_status;
             if (!$app->param( 'revision_select' ) ) {
