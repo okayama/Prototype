@@ -42,7 +42,7 @@ $('#alert-saved').focus();
   <div id="alert-saved" class="alert alert-success" tabindex="0">
     <mt:var name="alert_close">
     <mt:trans phrase="Your changes have been saved.">
-    <mt:if name="request.rebuild_this_template">
+    <mt:if name="request.need_rebuild">
     <a href="<mt:var name="script_uri">?__mode=rebuild_phase&amp;_type=start_rebuild<mt:if name="workspace_id">&amp;workspace_id=<mt:var name="workspace_id">"</mt:if>" class="popup">
     <mt:trans phrase="Publish your site to see these changes take effect.">
     </a>

@@ -40,6 +40,11 @@
 </div>
 <script>
 $('#__model_selector').change(function(){
+<mt:if name="request.id">
+    if (! window.confirm('<mt:trans phrase="Changing the model will remove archives. Are you sure you want to change the model?">') ) {
+        return false;
+    }
+</mt:if>
     if ( $(this).val() == '' || $(this).val() == 'template' ) {
         $('#is_preferred-wrapper').hide();
     } else {

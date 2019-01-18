@@ -1258,6 +1258,8 @@
         : "オプションに入力した値と異なる値を受け取る場合は、別のカンマ区切りリストを入力してください。",
     "You are trying to specify a status that can not be set by the current user. Changing the status will change the user to you. Are you sure you want to change the status?"
         : "現在のユーザーが設定できないステータスを指定しようとしています。ステータスを変更すると、ユーザーがあなたに変更されます。ステータスを変更しますか?",
+    "Changing the model will remove archives. Are you sure you want to change the model?"
+        : "モデルを変更すると出力済みのアーカイブが削除されます。モデルを変更してよろしいですか?",
     "Please enter the width (number) of the fields(Comma separated list)."
         : "フィールドの幅(数字)をカンマ区切りで入力してください。",
     "Failed to save a contact for %s."

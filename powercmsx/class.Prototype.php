@@ -94,6 +94,7 @@ class Prototype {
     public    $worker_period = 600;
     public    $caching       = false;
     public    $max_revisions = -1;
+    public    $unique_url    = true;
     public    $remote_ip;
     public    $user;
     public    $pt_path       = __FILE__;
@@ -4314,7 +4315,7 @@ class Prototype {
 
     function core_save_callbacks () {
         $callbacks = ['save_filter_table', 'save_filter_urlmapping', 'save_filter_form',
-                      'save_filter_workspace', 'post_save_workspace',
+                      'save_filter_workspace', 'post_save_workspace', 'post_save_urlmapping',
                       'pre_save_role', 'post_save_role', 'pre_save_question',
                       'post_save_permission', 'post_save_table', 'post_save_field',
                       'pre_save_widget', 'save_filter_tag', 'pre_save_user'];
@@ -5247,7 +5248,7 @@ class Prototype {
             }
         } else if ( $app->param( '__can_rebuild_this_template' ) ) {
             if (!$app->param( '__save_and_publish' ) ) {
-                $add_return_args .= '&rebuild_this_template=1';
+                $add_return_args .= '&need_rebuild=1';
             }
         }
         if ( $is_changed || $is_new ) {
@@ -7439,6 +7440,17 @@ class Prototype {
         return true;
     }
 
+    function post_save_urlmapping ( $cb, $app, &$obj, $original ) {
+        if ( $original && $original->model != $obj->model ) {
+            $urls = $app->db->model( 'urlinfo' )->load( ['urlmapping_id' => $obj->id ] );
+            foreach ( $urls as $url ) {
+                $url->remove();
+            }
+        }
+        $app->return_args['need_rebuild'] = 1;
+        return true;
+    }
+
     function pre_save_user ( $cb, $app, &$obj, $original ) {
         if ( $app->user()->is_superuser ) {
             return true;
@@ -7710,6 +7722,17 @@ class Prototype {
                 if ( $fmgr->exists( $ui->file_path ) ) {
                     $fmgr->unlink( $ui->file_path );
                     $remove_dirs[ dirname( $ui->file_path ) ] = true;
+                }
+            }
+            if ( $app->unique_url ) {
+                $ol_terms = ['file_path' => $file_path ];
+                if ( $ui->id ) {
+                    $ol_terms['id'] = ['!=' => $ui->id ];
+                }
+                $overlaps = $db->model( 'urlinfo' )->count( $ol_terms );
+                if ( $overlaps ) {
+                    $overlaps = $db->model( 'urlinfo' )->load( $ol_terms );
+                    $db->model( 'urlinfo' )->remove_multi( $overlaps );
                 }
             }
             $ui->file_path( $file_path );
