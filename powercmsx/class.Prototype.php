@@ -3876,7 +3876,9 @@ class Prototype {
                 $ctx->vars['page_title'] = $app->translate( 'Done.' );
                 $app->remove_session( $sess_terms );
             } else {
-                if (!$next_model && $app->param( 'next_models' ) ) {
+                if ( $app->param( 'start_rebuild' ) ) {
+                    $next_model = $ctx->vars['current_model'];
+                } else if (!$next_model && $app->param( 'next_models' ) ) {
                     $next_models = explode( ',', $app->param( 'next_models' ) );
                     $next_model = $next_models[0];
                 }
