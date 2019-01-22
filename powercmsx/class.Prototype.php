@@ -7761,7 +7761,25 @@ class Prototype {
             $key = '';
             $ctx->stash( 'current_urlmapping', $urlmapping );
         } else {
-            $ui = $db->model( 'urlinfo' )->get_by_key( ['file_path' => $file_path ] );
+            $ui = $db->model( 'urlinfo' )->get_by_key(
+              ['file_path' => $file_path, 'delete_flag' => ['IN' => [0, 1] ] ] );
+            $old_uis = [];
+            if (! $ui->id ) {
+                $old_uis = $db->model( 'urlinfo' )->load(
+                    ['model' => $obj->_model, 'object_id' => $obj->id, 'key' => $key,
+                     'delete_flag' => ['IN' => [0, 1] ],
+                     'class' => ['IN' => ['file', 'thumbnail'] ] ] );
+            } else if ( $ui->delete_flag ) {
+                $old_uis = $db->model( 'urlinfo' )->load(
+                    ['model' => $obj->_model, 'object_id' => $obj->id, 'key' => $key,
+                     'delete_flag' => 0,
+                     'class' => ['IN' => ['file', 'thumbnail'] ] ] );
+            }
+            if ( count( $old_uis ) ) {
+                foreach ( $old_uis as $old_ui ) {
+                    $old_ui->remove();
+                }
+            }
         }
         $ui->delete_flag( 0 );
         if ( $ui->id ) {
