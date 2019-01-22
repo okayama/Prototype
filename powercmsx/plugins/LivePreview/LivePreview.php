@@ -59,6 +59,7 @@ class LivePreview extends PTPlugin {
             $app->force_filter = true;
             $app->force_dynamic = true;
             $app->no_cache = true;
+            $app->do_conditional = false;
             $status_models = $app->db->model( 'table' )->load( ['start_end' => 1] );
             foreach ( $status_models as $table ) {
                 $model = $table->name;

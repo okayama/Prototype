@@ -3167,13 +3167,18 @@ class PTTags {
              'key' => $key, 'class' => 'file' ] );
         if (! $urlinfo->id ) {
             if ( $app->user() ) {
+                $admin_url = $app->admin_url;
+                if ( strpos( $admin_url, 'http' ) !== 0
+                    && strpos( $admin_url, '/' ) === 0 ) {
+                    $app->admin_url = $app->base . $admin_url;
+                }
                 if ( isset( $obj->__session ) && $obj->_model == 'attachmentfile' ) {
                     $session = $obj->__session;
                     $params = '?__mode=get_temporary_file&amp;data=1&amp;id=session-' . $session->id;
-                    return $app->admin_url . $params;
-                } else if ( $in_preview ) {
+                    return $admin_url . $params;
+                } else if ( $in_preview || $app->force_dynamic ) {
                     $params = "?__mode=view&view={$key}&_type=edit&_model={$current_context}&id=" . $obj->id;
-                    return $app->admin_url . $params;
+                    return $admin_url . $params;
                 }
             }
             return '';
