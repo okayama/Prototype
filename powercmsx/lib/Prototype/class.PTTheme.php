@@ -65,6 +65,7 @@ class PTTheme {
         $app->ctx->vars['theme_loop'] = $theme_loop;
         if ( $app->param( '_type' ) == 'apply_theme' && $app->request_method === 'POST' ) {
             $db = $app->db;
+            $app->init_tags();
             $app->validate_magic();
             $db->caching = false;
             $db->begin_work();

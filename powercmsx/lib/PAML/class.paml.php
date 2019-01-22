@@ -6,7 +6,7 @@
  * @version    1.02
  * @package    PAML
  * @author     Alfasado Inc. <webmaster@alfasado.jp>
- * @copyright  2017 Alfasado Inc. All Rights Reserved.
+ * @copyright  2019 Alfasado Inc. All Rights Reserved.
  */
 if (! defined( 'DS' ) ) {
     define( 'DS', DIRECTORY_SEPARATOR );
@@ -21,10 +21,10 @@ if (! defined( 'EP' ) ) {
 /**
  * PAMLVSN = Compile format version.
  */
-define( 'PAMLVSN', '1.02' );
+define( 'PAMLVSN', '1.1' );
 
 class PAML {
-    private   $version       = 1.02;
+    private   $version       = 1.1;
 
 /**
  * $prefix        : Tag prefix.
@@ -2171,12 +2171,12 @@ class PAML {
             $out = str_replace( ["<{$id}>", "</{$id}>"], '', $out );
             $out = preg_replace( '/' . $h_sta . '(.*?)' . $h_end . '/si', '<$1>', $out );
             $out = preg_replace( "/<\/{0,1}{$pfx}.*?>/si", '', $out );
-            if ( $compiled ) return $out;
             $_pfx = $this->id . '_';
             $vars = "<?php \${$_pfx}vars=&\$this->vars;\${$_pfx}old_params=&\$this->"
                   . "old_params;\${$_pfx}local_params=&\$this->local_params;\${$_pfx}"
                   . "old_vars=&\$this->old_vars;\${$_pfx}local_vars=&\$this->local_vars;?>";
             $out = $vars . $out;
+            if ( $compiled ) return $out;
             $require = '';
             if (!$this->in_build && !$this->force_compile && $this->compile_key )
           {

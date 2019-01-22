@@ -29,7 +29,7 @@ spl_autoload_register( '\prototype_auto_loader' );
 class Prototype {
 
     public static $app = null;
-    public    $app_version   = '1.006';
+    public    $app_version   = '1.007';
     public    $id            = 'Prototype';
     public    $name          = 'Prototype';
     public    $db            = null;
@@ -94,7 +94,8 @@ class Prototype {
     public    $worker_period = 600;
     public    $caching       = false;
     public    $max_revisions = -1;
-    public    $unique_url    = true;
+    public    $unique_url    = false;
+    public    $published_files = [];
     public    $remote_ip;
     public    $user;
     public    $pt_path       = __FILE__;
@@ -2329,29 +2330,22 @@ class Prototype {
                     $ctx->vars['can_delete'] = $app->can_do( $model, 'delete', $obj );
                     if ( $model === 'template' ) {
                         if ( $obj->id ) {
-                            $cache_key = 'template' . DS . $obj->id . DS . 'include_modules__c';
-                            $includes = $app->get_cache( $cache_key );
+                            ob_start();
                             $tag_parser = new PTTagParser( $app );
-                            if (!$includes ) {
-                                $text = $obj->text;
-                                ob_start();
-                                $app->init_tags();
-                                $ctx->stash( 'current_template', $obj );
-                                $__stash = $ctx->__stash;
-                                $local_vars = $ctx->local_vars;
-                                $vars = $ctx->vars;
-                                $app->tmpl_markup === 'mt' ? $ctx->build( $text )
-                                          : $app->build( $text, $ctx );
-                                $ctx->vars = $vars;
-                                $ctx->local_vars = $local_vars;
-                                $ctx->__stash = $__stash;
-                                $includes = array_values( $app->modules );
-                                $ctx->vars['_include_modules'] = $includes;
-                                $app->set_cache( $cache_key, $includes );
-                                ob_end_clean();
-                            } else {
-                                $ctx->vars['_include_modules'] = $includes;
-                            }
+                            $text = $obj->text;
+                            $app->init_tags();
+                            $ctx->stash( 'current_template', $obj );
+                            $__stash = $ctx->__stash;
+                            $local_vars = $ctx->local_vars;
+                            $vars = $ctx->vars;
+                            $app->tmpl_markup === 'mt' ? $ctx->build( $text )
+                                      : $app->build( $text, $ctx );
+                            $ctx->vars = $vars;
+                            $ctx->local_vars = $local_vars;
+                            $ctx->__stash = $__stash;
+                            $includes = array_values( $app->modules );
+                            $ctx->vars['_include_modules'] = $includes;
+                            ob_end_clean();
                             $ctx->vars['parser_errors'] = $app->stash( 'parser_errors' );
                         }
                         $ctx->vars['_has_mapping'] = 1;
@@ -3608,7 +3602,7 @@ class Prototype {
     function rebuild_phase ( $app, $start = false, $counter = 0, $dependencies = false ) {
         $ctx = $app->ctx;
         $per_rebuild = $app->per_rebuild;
-        $app->get_scheme_from_db( 'urlinfo' );
+        // $app->get_scheme_from_db( 'urlinfo' );
         $db = $app->db;
         $tmpl = 'rebuild_phase.tmpl';
         $model = $app->param( '_model' );
@@ -3633,12 +3627,13 @@ class Prototype {
         $current_model = $app->param( 'current_model' );
         $ctx->vars['current_model'] = $current_model;
         $status_published = null;
-        if ( $app->build_published_only ) {
+        if ( $model && $app->build_published_only ) {
             if (! $app->param('_return_args')
                 && $db->model( $model )->has_column( 'status' ) ) {
                 $status_published = $app->status_published( $model );
             }
         }
+        $app->init_tags();
         if ( $app->param( '_type' ) && $app->param( '_type' ) == 'rebuild_archives' ) {
             $model = $app->param( 'next_models' );
             $models = explode( ',', $model );
@@ -3652,8 +3647,10 @@ class Prototype {
                 if ( $obj->has_column( 'workspace_id' ) && $app->workspace() ) {
                     $terms['workspace_id'] = $app->workspace()->id;
                 }
-                if ( $status_published ) {
-                    $terms['status'] = $status_published;
+                if ( $app->build_published_only ) {
+                    if ( $obj->has_column( 'status' ) ) {
+                        $terms['status'] = $app->status_published( $model );
+                    }
                 }
                 $extra = '';
                 if ( $table->revisable ) {
@@ -3668,6 +3665,7 @@ class Prototype {
                     return $app->build_page( $tmpl );
                 }
                 $objects = $app->db->model( $model )->load( $terms, [], 'id', $extra );
+                // $apply_actions = $objects->rowCount();
                 $apply_actions = count( $objects );
                 if (!$apply_actions ) {
                     if ( isset( $models[ $counter + 1] ) ) {
@@ -3715,40 +3713,35 @@ class Prototype {
             $table = $app->get_table( $model );
         }
         $plural = $app->translate( $table->plural );
-        $ids = $app->param( 'ids' );
-        $ids = explode( ',', $ids );
+        $ids = explode( ',', $app->param( 'ids' ) );
         $apply_actions = (int) $app->param( 'apply_actions' );
-        array_walk( $ids, function( &$id ) { $id = (int) $id; } );
+        // array_walk( $ids, function( &$id ) { $id = (int) $id; } );
         $rebuild_ids = array_slice( $ids , 0, $per_rebuild );
         $next_ids = array_slice( $ids , $per_rebuild );
         $rebuilt = $apply_actions - ( count( $ids ) - count( $rebuild_ids ) );
         $ctx->vars['current_model'] = $model;
+        $file_cols = $db->model( 'column' )->count( ['table_id' => $table->id, 'edit' => 'file'] );
+        $archives_only = $file_cols ? false : true;
         $db->begin_work();
         $app->txn_active = true;
         if ( $app->build_one_by_one ) { 
             foreach ( $rebuild_ids as $id ) {
                 $terms = ['id' => (int) $id ];
-                if ( $status_published ) {
-                    $terms['status'] = $status_published;
-                }
                 $obj = $db->model( $model )->get_by_key( $terms );
                 if (! $obj->id ) continue;
                 $cached_vars = $app->ctx->vars;
                 $cached_local_vars = $app->ctx->local_vars;
-                $app->publish_obj( $obj, null, false );
+                $app->publish_obj( $obj, null, false, false, $archives_only );
                 $app->ctx->vars = $cached_vars;
                 $app->ctx->local_vars = $cached_local_vars;
             }
         } else {
             $terms = ['id' => ['IN' => $rebuild_ids ] ];
-            if ( $status_published ) {
-                $terms['status'] = $status_published;
-            }
             $objects = $db->model( $model )->load( $terms );
             foreach ( $objects as $obj ) {
                 $cached_vars = $app->ctx->vars;
                 $cached_local_vars = $app->ctx->local_vars;
-                $app->publish_obj( $obj, null, false );
+                $app->publish_obj( $obj, null, false, false, $archives_only );
                 $app->ctx->vars = $cached_vars;
                 $app->ctx->local_vars = $cached_local_vars;
             }
@@ -5389,8 +5382,8 @@ class Prototype {
         }
     }
 
-    function publish_obj ( $obj, $original = null,
-                           $dependencies = false, $files_only = false ) {
+    function publish_obj ( $obj, $original = null, $dependencies = false,
+                           $files_only = false, $archives_only = false ) {
         $app = $this;
         $db = $app->db;
         $fmgr = $app->fmgr;
@@ -5452,13 +5445,13 @@ class Prototype {
             }
         }
         $out_counter = 0;
-        if (! $table->do_not_output ) {
+        if (! $table->do_not_output && ! $archives_only ) {
+            $out_path = $table->out_path ? $table->out_path : $model;
             foreach ( $properties as $key => $val ) {
                 if ( $model === 'asset' && $key === 'file' ) {
                     $app->post_save_asset( null, $app, $obj );
                     continue;
                 }
-                $out_path = $table->out_path ? $table->out_path : $model;
                 if ( $val === 'file' ) {
                     if (!$obj->$key ) continue;
                     $metadata = $db->model( 'meta' )->get_by_key(
@@ -5515,8 +5508,11 @@ class Prototype {
         if ( $obj->_model === 'template' ) {
             unset( $terms['container'] );
         }
+        $app->get_scheme_from_db( 'urlmapping' );
+        $map_cols = 'id,mapping,publish_file,template_id,link_status,date_based,model,'
+                  . 'container,fiscal_start,workspace_id,compiled,cache_key';
         $mappings = $db->model( 'urlmapping' )->load(
-            $terms, ['and_or' => 'OR'], '*', $extra );
+            $terms, ['and_or' => 'OR'], $map_cols, $extra );
         if (!$table->revisable || (!$obj->rev_type ) ) {
             foreach ( $mappings as $mapping ) {
                 if ( $obj->_model === 'template' ) {
@@ -5935,70 +5931,79 @@ class Prototype {
     function build_path_with_map ( $obj, $mapping, $table, $ts = null, $url = false ) {
         if (! $mapping ) return '';
         $app = $this;
-        $ctx = $app->ctx;
-        $db = $app->db;
-        $ctx->prefix = 'mt';
-        $table_vars = $table->get_values();
-        $colprefix = $table->_colprefix;
-        foreach ( $table_vars as $key => $value ) {
-            $ctx->local_vars[ $key ] = $value;
-            $key = preg_replace( "/^$colprefix/", '', $key );
-            $ctx->local_vars[ $key ] = $value;
-        }
-        if ( $app->mode === 'view' ) {
-            $obj = $db->model( $obj->_model )->get_by_key( ['id' => $obj->id ] );
-        }
-        $model_vars = $obj->get_values();
-        $colprefix = $obj->_colprefix;
-        foreach ( $model_vars as $key => $value ) {
-            $key = preg_replace( "/^$colprefix/", '', $key );
-            $ctx->local_vars[ $key ] = $value;
-        }
-        $app->init_tags();
-        $ctx->stash( 'current_context', $obj->_model );
-        $ctx->stash( $obj->_model, $obj );
-        $map_path = $mapping->mapping;
-        $ctx->stash( 'current_timestamp', '' );
-        $ctx->stash( 'current_timestamp_end', '' );
-        $ctx->stash( 'archive_date_based', false );
-        $archive_type = '';
-        if ( $mapping->model === 'template' ) {
-            $ctx->stash( 'current_archive_type', 'index' );
-            if ( $mapping->template ) {
-                $ctx->stash( 'current_archive_title', $mapping->template->name );
+        $path = $mapping->mapping;
+        if ( strpos( $path, '<' ) !== false ) {
+            $map_path = $path;
+            $ctx = $app->ctx;
+            $db = $app->db;
+            $ctx->prefix = 'mt';
+            $table_vars = $table->get_values();
+            $colprefix = $table->_colprefix;
+            foreach ( $table_vars as $key => $value ) {
+                $ctx->local_vars[ $key ] = $value;
+                $key = preg_replace( "/^$colprefix/", '', $key );
+                $ctx->local_vars[ $key ] = $value;
             }
-        } else {
-            $archive_type = $mapping->model;
-            $ctx->stash( 'current_archive_type', $archive_type );
-        }
-        if ( $mapping->date_based && $ts ) {
-            $at = $mapping->date_based;
-            $ctx->stash( 'archive_date_based', $obj->_model );
-            list( $title, $start, $end ) =
-                $app->title_start_end( $at, $ts, $mapping );
-            $y = substr( $title, 0, 4 );
-            $map_path = str_replace( '%y', $y, $map_path );
-            if ( $title != $y ) {
-                $m = substr( $title, 4, 2 );
-                $map_path = str_replace( '%m', $m, $map_path );
+            if ( $app->mode === 'view' ) {
+                $obj = $db->model( $obj->_model )->get_by_key( ['id' => $obj->id ] );
             }
-            $ctx->stash( 'current_timestamp', $start );
-            $ctx->stash( 'current_timestamp_end', $end );
-            $ctx->stash( 'current_archive_title', $title );
-            $date_col = $app->get_date_col( $obj );
-            $ctx->stash( 'archive_date_based_col', $date_col );
-            $archive_type .= $archive_type ? '-' . strtolower( $at )
-                           : strtolower( $at );
-            $ctx->stash( 'current_archive_type', $archive_type );
-        } else {
-            if ( $mapping->model === $obj->_model ) {
-                $primary = $table->primary;
-                $ctx->stash( 'current_archive_title', $obj->$primary );
+            $model_vars = $obj->get_values();
+            $colprefix = $obj->_colprefix;
+            foreach ( $model_vars as $key => $value ) {
+                $key = preg_replace( "/^$colprefix/", '', $key );
+                $ctx->local_vars[ $key ] = $value;
             }
+            $app->init_tags();
+            $ctx->stash( 'current_context', $obj->_model );
+            $ctx->stash( $obj->_model, $obj );
+            $map_path = $mapping->mapping;
+            $ctx->stash( 'current_timestamp', '' );
+            $ctx->stash( 'current_timestamp_end', '' );
+            $ctx->stash( 'archive_date_based', false );
+            $archive_type = '';
+            if ( $mapping->model === 'template' ) {
+                $ctx->stash( 'current_archive_type', 'index' );
+                if ( $mapping->template ) {
+                    $ctx->stash( 'current_archive_title', $mapping->template->name );
+                }
+            } else {
+                $archive_type = $mapping->model;
+                $ctx->stash( 'current_archive_type', $archive_type );
+            }
+            if ( $mapping->date_based && $ts ) {
+                $at = $mapping->date_based;
+                $ctx->stash( 'archive_date_based', $obj->_model );
+                list( $title, $start, $end ) =
+                    $app->title_start_end( $at, $ts, $mapping );
+                $y = substr( $title, 0, 4 );
+                $map_path = str_replace( '%y', $y, $map_path );
+                if ( $title != $y ) {
+                    $m = substr( $title, 4, 2 );
+                    $map_path = str_replace( '%m', $m, $map_path );
+                }
+                $ctx->stash( 'current_timestamp', $start );
+                $ctx->stash( 'current_timestamp_end', $end );
+                $ctx->stash( 'current_archive_title', $title );
+                $date_col = $app->get_date_col( $obj );
+                $ctx->stash( 'archive_date_based_col', $date_col );
+                $archive_type .= $archive_type ? '-' . strtolower( $at )
+                               : strtolower( $at );
+                $ctx->stash( 'current_archive_type', $archive_type );
+            } else {
+                if ( $mapping->model === $obj->_model ) {
+                    $primary = $table->primary;
+                    $ctx->stash( 'current_archive_title', $obj->$primary );
+                }
+            }
+            $compiled = $mapping->compiled;
+            $cache_key = $mapping->cache_key;
+            if ( $compiled && $cache_key ) {
+                $ctx->compiled[ $cache_key ] = $compiled;
+            }
+            $ctx->vars['current_archive_title'] = $ctx->stash( 'current_archive_title' );
+            $path = $app->tmpl_markup === 'mt' ? $ctx->build( $map_path )
+                                               : $app->build( $map_path, $ctx );
         }
-        $ctx->vars['current_archive_title'] = $ctx->stash( 'current_archive_title' );
-        $path = $app->tmpl_markup === 'mt' ? $ctx->build( $map_path )
-                                           : $app->build( $map_path, $ctx );
         $path = trim( $path );
         $base_url = $app->site_url;
         $base_path = $app->site_path;
@@ -7717,7 +7722,7 @@ class Prototype {
             $publish = $urlmapping->publish_file;
             $terms = ['urlmapping_id' => $urlmapping->id, 'class' => 'archive',
                  'object_id' => $obj->id, 'model' => $obj->_model,
-                 'delete_flag' => ['IN' => [0,1] ] ];
+                 'delete_flag' => ['IN' => [0, 1] ] ];
             if ( isset( $archive_date ) ) $terms['archive_date'] = $archive_date;
             $ui = $db->model( 'urlinfo' )->get_by_key( $terms );
             if ( $ui->file_path != $file_path ) {
@@ -7726,7 +7731,7 @@ class Prototype {
                     $remove_dirs[ dirname( $ui->file_path ) ] = true;
                 }
             }
-            if ( $app->unique_url ) {
+            if ( $app->unique_url || isset( $app->published_files[ $file_path ] ) ) {
                 $ol_terms = ['file_path' => $file_path ];
                 if ( $ui->id ) {
                     $ol_terms['id'] = ['!=' => $ui->id ];
@@ -7737,6 +7742,7 @@ class Prototype {
                     $db->model( 'urlinfo' )->remove_multi( $overlaps );
                 }
             }
+            $app->published_files[ $file_path ] = true;
             $ui->file_path( $file_path );
             $ui->publish_file( $publish );
             $template = $urlmapping->template;
@@ -8109,7 +8115,7 @@ class Prototype {
         if ( $publish == 2 ) {
             $app->delayed[] = $ui->id;
         }
-        $fmgr->remove_empty_dirs( $remove_dirs );
+        if ( count( $remove_dirs ) ) $fmgr->remove_empty_dirs( $remove_dirs );
         return $file_path;
     }
 

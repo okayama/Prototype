@@ -25,8 +25,8 @@ class urlmapping extends PADOBaseModel {
 
     function save () {
         $model = $this->model;
+        $app = Prototype::get_instance();
         if ( $model != 'template' ) {
-            $app = Prototype::get_instance();
             $terms = ['workspace_id' => (int) $this->workspace_id,
                       'model' => $model, 'is_preferred' => 1 ];
             if ( $this->id ) {
@@ -58,6 +58,19 @@ class urlmapping extends PADOBaseModel {
                 }
             }
         }
+        $app->init_tags();
+        $ctx = $app->ctx;
+        $text = $this->mapping;
+        $app->init_tags();
+        $__stash = $ctx->__stash;
+        $local_vars = $ctx->local_vars;
+        $vars = $ctx->vars;
+        $compiled = $ctx->build( $text, true );
+        $this->compiled( $compiled );
+        $this->cache_key( md5( $text ) );
+        $ctx->vars = $vars;
+        $ctx->local_vars = $local_vars;
+        $ctx->__stash = $__stash;
         return parent::save();
     }
 

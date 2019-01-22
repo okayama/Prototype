@@ -333,8 +333,8 @@ class Text_Diff_Engine_native {
     {
         $i = 0;
         $j = 0;
-
-        assert('count($lines) == count($changed)');
+        assert(count($lines) == count($changed));
+        // assert('count($lines) == count($changed)');
         $len = count($lines);
         $other_len = count($other_changed);
 
@@ -355,7 +355,7 @@ class Text_Diff_Engine_native {
             }
 
             while ($i < $len && ! $changed[$i]) {
-                assert('$j < $other_len && ! $other_changed[$j]');
+                assert( $j < $other_len && ! $other_changed[$j]);
                 $i++; $j++;
                 while ($j < $other_len && $other_changed[$j]) {
                     $j++;
@@ -387,11 +387,11 @@ class Text_Diff_Engine_native {
                     while ($start > 0 && $changed[$start - 1]) {
                         $start--;
                     }
-                    assert('$j > 0');
+                    assert($j > 0);
                     while ($other_changed[--$j]) {
                         continue;
                     }
-                    assert('$j >= 0 && !$other_changed[$j]');
+                    assert($j >= 0 && !$other_changed[$j]);
                 }
 
                 /* Set CORRESPONDING to the end of the changed run, at the
@@ -411,8 +411,7 @@ class Text_Diff_Engine_native {
                     while ($i < $len && $changed[$i]) {
                         $i++;
                     }
-
-                    assert('$j < $other_len && ! $other_changed[$j]');
+                    assert($j < $other_len && ! $other_changed[$j]);
                     $j++;
                     if ($j < $other_len && $other_changed[$j]) {
                         $corresponding = $i;
@@ -428,11 +427,11 @@ class Text_Diff_Engine_native {
             while ($corresponding < $i) {
                 $changed[--$start] = 1;
                 $changed[--$i] = 0;
-                assert('$j > 0');
+                assert($j > 0);
                 while ($other_changed[--$j]) {
                     continue;
                 }
-                assert('$j >= 0 && !$other_changed[$j]');
+                assert($j >= 0 && !$other_changed[$j]);
             }
         }
     }

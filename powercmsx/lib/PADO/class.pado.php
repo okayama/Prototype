@@ -6,7 +6,7 @@
  * @version    1.2
  * @package    PADO
  * @author     Alfasado Inc. <webmaster@alfasado.jp>
- * @copyright  2017 Alfasado Inc. All Rights Reserved.
+ * @copyright  2019 Alfasado Inc. All Rights Reserved.
  */
 if (! defined( 'DS' ) ) {
     define( 'DS', DIRECTORY_SEPARATOR );
@@ -17,7 +17,7 @@ if (! defined( 'PADODIR' ) ) {
 
 class PADO {
 
-    private $version     = 1.2;
+    private $version     = 1.3;
 
     public  static $pado = null;
     public  $driver      = 'mysql';
@@ -927,8 +927,8 @@ class PADOBaseModel {
     function load ( $terms = [], $args = [], $cols = '', $extra = '' ) {
         if (! $terms ) $terms = [];
         $pado = $this->pado();
-        if ( isset( $pado->methods['load'] ) )
-            return $this->_driver->load( $terms, $args, $cols );
+        // if ( isset( $pado->methods['load'] ) )
+        //     return $this->_driver->load( $terms, $args, $cols );
         $model = $this->_model;
         if ( $pado->caching ) {
             if (! isset( $pado->cache[ $model ] ) ) $pado->cache[ $model ] = [];

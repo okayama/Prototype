@@ -1501,13 +1501,20 @@ class PTTags {
         $current_context = $ctx->stash( 'current_context' );
         $obj = $ctx->stash( $current_context );
         $column = isset( $args['column'] ) ? $args['column'] : 'basename';
-        $separator = isset( $args['separator'] ) ? $args['separator'] : '/';
+        $separator = isset( $args['separator'] ) ? $args['separator'] : '';
+        $cache_key = 'objectpath_' . $column . '_' . $separator
+                   . '_' . $current_context . '_' . $obj->id;
+        if (! $separator ) $separator = '/';
+        if ( $app->stash( $cache_key ) ) {
+            return $app->stash( $cache_key );
+        }
         $parent = $obj;
         $paths = [ $parent->$column ];
         while ( $parent !== null ) {
             if ( $parent_id = $parent->parent_id ) {
                 $parent_id = (int) $parent_id;
-                $parent = $app->db->model( $current_context )->load( $parent_id );
+                $parent = $app->db->model( $current_context )->load_iter
+                    ( $parent_id, [], '', "id,{$column}" );
                 if ( $parent->id ) {
                     array_unshift( $paths, $parent->$column );
                 } else {
@@ -1517,7 +1524,9 @@ class PTTags {
                 $parent = null;
             }
         }
-        return join( $separator, $paths );
+        $path = implode( $separator, $paths );
+        $app->stash( $cache_key, $path );
+        return $path;
     }
 
     function hdlr_geturlprimary ( $args, $ctx ) {
@@ -2986,7 +2995,6 @@ class PTTags {
                     }
                 }
                 $select_cols = isset( $args['cols'] ) ? $args['cols'] : '*';
-                $caching = $app->db->caching;
                 if ( isset( $args['cols'] ) ) {
                     $select_cols = $this->select_cols( $app, $to_model, $select_cols );
                 }
@@ -2996,7 +3004,6 @@ class PTTags {
                 $callback = ['name' => 'post_load_objects', 'model' => $to_obj ];
                 $count_obj = count( $objects );
                 $app->run_callbacks( $callback, $model, $objects, $count_obj );
-                $app->db->caching = $caching;
             }
             if ( isset( $orig_args['__object_count'] ) ) {
                 $ctx->restore( [ $model, 'current_context', 'to_object'] );
@@ -3581,7 +3588,6 @@ class PTTags {
                 $terms['rev_type'] = 0;
             }
             $cols = isset( $args['cols'] ) ? $args['cols'] : '*';
-            $caching = $app->db->caching;
             if ( isset( $args['cols'] ) ) {
                 $cols = $this->select_cols( $app, $obj, $cols );
             }
@@ -3600,7 +3606,6 @@ class PTTags {
             $objects = $ctx->stash( 'children_object_' . $model . '_' . $parent_id )
                 ? $ctx->stash( 'children_object_' . $model . '_' . $parent_id )
                 : $obj->load( $terms, $args, $cols, $extra );
-            $app->db->caching = $caching;
             if (! is_array( $objects ) || empty( $objects ) ) {
                 $repeat = $ctx->false();
                 return;
@@ -3924,6 +3929,7 @@ class PTTags {
                 $context = $ctx->stash( 'current_context' );
                 $context = $context == 'template' ? '' : $context;
                 $has_relation = false;
+                $relations = [];
                 if (! $container && $app->db->model( $context )->has_column( 'model' ) ) {
                     $ctx_obj = $ctx->stash( $context );
                     $ctx_model = null;
@@ -3958,7 +3964,7 @@ class PTTags {
                         }
                     }
                 }
-                $relations = [];
+                // $relations = [];
                 if ( $container && $context ) {
                     if ( $container == $model ) {
                         $to_obj = $ctx->stash( $context );
@@ -4313,6 +4319,7 @@ class PTTags {
             if ( $select_cols == '*' ) return '*';
             $select_cols = preg_split( '/\s*,\s*/', $select_cols, -1, PREG_SPLIT_NO_EMPTY );
         }
+        $caching = $app->db->caching;
         $app->db->caching = false;
         if (! $column_defs ) {
             $scheme = $app->get_scheme_from_db( $obj->_model );
@@ -4348,6 +4355,7 @@ class PTTags {
         $select_cols = !empty( $_select_cols )
                      ? implode( ',', $_select_cols )
                      : '*';
+        $app->db->caching = $caching;
         return $select_cols;
     }
 

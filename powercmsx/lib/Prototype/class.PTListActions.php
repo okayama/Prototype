@@ -93,6 +93,12 @@ class PTListActions {
                                'component' => $this,
                                'columns' => ['id', 'text', 'compiled', 'cache_key'],
                                'method' => 'recompile_cache'];
+        } else if ( $table->name === 'urlmapping' ) {
+            $list_actions[] = ['name' => 'recompile_cache', 'input' => 0,
+                               'label' => $app->translate( 'Re-Compile Cache' ),
+                               'component' => $this,
+                               'columns' => ['id', 'mapping', 'compiled', 'cache_key'],
+                               'method' => 'recompile_cache'];
         } else if ( $table->name === 'fieldtype' ) {
             $list_actions[] = ['name' => 'export_fieldtypes', 'input' => 0,
                                'label' => $app->translate( 'Export' ),
@@ -1342,8 +1348,8 @@ class PTListActions {
             $db->commit();
             $app->txn_active = false;
         }
-        $return_args = "does_act=1&__mode=view&_type=list&_model=template&"
-                     ."apply_actions={$counter}" . $app->workspace_param;
+        $return_args = "does_act=1&__mode=view&_type=list&_model=" . $action['model']
+                     ."&apply_actions={$counter}" . $app->workspace_param;
         if ( $add_params = $this->add_return_params( $app ) ) {
             $return_args .= "&{$add_params}";
         }
