@@ -3170,7 +3170,7 @@ class PTTags {
                 $admin_url = $app->admin_url;
                 if ( strpos( $admin_url, 'http' ) !== 0
                     && strpos( $admin_url, '/' ) === 0 ) {
-                    $app->admin_url = $app->base . $admin_url;
+                    $admin_url = $app->base . $admin_url;
                 }
                 if ( isset( $obj->__session ) && $obj->_model == 'attachmentfile' ) {
                     $session = $obj->__session;

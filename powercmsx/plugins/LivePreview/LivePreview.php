@@ -13,6 +13,7 @@ class LivePreview extends PTPlugin {
 
     function post_init ( $app ) {
         if (! $app->user() ) return;
+        $app->do_conditional = false;
         $datebased = $this->get_config_value( 'livepreview_date_based' );
         if ( $datebased ) {
             $datebased_models = preg_split( '/\s*,\s*/', $datebased );
@@ -59,7 +60,6 @@ class LivePreview extends PTPlugin {
             $app->force_filter = true;
             $app->force_dynamic = true;
             $app->no_cache = true;
-            $app->do_conditional = false;
             $status_models = $app->db->model( 'table' )->load( ['start_end' => 1] );
             foreach ( $status_models as $table ) {
                 $model = $table->name;
