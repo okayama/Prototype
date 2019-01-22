@@ -75,21 +75,20 @@ function editorInit () {
         <mt:if name="model" eq="widget">
         if(ed.id && ed.id == 'text'){
           var clipboard_image = $('#clipboard-image');
+          var inline_image = $('#inline-image');
+          var bg_image_url = clipboard_image.val();
+          if ( inline_image.length ) {
+              bg_image_url = inline_image.attr('href');
+          }
           if ( clipboard_image.length ) {
-            // var rgba = getConversionRgba('<mt:var name="__object_back_color">');
-            var editorStyle = 'body {margin: 40px; font-size: 110%;color:<mt:var name="__object_fore_color">; background-color:<mt:var name="__object_back_color">;'
+            var rgba = getConversionRgba('<mt:var name="__object_back_color">');
+            ed.settings['content_style'] = 'body {margin: 40px; font-size: 110%;color:<mt:var name="__object_fore_color">; background-color:<mt:var name="__object_back_color">;'
               + 'background-size: cover; background-position: center;'
-              + 'background-image:url("' + clipboard_image.val() + '?rnd=' + Math.random() + '")}';
-              <mt:if name="__widget_background_image">
-              /*
-              editorStyle += 'text-shadow: 2px 2px 2px <mt:var name="__object_back_color">,'
+              + 'text-shadow: 2px 2px 2px <mt:var name="__object_back_color">,'
               + '-2px 2px 2px <mt:var name="__object_back_color">,'
               + '2px -2px 2px <mt:var name="__object_back_color">,'
               + '-2px -2px 2px <mt:var name="__object_back_color">;'
-              + 'background-image:url("' + clipboard_image.val() + '?rnd=' + Math.random() + '")} body *{background-color: rgba(' + rgba + ')}';
-              */
-              </mt:if>
-              ed.settings['content_style'] = editorStyle;
+              + 'background-image:url("' + bg_image_url + '?rnd=' + Math.random() + '")} body *{background-color: rgba(' + rgba + ')}';
           } else {
             ed.settings['content_style'] = 'body {margin: 40px; font-size: 110%;color:<mt:var name="__object_fore_color">; background:<mt:var name="__object_back_color">;}';
           }
