@@ -1376,6 +1376,15 @@ class PTUpgrader {
         if (! $cb['is_new'] )
             $this->upgrade_scheme( $obj->name );
         $model = $obj->name;
+        $version_opt =
+          $app->db->model( 'option' )->get_by_key(
+          ['kind' => 'scheme_version', 'key' => $model ] );
+        $scheme_v = (int) $version_opt->value;
+        $new_ver = (int) $obj->version;
+        if ( $obj->version && $new_ver > $scheme_v ) {
+            $version_opt->value( $new_ver );
+            $version_opt->save();
+        }
         if ( $original->id && ! $original->has_uuid && $obj->has_uuid ) {
             $app->get_scheme_from_db( $obj->name, true );
             $_model = $db->model( $obj->name )->new();
@@ -1384,9 +1393,9 @@ class PTUpgrader {
                 $_model->_colprefix . 'uuid=\'\'' );
             if (! empty( $objects ) ) {
                 $new_objects = [];
-                foreach ( $objects as $obj ) {
-                    $obj->uuid( $app->generate_uuid() );
-                    $new_objects[] = $obj;
+                foreach ( $objects as $uu_obj ) {
+                    $uu_obj->uuid( $app->generate_uuid() );
+                    $new_objects[] = $uu_obj;
                 }
                 $_model->update_multi( $new_objects );
             }
