@@ -1,5 +1,5 @@
 {
-    "version": "1.4",
+    "version": "1.5",
     "label": "Widget",
     "plural": "Widgets",
     "primary": "name",
@@ -193,6 +193,9 @@
     ],
     "disp_edit": {
         "status": "select"
+    },
+    "extras": {
+        "image": ":1920:resize:image"
     },
     "edit_properties": {
         "id": "hidden",
