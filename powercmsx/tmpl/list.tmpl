@@ -839,8 +839,8 @@ $('#dialog-selector-btn').click(function(){
     <mt:if name="this_model" eq="asset">
     window.parent.$('#_'+target_control+'_name').html(col_value);
     var obj_permalink = $('#permalink_'+selected);
+    var viewLink = window.parent.$('#'+target_control+'-view-asset-link');
     if ( obj_permalink.length ) {
-        var viewLink = window.parent.$('#'+target_control+'-view-asset-link');
         viewLink.removeClass('hidden');
         viewLink.show();
         var editButton = window.parent.$('#_'+target_control+'-edit');
