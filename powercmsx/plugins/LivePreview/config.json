@@ -21,7 +21,7 @@
             "mode"       : "live_preview",
             "label"      : "Live Preview",
             "permission" : "can_livepreview",
-            "order"      : 10
+            "order"      : 200
         }
     },
     "hooks": {

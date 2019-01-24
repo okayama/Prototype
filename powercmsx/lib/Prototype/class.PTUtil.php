@@ -1512,8 +1512,8 @@ class PTUtil {
             $item_by_order[] = $registry;
             $registries_all[ $order ] = $item_by_order;
         }
+        ksort( $registries_all );
         if ( $widget ) {
-            ksort( $registries_all );
             $ordered = [];
             foreach ( $registries_all as $appWidget ) {
                 $appWidget = $appWidget[0];

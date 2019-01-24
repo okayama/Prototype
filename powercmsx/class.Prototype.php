@@ -340,14 +340,14 @@ class Prototype {
                        'manage_scheme' => [
                        'display_system' => 1, 'component' => 'Core', 'permission' => 'manage_plugins',
                        'mode' => 'manage_scheme', 'label' => 'Manage Scheme', 'order' => 30],
-                       'import_objects' => [
-                       'display_system' => 1, 'display_space' => 1, 'component' => 'Core',
-                       'permission' => 'import_objects', 'mode' => 'import_objects',
-                       'label' => 'Import Objects', 'order' => 40],
                        'manage_theme' => [
                        'display_system' => 1, 'display_space' => 1, 'component' => 'Core',
                        'permission' => 'import_objects', 'mode' => 'manage_theme',
-                       'label' => 'Manage Theme', 'order' => 50]];
+                       'label' => 'Manage Theme', 'order' => 40],
+                       'import_objects' => [
+                       'display_system' => 1, 'display_space' => 1, 'component' => 'Core',
+                       'permission' => 'import_objects', 'mode' => 'import_objects',
+                       'label' => 'Import Objects', 'order' => 50]];
         $this->registry['menus'] = $core_menus;
         if ( $this->mode == 'dashboard' )
             $this->registry['widgets'] = $this->core_widgets();
