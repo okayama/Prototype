@@ -1,0 +1,20 @@
+{
+    "label"       : "NORENImporter",
+    "id"          : "norenimporter",
+    "component"   : "NORENImporter",
+    "version"     : "1.0",
+    "author"      : "Alfasado Inc.",
+    "author_link" : "https://alfasado.net/",
+    "description" : "It provides data migration function from NOREN XML format.",
+    "import_format": {
+        "noren": {
+            "component"  : "NORENImporter",
+            "label"      : "NOREN",
+            "method"     : "import_noren",
+            "models"     : ["entry", "page"],
+            "order"      : 30,
+            "options"    : ["author_setting", "new_author_password", "set_folder",
+                            "field_settings", "keywords_to", "text_format"]
+        }
+    }
+}

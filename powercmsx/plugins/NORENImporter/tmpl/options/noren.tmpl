@@ -1,26 +1,44 @@
 <label class="custom-control custom-radio">
 <input id="noren_author_current" class="custom-control-input" type="radio" checked name="noren_author_setting" value="1">
 <span class="custom-control-indicator"></span>
-<span class="custom-control-description"><mt:trans phrase="Import as me" component="EntryImporter"></span>
+<span class="custom-control-description"><mt:trans phrase="Import as me" component="DataMigrator"></span>
 </label>
 <mt:ifusercan action="create" model="user">
 <label class="custom-control custom-radio">
 <input id="noren_author_create" class="custom-control-input" type="radio" name="noren_author_setting" value="2">
 <span class="custom-control-indicator"></span>
-<span class="custom-control-description"><mt:trans phrase="Preserve original user" component="EntryImporter"></span>
+<span class="custom-control-description"><mt:trans phrase="Preserve original user" component="DataMigrator"></span>
 </label>
 <div class="row form-group hidden" id="noren_password-wrapper">
   <div class="form-inline-padding form-inline col-lg-10 option-content hidden">
-    <mt:trans phrase="Default password for new users:" component="EntryImporter">
+    <mt:trans phrase="Default password for new users:" component="DataMigrator">
     <input id="noren_new_author_password" type="password" class="form-control" name="noren_new_author_password" value="">
     <p class="text-muted hint-block">
     <i class="fa fa-question-circle-o" aria-hidden="true"></i>
     <span class="sr-only"><mt:trans phrase="Hint"></span>
-    <mt:trans phrase="Please set the new user's email address later." component="EntryImporter"></p>
+    <mt:trans phrase="Please set the new user's email address later." component="DataMigrator"></p>
   </div>
 </div>
 </mt:ifusercan>
 <script>
+function select_format_noren () {
+    if ( $('input[name="import_model"]:checked').val() == 'entry' ) {
+        $('#noren_set_folder-wrapper').hide();
+        $('#noren_set_folder-separator').hide();
+    } else {
+        $('#noren_set_folder-wrapper').show();
+        $('#noren_set_folder-separator').show();
+    }
+}
+$('input[name="import_model"]').change(function(){
+    if ( $(this).val() == 'entry' ) {
+        $('#noren_set_folder-wrapper').hide();
+        $('#noren_set_folder-separator').hide();
+    } else {
+        $('#noren_set_folder-wrapper').show();
+        $('#noren_set_folder-separator').show();
+    }
+});
 <mt:ifusercan action="create" model="user">
 $('#noren_author_current').change(function(){
     if ( $(this).prop('checked') ) {
@@ -38,7 +56,7 @@ $('#import-form').submit(function(){
         <mt:ifusercan action="create" model="user">
         if ( $('#noren_author_create').prop('checked') ) {
             if (! $('#noren_new_author_password').val() ) {
-                alert('<mt:trans phrase="Enter a default password for new users." component="EntryImporter">');
+                alert('<mt:trans phrase="Enter a default password for new users." component="DataMigrator">');
                 $('#noren_new_author_password').focus();
                 return false;
             }
@@ -63,17 +81,17 @@ $('#noren_new_author_password').change(function(){
 <label class="custom-control custom-radio">
 <input class="custom-control-input" type="radio" checked name="noren_keywords_to" value="1">
 <span class="custom-control-indicator"></span>
-<span class="custom-control-description"><mt:trans phrase="Import Keywords" component="EntryImporter"></span>
+<span class="custom-control-description"><mt:trans phrase="Import Keywords" component="DataMigrator"></span>
 </label>
 <label class="custom-control custom-radio">
 <input class="custom-control-input" type="radio" name="noren_keywords_to" value="2">
 <span class="custom-control-indicator"></span>
-<span class="custom-control-description"><mt:trans phrase="Keywords to Tags" component="EntryImporter"></span>
+<span class="custom-control-description"><mt:trans phrase="Keywords to Tags" component="DataMigrator"></span>
 </label>
 <label class="custom-control custom-radio">
 <input class="custom-control-input" type="radio" name="noren_keywords_to" value="3">
 <span class="custom-control-indicator"></span>
-<span class="custom-control-description"><mt:trans phrase="Keywords to Keywords and Tags" component="EntryImporter"></span>
+<span class="custom-control-description"><mt:trans phrase="Keywords to Keywords and Tags" component="DataMigrator"></span>
 </label>
 </div>
 <hr style="margin-bottom:1.2em" />
@@ -89,12 +107,28 @@ $('#noren_new_author_password').change(function(){
     </select>
 </div>
 <hr style="margin-bottom:1.5em" />
+<div class="row form-group" id="noren_set_folder-wrapper">
+  <div class="form-inline-padding form-inline col-lg-10 option-content">
+    <label class="custom-control custom-checkbox">
+    <input class="custom-control-input watch-changed" type="checkbox" name="noren_set_folder" value="1">
+      <span class="custom-control-indicator"></span>
+      <span class="custom-control-description"> 
+      <mt:ifusercan action="create" model="folder" workspace_id="$workspace_id">
+        <mt:trans phrase="Create and set folder from first category label" component="DataMigrator">
+      <mt:else>
+        <mt:trans phrase="Set folder from first category label" component="DataMigrator">
+      </mt:ifusercan>
+      </span>
+    </label>
+  </div>
+</div>
+<hr style="margin-bottom:1.5em" id="noren_set_folder-separator" />
 <div>
 <textarea id="noren_field_settings" name="noren_field_settings" rows="4" class="form-control" placeholder="ns_field_name1=text"><mt:var name="cookie.pt-noren_field_settings" escape></textarea>
   <p class="text-muted hint-block">
     <i class="fa fa-question-circle-o" aria-hidden="true"></i>
     <span class="sr-only"><mt:trans phrase="Hint"></span>
-    <mt:trans phrase="Write 1 line 1 setting. Movable Type's Field name CF50_BASENAME=Field name of PowerCMS X(Duplicates are merged)." component="EntryImporter">
+    <mt:trans phrase="Write 1 line 1 setting. Field name of NOREN's=name of PowerCMS X(Duplicates are merged)." component="NORENImporter">
   </p>
 </div>
 <script>
