@@ -46,7 +46,7 @@
     });
     $('#_activity_log').show(90);
     </script>
-    <mt:isusercan action="list" model="$activity_model" workspace_id="$workspace_id">
+    <mt:ifusercan action="list" model="$activity_model" workspace_id="$workspace_id">
     <table class="activity_footer-table" role="presentation">
     <tr>
     <td>
@@ -72,7 +72,7 @@
         class="btn btn-info btn-sm"><mt:trans phrase="View all %s" params="$activity_label"></a>
     </div></td></tr>
     </table>
-    </mt:isusercan>
+    </mt:ifusercan>
   </div>
 </div>
 </mt:if>

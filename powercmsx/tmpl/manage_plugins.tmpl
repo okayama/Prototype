@@ -88,77 +88,85 @@ $('#alert-scheme-upgrade').focus();
 </thead>
 <tbody id="list_body">
 <mt:loop name="plugins_loop">
+  <mt:setvar name="plugin_visible" value="1">
   <mt:var name="__value__" setvar="settings">
-  <mt:var name="settings[id]" setvar="plugin_id">
-  <mt:unless name="plugin_id">
-    <mt:var name="settings[component]" lower_case="1" setvar="plugin_id">
-  </mt:unless>
-<mt:var name="settings[upgrade]" setvar="upgrade">
-<mt:var name="settings[upgrade_scheme]" setvar="upgrade_scheme">
-<tr id="line_<mt:var name="plugin_id" escape>" <mt:if name="upgrade">class="active-cell"<mt:elseif name="upgrade_scheme">class="active-cell"</mt:if>>
-<mt:unless name="workspace_id">
-<th>
-  <label class="custom-control custom-checkbox">
-    <input id="box_<mt:var name="plugin_id" escape>" type="checkbox" class="custom-control-input" name="plugin_id[]" value="<mt:var name="plugin_id" escape>">
-    <span class="custom-control-indicator"></span>
-    <span class="custom-control-description"></span>
-  </label>
-</th>
-</mt:unless>
-<td>
-<div>
-<mt:var name="settings[status]" setvar="plugin_status">
-<mt:var name="settings[label]" trans="$__key__">
-<mt:if name="plugin_status">
-<i class="fa fa-check-square" aria-hidden="true"></i>
-<span class="sr-only">(<mt:trans phrase="Enabled">)</span>
-</mt:if>
-</div>
-<mt:unless name="workspace_id">
-<div class="plugin-switch"><mt:if name="plugin_status">
-  <a class="disable-link" href="<mt:var name="script_uri">?__mode=manage_plugins&amp;_type=disable&amp;plugin_id[]=<mt:var name="plugin_id" escape>&amp;magic_token=<mt:var name="magic_token">"><mt:trans phrase="Disable this plugin"></a>
-<mt:else>
-  <a class="enable-link" href="<mt:var name="script_uri">?__mode=manage_plugins&amp;_type=enable&amp;plugin_id[]=<mt:var name="plugin_id" escape>&amp;magic_token=<mt:var name="magic_token">"><mt:trans phrase="Enable this plugin"></a>
-</mt:if>
-</div>
-</mt:unless>
-</td>
-<td>
-<div><mt:var name="settings[description]" trans="$__key__"></div>
-<div><mt:trans phrase="Creator"> : <mt:if name="$settings[author_link]">
-  <a target="_blank" href="<mt:var name="settings[author_link]" trans="$__key__">">
-</mt:if>
-  <mt:var name="$settings[author]" trans="$__key__">
-<mt:if name="$settings[author_link]">
-  </a>
-</mt:if>
-<mt:if name="$settings[doc_link]">
-  <a target="_blank" href="<mt:var name="settings[doc_link]">" class="badge badge-default plugin-doc-link"><mt:trans phrase="Document"></a>
-</mt:if>
-</div>
-</td>
-<td>
-<mt:var name="settings[version]" trans="$__key__">
-<mt:if name="upgrade">
-&nbsp; (<mt:trans phrase="Upgrade">)
-</mt:if>
-</td>
-<td class="very-short">
-<mt:if name="plugin_status">
-<mt:if name="workspace_id">
-<mt:var name="settings[cfg_space]" setvar="has_config">
-<mt:else>
-<mt:var name="settings[cfg_system]" setvar="has_config">
-</mt:if>
-<mt:if name="has_config">
-  <button type="button"
-  class="btn btn-secondary"
-  data-toggle="modal" data-target="#modal"
-  data-href="<mt:var name="script_uri">?__mode=manage_plugins&amp;workspace_id=<mt:var name="workspace_id">&amp;plugin_id=<mt:var name="plugin_id">&amp;edit_settings=1"><mt:trans phrase="Settings"></button>
-</mt:if>
-</mt:if>
-</td>
-</tr>
+  <mt:var name="settings[status]" setvar="plugin_status">
+  <mt:if name="workspace_id">
+    <mt:unless name="plugin_status">
+      <mt:setvar name="plugin_visible" value="0">
+    </mt:unless>
+  </mt:if>
+  <mt:if name="plugin_visible">
+    <mt:var name="settings[id]" setvar="plugin_id">
+    <mt:unless name="plugin_id">
+      <mt:var name="settings[component]" lower_case="1" setvar="plugin_id">
+    </mt:unless>
+    <mt:var name="settings[upgrade]" setvar="upgrade">
+    <mt:var name="settings[upgrade_scheme]" setvar="upgrade_scheme">
+    <tr id="line_<mt:var name="plugin_id" escape>" <mt:if name="upgrade">class="active-cell"<mt:elseif name="upgrade_scheme">class="active-cell"</mt:if>>
+    <mt:unless name="workspace_id">
+    <th>
+      <label class="custom-control custom-checkbox">
+        <input id="box_<mt:var name="plugin_id" escape>" type="checkbox" class="custom-control-input" name="plugin_id[]" value="<mt:var name="plugin_id" escape>">
+        <span class="custom-control-indicator"></span>
+        <span class="custom-control-description"></span>
+      </label>
+    </th>
+    </mt:unless>
+    <td>
+    <div>
+    <mt:var name="settings[label]" trans="$__key__">
+    <mt:if name="plugin_status">
+    <i class="fa fa-check-square" aria-hidden="true"></i>
+    <span class="sr-only">(<mt:trans phrase="Enabled">)</span>
+    </mt:if>
+    </div>
+    <mt:unless name="workspace_id">
+    <div class="plugin-switch"><mt:if name="plugin_status">
+      <a class="disable-link" href="<mt:var name="script_uri">?__mode=manage_plugins&amp;_type=disable&amp;plugin_id[]=<mt:var name="plugin_id" escape>&amp;magic_token=<mt:var name="magic_token">"><mt:trans phrase="Disable this plugin"></a>
+    <mt:else>
+      <a class="enable-link" href="<mt:var name="script_uri">?__mode=manage_plugins&amp;_type=enable&amp;plugin_id[]=<mt:var name="plugin_id" escape>&amp;magic_token=<mt:var name="magic_token">"><mt:trans phrase="Enable this plugin"></a>
+    </mt:if>
+    </div>
+    </mt:unless>
+    </td>
+    <td>
+    <div><mt:var name="settings[description]" trans="$__key__"></div>
+    <div><mt:trans phrase="Creator"> : <mt:if name="$settings[author_link]">
+      <a target="_blank" href="<mt:var name="settings[author_link]" trans="$__key__">">
+    </mt:if>
+      <mt:var name="$settings[author]" trans="$__key__">
+    <mt:if name="$settings[author_link]">
+      </a>
+    </mt:if>
+    <mt:if name="$settings[doc_link]">
+      <a target="_blank" href="<mt:var name="settings[doc_link]">" class="badge badge-default plugin-doc-link"><mt:trans phrase="Document"></a>
+    </mt:if>
+    </div>
+    </td>
+    <td>
+    <mt:var name="settings[version]" trans="$__key__">
+    <mt:if name="upgrade">
+    &nbsp; (<mt:trans phrase="Upgrade">)
+    </mt:if>
+    </td>
+    <td class="very-short">
+    <mt:if name="plugin_status">
+    <mt:if name="workspace_id">
+    <mt:var name="settings[cfg_space]" setvar="has_config">
+    <mt:else>
+    <mt:var name="settings[cfg_system]" setvar="has_config">
+    </mt:if>
+    <mt:if name="has_config">
+      <button type="button"
+      class="btn btn-secondary"
+      data-toggle="modal" data-target="#modal"
+      data-href="<mt:var name="script_uri">?__mode=manage_plugins&amp;workspace_id=<mt:var name="workspace_id">&amp;plugin_id=<mt:var name="plugin_id">&amp;edit_settings=1"><mt:trans phrase="Settings"></button>
+    </mt:if>
+    </mt:if>
+    </td>
+    </tr>
+  </mt:if>
 </mt:loop>
 <tfoot>
   <mt:var name="table_header">

@@ -2653,20 +2653,23 @@ class Prototype {
         $workspace = is_object( $workspace ) ? $workspace : $app->workspace();
         if (!$user ) return false;
         $orig_action = $action ? $action : $model;
-        if (!$action && strpos( $model, '_' ) !== false )
+        $sys_perms = $app->permissions;
+        if (!$action && strpos( $model, '_' ) !== false && !in_array( $model, $sys_perms ) ) {
             list( $action, $model ) = explode( '_', $model );
-        if ( ( $model == 'rebuild' || $model == 'plugins' ||
-               $model == 'objects' ) && is_object( $action ) ) {
+        }
+        if ( in_array( $model, $sys_perms ) && is_object( $action ) ) {
             if ( $action->_model == 'workspace' ) {
                 $workspace = $action;
             }
         }
-        $table = $app->get_table( $model );
-        if ( $model !== 'rebuild' && $model !== 'plugins' && $model !== 'objects'
-            && $model !== 'livepreview' ) {
+        $table = $model ? $app->get_table( $model ) : null;
+        if (! $model ) {
+            $model = $action;
+        }
+        if ( !in_array( $model, $sys_perms ) ) {
             if (! $workspace && $obj && $obj->has_column( 'workspace_id' )
                 && ( $app->mode == 'view' && $app->param( '_type' ) != 'list' ) ) {
-                if ( $table->space_child ) {
+                if ( $table && $table->space_child ) {
                     return false;
                 }
             } else if ( $workspace && $obj && $obj->id &&
@@ -2677,13 +2680,12 @@ class Prototype {
             }
         }
         if ( $model === 'superuser' ) return $user->is_superuser;
-            if ( $model !== 'rebuild' && $model !== 'plugins'
-                && $model !== 'objects' && $model !== 'livepreview' ) {
+            if ( !in_array( $model, $sys_perms ) ) {
             if ( $app->mode !== 'list_action' && $app->mode !== 'get_thumbnail' ) {
                 if (!$workspace && ( $obj && ! $obj->workspace ) ) {
-                    if ( $table->space_child && $action === 'edit' ) {
+                    if ( $table && $table->space_child && $action === 'edit' ) {
                         return false;
-                    } else if ( $action === 'list' && !$table->display_system ) {
+                    } else if ( $table && $action === 'list' && !$table->display_system ) {
                         return false;
                     }
                 }
@@ -2712,13 +2714,11 @@ class Prototype {
         } else {
             $perms = isset( $permissions[0] ) ? $permissions[0] : [];
         }
-        $_perms = $app->permissions();
-        if ( $orig_action && in_array( $orig_action, $_perms ) ) {
+        if ( $orig_action && in_array( $orig_action, $perms ) ) {
             if ( $workspace ) {
                 return in_array( $orig_action, $perms );
             } else {
-                return isset( $permissions[0] )
-                    && in_array( $orig_action, $permissions[0] ) ? true : false;
+                return true;
             }
         } else if ( $action == 'list' ) {
             $name = 'can_list_' . $model;

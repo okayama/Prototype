@@ -1590,6 +1590,8 @@ $('#__delete').click(function(){
     $('#edit-form-main').submit();
     return false;
 });
+<mt:if name="request.id">
+  <mt:if name="model" eq="table">
 $('#__export').click(function(){
     if(! confirm('<mt:trans phrase="Are you sure you want to export %s?" params="$label">')){
         return false;
@@ -1598,6 +1600,8 @@ $('#__export').click(function(){
     $('#edit-form-main').submit();
     return false;
 });
+  </mt:if>
+</mt:if>
 $('#modal').on('shown.bs.modal', function(event) {
     $('#modal-iframe').focus();
 });
