@@ -87,6 +87,7 @@ class PTViewer {
                 $workspace = $this->get_workspace_from_url( $app, $request_uri );
             }
             if ( $workspace ) {
+                $app->stash( 'workspace', $workspace );
                 $ctx->stash( 'workspace', $workspace );
                 $ctx->include_paths[ $workspace->site_path ] = true;
             }
@@ -103,10 +104,13 @@ class PTViewer {
             }
         }
         if ( $workspace ) {
+            $app->stash( 'workspace', $workspace );
             $ctx->vars['appname'] = $workspace->name;
+            $ctx->vars['app_name'] = $workspace->name; //
             $ctx->include_paths[ $workspace->site_path ] = true;
         } else {
             $ctx->vars['appname'] = $app->appname;
+            $ctx->vars['app_name'] = $app->appname; //
         }
         $object_id = (int) $url->object_id;
         $model = $url->model;
