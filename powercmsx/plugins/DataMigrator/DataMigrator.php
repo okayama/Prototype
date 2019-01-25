@@ -60,7 +60,7 @@ class DataMigrator extends PTPlugin {
 
     function data_migration ( $app ) {
         $app->validate_magic();
-        $workspace = $app->workspace() ? $workspace : null;
+        $workspace = $app->workspace() ? $app->workspace() : null;
         $import_model = $app->param( 'import_model' );
         if (! $app->can_do( $import_model, 'create', null, $workspace ) ) {
             return $app->error( 'Permission denied.' );
@@ -139,8 +139,8 @@ class DataMigrator extends PTPlugin {
                 if ( is_string( $import_files ) ) $import_files = [ $import_files ];
                 $this->import_format = $import_format;
                 $scheme = $app->get_scheme_from_db( $import_model );
-                if ( method_exists( $component, 'start_migration' ) ) {
-                    $component->start_migration( $app, $this, $import_files );
+                if ( method_exists( $component, 'init_migration' ) ) {
+                    $component->init_migration( $app, $this, $import_files );
                 }
                 echo str_pad( '', 4096 ) . "\n";
                 // ob_end_flush();

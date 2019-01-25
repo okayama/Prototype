@@ -12,7 +12,7 @@ class NORENImporter extends PTPlugin {
         parent::__construct();
     }
 
-    // function start_migration ( $app, $migrator, &$import_files ) {
+    // function init_migration ( $app, $migrator, &$import_files ) {
     // }
 
     function import_noren ( $app, $import_files, $session ) {
