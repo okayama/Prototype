@@ -2083,9 +2083,9 @@ class PTTags {
             }
             $ctx->vars[ $k ] = $v;
         }
-        if ( stripos( $tmpl, 'setvartemplate' ) !== false ) {
-            $ctx->compile( $tmpl, false );
-        }
+        // if ( stripos( $tmpl, 'setvartemplate' ) !== false ) {
+        //     $ctx->compile( $tmpl, false );
+        // }
         $build = $ctx->build( $tmpl );
         foreach ( $old_vars as $k => $v ) {
             $ctx->vars[ $k ] = $v;

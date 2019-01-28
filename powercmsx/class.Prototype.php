@@ -29,7 +29,7 @@ spl_autoload_register( '\prototype_auto_loader' );
 class Prototype {
 
     public static $app = null;
-    public    $app_version   = '1.007';
+    public    $app_version   = '1.008';
     public    $id            = 'Prototype';
     public    $name          = 'Prototype';
     public    $db            = null;
@@ -8061,9 +8061,9 @@ class Prototype {
                             }
                         } else {
                             $ctx->stash( 'current_object', $obj );
-                            if ( stripos( $tmpl, 'setvartemplate' ) !== false ) {
-                                $ctx->compile( $tmpl, false );
-                            }
+                            // if ( stripos( $tmpl, 'setvartemplate' ) !== false ) {
+                            //     $ctx->compile( $tmpl, false );
+                            // }
                             $data = $app->tmpl_markup === 'mt' ? $ctx->build( $tmpl )
                                                                : $app->build( $tmpl, $ctx );
                             $old_hash = $ui->md5;

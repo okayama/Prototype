@@ -1,7 +1,7 @@
 {
     "label"    : "URL Map",
     "plural"   : "URL Maps",
-    "version"  : "1.9",
+    "version"  : "2.0",
     "auditing" : 1,
     "display_system" : 1,
     "sortable" : 1,

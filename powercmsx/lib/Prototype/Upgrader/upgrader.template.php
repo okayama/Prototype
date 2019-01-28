@@ -5,7 +5,7 @@ class upgrader_template {
     public $upgrade_functions = [
         'set_compile_cache' => [
             'method' => 'set_compile_cache',
-            'version_limit' => 1.6
+            'version_limit' => 1.7
         ]
     ];
 

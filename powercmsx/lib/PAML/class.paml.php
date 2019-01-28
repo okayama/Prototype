@@ -3,7 +3,7 @@
 /**
  * PAML : PHP Alternative Markup Language
  *
- * @version    1.02
+ * @version    1.2
  * @package    PAML
  * @author     Alfasado Inc. <webmaster@alfasado.jp>
  * @copyright  2019 Alfasado Inc. All Rights Reserved.
@@ -21,10 +21,10 @@ if (! defined( 'EP' ) ) {
 /**
  * PAMLVSN = Compile format version.
  */
-define( 'PAMLVSN', '1.1' );
+define( 'PAMLVSN', '1.2' );
 
 class PAML {
-    private   $version       = 1.1;
+    private   $version       = 1.2;
 
 /**
  * $prefix        : Tag prefix.
@@ -1017,12 +1017,9 @@ class PAML {
 
     function block_literal ( $args, &$content, $ctx, &$repeat, $counter ) {
         if (!$counter ) return;
-        $request_cache = $this->request_cache;
-        $this->request_cache = false;
         if ( isset( $args['nocache'] ) && ! $ctx->caching ) return $content;
         $var = isset( $ctx->literal_vars[ $args['index'] ] )
              ? $ctx->literal_vars[ $args['index'] ] : '';
-        //$this->request_cache = $request_cache;
         return $var;
     }
 
@@ -1769,6 +1766,9 @@ class PAML {
                 $block = str_replace( '%' . $id, '<', $block );
                 $block = str_replace( $id . '%', '>', $block );
             }
+            if ( stripos( $block, 'ignore>' ) !== false ) {
+                $block = preg_replace( '/<mt:{0,1}ignore.*?>.*?<\/mt:{0,1}ignore>/si', '', $block );
+            }
             $this->literal_vars[] = $block;
         }
         $this->request_cache = $request_cache;
@@ -2176,7 +2176,14 @@ class PAML {
                   . "old_params;\${$_pfx}local_params=&\$this->local_params;\${$_pfx}"
                   . "old_vars=&\$this->old_vars;\${$_pfx}local_vars=&\$this->local_vars;?>";
             $out = $vars . $out;
-            if ( $compiled ) return $out;
+            if ( $compiled ) {
+                if (! empty( $this->literal_vars ) ) {
+                    $meta = "\$literal_old_{$_pfx}=\$this->literal_vars;";
+                    $meta .= '$this->literal_vars=' . var_export( $this->literal_vars, true );
+                    $out ="<?php {$meta};?>{$out}<?php \$this->literal_vars=\$literal_old_{$_pfx}?>";
+                }
+                return $out;
+            }
             $require = '';
             if (!$this->in_build && !$this->force_compile && $this->compile_key )
           {

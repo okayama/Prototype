@@ -146,9 +146,9 @@ class PTPublisher {
                 $ctx->vars['theme_static'] = $app->theme_static;
                 $ctx->vars['current_archive_type'] = $ctx->stash( 'current_archive_type' );
                 $ctx->vars['current_archive_url'] = $url->url;
-                if ( stripos( $tmpl, 'setvartemplate' ) !== false ) {
-                    $ctx->compile( $tmpl, false );
-                }
+                // if ( stripos( $tmpl, 'setvartemplate' ) !== false ) {
+                //     $ctx->compile( $tmpl, false );
+                // }
                 $callback = ['name' => 'pre_publish', 'model' => 'template' ];
                 $app->run_callbacks( $callback, 'template', $tmpl );
                 $data = $app->tmpl_markup === 'mt' ? $ctx->build( $tmpl )
