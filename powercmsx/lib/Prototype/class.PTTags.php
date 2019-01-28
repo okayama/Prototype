@@ -1513,8 +1513,8 @@ class PTTags {
         while ( $parent !== null ) {
             if ( $parent_id = $parent->parent_id ) {
                 $parent_id = (int) $parent_id;
-                $parent = $app->db->model( $current_context )->load_iter
-                    ( $parent_id, [], '', "id,{$column}" );
+                $parent = $app->db->model( $current_context )->get_by_key
+                    ( $parent_id, [], "id,{$column}" );
                 if ( $parent->id ) {
                     array_unshift( $paths, $parent->$column );
                 } else {
