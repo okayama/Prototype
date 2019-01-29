@@ -357,7 +357,7 @@ class PTUtil {
         $excludes = ['id', 'uuid', 'rev_type', 'rev_object_id', 'rev_changed', 'rev_diff',
                      'created_on', 'modified_on', 'created_by', 'modified_by', 'password',
                      'rev_note', 'user_id', 'status', 'previous_owner', 'published_on',
-                     'compiled'];
+                     'compiled', 'cache_key'];
         $obj->_relations = $obj->_relations
                           ? $obj->_relations : $app->get_relations( $obj );
         if ( $obj->_relations && $original->_relations ) {
