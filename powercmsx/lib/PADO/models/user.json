@@ -1,13 +1,14 @@
 {
     "label"    : "User",
     "plural"   : "Users",
-    "version"  : "1.3",
+    "version"  : "1.4",
     "primary"  : "name",
     "display_system": 1,
     "order"    : 80,
     "auditing" : 1,
     "menu_type": 5,
     "has_status": 1,
+    "default_status": 2,
     "column_defs": {
         "id": {
             "type": "int",
