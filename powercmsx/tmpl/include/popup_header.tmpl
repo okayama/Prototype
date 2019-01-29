@@ -6,12 +6,8 @@
     <meta name="description" content="">
     <meta name="author" content="">
     <link rel="icon" href="favicon.ico">
-
     <title><mt:if name="html_title"><mt:var name="html_title" escape><mt:else><mt:var name="page_title" escape></mt:if><mt:if name="workspace_id"> | <mt:var name="workspace_name" escape></mt:if> | <mt:getoption key="appname" escape></title>
-
-    <!-- Bootstrap core CSS -->
     <link href="assets/css/bootstrap.min.css" rel="stylesheet">
-    <!-- Custom styles for this template -->
     <script src="assets/js/jquery-3.2.1.min.js"></script>
     <script src="assets/js/tether.min.js"></script>
     <script src="assets/js/bootstrap.min.js"></script>
@@ -23,13 +19,13 @@
     <!-- CSS to style the file input field as button and adjust the Bootstrap progress bars -->
     <link rel="stylesheet" href="assets/css/jquery.fileupload.css">
     <style type="text/css">
-      .nav-top,.brand-prototype{ background-color: <mt:getoption key="barcolor"> !important; color: <mt:getoption key="bartextcolor"> !important; }
+      .nav-top,.brand-prototype, .footer{ background-color: <mt:getoption key="barcolor"> !important; color: <mt:getoption key="bartextcolor"> !important; }
       <mt:if name="workspace_barcolor"><mt:if name="workspace_bartextcolor">
       .brand-workspace, .workspace-bar{ background-color: <mt:var name="workspace_barcolor"> !important; color: <mt:var name="workspace_bartextcolor"> !important; }
       </mt:if>
       </mt:if>
       <mt:if name="user_control_border">
-      .form-control, .relation_nestable_list, .custom-control-indicator, .mce-tinymce, .btn-secondary { border: 1px solid <mt:var name="user_control_border" escape> !important }
+      .form-control, .btn-secondary { border: 1px solid <mt:var name="user_control_border" escape> !important }
       </mt:if>
     </style>
   </head>

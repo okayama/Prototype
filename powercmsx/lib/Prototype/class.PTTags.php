@@ -3808,17 +3808,21 @@ class PTTags {
                     $terms['display_system'] = 1;
                 }
             }
+            $table_model = $app->db->model( 'table' );
+            $select_cols = isset( $args['cols'] ) ? $args['cols'] : '*';
+            if ( isset( $args['cols'] ) ) {
+                $select_cols = $this->select_cols( $app, $table_model, $select_cols );
+            }
             $args = ['sort' => 'order'];
             $cache_args = $args;
             $cache_args['extra'] = $extra;
-            $cols = '*';
             $app->init_callbacks( 'table', 'pre_load_objects' );
             $callback =
                 ['name' => 'pre_load_objects', 'model' => 'table', 'args' => $orig_args ];
-            $app->run_callbacks( $callback, 'table', $terms, $args, $cols, $extra );
+            $app->run_callbacks( $callback, 'table', $terms, $args, $select_cols, $extra );
             $cache_key = $app->make_cache_key( $terms, $cache_args, 'table' );
             $tables = $app->stash( $cache_key ) ? $app->stash( $cache_key )
-                    : $app->db->model( 'table' )->load( $terms, $args, $cols, $extra );
+                    : $table_model->load( $terms, $args, $select_cols, $extra );
             $app->stash( $cache_key, $tables );
             if (! is_array( $tables ) || empty( $tables ) ) {
                 $app->stash( $cache_key, 1 );
