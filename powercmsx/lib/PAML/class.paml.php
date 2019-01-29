@@ -1732,6 +1732,7 @@ class PAML {
         $request_cache = $this->request_cache;
         $this->request_cache = false;
         list( $tag_s, $tag_e, $h_sta, $h_end, $pfx ) = $this->quoted_vars;
+        list( $ldelim, $rdelim ) = [$this->html_ldelim, $this->html_rdelim];
         if (!$kind  ) $tagname = 'literal';
         else $tagname = $kind === 1 ? 'setvartemplate' : 'nocache';
         $regex = "/(($tag_s|<)$pfx:{0,1}{$tagname}.*?($tag_e|>))(.*?)"
@@ -1766,6 +1767,8 @@ class PAML {
                 $block = str_replace( '%' . $id, '<', $block );
                 $block = str_replace( $id . '%', '>', $block );
             }
+            $block = str_replace( $ldelim, '<', $block );
+            $block = str_replace( $rdelim, '>', $block );
             if ( stripos( $block, 'ignore>' ) !== false ) {
                 $block = preg_replace( '/<mt:{0,1}ignore.*?>.*?<\/mt:{0,1}ignore>/si', '', $block );
             }
