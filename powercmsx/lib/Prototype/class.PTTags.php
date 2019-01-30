@@ -1514,7 +1514,7 @@ class PTTags {
             if ( $parent_id = $parent->parent_id ) {
                 $parent_id = (int) $parent_id;
                 $parent = $app->db->model( $current_context )->get_by_key
-                    ( $parent_id, [], "id,{$column}" );
+                    ( $parent_id, [], "id,{$column},parent_id" );
                 if ( $parent->id ) {
                     array_unshift( $paths, $parent->$column );
                 } else {
