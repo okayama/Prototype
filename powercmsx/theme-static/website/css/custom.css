@@ -403,7 +403,7 @@ pre {
       width: 100% !important;
     }
 
-    .form-table thead,tbody,tfoot,tr,th,td {
+    .form-table thead,tbody,tfoot,.form-table tr,.form-table th,.form-table td {
       display: block !important;
       width: 100% !important;
       text-align: left !important;
