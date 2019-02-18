@@ -240,6 +240,18 @@ $('#filter-select-delete-button').click(function(){
         $('#this_mode').val( 'list' );
         $('#_filter_id').val('');
         $('#filter-select-delete-button').hide();
+        var loc = $(location).attr('href');
+        if ( loc.indexOf('?') == -1 ) {
+            loc = '<mt:var name="script_uri">?__mode=view&_model=<mt:var name="request._model">&_type=<mt:var name="request._type">';
+            <mt:if name="request.workspace_id">
+            loc += '&workspace_id=<mt:var name="request.workspace_id">';
+            </mt:if>
+            loc += '&_detach_filter=1';
+            location.href = loc;
+        } else {
+            loc += '&_detach_filter=1';
+            location.href = loc;
+        }
     },
     "json"
     );
