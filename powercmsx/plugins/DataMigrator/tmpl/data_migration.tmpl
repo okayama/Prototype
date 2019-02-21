@@ -195,13 +195,7 @@ $('#import_format').change(function(){
         });
         var cnt = 0;
         if ( rb_hide ) {
-            $('input[name="import_model"]').each(function(){
-                if ( cnt == 0 ) {
-                    $(this).prop('checked', true);
-                    break;
-                }
-                cnt++;
-            });
+            $('input[name="import_model"]:first-of-type').prop('checked', true);
         }
     }
     current_select = $(this).val();
