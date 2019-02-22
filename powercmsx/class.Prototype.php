@@ -6933,7 +6933,8 @@ class Prototype {
                 if ( $primary->id ) $primary->remove();
             } else {
                 if ( $primary->id ) {
-                    if (! $app->param( 'select_system_filters' ) ) {
+                    if (! $app->param( '_filter_id' )
+                     && ! $app->param( 'select_system_filters' ) ) {
                         $app->param( '_filter', $model );
                         if ( $primary->object_id ) {
                             $app->param( '_filter_id', $primary->object_id );
