@@ -1,4 +1,7 @@
 <?php
+if ( isset( $_SERVER['REMOTE_ADDR'] ) ) {
+    exit();
+}
 require_once( 'class.Prototype.php' );
 $app = new Prototype();
 $app->logging = true;
