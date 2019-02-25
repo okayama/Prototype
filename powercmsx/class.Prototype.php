@@ -8069,7 +8069,6 @@ class Prototype {
                                                                : $app->build( $tmpl, $ctx );
                             $old_hash = $ui->md5;
                             $hash = md5( $data );
-                            $ui->md5( $hash );
                             $app->ctx->vars = $cache_vars;
                             $app->ctx->local_vars = $cache_local_vars;
                             $app->ctx->__stash = $cache_stash;
@@ -8085,6 +8084,7 @@ class Prototype {
                                 }
                             }
                             if ( $fmgr->put( $file_path, $data )!== false ) {
+                                $ui->md5( $hash );
                                 $ui->is_published( 1 );
                             }
                         }
