@@ -7927,8 +7927,8 @@ class Prototype {
                             }
                             return $file_path;
                         }
-                        $ui->md5( $hash );
                         if ( $fmgr->put( $file_path, $data ) !== false ) {
+                            $ui->md5( $hash );
                             $ui->is_published( 1 );
                             $ui->publish_file( 1 );
                         } else {
@@ -8086,6 +8086,9 @@ class Prototype {
                             if ( $fmgr->put( $file_path, $data )!== false ) {
                                 $ui->md5( $hash );
                                 $ui->is_published( 1 );
+                            } else {
+                                $ui->is_published( 0 );
+                                $ui->publish_file( 0 );
                             }
                         }
                     }
