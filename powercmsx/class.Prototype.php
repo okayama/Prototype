@@ -29,7 +29,7 @@ spl_autoload_register( '\prototype_auto_loader' );
 class Prototype {
 
     public static $app = null;
-    public    $app_version   = '1.010';
+    public    $app_version   = '1.011';
     public    $id            = 'Prototype';
     public    $name          = 'Prototype';
     public    $db            = null;
@@ -5921,11 +5921,11 @@ class Prototype {
         }
     }
 
-    function init_tags () {
+    function init_tags ( $force = false ) {
         $app = $this;
-        if ( $app->init_tags ) return;
+        if ( $app->init_tags && !$force ) return;
         $core_tags = $app->core_tags;
-        $core_tags->init_tags();
+        $core_tags->init_tags( $force );
     }
 
     function build_path_with_map ( $obj, $mapping, $table, $ts = null, $url = false ) {

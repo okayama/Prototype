@@ -96,6 +96,7 @@ class PTTheme {
             $template_map = [];
             $uuid_map = [];
             $rebuilds = [];
+            $templates_installed = [];
             foreach ( $views as $uuid => $view ) {
                 $urlmappings = isset( $view['urlmappings'] ) ? $view['urlmappings'] : [];
                 $form = isset( $view['form'] ) ? $view['form'] : [];
@@ -147,6 +148,7 @@ class PTTheme {
                     $new_template->id = $old_id;
                 }
                 $new_template->save();
+                $templates_installed[] = $new_template;
                 if ( $old_id && $old_template ) {
                     $old_template->rev_type( 1 );
                     $old_template->rev_object_id( $old_id );
@@ -336,6 +338,10 @@ class PTTheme {
                 $workspace = $app->workspace();
                 $workspace->last_update( time() );
                 $workspace->save();
+            }
+            $app->init_tags( true );
+            foreach ( $templates_installed as $template ) {
+                $template->save();
             }
             $theme_label = isset( $theme['label'] ) ? $app->translate( $theme['label'] ) : $theme_id;
             $msg = $app->translate(

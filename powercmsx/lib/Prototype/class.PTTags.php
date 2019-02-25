@@ -4,14 +4,14 @@ use Michelf\Markdown;
 
 class PTTags {
 
-    function init_tags () {
+    function init_tags ( $force = false ) {
         $app = Prototype::get_instance();
-        if ( $app->init_tags ) return;
+        if ( $app->init_tags &&! $force ) return;
         $ctx = $app->ctx;
         $ctx->stash( 'workspace', $app->workspace() );
         $cache_key = 'template_tags__c';
         $cache = $app->get_cache( $cache_key );
-        if ( $cache ) {
+        if ( $cache && ! $force ) {
             $r_tags = $cache['tags'];
             $blockmodels = $cache['blockmodels'];
             $function_relations = $cache['function_relations'];
