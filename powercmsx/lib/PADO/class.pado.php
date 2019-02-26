@@ -3,7 +3,7 @@
 /**
  * PADO : PHP Alternative Database Object
  *
- * @version    1.2
+ * @version    1.4
  * @package    PADO
  * @author     Alfasado Inc. <webmaster@alfasado.jp>
  * @copyright  2019 Alfasado Inc. All Rights Reserved.
@@ -17,7 +17,7 @@ if (! defined( 'PADODIR' ) ) {
 
 class PADO {
 
-    private $version     = 1.3;
+    private $version     = 1.4;
 
     public  static $pado = null;
     public  $driver      = 'mysql';
@@ -724,7 +724,9 @@ class PADOBaseModel {
                        '_model'     => true, '_table'     => true,
                        '_pado'      => true, '_id_column' => true,
                        '_colprefix' => true, '_scheme'    => true,
-                       '_driver'    => true, '_engine'    => true
+                       '_driver'    => true, '_engine'    => true,
+                       '_original'  => true, '_relations' => true,
+                       '_meta'      => true, '_insert' => true
                      ];
 
 /**
