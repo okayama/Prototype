@@ -288,8 +288,10 @@ class Prototype {
         if ( strpos( $request_uri, '?' ) ) {
             list( $request, $this->query_string ) = explode( '?', $request_uri );
         }
+        $path_part = '';
         if ( preg_match( "!(^.*?)([^/]*$)!", $request, $mts ) ) {
-            list ( $d, $this->path, $this->script ) = $mts;
+            list ( $d, $path_part, $this->script ) = $mts;
+            if (! $this->path ) $this->path = $path_part;
         }
         $this->document_root = $this->document_root ? $this->document_root
                                                     : $_SERVER['DOCUMENT_ROOT'];
@@ -301,8 +303,15 @@ class Prototype {
         if ( $mode = $this->param( '__mode' ) ) {
             $this->mode = $mode;
         }
-        $search = preg_quote( $this->document_root, '/' );
-        $path = preg_replace( "/^$search/", '', __DIR__ ) . DS;
+        $path = $this->path;
+        if (! $path ) {
+            if ( stripos( $this->document_root, __DIR__ ) === 0 ) {
+                $search = preg_quote( $this->document_root, '/' );
+                $path = preg_replace( "/^$search/", '', __DIR__ ) . DS;
+            } else if ( isset( $_SERVER['REQUEST_URI'] ) ) {
+                $path = $_SERVER['REQUEST_URI'] . DS;
+            }
+        }
         $path = str_replace( DS, '/', $path );
         $this->path = $path;
         $this->admin_url = $this->admin_url ? $this->admin_url : $this->base . $this->path . 'index.php';
@@ -2554,13 +2563,13 @@ class Prototype {
         $app->stash( $cache_key, $urlmapping );
         if (! empty( $urlmapping ) ) {
             $urlmapping = $urlmapping[0];
+            if ( $has_map ) return $urlmapping;
             if ( $obj->_model === 'template' ) {
                 $ui = $app->db->model( 'urlinfo' )->get_by_key( [
                       'urlmapping_id' => $urlmapping->id,
                       'delete_flag' => 0, 'class' => 'archive' ] );
                 return $ui->url;
             }
-            if ( $has_map ) return $urlmapping;
             if ( $obj->has_column( 'rev_type' ) && $obj->rev_type && $obj->rev_object_id ) {
                 $rev_object_id = (int)$obj->rev_object_id;
                 $obj = $app->db->model( $obj->_model )->load( $rev_object_id );
