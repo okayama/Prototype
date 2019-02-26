@@ -1574,7 +1574,6 @@ class PTUtil {
     public static function send_mail ( $to, $subject, $body, $headers,
         &$error = '', $logging = true ) {
         $app = Prototype::get_instance();
-        mb_internal_encoding( $app->encoding );
         $from = isset( $headers['From'] )
             ? $headers['From'] : $app->get_config( 'system_email' );
         if ( strpos( $to, ',' ) !== false ) {
@@ -1599,9 +1598,18 @@ class PTUtil {
         if (!$app->is_valid_email( $from, $error ) ) {
             return false;
         }
+        mb_internal_encoding( $app->encoding );
+        if ( $app->mail_language ) {
+            mb_language( $app->mail_language );
+        }
         unset( $headers['From'] );
         $options = "From: {$from}\r\n";
         foreach ( $headers as $key => $value ) {
+            if ( $app->mail_encording ) {
+                $value = mb_encode_mimeheader( $value, $app->mail_encording );
+            } else {
+                $value = mb_encode_mimeheader( $value );
+            }
             $key = ucwords( $key );
             if ( $key == 'Cc' || $key == 'Bcc' ) {
                 $addrs = [];
@@ -1627,7 +1635,8 @@ class PTUtil {
                 $options .= "{$key}: {$value}\r\n";
             }
         }
-        return mb_send_mail( $to, $subject, $body, $options );
+        $additional = $app->mail_return_path ? '-f' . $app->mail_return_path : null;
+        return mb_send_mail( $to, $subject, $body, $options, $additional );
     }
 
     public static function convert_breaks ( $str = '' ) {

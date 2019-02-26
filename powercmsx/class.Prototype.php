@@ -120,6 +120,9 @@ class Prototype {
     public    $request_method;
     public    $current_magic;
     public    $preview_redirect = true;
+    public    $mail_return_path = '';
+    public    $mail_encording = '';
+    public    $mail_language = 'ja';
     public    $check_int_null = false;
     public    $upload_size_limit = 5242880;
     public    $upload_max_pixel = 0;
