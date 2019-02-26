@@ -325,23 +325,8 @@ class PTTheme {
             if ( $component !== null && method_exists( $component, 'post_import_objects' ) ) {
                 $component->post_import_objects( $app, $imported_objects, $workspace_id, $this );
             }
-            if ( count( $rebuilds ) ) {
-                foreach ( $rebuilds as $rebuild ) {
-                    $app->publish_obj( $rebuild, null, false );
-                }
-            }
             if ( $component !== null && method_exists( $component, 'post_apply_theme' ) ) {
                 $component->post_apply_theme( $app, $imported_objects, $workspace_id, $this );
-            }
-            $app->set_config( ['theme' => $theme_id ], $workspace_id );
-            if ( $workspace_id ) {
-                $workspace = $app->workspace();
-                $workspace->last_update( time() );
-                $workspace->save();
-            }
-            $app->init_tags( true );
-            foreach ( $templates_installed as $template ) {
-                $template->save();
             }
             $theme_label = isset( $theme['label'] ) ? $app->translate( $theme['label'] ) : $theme_id;
             $msg = $app->translate(
@@ -351,6 +336,26 @@ class PTTheme {
                         'category' => 'theme',
                         'model'    => 'template',
                         'level'    => 'info'] );
+            $app->init();
+            $app->caching = false;
+            $app->db->caching = false;
+            $app->init_tags( true );
+            foreach ( $templates_installed as $template ) {
+                $template->compiled('');
+                $template->save();
+            }
+            $app->get_scheme_from_db( 'urlinfo' );
+            if ( count( $rebuilds ) ) {
+                foreach ( $rebuilds as $rebuild ) {
+                    $app->publish_obj( $rebuild, null, false );
+                }
+            }
+            $app->set_config( ['theme' => $theme_id ], $workspace_id );
+            if ( $workspace_id ) {
+                $workspace = $app->workspace();
+                $workspace->last_update( time() );
+                $workspace->save();
+            }
             $return_args = "__mode=manage_theme&apply_theme=1";
             if ( $workspace_id ) {
                 $return_args .= '&workspace_id=' . $workspace_id;
