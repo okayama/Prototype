@@ -213,9 +213,13 @@ class PTUpgrader {
                 $app->redirect( $app->admin_url );
             }
         } else {
-            $search = preg_quote( $app->document_root, '/' );
-            $path = $app->path();
-            $path = preg_replace( "/^$search/", '', $path );
+            $path = $app->path;
+            if (! $path ) {
+                $path = $app->path();
+                $search = preg_quote( $app->document_root, '/' );
+                $path = preg_replace( "/^$search/", '', $path );
+            }
+            $path = rtrim( $path, DS );
             $_path = str_replace( DS, '/', $path );
             $ctx->vars['site_url'] = $app->base . $_path . '/site/';
             $ctx->vars['site_path'] = $app->document_root . $path . DS . 'site';

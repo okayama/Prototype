@@ -79,6 +79,7 @@ class Prototype {
     public    $class_paths   = [];
     public    $components    = [];
     public    $plugin_dirs   = [];
+    public    $theme_dirs    = [];
     public    $cfg_settings  = [];
     public    $plugin_switch = [];
     public    $modules       = [];
@@ -642,16 +643,19 @@ class Prototype {
             $plugin_objs[ $setting->key ] = $setting;
         }
         $plugin_paths = $this->plugin_paths;
+        $php_classes = [];
+        $plugin_dirs = [];
         foreach ( $plugin_paths as $dir ) {
             $items = scandir( $dir, $this->plugin_order );
             foreach ( $items as $plugin ) {
                 if ( strpos( $plugin, '.' ) === 0 ) continue;
+                if ( isset( $plugin_dirs[ strtolower( $plugin ) ] ) ) continue;
+                $plugin_dirs[ strtolower( $plugin ) ] = true;
                 $plugin = $dir . DS . $plugin;
                 if (! is_dir( $plugin ) ) continue;
                 $plugins = scandir( $plugin, $this->plugin_order );
                 $register = false;
                 $component = null;
-                $php_classes = [];
                 foreach ( $plugins as $f ) {
                     if ( strpos( $f, '.' ) === 0 ) continue;
                     $_plugin = $plugin . DS . $f;
@@ -7953,6 +7957,12 @@ class Prototype {
                         }
                         $ui->is_published( 0 );
                     } else {
+                        if (! $template && $urlmapping && $urlmapping->id &&
+                            $urlmapping->template_id ) {
+                            $template = $app->db->model('template')->load(
+                                (int) $urlmapping->template_id );
+                            if (! $template ) return;
+                        }
                         $tmpl = $template->text;
                         $compiled = $template->compiled;
                         $cache_key = $template->cache_key;

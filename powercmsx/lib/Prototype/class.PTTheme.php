@@ -8,49 +8,57 @@ class PTTheme {
         if (! $app->can_do( 'import_objects' ) ) {
             return $app->error( 'Permission denied.' );
         }
-        $themes_dir = dirname( $app->pt_path ) . DS . 'themes';
-        $items = scandir( $themes_dir );
+        $app->theme_dirs[] = dirname( $app->pt_path ) . DS . 'themes';
+        $theme_dirs = $app->theme_dirs;
         $theme_loop = [];
         $themes = [];
-        foreach ( $items as $theme ) {
-            if ( strpos( $theme, '.' ) === 0 ) continue;
-            $json = $themes_dir . DS . $theme . DS . 'theme.json';
-            if (! file_exists( $json ) ) continue;
-            $configs = json_decode( file_get_contents( $json ), true );
-            $lang = $app->language;
-            $locale = $themes_dir . DS . $theme . DS . 'locale' . DS . $lang . '.json';
-            if ( file_exists( $locale ) ) {
-                $map = json_decode( file_get_contents( $locale ), true );
-                if ( isset( $app->dictionary[ $lang ] ) ) {
-                    $app->dictionary[ $lang ] = array_merge( $app->dictionary[ $lang ], $map );
+        $theme_ids = [];
+        foreach ( $theme_dirs as $themes_dir ) {
+            $items = scandir( $themes_dir );
+            foreach ( $items as $theme ) {
+                if ( strpos( $theme, '.' ) === 0 ) continue;
+                $json = $themes_dir . DS . $theme . DS . 'theme.json';
+                if (! file_exists( $json ) ) continue;
+                $configs = json_decode( file_get_contents( $json ), true );
+                $label = $app->translate( $configs['label'] );
+                $theme_vars = [];
+                $theme_id = isset( $configs['id'] ) ? $configs['id'] : $theme;
+                $theme_id = strtolower( $theme_id );
+                if ( isset( $theme_ids[ $theme_id ] ) ) continue;
+                $themes[ $theme_id ] = $configs;
+                $theme_ids[ $theme_id ] = dirname( $json );
+                $lang = $app->language;
+                $locale = $themes_dir . DS . $theme . DS . 'locale' . DS . $lang . '.json';
+                if ( file_exists( $locale ) ) {
+                    $map = json_decode( file_get_contents( $locale ), true );
+                    if ( isset( $app->dictionary[ $lang ] ) ) {
+                        $app->dictionary[ $lang ] = array_merge( $app->dictionary[ $lang ], $map );
+                    } else {
+                        $app->dictionary[ $lang ] = $map;
+                    }
+                }
+                $theme_vars['theme_id'] = $theme_id;
+                $theme_vars['label'] = $label;
+                if ( isset( $configs['description'] ) ) {
+                    $description = $app->translate( $configs['description'] );
+                    $theme_vars['description'] = $description;
+                }
+                if ( isset( $configs['version'] ) ) {
+                    $theme_vars['version'] = $configs['version'];
+                }
+                if ( isset( $configs['author'] ) ) {
+                    $theme_vars['author'] = $configs['author'];
+                    if ( isset( $configs['author_link'] ) ) {
+                        $theme_vars['author_link'] = $configs['author_link'];
+                    }
+                }
+                if ( isset( $configs['thumbnail'] ) && $configs['thumbnail'] ) {
+                    $theme_vars['thumbnail'] = $app->path . "themes/{$theme}/" . $configs['thumbnail'];
                 } else {
-                    $app->dictionary[ $lang ] = $map;
+                    $theme_vars['thumbnail'] = $app->path . 'assets/img/model-icons/default.png';
                 }
+                $theme_loop[] = $theme_vars;
             }
-            $themes[ $theme ] = $configs;
-            $label = $app->translate( $configs['label'] );
-            $theme_vars = [];
-            $theme_vars['theme_id'] = $theme;
-            $theme_vars['label'] = $label;
-            if ( isset( $configs['description'] ) ) {
-                $description = $app->translate( $configs['description'] );
-                $theme_vars['description'] = $description;
-            }
-            if ( isset( $configs['version'] ) ) {
-                $theme_vars['version'] = $configs['version'];
-            }
-            if ( isset( $configs['author'] ) ) {
-                $theme_vars['author'] = $configs['author'];
-                if ( isset( $configs['author_link'] ) ) {
-                    $theme_vars['author_link'] = $configs['author_link'];
-                }
-            }
-            if ( isset( $configs['thumbnail'] ) && $configs['thumbnail'] ) {
-                $theme_vars['thumbnail'] = $app->path . "themes/{$theme}/" . $configs['thumbnail'];
-            } else {
-                $theme_vars['thumbnail'] = $app->path . 'assets/img/model-icons/default.png';
-            }
-            $theme_loop[] = $theme_vars;
         }
         $workspace_id = (int) $app->param( 'workspace_id' );
         $current = $app->get_config( 'theme', $workspace_id );
@@ -73,8 +81,9 @@ class PTTheme {
             $theme_id = $app->param( 'theme_id' );
             $theme = $themes[ $theme_id ];
             $component = null;
+            $themes_dir = $theme_ids[ $theme_id ];
             if ( isset( $theme['component'] ) && $theme['component'] ) {
-                $class = $themes_dir . DS . $theme_id . DS . $theme['component'] . '.php';
+                $class = $themes_dir . DS . $theme['component'] . '.php';
                 if ( file_exists( $class ) ) {
                     include_once( $class );
                     $class_name = $theme['component'];
@@ -95,7 +104,7 @@ class PTTheme {
             $forms = [];
             $template_map = [];
             $uuid_map = [];
-            $rebuilds = [];
+            // $rebuilds = [];
             $templates_installed = [];
             foreach ( $views as $uuid => $view ) {
                 $urlmappings = isset( $view['urlmappings'] ) ? $view['urlmappings'] : [];
@@ -135,7 +144,7 @@ class PTTheme {
                         }
                     }
                 }
-                $path = $themes_dir . DS . $theme_id . DS . 'views' . DS . $uuid . '.tmpl';
+                $path = $themes_dir . DS . 'views' . DS . $uuid . '.tmpl';
                 $new_template = $db->model( 'template' )->new( $view );
                 $new_template->workspace_id( $workspace_id );
                 $new_template->status( 2 );
@@ -148,12 +157,15 @@ class PTTheme {
                     $new_template->id = $old_id;
                 }
                 $new_template->save();
+                $orig_basename = '';
                 $templates_installed[] = $new_template;
                 if ( $old_id && $old_template ) {
                     $old_template->rev_type( 1 );
                     $old_template->rev_object_id( $old_id );
                     $old_template->rev_note( $rev_note );
                     $old_template->save();
+                    $new_template->basename( $old_template->basename );
+                    $new_template->save();
                 }
                 $uuid_map[ $uuid ] = $new_template;
                 if (! empty( $form ) ) {
@@ -164,8 +176,8 @@ class PTTheme {
                     $imported_objects['template'] = [];
                 }
                 $imported_objects['template'][] = $new_template;
-                if (! $old_id && is_array( $urlmappings ) && !empty( $urlmappings ) ) {
-                    $rebuilds[] = $new_template;
+                if ( is_array( $urlmappings ) && !empty( $urlmappings ) ) {
+                    // $rebuilds[] = $new_template;
                     foreach ( $urlmappings as $urlmapping ) {
                         $triggers = isset( $urlmapping['triggers'] )
                                   ? $urlmapping['triggers'] : [];
@@ -280,7 +292,7 @@ class PTTheme {
                             $new_question->workspace_id( $workspace_id );
                             // $new_question->uuid( $uuid );
                             $app->set_default( $new_question );
-                            $path = $themes_dir . DS . $theme_id . DS . 'questions' . DS . $uuid . '.tmpl';
+                            $path = $themes_dir . DS . 'questions' . DS . $uuid . '.tmpl';
                             if ( file_exists( $path ) ) {
                                 $new_question->template( file_get_contents( $path ) );
                             }
@@ -306,7 +318,7 @@ class PTTheme {
             $importer->print_state = false;
             $importer->apply_theme = true;
             foreach ( $objects as $model ) {
-                $dirname = $themes_dir . DS . $theme_id . DS . 'objects' . DS . $model;
+                $dirname = $themes_dir . DS . 'objects' . DS . $model;
                 if ( is_dir( $dirname ) ) {
                     $items = scandir( $dirname );
                     foreach ( $items as $import_file ) {
@@ -336,25 +348,24 @@ class PTTheme {
                         'category' => 'theme',
                         'model'    => 'template',
                         'level'    => 'info'] );
-            $app->init();
-            $app->caching = false;
-            $app->db->caching = false;
-            $app->init_tags( true );
-            foreach ( $templates_installed as $template ) {
-                $template->compiled('');
-                $template->save();
-            }
-            $app->get_scheme_from_db( 'urlinfo' );
-            if ( count( $rebuilds ) ) {
-                foreach ( $rebuilds as $rebuild ) {
-                    $app->publish_obj( $rebuild, null, false );
-                }
-            }
             $app->set_config( ['theme' => $theme_id ], $workspace_id );
             if ( $workspace_id ) {
                 $workspace = $app->workspace();
                 $workspace->last_update( time() );
                 $workspace->save();
+            }
+            $app->init();
+            $app->caching = false;
+            $app->db->caching = false;
+            $app->init_tags( true );
+            $scheme = $app->get_scheme_from_db( 'template' );
+            $app->db->scheme['template'] = $scheme;
+            foreach ( $templates_installed as $template ) {
+                $template->compiled('');
+                $template->save();
+                if ( $template->class == 'Archive' ) {
+                    $app->publish_obj( $template, null, false );
+                }
             }
             $return_args = "__mode=manage_theme&apply_theme=1";
             if ( $workspace_id ) {
