@@ -1603,13 +1603,10 @@ class PTUtil {
             mb_language( $app->mail_language );
         }
         unset( $headers['From'] );
+        $from = self::encode_mimeheader( $from );
         $options = "From: {$from}\r\n";
         foreach ( $headers as $key => $value ) {
-            if ( $app->mail_encording ) {
-                $value = mb_encode_mimeheader( $value, $app->mail_encording );
-            } else {
-                $value = mb_encode_mimeheader( $value );
-            }
+            $value = self::encode_mimeheader( $value );
             $key = ucwords( $key );
             if ( $key == 'Cc' || $key == 'Bcc' ) {
                 $addrs = [];
@@ -1637,6 +1634,27 @@ class PTUtil {
         }
         $additional = $app->mail_return_path ? '-f' . $app->mail_return_path : null;
         return mb_send_mail( $to, $subject, $body, $options, $additional );
+    }
+
+    public static function encode_mimeheader ( &$value ) {
+        $app = Prototype::get_instance();
+        if ( strpos( $value, '<' ) !== false && strpos( $value, '>' ) !== false
+            && preg_match( '/(^.*?)<(.*?)>$/', $value, $matches ) ) {
+            list( $addr, $value ) = [ $matches[2], $matches[1] ]; 
+            if ( $app->mail_encording ) {
+                $value = mb_encode_mimeheader( $value, $app->mail_encording );
+            } else {
+                $value = mb_encode_mimeheader( $value );
+            }
+            $value = "{$value}<{$addr}>";
+        } else {
+            if ( $app->mail_encording ) {
+                $value = mb_encode_mimeheader( $value, $app->mail_encording );
+            } else {
+                $value = mb_encode_mimeheader( $value );
+            }
+        }
+        return $value;
     }
 
     public static function convert_breaks ( $str = '' ) {
