@@ -7779,6 +7779,11 @@ class Prototype {
                 $container = $app->get_table( $urlmapping->container );
                 if ( is_object( $container ) ) {
                     $ctx->stash( 'current_container', $container->name );
+                    /* TODO count children
+                    $count_children = $app->core_tags->hdlr_container_count(
+                                      ['container' => $container->name ], $ctx );
+                    if (! $count_children ) $unlink = true;
+                    */
                 }
             }
             $date_based = $urlmapping->date_based;

@@ -93,6 +93,10 @@ class PTViewer {
             }
             $this->page_not_found( $app, $workspace );
         }
+        if (! file_exists( $file_path ) && ! $url->is_published &&
+            $url->publish_file == 1 && ! $app->user() ) {
+            $this->page_not_found( $app, $workspace );
+        }
         if ( $app->do_conditional && $url->filemtime && $url->mime_type ) {
             $app->print( null, $url->mime_type, $url->filemtime, true );
         }
