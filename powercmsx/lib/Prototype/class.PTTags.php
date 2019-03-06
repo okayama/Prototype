@@ -74,9 +74,9 @@ class PTTags {
                      'rev_object_id', 'password'];
         foreach ( $tables as $table ) {
             $plural = strtolower( $table->plural );
-            $plural = preg_replace( '/[^a-z]/', '' , $plural );
+            $plural = preg_replace( '/[^a-z0-9]/', '' , $plural );
             $label = strtolower( $table->label );
-            $label = preg_replace( '/[^a-z]/', '' , $label );
+            $label = preg_replace( '/[^a-z0-9]/', '' , $label );
             $this->register_tag( $ctx, $plural, 'block', 'hdlr_objectloop', $tags, $r_tags );
             $this->register_tag( $ctx, $label . 'referencecontext',
                 'block', 'hdlr_referencecontext', $tags, $r_tags );
@@ -105,14 +105,15 @@ class PTTags {
             $edit_properties = $scheme['edit_properties'];
             $relations = isset( $scheme['relations'] ) ? $scheme['relations'] : [];
             $obj = $app->db->model( $table->name )->new();
+            $relation_alias = [];
             foreach ( $columns as $key => $props ) {
                 if ( in_array( $key, $excludes ) ) continue;
                 if ( strpos( $props['type'], 'password' ) !== false ) {
                     continue;
                 }
+                $label = strtolower( $locale[ $key ] );
+                $label = preg_replace( '/[^a-z0-9]/', '' , $label );
                 if (! isset( $relations[ $key ] ) ) {
-                    $label = strtolower( $locale[ $key ] );
-                    $label = preg_replace( '/[^a-z]/', '' , $label );
                     $tag_name = str_replace( '_', '', $key );
                     if ( $props['type'] === 'datetime' ) {
                         $function_date[] = $table->name . $key;
@@ -170,6 +171,10 @@ class PTTags {
                                     'function', 'hdlr_get_objecturl', $tags, $r_tags );
                         }
                     }
+                } else {
+                    if ( $label && $label != $key ) {
+                        $relation_alias[ $key ] = $label;
+                    }
                 }
                 if ( preg_match( '/(^.*)_id$/', $key, $mts ) ) {
                     if ( isset( $edit_properties[ $key ] ) ) {
@@ -208,7 +213,7 @@ class PTTags {
                     'function', 'hdlr_container_count', $tags, $r_tags );
             $count_tags[ $count_tagname ] = $tbl_name;
             foreach ( $relations as $key => $model ) {
-                $tagName = preg_replace( '/[^a-z]/', '' , $key );
+                $tagName = preg_replace( '/[^a-z0-9]/', '' , $key );
                 $this->register_tag( $ctx, $tbl_name . $tagName, 'block',
                     'hdlr_get_relatedobjs', $tags, $r_tags );
                 $block_relations[ $tbl_name . $tagName ] = [ $key, $tbl_name, $model ];
@@ -216,6 +221,16 @@ class PTTags {
                     'hdlr_get_relationscount', $tags, $r_tags );
                 $function_relcount[ $tbl_name . $tagName . 'count']
                     = [ $key, $tbl_name, $model ];
+                if ( isset( $relation_alias[ $key ] ) ) {
+                    $aliasName = $relation_alias[ $key ];
+                    $this->register_tag( $ctx, $tbl_name . $aliasName, 'block',
+                        'hdlr_get_relatedobjs', $tags, $r_tags );
+                    $block_relations[ $tbl_name . $aliasName ] = [ $key, $tbl_name, $model ];
+                    $this->register_tag( $ctx, $tbl_name . $aliasName . 'count', 'function',
+                        'hdlr_get_relationscount', $tags, $r_tags );
+                    $function_relcount[ $tbl_name . $aliasName . 'count']
+                        = [ $key, $tbl_name, $model ];
+                }
             }
             if ( $table->taggable ) {
                 $this->register_tag( $ctx, $tbl_name . 'iftagged',
