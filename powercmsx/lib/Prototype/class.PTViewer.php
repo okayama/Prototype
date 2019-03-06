@@ -18,6 +18,7 @@ class PTViewer {
         if ( preg_match( '!/$!', $request ) ) {
             $request .= 'index.html';
         }
+        $user = $app->user();
         $workspace = null;
         $file_path = $document_root . $request;
         $existing_data = null;
@@ -50,7 +51,7 @@ class PTViewer {
         }
         if ( $this->allow_login ) {
             if ( $app->mode =='logout' && $app->dynamic_view ) {
-                if ( $app->user() ) {
+                if ( $user ) {
                     return $this->login_logout( $app );
                 }
             } else if ( $app->mode =='login' && $app->dynamic_view ) {
@@ -94,7 +95,7 @@ class PTViewer {
             $this->page_not_found( $app, $workspace );
         }
         if (! file_exists( $file_path ) && ! $url->is_published &&
-            $url->publish_file == 1 && ! $app->user() ) {
+            $url->publish_file == 1 && ! $user ) {
             $this->page_not_found( $app, $workspace );
         }
         if ( $app->do_conditional && $url->filemtime && $url->mime_type ) {
@@ -102,7 +103,7 @@ class PTViewer {
         }
         $workspace_id = (int) $url->workspace_id;
         $workspace = $url->workspace;
-        if (! $app->user() ) {
+        if (! $user ) {
             if (! $app->dynamic_view ) {
                 $this->page_not_found( $app, $workspace );
             }
@@ -130,7 +131,7 @@ class PTViewer {
             $obj_id = (int) $url->object_id;
             $url_obj = $app->db->model( $model )->load( $obj_id );
             if ( $url_obj->status != $publish_status ) {
-                if (! $app->user() ) {
+                if (! $user ) {
                     $login = $this->login_logout( $app );
                     if ( $login === false ) {
                         $this->page_not_found( $app, $workspace );
@@ -173,8 +174,25 @@ class PTViewer {
             }
         } else if ( $url->class === 'archive' ) {
             $mapping = $url->urlmapping;
+            $ctx->stash( 'current_context', $url->model );
+            $ctx->stash( $url->model, $obj );
             if ( $mapping && $mapping->container ) {
                 $ctx->stash( 'current_container', $mapping->container );
+                if ( $mapping->skip_empty ) {
+                    $container = $app->get_table( $mapping->container );
+                    $cnt_tag = strtolower( $container->plural ) . 'count';
+                    $count_terms = ['container' => $container->name, 'this_tag' => $cnt_tag ];
+                    if ( $mapping->container_scope ) {
+                        $count_terms['include_workspaces'] = 'all';
+                    }
+                    $count_children = $app->core_tags->hdlr_container_count( $count_terms, $ctx );
+                    if (! $count_children ) {
+                        if ( $user && $app->can_do( $model, 'edit', $obj, $workspace ) ) {
+                        } else {
+                            $this->page_not_found( $app, $workspace );
+                        }
+                    }
+                }
             }
             $magic_token = $app->param( 'magic_token' )
                          ? $app->param( 'magic_token' ) : $app->request_id;
@@ -197,7 +215,7 @@ class PTViewer {
             }
             $data = $pub->publish( $url, $existing_data, $mtime, $obj );
             $update = false;
-            if ( $url->publish_file == 3 ) {
+            if ( $url->publish_file == 3 && ! $user ) {
                 $fmgr = $app->fmgr;
                 $fmgr->put( $url->file_path, $data );
                 if (! $url->is_published ) {
