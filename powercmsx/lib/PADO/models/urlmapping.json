@@ -1,7 +1,7 @@
 {
     "label"    : "URL Map",
     "plural"   : "URL Maps",
-    "version"  : "2.1",
+    "version"  : "2.2",
     "auditing" : 1,
     "display_system" : 1,
     "sortable" : 1,
@@ -35,6 +35,10 @@
             "size": 255
         },
         "container_scope": {
+            "type": "tinyint",
+            "size": 4
+        },
+        "skip_empty": {
             "type": "tinyint",
             "size": 4
         },

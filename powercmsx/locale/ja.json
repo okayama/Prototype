@@ -698,6 +698,7 @@
     "File Out Path"      : "ファイル出力パス",
     "Do Import"          : "インポート開始",
     "Do Action"          : "アクションを実行",
+    "Skip Empty"         : "スキップ",
     "Publish time: %s"   : "処理時間 : %s",
     "Y-m-d H:i"          : "Y年m月d日 H時i分",
     "Y-m-d"              : "Y年m月d日",
@@ -797,11 +798,14 @@
     "Removed %s %s.": "%s件の%sを削除しました。",
     "Clean up urlinfo" : "URLの整理",
     "Clean up %s URLInfo." : "%sのURLを整理しました。",
+    "Contains only the same scope." : "同一スコープのオブジェクトのみを対象とする",
     "Trigger(s) only the same scope." : "同一スコープのオブジェクトのみを対象とする",
     "Target only object(s) with the same WorkSpace."
         : "ワークスペースのオブジェクト更新のみを対象にします。",
     "Target only system scope's object(s)."
         : "システムスコープのオブジェクト更新のみを対象にします。",
+    "Output only if contains target object."
+        : "オブジェクトがない時アーカイブを出力しない",
     "Compress the database"
         : "データベースの圧縮",
     "Scheduled replacement from revision(%s)"

@@ -4,7 +4,7 @@
     <mt:var name="label" escape="1">
     </label>
   </div>
-  <div class="col-lg-10 form-inline">
+  <div class="col-lg-10">
     <select id="container-selector" class="form-control short" name="<mt:var name="__col_name__">">
     <mt:if name="workspace_id">
       <mt:setvarblock name="table_option">'display_space','1','menu_type','1'</mt:setvarblock>
@@ -22,7 +22,7 @@
     </mt:objectloop>
     </select>
 <mt:unless name="workspace_id">
-  <span class="<mt:unless name="object_container">hidden</mt:unless>" id="container_scope-wrapper">
+  <div class="<mt:unless name="object_container">hidden</mt:unless>" id="container_scope-wrapper">
     <input type="hidden" name="container_scope" value="0">
     <label class="custom-control custom-checkbox">
     <input id="container_scope" class="custom-control-input"
@@ -30,9 +30,9 @@
       type="checkbox" name="container_scope" value="1">
         <span class="custom-control-indicator"></span>
         <span class="custom-control-description"> 
-        <mt:trans phrase="Trigger(s) only the same scope."></span>
+        <mt:trans phrase="Contains only the same scope."></span>
     </label>
-  </span>
+  </div>
 <script>
 $('#container-selector').change(function(){
     if ( $(this).val() ) {
@@ -43,5 +43,25 @@ $('#container-selector').change(function(){
 });
 </script>
 </mt:unless>
+  <div class="<mt:if name="object_date_based">hidden<mt:else><mt:unless name="object_container">hidden</mt:unless></mt:if>" id="skip_empty-wrapper">
+    <input type="hidden" name="skip_empty" value="0">
+    <label class="custom-control custom-checkbox">
+    <input id="skip_empty" class="custom-control-input"
+      <mt:if name="object_skip_empty">checked</mt:if>
+      type="checkbox" name="skip_empty" value="1">
+        <span class="custom-control-indicator"></span>
+        <span class="custom-control-description"> 
+        <mt:trans phrase="Output only if contains target object."></span>
+    </label>
+  </div>
+<script>
+$('#container-selector').change(function(){
+    if ( $(this).val() && ! $('#option-date_based').val() ) {
+        $('#skip_empty-wrapper').show();
+    } else {
+        $('#skip_empty-wrapper').hide();
+    }
+});
+</script>
   </div>
 </div>

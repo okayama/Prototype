@@ -36,6 +36,9 @@ $('#option-date_based').change(function(){
     } else {
         $('#option-fy_start').hide();
     }
+    if ($('#option-date_based').val() ) {
+        $('#skip_empty-wrapper').hide();
+    }
 });
 if ($('#option-date_based').val() == 'Fiscal-Yearly' ) {
     $('#option-fy_start').show();

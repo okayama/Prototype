@@ -1852,3 +1852,7 @@ b,strong {
 .nestable-first {
   margin-top: -9px;
 }
+
+#container_scope-wrapper {
+  margin-top: 10px;
+}

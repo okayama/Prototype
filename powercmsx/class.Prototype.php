@@ -29,7 +29,7 @@ spl_autoload_register( '\prototype_auto_loader' );
 class Prototype {
 
     public static $app = null;
-    public    $app_version   = '1.011';
+    public    $app_version   = '1.012';
     public    $id            = 'Prototype';
     public    $name          = 'Prototype';
     public    $db            = null;
@@ -5533,8 +5533,8 @@ class Prototype {
             unset( $terms['container'] );
         }
         $app->get_scheme_from_db( 'urlmapping' );
-        $map_cols = 'id,mapping,publish_file,template_id,link_status,date_based,model,'
-                  . 'container,fiscal_start,workspace_id,compiled,cache_key';
+        $map_cols = 'id,mapping,publish_file,template_id,link_status,date_based,model,skip_empty,'
+                  . 'container,container_scope,fiscal_start,workspace_id,compiled,cache_key';
         $mappings = $db->model( 'urlmapping' )->load(
             $terms, ['and_or' => 'OR'], $map_cols, $extra );
         if (!$table->revisable || (!$obj->rev_type ) ) {
@@ -7779,11 +7779,15 @@ class Prototype {
                 $container = $app->get_table( $urlmapping->container );
                 if ( is_object( $container ) ) {
                     $ctx->stash( 'current_container', $container->name );
-                    /* TODO count children
-                    $count_children = $app->core_tags->hdlr_container_count(
-                                      ['container' => $container->name ], $ctx );
-                    if (! $count_children ) $unlink = true;
-                    */
+                    if ( $urlmapping->skip_empty ) { // Count Children
+                        $cnt_tag = strtolower( $container->plural ) . 'count';
+                        $count_terms = ['container' => $container->name, 'this_tag' => $cnt_tag ];
+                        if ( $urlmapping->container_scope ) {
+                            $count_terms['include_workspaces'] = 'all';
+                        }
+                        $count_children = $app->core_tags->hdlr_container_count( $count_terms, $ctx );
+                        if (! $count_children ) $unlink = true;
+                    }
                 }
             }
             $date_based = $urlmapping->date_based;
