@@ -396,6 +396,8 @@ class LivePreview extends PTPlugin {
         $tmpl = dirname( $this->path ) . DS . 'tmpl' . DS . 'live_preview.tmpl';
         $app->ctx->vars['live_preview_date'] = date( 'Y-m-d' );
         $app->ctx->vars['live_preview_time'] = date( 'H:i:s' );
+        $app->ctx->vars['status_pending']
+            = $this->get_config_value( 'livepreview_status_pending' );
         if ( isset( $_COOKIE['pt-live-preview-ts'] ) ) {
             $ts = $_COOKIE['pt-live-preview-ts'];
             if ( $ts && date('YmdHis') > $ts ) {

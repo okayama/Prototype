@@ -32,6 +32,8 @@
     <input id="live_preview_time" type="time" step="1" class="form-control time watch-changed" name="live_preview_time" value="<mt:if name="cookie.pt-live-preview-time"><mt:var name="cookie.pt-live-preview-time" escape format_ts="H:i:s"><mt:else><mt:var name="live_preview_time" format_ts="H:i:s"></mt:if>">
   </div>
 </div>
+
+<mt:if name="status_pending">
 <div class="row form-group">
   <div class="col-lg-2">
     <label for="live_preview_pending">
@@ -51,6 +53,8 @@
   </label>
   </div>
 </div>
+</mt:if>
+
 <hr>
 <div class="row form-group">
   <div class="col-lg-12">

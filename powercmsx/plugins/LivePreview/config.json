@@ -12,7 +12,7 @@
         "livepreview_page_url"      : "",
         "livepreview_date_based"    : "entry",
         "livepreview_insert_html"   : "",
-        "livepreview_status_pending" : ""
+        "livepreview_status_pending" : 1
     },
     "menus": {
         "live_preview": {
