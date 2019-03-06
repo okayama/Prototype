@@ -292,17 +292,25 @@ class Prototype {
         if ( strpos( $request_uri, '?' ) ) {
             list( $request, $this->query_string ) = explode( '?', $request_uri );
         }
-        $path_part = '';
-        if ( preg_match( "!(^.*?)([^/]*$)!", $request, $mts ) ) {
-            list ( $d, $path_part, $this->script ) = $mts;
-            if (! $this->path ) $this->path = $path_part;
-        }
         $this->document_root = $this->document_root ? $this->document_root
                                                     : $_SERVER['DOCUMENT_ROOT'];
         if (! $this->document_root ) {
             $this->document_root = dirname( __DIR__ );
         } else {
             $this->document_root = rtrim( $this->document_root, DS );
+        }
+        $path_part = '';
+        if ( $this->id == 'Prototype' ) {
+            if ( preg_match( "!(^.*?)([^/]*$)!", $request, $mts ) ) {
+                list ( $d, $path_part, $this->script ) = $mts;
+                if (! $this->path ) $this->path = $path_part;
+            }
+        } else if ( $this->id == 'Bootstrapper' ) {
+            $this->script = 'index.php';
+            if (! $this->path ) {
+                $root_quote = preg_quote( $this->document_root, '/' );
+                $this->path = dirname( preg_replace( "/^$root_quote/", '', __FILE__ ) ) . '/';
+            }
         }
         if ( $mode = $this->param( '__mode' ) ) {
             $this->mode = $mode;

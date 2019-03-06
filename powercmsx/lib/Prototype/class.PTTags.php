@@ -3196,7 +3196,7 @@ class PTTags {
             ? $ctx->stash( 'current_archive_context' )
             : $ctx->stash( 'current_archive_type' );
         $workspace = $ctx->stash( 'workspace' );
-        $model = $count_tags[ $this_tag ];
+        $model = isset( $args['container'] ) ? $args['container'] : $count_tags[ $this_tag ];
         $table = $app->get_table( $model );
         $archive_date_based = false;
         if ( $at && ( $at === 'monthly' || $at === 'yearly' || $at === 'fiscal-yearly' ) ) {

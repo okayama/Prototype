@@ -12,7 +12,7 @@ $allow_login  = false; // Specify true to display unpublish URLs to login users.
 
 $workspace_id = <mt:websiteid>;
 require_once( '<mt:var name="application_dir">/class.Prototype.php' );
-$app = new Prototype();
+$app = new Prototype( ['id' => 'Bootstrapper'] );
 if ( $app->request_method != 'GET' || $app->query_string ) {
     $app->force_dynamic = true;
 }
