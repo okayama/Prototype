@@ -1616,6 +1616,7 @@ class PAML {
     function modifier_replace ( $str, $args, $ctx ) {
         if (!is_array( $args ) ) $args = $ctx->parse_csv( $args );
         if (! isset( $args[1] ) ) return $str;
+        $args = $this->setup_args( $args );
         return str_replace( $args[0], $args[1], $str );
     }
 
@@ -1623,6 +1624,7 @@ class PAML {
         if (!is_array( $args ) ) $args = $ctx->parse_csv( $args );
         if (! isset( $args[1] ) ) return $str;
         $i = 0;
+        $args = $this->setup_args( $args );
         foreach ( $args as $arg ) {
             if ( ( $pos = strpos( $arg, "\0" ) ) !== false ) {
                 $arg = substr( $arg, 0, $pos );
