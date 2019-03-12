@@ -9,7 +9,7 @@ if [ "${option}" == 'clean' ]; then
 fi
 
 basename='PowerCMSX'
-version='1.00'
+version='1.012'
 
 _adv="${basename}"-"${version}"
 
