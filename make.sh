@@ -20,6 +20,7 @@ cp -a powercmsx src/
 
 rm src/powercmsx/docs/PowerCMSX.docx.zip
 rm src/powercmsx/docs/PowerCMSX.pdf
+rm -rf src/powercmsx/plugins/NORENImporter
 find src -type f -name ".git*" | xargs rm -rf
 
 cd src
