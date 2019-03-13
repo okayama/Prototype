@@ -1438,14 +1438,6 @@ $('#__save_and_publish').click(function(){
     $('#edit-form-main').submit();
     return false;
 });
-$('#__delete').click(function(){
-    $('#_preview').val('');
-    $('#edit-form-main').removeAttr('target');
-    $('#__mode').val('delete');
-    $(window).off('beforeunload');
-    $('#edit-form-main').submit();
-    return false;
-});
 <mt:if name="_revisable">
 $('#__save_as_revision').click(function(){
     if ( !confirm('<mt:trans phrase="Are you sure you want to save this %s as a revision instead of a master?" params="$label">') ) {
@@ -1586,7 +1578,10 @@ $('#__delete').click(function(){
     if(! confirm('<mt:trans phrase="Are you sure you want to remove %s?" params="$label">')){
         return false;
     }
-    $('#__mode').prop('value', 'delete');
+    $('#_preview').val('');
+    $('#edit-form-main').removeAttr('target');
+    $('#__mode').val('delete');
+    $(window).off('beforeunload');
     $('#edit-form-main').submit();
     return false;
 });

@@ -786,7 +786,7 @@ $('#_save_detail_button').click( function(){
         var detail_e = $('#_detail_edit').val();
         var detail_l = $('#_detail_list').val();
         if ( detail_e != 'relation' && detail_l != 'relation' ) {
-            alert('<mt:trans phrase="Model, column and type are required for the relation.">');
+            alert('<mt:trans phrase="Model, Column and Type are required for the relation.">');
             return false;
         }
         var model;
@@ -796,7 +796,7 @@ $('#_save_detail_button').click( function(){
             model = detail_l;
         }
         if (! model ) {
-            alert('<mt:trans phrase="Model, column and type are required for the relation.">');
+            alert('<mt:trans phrase="Model, Column and Type are required for the relation.">');
             return false;
         }
         $('#' + prefix + 'options' + postfix + number ).val( model );
