@@ -25,9 +25,8 @@ function editorInit () {
       language : '<mt:var name="user_language">',
       branding : false,
       selector : 'textarea.richtext',
-      <mt:if name="relative_urls" ne="none">
-      relative_urls : <mt:pluginsetting component="TinyMCE" name="tinymce_relative_urls" workspace_id="$workspace_id" _eval="1">,
-      </mt:if>
+<mt:pluginsetting component="TinyMCE" name="tinymce_advanced_settings" workspace_id="$workspace_id" _eval="1" setvar="editor_advanced_settings"><mt:if name="editor_advanced_settings"><mt:var name="editor_advanced_settings"></mt:if>
+      <mt:if name="relative_urls" ne="none">relative_urls : <mt:pluginsetting component="TinyMCE" name="tinymce_relative_urls" workspace_id="$workspace_id" _eval="1">,</mt:if>
       image_advtab: true,
     <mt:if name="tinymce_use_mobile">
       theme: 'mobile',

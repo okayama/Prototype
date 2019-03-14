@@ -2,7 +2,7 @@
     "label"       : "TinyMCE",
     "id"          : "tinymce",
     "component"   : "TinyMCE",
-    "version"     : "1.0",
+    "version"     : "1.1",
     "author"      : "Alfasado Inc.",
     "author_link" : "https://alfasado.net/",
     "description" : "Provides customization for WYSIWYG HTML Editor.",
@@ -15,7 +15,8 @@
         "tinymce_content_css": "<mt:var name=\"prototype_path\">assets/css/editor.css",
         "tinymce_menubar" : "edit insert view format table tools",
         "tinymce_relative_urls" : "false",
-        "tinymce_use_mobile" : 0
+        "tinymce_use_mobile" : 0,
+        "tinymce_advanced_settings" : ""
     },
     "tags": {
         "conditional": {
