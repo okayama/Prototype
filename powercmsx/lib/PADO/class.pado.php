@@ -26,6 +26,7 @@ class PADO {
     private $dbuser      = '';
     private $dbpasswd    = '';
     private $dbport      = ''; // 3306
+    private $mysql_attr_ssl_ca;
     public  $dbcharset   = 'utf8mb4';
     public  $set_names   = false;
     public  $dbcompress  = false;
@@ -186,6 +187,11 @@ class PADO {
             unset( $this->db );
             $options = $this->persistent ? [ PDO::ATTR_PERSISTENT => true ] : [];
             $options[ PDO::ATTR_TIMEOUT ] = $this->timeout;
+            $mysql_attr_ssl_ca = defined( 'PADO_MYSQL_ATTR_SSL_CA' )
+                ? PADO_MYSQL_ATTR_SSL_CA : $this->mysql_attr_ssl_ca;
+            if ( $mysql_attr_ssl_ca ) {
+                $options[ PDO::MYSQL_ATTR_SSL_CA ] = $mysql_attr_ssl_ca;
+            }
             $pdo = new PDO( $dsn, $dbuser, $dbpasswd, $options );
             $pdo->setAttribute( PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION );
             $this->db = $pdo;
