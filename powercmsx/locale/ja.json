@@ -746,6 +746,7 @@
         : "%sのオブジェクトについては重複があったためスキップされました。",
     "To see the details, go to the list of Logs."
         : "詳細を確認するには、ログの一覧を表示してください。",
+    "Allow Identical Basename" : "ベースネームの重複を許可",
     "I have read and agree to the Privacy Policy." : "プライバシーポリシーを確認して同意します。",
     "The %s '%s' has been skipped because it already existed."
         : "%s「%s」は既に存在するためインポートはスキップされました。",

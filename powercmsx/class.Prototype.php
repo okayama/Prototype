@@ -2572,6 +2572,11 @@ class Prototype {
             unset( $terms['is_preferred'] );
             $urlmapping = $app->db->model( 'urlmapping' )->load( $terms, $args );
         }
+        if (! empty( $urlmapping ) && ! $obj->id ) {
+            return $app->build_path_with_map( $obj, $urlmapping[0], $table, null, true );
+        } else if (! $obj->id ) {
+            return '';
+        }
         if ( empty( $urlmapping ) && ! $system && $obj->workspace_id ) {
             $app->get_permalink( $obj, $has_map, $rebuild, true );
         }

@@ -1,7 +1,7 @@
 {
     "label"    : "Model",
     "plural"   : "Models",
-    "version"  : "2.2",
+    "version"  : "2.3",
     "primary"  : "name",
     "display_system": 1,
     "sortable" : true,
@@ -134,6 +134,10 @@
             "default": "0"
         },
         "has_basename": {
+            "type": "tinyint",
+            "size": 4
+        },
+        "allow_identical": {
             "type": "tinyint",
             "size": 4
         },
@@ -303,6 +307,7 @@
         "text_format": "selection"
     },
     "column_labels": {
+        "allow_identical": "Allow Identical Basename",
         "text_format": "Format"
     }
 }
