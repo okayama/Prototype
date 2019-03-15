@@ -3828,8 +3828,8 @@ class PTTags {
             if ( isset( $args['cols'] ) ) {
                 $select_cols = $this->select_cols( $app, $table_model, $select_cols );
             }
-            $args = ['sort' => 'order'];
             $cache_args = $args;
+            $args = ['sort' => 'order'];
             $cache_args['extra'] = $extra;
             $app->init_callbacks( 'table', 'pre_load_objects' );
             $callback =
