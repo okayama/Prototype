@@ -36,6 +36,7 @@ class HTML_CodeSniffer extends PTPlugin {
                 $filename = 'HTMLCS.ja.js';
             }
         }
+        $filename .= '?ts=' . time();
         $tag = "<link rel=\"stylesheet\" href=\"{$js_path}Auditor/HTMLCSAuditor.css\">\n";
         $tag.= <<<EOT
 <script>

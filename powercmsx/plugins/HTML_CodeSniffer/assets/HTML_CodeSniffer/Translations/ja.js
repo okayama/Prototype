@@ -385,7 +385,7 @@ _global.translation['ja'] = {
 
 
   //4_1_1.js
-  ,"4_1_1_F77" : 'Duplicate id attribute value "{{id}}" found on the web page.'
+  ,"4_1_1_F77" : 'ページの中に重複しているid属性"{{id}}"が見つかりました。'
 
 
   //4_1_2.js
