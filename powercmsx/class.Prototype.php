@@ -7414,6 +7414,11 @@ class Prototype {
     }
 
     function save_filter_form ( &$cb, $app, &$obj ) {
+        if (! $obj->send_email ) {
+            $obj->send_thanks(0);
+            $obj->send_notify(0);
+            return true;
+        }
         $errors = $cb['errors'];
         $success = true;
         $msg = '';
