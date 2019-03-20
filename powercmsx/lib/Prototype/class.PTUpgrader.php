@@ -307,7 +307,12 @@ class PTUpgrader {
                     $models_dir = $plugin->path() . DS . 'models';
                 }
             } else {
-                $models_dir = LIB_DIR . 'PADO' . DS . 'models';
+                if ( $app->models_dir && file_exists( $app->models_dir . DS . $model . '.json' ) ) {
+                    $models_dir = $app->models_dir;
+                    $component = 'core';
+                } else {
+                    $models_dir = LIB_DIR . 'PADO' . DS . 'models';
+                }
             }
             if ( $models_dir ) {
                 $file = $models_dir . DS . $model . '.json';
@@ -333,6 +338,9 @@ class PTUpgrader {
             }
         }
         $json_dirs = array_keys( $this->plugin_models( true ) );
+        if ( $app->models_dir ) {
+            $json_dirs[] = $app->models_dir;
+        }
         array_unshift( $json_dirs, LIB_DIR . 'PADO' . DS . 'models' );
         $i = 0;
         foreach ( $json_dirs as $dir ) {
@@ -1597,7 +1605,11 @@ class PTUpgrader {
                     $models_dir = $plugin->path() . DS . 'models';
                 }
             } else {
-                $models_dir = LIB_DIR . 'PADO' . DS . 'models';
+                if ( $app->models_dir && file_exists( $app->models_dir . DS . $model . '.json' ) ) {
+                    $models_dir = $app->models_dir;
+                } else {
+                    $models_dir = LIB_DIR . 'PADO' . DS . 'models';
+                }
             }
             if ( $models_dir ) {
                 $file = $models_dir . DS . $model . '.json';
@@ -1613,6 +1625,9 @@ class PTUpgrader {
             }
         }
         $json_dirs = array_keys( $this->plugin_models( true ) );
+        if ( $app->models_dir ) {
+            $json_dirs[] = $app->models_dir;
+        }
         array_unshift( $json_dirs, LIB_DIR . 'PADO' . DS . 'models' );
         $i = 0;
         foreach ( $json_dirs as $dir ) {

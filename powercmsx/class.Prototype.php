@@ -72,6 +72,7 @@ class Prototype {
     public    $init_tags;
     public    $protocol;
     public    $log_path;
+    public    $models_dir    = '';
     public    $screen_id;
     public    $plugin_paths  = [];
     public    $plugin_order  = 0; // 0=asc, 1=desc
@@ -614,6 +615,9 @@ class Prototype {
         $ctx->vars['site_url'] = $this->site_url;
         $ctx->vars['site_path'] = $this->site_path;
         $this->components['core'] = $this;
+        if ( $this->models_dir ) {
+            $this->db->models_dirs[] = $this->models_dir;
+        }
         if ( $table && $this->use_plugin ) {
             if ( ( $plugin_d = __DIR__ . DS . 'plugins' ) && is_dir( $plugin_d ) )
                 $this->plugin_paths[] = $plugin_d;
