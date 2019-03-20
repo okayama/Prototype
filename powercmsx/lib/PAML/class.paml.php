@@ -1346,6 +1346,11 @@ class PAML {
         if ( $phrase === null || $phrase === '' ) return;
         $component = isset( $args['component'] )
                    ? $ctx->component( $args['component'] ) : $ctx->default_component;
+        if ( isset( $args['component'] ) && ! $component && $ctx->default_component ) {
+            $component = $ctx->default_component->component( $args['component'] )
+                       ? $ctx->default_component->component( $args['component'] )
+                       : $ctx->default_component;
+        }
         if (! $component ) $component = $ctx;
         if ( $lang && $component ) {
             $dict = isset( $component->dictionary ) ? $component->dictionary : null;
