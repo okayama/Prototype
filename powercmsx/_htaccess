@@ -6,4 +6,5 @@ RewriteEngine off
 deny from all
 </Files>
 php_value upload_max_filesize "10M"
-
+ErrorDocument 403 'Forbidden'
+ErrorDocument 404 'Not Found'
