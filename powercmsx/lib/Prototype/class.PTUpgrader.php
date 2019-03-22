@@ -307,12 +307,8 @@ class PTUpgrader {
                     $models_dir = $plugin->path() . DS . 'models';
                 }
             } else {
-                if ( $app->models_dir && file_exists( $app->models_dir . DS . $model . '.json' ) ) {
-                    $models_dir = $app->models_dir;
-                    $component = 'core';
-                } else {
-                    $models_dir = LIB_DIR . 'PADO' . DS . 'models';
-                }
+                $models_dir = $this->get_models_dir( $app, $model );
+                $component = 'core';
             }
             if ( $models_dir ) {
                 $file = $models_dir . DS . $model . '.json';
@@ -338,11 +334,7 @@ class PTUpgrader {
             }
         }
         $json_dirs = array_keys( $this->plugin_models( true ) );
-        if ( $app->models_dir ) {
-            $json_dirs[] = $app->models_dir;
-        }
-        array_unshift( $json_dirs, LIB_DIR . 'PADO' . DS . 'models' );
-        $i = 0;
+        $json_dirs = array_merge( $app->model_paths, $json_dirs );
         foreach ( $json_dirs as $dir ) {
             $files = scandir( $dir, $app->plugin_order );
             foreach ( $files as $json ) {
@@ -352,9 +344,9 @@ class PTUpgrader {
                 if ( $extension !== 'json' ) continue;
                 $model = pathinfo( $json )['filename'];
                 if (! in_array( $model, $model_names ) ) {
-                    $component = $i
-                               ? strtolower( basename( dirname( dirname( $file ) ) ) )
-                               : 'core';
+                    $component = in_array( $dir, $app->model_paths )
+                               ? 'Prototype'
+                               : strtolower( basename( dirname( dirname( $file ) ) ) );
                     $data = json_decode( file_get_contents( $file ), true );
                     if ( isset( $data['component'] ) ) $component = $data['component'];
                     $version = isset( $data['version'] ) ? $data['version'] : 0;
@@ -366,7 +358,6 @@ class PTUpgrader {
                     $components[ $model ] = $component;
                 }
             }
-            $i++;
         }
         if ( $app->request_method === 'POST' &&
             $app->param( '_type' ) && $app->param( '_type' ) === 'upgrade' ) {
@@ -484,6 +475,15 @@ class PTUpgrader {
         $app->ctx->vars['schemes'] = $items;
         $app->ctx->vars['upgrade_count'] = $upgrade_count;
         return $app->__mode( 'manage_scheme' );
+    }
+
+    function get_models_dir ( $app, $model ) {
+        foreach ( $app->model_paths as $model_path ) {
+            $json_path = $model_path . DS . $model . '.json';
+            if ( file_exists( $json_path ) ) {
+                return dirname( $json_path );
+            }
+        }
     }
 
     function install_field_types ( $app ) {
@@ -1605,11 +1605,7 @@ class PTUpgrader {
                     $models_dir = $plugin->path() . DS . 'models';
                 }
             } else {
-                if ( $app->models_dir && file_exists( $app->models_dir . DS . $model . '.json' ) ) {
-                    $models_dir = $app->models_dir;
-                } else {
-                    $models_dir = LIB_DIR . 'PADO' . DS . 'models';
-                }
+                $models_dir = $this->get_models_dir( $app, $model );
             }
             if ( $models_dir ) {
                 $file = $models_dir . DS . $model . '.json';
@@ -1625,11 +1621,7 @@ class PTUpgrader {
             }
         }
         $json_dirs = array_keys( $this->plugin_models( true ) );
-        if ( $app->models_dir ) {
-            $json_dirs[] = $app->models_dir;
-        }
-        array_unshift( $json_dirs, LIB_DIR . 'PADO' . DS . 'models' );
-        $i = 0;
+        $json_dirs = array_merge( $app->model_paths, $json_dirs );
         foreach ( $json_dirs as $dir ) {
             $files = scandir( $dir, $app->plugin_order );
             foreach ( $files as $json ) {
@@ -1639,21 +1631,19 @@ class PTUpgrader {
                 if ( $extension !== 'json' ) continue;
                 $model = pathinfo( $json )['filename'];
                 if (! in_array( $model, $model_names ) ) {
-                    $component = $i
-                               ? strtolower( basename( dirname( dirname( $file ) ) ) )
-                               : 'core';
+                    $component = in_array( $dir, $app->model_paths )
+                               ? 'Prototype'
+                               : strtolower( basename( dirname( dirname( $file ) ) ) );
                     $data = json_decode( file_get_contents( $file ), true );
                     if ( isset( $data['component'] ) ) $component = $data['component'];
                     $version = isset( $data['version'] ) ? $data['version'] : 0;
                     $upgrade_count++;
                 }
             }
-            $i++;
         }
         $cfg = $app->db->model( 'option' )->get_by_key(
             ['kind' => 'config', 'key' => 'upgrade_count'] );
         $cfg->value( $upgrade_count );
-        $cfg->number( time() + $app->scheme_expires );
         $cfg->save();
         return $upgrade_count;
     }

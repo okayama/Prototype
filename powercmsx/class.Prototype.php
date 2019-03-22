@@ -29,7 +29,7 @@ spl_autoload_register( '\prototype_auto_loader' );
 class Prototype {
 
     public static $app = null;
-    public    $app_version   = '1.012';
+    public    $app_version   = '1.013';
     public    $id            = 'Prototype';
     public    $name          = 'Prototype';
     public    $db            = null;
@@ -58,7 +58,6 @@ class Prototype {
     public    $auth_expires  = 600;
     public    $perm_expires  = 86400;
     public    $cache_expires = 86400;
-    public    $scheme_expires= 600;
     public    $search_type   = 1;
     public    $cookie_path   = '/';
     public    $languages     = ['ja', 'en'];
@@ -72,15 +71,16 @@ class Prototype {
     public    $init_tags;
     public    $protocol;
     public    $log_path;
-    public    $models_dir    = '';
     public    $screen_id;
-    public    $plugin_paths  = [];
     public    $plugin_order  = 0; // 0=asc, 1=desc
     public    $template_paths= [ ALT_TMPL, TMPL_DIR ];
+    public    $plugin_paths  = [];
+    public    $tmpl_paths    = [];
+    public    $theme_paths   = [];
+    public    $model_paths   = [];
     public    $class_paths   = [];
     public    $components    = [];
     public    $plugin_dirs   = [];
-    public    $theme_dirs    = [];
     public    $cfg_settings  = [];
     public    $plugin_switch = [];
     public    $modules       = [];
@@ -416,8 +416,6 @@ class Prototype {
         $db->register_callback( '__any__', 'post_delete', 'flush_cache', 100, $this );
         $this->db = $db;
         $db->app = $this;
-        $ctx->include_paths[ ALT_TMPL ] = true;
-        $ctx->include_paths[ TMPL_DIR ] = true;
         $ctx->prefix = 'mt';
         $ctx->app = $this;
         $ctx->default_component = $this;
@@ -510,6 +508,8 @@ class Prototype {
         if ( $this->mode !== 'upgrade' ) $this->is_login();
         $app_version = 0;
         $upgrade_count = null;
+        $this->model_paths[] = LIB_DIR . 'PADO' . DS . 'models';
+        $this->db->models_dirs = $this->model_paths;
         if ( $table ) {
             $cfgs = $db->model( 'option' )->load( ['kind' => 'config',
                                                    'workspace_id' => 0] , null, 'key,value,data' );
@@ -547,9 +547,7 @@ class Prototype {
                 } else if ( $key === 'copyright' ) {
                     $this->copyright = $cfg->value;
                 } else if ( $key === 'upgrade_count' ) {
-                    if ( $cfg->number > time() ) {
-                        $upgrade_count = $cfg->value;
-                    }
+                    $upgrade_count = $cfg->value;
                 }
             }
             $this->stash( 'configs', $configs );
@@ -589,17 +587,15 @@ class Prototype {
                         $this->admin_url . '?__mode=logout&_type=not_allowed_ip' );
                 }
             }
-            if ( $upgrade_count === null ) {
-                $system = $this->db->model( 'workspace' )->new( ['id' => 0 ] );
-                $upgrader = new PTUpgrader();
-                $upgrade_count = $upgrader->upgrade_scheme_check( $this );
-            }
-            if ( $upgrade_count ) {
-                $system = $this->db->model( 'workspace' )->new( ['id' => 0 ] );
-                if ( $this->can_do( 'manage_plugins', null, null, $system ) ) {
-                    if ( $upgrade_count ) {
-                        $ctx->vars['scheme_upgrade_count'] = $upgrade_count;
-                    }
+            $system = $this->db->model( 'workspace' )->new( ['id' => 0 ] );
+            if ( $this->can_do( 'manage_plugins', null, null, $system ) ) {
+                if ( $upgrade_count === null ) {
+                    $system = $this->db->model( 'workspace' )->new( ['id' => 0 ] );
+                    $upgrader = new PTUpgrader();
+                    $upgrade_count = $upgrader->upgrade_scheme_check( $this );
+                }
+                if ( $upgrade_count ) {
+                    $ctx->vars['scheme_upgrade_count'] = $upgrade_count;
                 }
             }
         }
@@ -615,13 +611,16 @@ class Prototype {
         $ctx->vars['site_url'] = $this->site_url;
         $ctx->vars['site_path'] = $this->site_path;
         $this->components['core'] = $this;
-        if ( $this->models_dir ) {
-            $this->db->models_dirs[] = $this->models_dir;
-        }
         if ( $table && $this->use_plugin ) {
             if ( ( $plugin_d = __DIR__ . DS . 'plugins' ) && is_dir( $plugin_d ) )
                 $this->plugin_paths[] = $plugin_d;
             $this->init_plugins();
+        }
+        if ( count( $this->tmpl_paths ) ) {
+            $this->template_paths = array_merge( $this->tmpl_paths, $this->template_paths );
+        }
+        foreach ( $this->template_paths as $tmpl_dir ) {
+            $ctx->include_paths[ $tmpl_dir ] = true;
         }
         if (! empty( $this->hooks ) ) {
             $this->run_hooks( 'post_init' );
@@ -671,6 +670,7 @@ class Prototype {
                 $plugins = scandir( $plugin, $this->plugin_order );
                 $register = false;
                 $component = null;
+                $i = 0;
                 foreach ( $plugins as $f ) {
                     if ( strpos( $f, '.' ) === 0 ) continue;
                     $_plugin = $plugin . DS . $f;
@@ -701,10 +701,11 @@ class Prototype {
                     } else if ( $extension === 'php' ) {
                         $php_classes[] = $_plugin;
                     }
-                    if ( is_dir( $plugin . DS . 'models' ) ) {
+                    if (! $i && is_dir( $plugin . DS . 'models' ) ) {
                         $this->db->models_dirs[] = $plugin . DS . 'models';
                     }
                     $register = true;
+                    $i++;
                 }
                 foreach ( $php_classes as $_plugin ) {
                     if(!$component ) 
@@ -2508,8 +2509,9 @@ class Prototype {
         if (!$output ) return $out;
         if ( $app->debug ) {
             $ctx = new PAML;
-            $ctx->include_paths[ ALT_TMPL ] = true;
-            $ctx->include_paths[ TMPL_DIR ] = true;
+            foreach ( $app->template_paths as $tmpl_dir ) {
+                $ctx->include_paths[ $tmpl_dir ] = true;
+            }
             $ctx->prefix = 'mt';
             $time = microtime( true );
             $processing_time = $time - $this->start_time;
