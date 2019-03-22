@@ -2485,6 +2485,7 @@ class Prototype {
             }
             $app->ctx->vars['appname'] = $appname;
         }
+        $app->ctx->vars['debug_mode'] = $app->debug ? 1 : 0;
         $alternative = null;
         $model = $app->param( '_model' );
         if ( $app->mode == 'view' && $app->user() ) {

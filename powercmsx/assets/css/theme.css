@@ -1,3 +1,9 @@
+:root {
+  --body-padding-top: 50px;
+  --footer-height: 44px;
+  --debug-footer-height: 90px;
+}
+
 html {
   position: relative;
   min-height: 100%;
@@ -5,8 +11,28 @@ html {
 
 body {
   padding-top: 50px;
-  margin-bottom: 90px;
+  padding-top: var(--body-padding-top);
+  padding-bottom: 44px;
+  padding-bottom: var(--footer-height);
   font-size: 95%;
+}
+
+body.with-debug-footer {
+  display: flex;
+  flex-direction: column;
+  padding-bottom: 0;
+}
+
+@supports(--css: variables) {
+  @media (min-width: 769px) {
+    /* 10px is .disp-option margin-top */
+    body.with-debug-footer .container-fluid {
+      min-height: calc(100vh - var(--body-padding-top) - var(--footer-height) - 10px - var(--debug-footer-height));
+    }
+    body.with-debug-footer.is-workspace .container-fluid {
+      min-height: calc(100vh - var(--body-padding-top) - var(--footer-height) - 37px - var(--debug-footer-height));
+    }
+  }
 }
 
 .custom-control .form-check-input {
@@ -1050,14 +1076,20 @@ div.mce-fullscreen {
 }
 
 .footer {
-  position: absolute;
-  bottom: 0;
+  display: flex;
+  align-items: center;
   width: 100%;
   height: 44px;
-  line-height: 44px;
+  height: var(--footer-height);
   background-color: #000;
   color: #fff;
   padding-left: 18px;
+  overflow: hidden;
+}
+
+body:not(.with-debug-footer) .footer {
+  position: absolute;
+  bottom: 0;
 }
 
 .meta{

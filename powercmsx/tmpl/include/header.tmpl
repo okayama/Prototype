@@ -45,6 +45,8 @@
     <mt:if name="workspace_id"><style><mt:if name="_fix_spacebar">body { padding-top: 80px; } .workspace-bar { margin-top: 0;}
     <mt:else>.workspace-bar { margin-bottom: 14px;}</mt:if></style></mt:if>
   </head>
+<mt:if name="debug_mode"><mt:setvar name="body_class" value=" with-debug-footer" append="1"></mt:if>
+<mt:if name="workspace_id"><mt:setvar name="body_class" value=" is-workspace" append="1"></mt:if>
   <body class="<mt:var name="body_class">">
 <mt:if name="request._type" eq="edit">
 <mt:if name="__show_loader">
