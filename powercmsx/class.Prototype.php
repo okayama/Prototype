@@ -70,7 +70,7 @@ class Prototype {
     public    $csv_delimiter = ',';
     public    $init_tags;
     public    $protocol;
-    public    $log_path;
+    public    $log_dir;
     public    $screen_id;
     public    $plugin_order  = 0; // 0=asc, 1=desc
     public    $template_paths= [ ALT_TMPL, TMPL_DIR ];
@@ -350,7 +350,8 @@ class Prototype {
     }
 
     function init ( $dsn = null, $dbuser = null, $dbpasswd = null ) {
-        $this->log_path = __DIR__ . DS . 'log' . DS;
+        if (! $this->log_dir )
+            $this->log_dir = isset( $this->log_path ) ? $this->log_path : __DIR__ . DS . 'log';
         if ( $this->timezone ) date_default_timezone_set( $this->timezone );
         require_once( LIB_DIR . 'PADO' . DS . 'class.pado.php' );
         require_once( LIB_DIR . 'PAML' . DS .'class.paml.php' );
@@ -9401,7 +9402,7 @@ class Prototype {
         $this->errors[] = $msg;
         if ( $this->debug === 2 ) $this->debugPrint( $msg );
         if ( $this->logging ) error_log( date( 'Y-m-d H:i:s T', time() ) .
-            "\t" . $msg . "\n", 3, $this->log_path . 'error.log' );
+            "\t" . $msg . "\n", 3, $this->log_dir . DS . 'error.log' );
     }
 
 }
