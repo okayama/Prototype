@@ -8,8 +8,8 @@ class PTTheme {
         if (! $app->can_do( 'import_objects' ) ) {
             return $app->error( 'Permission denied.' );
         }
-        $app->theme_dirs[] = dirname( $app->pt_path ) . DS . 'themes';
-        $theme_dirs = $app->theme_dirs;
+        $app->theme_paths[] = dirname( $app->pt_path ) . DS . 'themes';
+        $theme_dirs = $app->theme_paths;
         $theme_loop = [];
         $themes = [];
         $theme_ids = [];
