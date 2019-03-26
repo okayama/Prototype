@@ -699,13 +699,13 @@ class Prototype {
                         $this->cfg_settings[ $component ] = $r;
                         if (!$setting->number ) continue;
                         $this->configure_from_json( $_plugin, $r );
+                        $register = true;
                     } else if ( $extension === 'php' ) {
                         $php_classes[] = $_plugin;
                     }
                     if (! $i && is_dir( $plugin . DS . 'models' ) ) {
                         $this->db->models_dirs[] = $plugin . DS . 'models';
                     }
-                    $register = true;
                     $i++;
                 }
                 foreach ( $php_classes as $_plugin ) {
