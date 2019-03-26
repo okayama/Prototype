@@ -445,7 +445,7 @@ class Prototype {
                              'columnproperty', 'pluginsetting', 'geturlprimary', 'getactivity',
                              'getchildrenids', 'websitename', 'websiteurl', 'websitelanguage',
                              'websiteid', 'websitepath', 'websitecopyright', 'websitedescription',
-                             'customfieldcount','hex2rgba', 'phpstart', 'phpend'],
+                             'customfieldcount','hex2rgba', 'phpstart', 'phpend', 'getregistry'],
             'block'      => ['objectcols', 'objectloop', 'tables', 'nestableobjects',
                              'countgroupby', 'fieldloop', 'archivelist', 'grouploop',
                              'workspacecontext', 'referencecontext', 'workflowusers',

@@ -1511,6 +1511,25 @@ class PTTags {
         return '?>';
     }
 
+    function hdlr_getregistry ( $args, $ctx ) {
+        $app = $ctx->app;
+        if (! isset( $args['registry'] )
+          || !isset( $args['id'] ) || !isset( $args['key'] ) ) {
+            return '';
+        }
+        $registry = $args['registry'];
+        $registries = $app->registry;
+        if (! isset( $registries[ $registry ] ) ) return '';
+        $id = $args['id'];
+        if ( isset( $registries[ $registry ][ $id ] ) ) {
+            $key = $args['key'];
+            if ( isset( $registries[ $registry ][ $id ][ $key ] ) ) {
+                return $registries[ $registry ][ $id ][ $key ];
+            }
+        }
+        return '';
+    }
+
     function hdlr_get_objectpath ( $args, $ctx ) {
         $app = $ctx->app;
         $current_context = $ctx->stash( 'current_context' );
