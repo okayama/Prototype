@@ -585,8 +585,8 @@ h5 {
   outline: solid 2px #15c;
 }
 
-.dropdown-toggle {
-  padding-bottom: 2px;
+.workspace-bar .dropdown-toggle {
+  padding-bottom: 6px;
 }
 
 input[type="checkbox"]:focus {
