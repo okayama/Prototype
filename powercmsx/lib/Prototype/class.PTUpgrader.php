@@ -93,6 +93,8 @@ class PTUpgrader {
                 $ip_lockout_limit = $app->param( 'ip_lockout_limit' );
                 $ip_lockout_interval = $app->param( 'ip_lockout_interval' );
                 $tmpl_markup = $app->param( 'tmpl_markup' );
+                $barcolor = $app->param( 'barcolor' );
+                $bartextcolor = $app->param( 'bartextcolor' );
                 $errors = [];
                 if (!$appname || !$site_url || !$system_email || !$site_path ) {
                     $errors[] = $app->translate(
@@ -154,7 +156,9 @@ class PTUpgrader {
                          'ip_lockout_interval' => $ip_lockout_interval,
                          'ip_lockout_limit' => $ip_lockout_limit,
                          'default_widget' => $default_widget,
-                         'tmpl_markup' => $tmpl_markup ];
+                         'tmpl_markup' => $tmpl_markup,
+                         'barcolor' => $barcolor,
+                         'bartextcolor' => $bartextcolor ];
                 $password = $app->param( 'password' );
                 $language = $app->param( 'language' );
                 $nickname = $app->param( 'nickname' );
@@ -1591,6 +1595,7 @@ class PTUpgrader {
     function upgrade_scheme_check ( $app ) {
         $upgrade_count = 0;
         $schemes = $app->db->model( 'option' )->load( ['kind' => 'scheme_version'] );
+        $model_names = [];
         foreach ( $schemes as $item ) {
             $model = $item->key;
             $model_names[] = $model;
