@@ -39,11 +39,14 @@ function editorInit () {
       content_css: "<mt:pluginsetting component="TinyMCE" name="tinymce_content_css" workspace_id="$workspace_id" _eval="1">",
       onchange_callback : "editHtmlEditor",
       plugins  : '<mt:pluginsetting component="TinyMCE" name="tinymce_plugins" workspace_id="$workspace_id" _eval="1">',
+    <mt:gettableid name="boilerplate" setvar="boilerplate_table_id">
+    <mt:if name="boilerplate_table_id">
     <mt:objectloop model="boilerplate" prefix="boilerplate" workspace_id="$workspace_id" glue=",">
       <mt:if name="__first__"><mt:setvar name="_boilerplate_exists" value="1">templates: [</mt:if>
         {title: '<mt:var name="boilerplate_label" translate encode_js>', description: '<mt:var name="boilerplate_description" translate encode_js>', url: '<mt:var name="script_uri">?__mode=tinymce_insert_boilerplate&id=<mt:var name="boilerplate_id"><mt:if name="workspace_id">&workspace_id=<mt:var name="workspace_id"></mt:if><mt:if name="request.id">&object_id=<mt:var name="request.id" escape></mt:if>&_model=<mt:var name="request._model" escape>'}
       <mt:if name="__last__">],</mt:if>
     </mt:objectloop>
+    </mt:if>
       <mt:unless name="_boilerplate_exists">
       templates: [
         {title: '<mt:trans phrase="Label of Boilerplate Snippet here." component="TinyMCE">', description: '<mt:trans phrase="Description of Boilerplate Snippet here." component="TinyMCE">', content: '<mt:trans phrase="Snippet of Boilerplate Snippet here(No Boilerplate Snippet found)." component="TinyMCE">'}
