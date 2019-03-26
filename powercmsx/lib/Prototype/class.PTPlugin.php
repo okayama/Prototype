@@ -277,7 +277,7 @@ class PTPlugin {
             $plugins_loop[ $key ] = $cfg;
         }
         $ctx->local_vars['upgrade_count'] = $upgrade_count;
-        $ctx->local_vars['scheme_upgrade_count'] = $scheme_upgrade_count;
+        $ctx->local_vars['plugin_scheme_upgrade_count'] = $scheme_upgrade_count;
         $ctx->local_vars['plugins_loop'] = $plugins_loop;
         return $app->__mode( 'manage_plugins' );
     }

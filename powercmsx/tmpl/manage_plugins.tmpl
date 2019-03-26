@@ -30,13 +30,13 @@ $('#alert-upgrade').focus();
 </mt:if>
 <mt:if name="scheme_upgrade">
   <div class="alert alert-warning" id="alert-scheme-upgrade" tabindex="0">
-    <mt:if name="scheme_upgrade_count" eq="1">
+    <mt:if name="plugin_scheme_upgrade_count" eq="1">
       <mt:trans phrase="There is one scheme upgrade.">
     <mt:else>
-      <mt:trans phrase="There are %s schemes upgrade." params="$scheme_upgrade_count">
+      <mt:trans phrase="There are %s schemes upgrade." params="$plugin_scheme_upgrade_count">
     </mt:if>
     <a href="<mt:var name="script_uri">?__mode=manage_scheme">( 
-    <mt:if name="scheme_upgrade_count" eq="1">
+    <mt:if name="plugin_scheme_upgrade_count" eq="1">
     <mt:trans phrase="Upgrade Scheme">
     <mt:else>
     <mt:trans phrase="Upgrade Schemes">
@@ -72,7 +72,7 @@ $('#alert-scheme-upgrade').focus();
   <th><mt:trans phrase="Settings"></th>
 </tr>
 </mt:setvarblock>
-
+<mt:setvar name="plugin_output" value="0">
 <mt:unless name="workspace_id">
 <div class="form-group">
   <button type="submit" class="enable-btn btn btn-primary"><mt:trans phrase="Enable"></button>
@@ -104,6 +104,7 @@ $('#alert-scheme-upgrade').focus();
     <mt:var name="settings[upgrade]" setvar="upgrade">
     <mt:var name="settings[upgrade_scheme]" setvar="upgrade_scheme">
     <tr id="line_<mt:var name="plugin_id" escape>" <mt:if name="upgrade">class="active-cell"<mt:elseif name="upgrade_scheme">class="active-cell"</mt:if>>
+    <mt:setvar name="plugin_output" value="1">
     <mt:unless name="workspace_id">
     <th>
       <label class="custom-control custom-checkbox">
@@ -168,9 +169,21 @@ $('#alert-scheme-upgrade').focus();
     </tr>
   </mt:if>
 </mt:loop>
+<mt:if name="plugin_output">
 <tfoot>
   <mt:var name="table_header">
 </tfoot>
+<mt:else>
+<tr>
+<td colspan="4">
+  <mt:if name="workspace_id">
+    <mt:trans phrase="There is no plugin that can be setting.">
+  <mt:else>
+    <mt:trans phrase="There is no plugin that can be use.">
+  </mt:if>
+</td>
+</tr>
+</mt:if>
 </table>
 <mt:unless name="workspace_id">
 <div class="form-group">

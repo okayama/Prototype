@@ -771,6 +771,10 @@
         : "max_input_vars の推奨値は %s 以上です( 現在の設定 : %s )。",
     "The Email address to notification is not specified."
         : "通知送信先が指定されていません。",
+    "There is no plugin that can be use."
+        : "プラグインはありません。",
+    "There is no plugin that can be setting."
+        : "設定可能なプラグインはありません。",
     "You can change the display order of fields with drag &amp; drop."
         : "ドラッグ&amp;ドロップでフィールドの表示順を変更できます。",
     "%s Waiting for Approval" : "承認待ちの%s",
