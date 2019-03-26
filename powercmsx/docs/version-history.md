@@ -17,6 +17,7 @@ version 1\.013
 - config\.jsonでのディレクトリ・パスの指定方法を揃えました。tmpl\_paths、plugin\_paths、theme\_paths、model\_pathsの4つが対象です。
 - これらの環境変数は、すべて配列でフルパス指定、ディレクトリの末尾には DIRECTORY\_SEPARATOR を含まずに指定してください。
 - 環境変数 log\_path を log\_dir に変更しました。
+- ファンクションタグ「mt:getregistry」を追加しました。タグ属性 regustry / id / keyを指定して値を取得します。
 
 ## 2019\-03\-13
 
