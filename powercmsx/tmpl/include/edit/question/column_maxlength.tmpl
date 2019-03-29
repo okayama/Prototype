@@ -37,8 +37,10 @@
     <mt:var name="_hint">
   </div>
 </div>
+<mt:getobjectlabel id="$object_questiontype_id" column="class" model="questiontype" setvar="questiontype_value">
+<mt:unless name="questiontype_value">
 <mt:getobjectlabel id="$object_questiontype_id" column="basename" model="questiontype" setvar="questiontype_value">
-
+</mt:unless>
 <mt:if name="questiontype_value" like="file">
 <script>
 $('.unit-label').show();
