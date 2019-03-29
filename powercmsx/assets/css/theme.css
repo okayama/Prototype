@@ -129,6 +129,12 @@ select:focus {
     margin-right: -5px !important;
     margin-left: 0px !important;
   }
+  .brand-workspace {
+    overflow: auto;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    max-width: 600px !important;
+  }
 }
 
 #workspace-selector {
@@ -769,7 +775,7 @@ input.short {
 }
 
 select.short {
-  width: 155px !important;
+  width: 200px !important;
 }
 
 .rel-any-right-col {
@@ -889,6 +895,9 @@ select.short {
 .brand-workspace {
   background-color: #333 !important;
   margin: 3px 18px 0px 0px;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
 }
 
 .nav-top .navbar-toggler {
