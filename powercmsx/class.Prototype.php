@@ -548,7 +548,9 @@ class Prototype {
                 } else if ( $key === 'copyright' ) {
                     $this->copyright = $cfg->value;
                 } else if ( $key === 'upgrade_count' ) {
-                    $upgrade_count = $cfg->value;
+                    if ( $cfg->data > ( time() - 60 ) ) {
+                        $upgrade_count = $cfg->value;
+                    }
                 }
             }
             $this->stash( 'configs', $configs );
@@ -590,8 +592,8 @@ class Prototype {
             }
             $system = $this->db->model( 'workspace' )->new( ['id' => 0 ] );
             if ( $this->can_do( 'manage_plugins', null, null, $system ) ) {
-                if ( $upgrade_count === null ) {
-                    $system = $this->db->model( 'workspace' )->new( ['id' => 0 ] );
+                if ( $upgrade_count === null && $this->mode != 'rebuild_phase' &&
+                    !$this->param( 'dialog_view' ) && $this->request_method != 'POST' ) {
                     $upgrader = new PTUpgrader();
                     $upgrade_count = $upgrader->upgrade_scheme_check( $this );
                 }
@@ -869,64 +871,66 @@ class Prototype {
                 $ctx->include_paths[ $workspace->site_path ] = true;
             }
             $user = $app->user();
-            if ( isset( $app->registry['menus'] ) ) {
-                $menus = $app->registry['menus'];
-                PTUtil::sort_by_order( $menus );
-                $system_menus = [];
-                $workspace_menus = [];
-                $_system = $app->db->model( 'workspace' )->new( ['id' => 0 ] );
-                foreach ( $menus as $menu ) {
-                    $component = $app->component( $menu['component'] );
-                    $permission = isset( $menu['permission'] ) ? $menu['permission'] : null;
-                    $label = $app->translate( $menu['label'], null, $component );
-                    $item = ['menu_label' => $label, 'menu_mode' => $menu['mode'] ];
-                    if ( isset( $menu['args'] ) ) {
-                        $item['menu_args'] = $menu['args'];
-                    }
-                    if ( isset( $menu['display_system'] ) ) {
-                        if ( $app->can_do( $permission, null, null, $_system ) ) {
-                            $system_menus[] = $item;
+            if ( $app->mode != 'rebuild_phase' ) {
+                if ( isset( $app->registry['menus'] ) ) {
+                    $menus = $app->registry['menus'];
+                    PTUtil::sort_by_order( $menus );
+                    $system_menus = [];
+                    $workspace_menus = [];
+                    $_system = $app->db->model( 'workspace' )->new( ['id' => 0 ] );
+                    foreach ( $menus as $menu ) {
+                        $component = $app->component( $menu['component'] );
+                        $permission = isset( $menu['permission'] ) ? $menu['permission'] : null;
+                        $label = $app->translate( $menu['label'], null, $component );
+                        $item = ['menu_label' => $label, 'menu_mode' => $menu['mode'] ];
+                        if ( isset( $menu['args'] ) ) {
+                            $item['menu_args'] = $menu['args'];
+                        }
+                        if ( isset( $menu['display_system'] ) ) {
+                            if ( $app->can_do( $permission, null, null, $_system ) ) {
+                                $system_menus[] = $item;
+                            }
+                        }
+                        if ( isset( $menu['display_space'] ) ) {
+                            if ( $app->can_do( $permission, null, null, $workspace ) ) {
+                                $workspace_menus[] = $item;
+                            }
                         }
                     }
-                    if ( isset( $menu['display_space'] ) ) {
-                        if ( $app->can_do( $permission, null, null, $workspace ) ) {
-                            $workspace_menus[] = $item;
+                    $ctx->vars['system_menus'] = $system_menus;
+                    $ctx->vars['workspace_menus'] = $workspace_menus;
+                }
+                if ( $user ) {
+                    $ctx->vars['user_name'] = $user->name;
+                    $ctx->vars['user_nickname'] = $user->nickname;
+                    $ctx->vars['user_id'] = $user->id;
+                    $ctx->vars['user_space_order'] = $user->space_order;
+                    $ctx->vars['user_text_format'] = $user->text_format;
+                }
+                if ( isset( $registry['methods'] ) && isset( $registry['methods'][ $mode ] ) ) {
+                    $meth = $registry['methods'][ $mode ];
+                    $plugin = $meth['component'];
+                    $method = $meth['method'];
+                    $requires_login = isset( $meth['requires_login'] )
+                        ? $meth['requires_login'] : true;
+                    if ( $requires_login && ! $app->is_login() ) {
+                        return $app->__mode( 'login' );
+                    }
+                    $component = $app->component( $plugin );
+                    if (!$component ) $component = $app->autoload_component( $plugin );
+                    if ( method_exists( $component, $method ) ) {
+                        if ( isset( $meth['permission'] ) && $meth['permission'] ) {
+                            if (!$app->can_do( $meth['permission'],
+                                                null, null, $workspace ) ) {
+                                $app->error( 'Permission denied.' );
+                            }
                         }
+                        return $component->$method( $app );
                     }
                 }
-                $ctx->vars['system_menus'] = $system_menus;
-                $ctx->vars['workspace_menus'] = $workspace_menus;
-            }
-            if ( $user ) {
-                $ctx->vars['user_name'] = $user->name;
-                $ctx->vars['user_nickname'] = $user->nickname;
-                $ctx->vars['user_id'] = $user->id;
-                $ctx->vars['user_space_order'] = $user->space_order;
-                $ctx->vars['user_text_format'] = $user->text_format;
             }
             $screen_id = $app->param( '_screen_id' );
             $app->screen_id = $screen_id;
-            if ( isset( $registry['methods'] ) && isset( $registry['methods'][ $mode ] ) ) {
-                $meth = $registry['methods'][ $mode ];
-                $plugin = $meth['component'];
-                $method = $meth['method'];
-                $requires_login = isset( $meth['requires_login'] )
-                    ? $meth['requires_login'] : true;
-                if ( $requires_login && ! $app->is_login() ) {
-                    return $app->__mode( 'login' );
-                }
-                $component = $app->component( $plugin );
-                if (!$component ) $component = $app->autoload_component( $plugin );
-                if ( method_exists( $component, $method ) ) {
-                    if ( isset( $meth['permission'] ) && $meth['permission'] ) {
-                        if (!$app->can_do( $meth['permission'],
-                                            null, null, $workspace ) ) {
-                            $app->error( 'Permission denied.' );
-                        }
-                    }
-                    return $component->$method( $app );
-                }
-            }
             if ( $app->mode !== 'start_recover' 
                  && $app->mode !== 'recover_password' && ! $app->is_login() )
                 return $app->__mode( 'login' );

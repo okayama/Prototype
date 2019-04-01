@@ -1649,6 +1649,7 @@ class PTUpgrader {
         $cfg = $app->db->model( 'option' )->get_by_key(
             ['kind' => 'config', 'key' => 'upgrade_count'] );
         $cfg->value( $upgrade_count );
+        $cfg->data( time() );
         $cfg->save();
         return $upgrade_count;
     }
