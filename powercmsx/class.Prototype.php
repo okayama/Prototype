@@ -3906,17 +3906,17 @@ class Prototype {
                 $ctx->vars['page_title'] = $app->translate( 'Done.' );
                 $app->remove_session( $sess_terms );
             } else {
-                if ( $app->param( 'start_rebuild' ) ) {
-                    $next_model = $ctx->vars['current_model'];
-                } else if (!$next_model && $app->param( 'next_models' ) ) {
+                $title = '';
+                if ( $app->param( 'next_models' ) ) {
                     $next_models = explode( ',', $app->param( 'next_models' ) );
-                    $next_model = $next_models[0];
+                    if ( isset( $next_models[0] ) ) {
+                        $table = $app->get_table( $next_models[0] );
+                        $title = $app->translate( 'Rebuilding %s...',
+                                 $app->translate( $table->plural ) );
+                    }
                 }
-                $table = $app->get_table( $next_model );
-                $plural = $app->translate( $table->plural );
                 $ctx->vars['icon_url'] = 'assets/img/loading.gif';
-                $title = $app->translate( 'Rebuilding %s...', $plural );
-                $ctx->vars['page_title'] = $title;
+                $ctx->vars['page_title'] = $title ? $title : $app->translate( 'Rebuilding...' );
             }
             $ctx->vars['start_time'] = $start_time;
             return $app->build_page( $tmpl );
