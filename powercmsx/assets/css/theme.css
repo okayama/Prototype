@@ -894,8 +894,7 @@ select.short {
 
 .brand-workspace {
   background-color: #333 !important;
-  margin: 3px 18px 0px 0px;
-  overflow: hidden;
+  margin: 3px 17px 0px 0px;
   white-space: nowrap;
   text-overflow: ellipsis;
 }
@@ -1387,6 +1386,10 @@ i.required {
 
 .popup p {
   margin: 0.5em;
+}
+
+.popup .footer {
+  height: 10px;
 }
 
 .multiple-field {
