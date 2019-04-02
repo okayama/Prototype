@@ -65,10 +65,10 @@ $('#header-alert-message').focus();
 </div>
 <script>
 if ( $('#next_models').val() ) {
+    <mt:var name="next_models" escape split="," setvar="next_model">
+    <mt:var name="next_model" index="0" translate setvar="next_model">
+    $('#rebuilt_percent_inner').html('<img src="<mt:var name="prototype_path">assets/img/loading.gif" alt="" class="loading">');
     setTimeout(function(){
-        <mt:var name="next_models" escape split="," setvar="next_model">
-        <mt:var name="next_model" index="0" translate setvar="next_model">
-        $('#rebuilt_percent_inner').html('<img src="<mt:var name="prototype_path">assets/img/loading.gif" alt="" class="loading">');
         $('.title').html( '<img src="<mt:var name="prototype_path">assets/img/loading.gif" alt="" class="loading"> '+ '<mt:trans phrase="Rebuilding %s..." params="$next_model">' );
         $('#rebuild_next').submit();
     } , <mt:var name="rebuild_interval">);
