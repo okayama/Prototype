@@ -1631,6 +1631,9 @@ class PAML {
         $i = 0;
         $args = $this->setup_args( $args );
         foreach ( $args as $arg ) {
+            if ( strpos( $arg, '\$' ) !== false ) {
+                $arg = str_replace( '\$', '$', $arg );
+            }
             if ( ( $pos = strpos( $arg, "\0" ) ) !== false ) {
                 $arg = substr( $arg, 0, $pos );
                 if ( preg_match( '!([a-zA-Z\s]+)$!s', $arg, $match )
