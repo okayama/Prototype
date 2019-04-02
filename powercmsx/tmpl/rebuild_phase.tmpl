@@ -58,7 +58,7 @@ $('#header-alert-message').focus();
 <input type="hidden" name="start_time" value="<mt:var name="start_time" escape>">
 <input type="hidden" name="request_id" value="<mt:var name="request_id" escape>">
 </fotm>
-<p class="rebuilt_percent"><img src="<mt:var name="prototype_path">assets/img/loading.gif" alt="" class="loading"></p>
+<p class="rebuilt_percent">&nbsp;<span id="rebuilt_percent_inner">100%</span>&nbsp;</p>
 <div class="pt-progress-bar">
 <div class="pt-progress-bar-inner" style="width: 100%">
 </div>
@@ -68,6 +68,7 @@ if ( $('#next_models').val() ) {
     setTimeout(function(){
         <mt:var name="next_models" escape split="," setvar="next_model">
         <mt:var name="next_model" index="0" translate setvar="next_model">
+        $('#rebuilt_percent_inner').html('<img src="<mt:var name="prototype_path">assets/img/loading.gif" alt="" class="loading">');
         $('.title').html( '<img src="<mt:var name="prototype_path">assets/img/loading.gif" alt="" class="loading"> '+ '<mt:trans phrase="Rebuilding %s..." params="$next_model">' );
         $('#rebuild_next').submit();
     } , <mt:var name="rebuild_interval">);
