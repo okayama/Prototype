@@ -18,7 +18,6 @@ class PTViewer {
         if ( preg_match( '!/$!', $request ) ) {
             $request .= 'index.html';
         }
-        $user = $app->user();
         $workspace = null;
         $file_path = $document_root . $request;
         $existing_data = null;
@@ -49,15 +48,6 @@ class PTViewer {
                 $existing_data = $data;
             }
         }
-        if ( $this->allow_login ) {
-            if ( $app->mode =='logout' && $app->dynamic_view ) {
-                if ( $user ) {
-                    return $this->login_logout( $app );
-                }
-            } else if ( $app->mode =='login' && $app->dynamic_view ) {
-                return $this->login_logout( $app );
-            }
-        }
         $app->init_tags();
         $terms = ['relative_url' => $request ];
         if ( $workspace_id ) {
@@ -71,6 +61,16 @@ class PTViewer {
         $app->init_callbacks( 'urlinfo', 'post_load_object' );
         $callback = ['name' => 'post_load_object', 'model' => 'urlinfo' ];
         $app->run_callbacks( $callback, 'urlinfo', $url );
+        $user = $app->user();
+        if ( $this->allow_login ) {
+            if ( $app->mode =='logout' && $app->dynamic_view ) {
+                if ( $user ) {
+                    return $this->login_logout( $app );
+                }
+            } else if ( $app->mode =='login' && $app->dynamic_view ) {
+                return $this->login_logout( $app );
+            }
+        }
         $ctx->stash( 'current_urlinfo', $url );
         $ctx->vars['current_archive_url'] = $url->url;
         $ctx->stash( 'current_archive_url', $url->url );
@@ -94,6 +94,7 @@ class PTViewer {
             }
             $this->page_not_found( $app, $workspace );
         }
+        $workspace = $workspace ? $workspace : $url->workspace;
         if (! file_exists( $file_path ) && ! $url->is_published &&
             $url->publish_file == 1 && ! $user ) {
             $this->page_not_found( $app, $workspace );
