@@ -1656,7 +1656,7 @@ class PAML {
  * Get from predefined variables $_REQUEST.
  */
     function request_var ( $name, $args ) {
-        $name = preg_replace( "/request\./", '', $name );
+        $name = preg_replace( "/^request\./", '', $name );
         if (!isset( $_REQUEST[ $name ] ) ) return;
         $var = $_REQUEST[ $name ];
         if ( isset( $args['setvar'] ) ) return $var;
