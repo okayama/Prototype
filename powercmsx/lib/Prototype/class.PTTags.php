@@ -3834,6 +3834,10 @@ class PTTags {
             if ( $im_export ) {
                 $terms['im_export'] = 1;
             }
+            $template_tags = isset( $args['template_tags'] ) ? $args['template_tags'] : 0;
+            if ( $template_tags ) {
+                $terms['template_tags'] = 1;
+            }
             if ( $show_activity ) {
                 $terms['show_activity'] = 1;
                 if ( $app->workspace() ) {
