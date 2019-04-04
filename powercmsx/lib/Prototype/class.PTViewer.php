@@ -43,7 +43,7 @@ class PTViewer {
             if ( strpos( $mime_type, 'text' ) === false
                 || !preg_match( "/$regex/i", $data ) ) {
                 header( 'HTTP/1.1 200 OK' );
-                $app->print( $data, $mime_type, $mtime );
+                $app->print( $data, $mime_type, $mtime, $app->static_conditional );
             } else {
                 $existing_data = $data;
             }
@@ -80,19 +80,32 @@ class PTViewer {
         $ctx->vars['appname'] = $app->appname;
         $ctx->include_paths[ $app->site_path ] = true;
         if (! $url->id ) {
-            if ( $workspace_id ) {
-                $workspace_id = (int) $workspace_id;
-                $workspace = $app->db->model( 'workspace' )->load( $workspace_id );
+            if (! $existing_data && file_exists( $file_path ) && $app->allow_static ) {
+                $data = file_get_contents( $file_path );
+                $mime_type = PTUtil::get_mime_type( $file_path );
+                $mtime = filemtime( $file_path );
+                if ( strpos( $mime_type, 'text' ) === false
+                    || !preg_match( "/$regex/i", $data ) ) {
+                    header( 'HTTP/1.1 200 OK' );
+                    $app->print( $data, $mime_type, $mtime, $app->static_conditional );
+                } else {
+                    $existing_data = $data;
+                }
             } else {
-                $request_uri = $app->base . $app->request_uri;
-                $workspace = $this->get_workspace_from_url( $app, $request_uri );
+                if ( $workspace_id ) {
+                    $workspace_id = (int) $workspace_id;
+                    $workspace = $app->db->model( 'workspace' )->load( $workspace_id );
+                } else {
+                    $request_uri = $app->base . $app->request_uri;
+                    $workspace = $this->get_workspace_from_url( $app, $request_uri );
+                }
+                if ( $workspace ) {
+                    $app->stash( 'workspace', $workspace );
+                    $ctx->stash( 'workspace', $workspace );
+                    $ctx->include_paths[ $workspace->site_path ] = true;
+                }
+                $this->page_not_found( $app, $workspace );
             }
-            if ( $workspace ) {
-                $app->stash( 'workspace', $workspace );
-                $ctx->stash( 'workspace', $workspace );
-                $ctx->include_paths[ $workspace->site_path ] = true;
-            }
-            $this->page_not_found( $app, $workspace );
         }
         $workspace = $workspace ? $workspace : $url->workspace;
         if (! file_exists( $file_path ) && ! $url->is_published &&
