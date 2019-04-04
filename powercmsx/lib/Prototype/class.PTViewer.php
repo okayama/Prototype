@@ -43,7 +43,8 @@ class PTViewer {
             if ( strpos( $mime_type, 'text' ) === false
                 || !preg_match( "/$regex/i", $data ) ) {
                 header( 'HTTP/1.1 200 OK' );
-                $app->print( $data, $mime_type, $mtime, $app->static_conditional );
+                $app->do_conditional = $app->static_conditional;
+                $app->print( $data, $mime_type, $mtime );
             } else {
                 $existing_data = $data;
             }
@@ -87,7 +88,8 @@ class PTViewer {
                 if ( strpos( $mime_type, 'text' ) === false
                     || !preg_match( "/$regex/i", $data ) ) {
                     header( 'HTTP/1.1 200 OK' );
-                    $app->print( $data, $mime_type, $mtime, $app->static_conditional );
+                    $app->do_conditional = $app->static_conditional;
+                    $app->print( $data, $mime_type, $mtime );
                 } else {
                     $existing_data = $data;
                 }
