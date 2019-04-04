@@ -3,17 +3,15 @@
     <label for="<mt:var name="name" escape>"><mt:var name="label" escape="1"></label>
   </div>
   <div class="col-lg-10 form-inline">
-
     <input type="hidden" name="sortable" value="0">
     <label class="custom-control custom-checkbox sort-sortable-cb">
     <input id="auditing" class="custom-control-input"
     <mt:if name="readonly">onclick="return false;"</mt:if>
      type="checkbox" name="sortable" value="1" <mt:if name="object_sortable">checked</mt:if>>
         <span class="custom-control-indicator"></span>
-        <span class="custom-control-description"> 
+        <span class="custom-control-description form-inline-span-cb"> 
         <mt:trans phrase="Sortable"></span>
     </label>
-
     <mt:var name="request.id" setvar="_table_id">
     <select id="<mt:var name="name" escape>" name="<mt:var name="name" escape>" class="form-control">
       <mt:objectloop model="column" sort_by="order" table_id="$_table_id">
@@ -27,7 +25,6 @@
       </mt:if>
       </mt:objectloop>
     </select>
-
     <select name="sort_order" class="form-control">
       <option value="ascend" <mt:if name="object_sort_order" eq="ascend">selected</mt:if>>
         <mt:trans phrase="Ascend">

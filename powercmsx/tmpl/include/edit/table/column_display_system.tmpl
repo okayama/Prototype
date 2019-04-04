@@ -10,7 +10,7 @@
     <mt:if name="readonly">onclick="return false;"</mt:if>
      type="checkbox" name="<mt:var name="name" escape>" value="1" <mt:if name="value">checked</mt:if>>
         <span class="custom-control-indicator"></span>
-        <span class="custom-control-description"> 
+        <span class="custom-control-description form-inline-span-cb"> 
         <mt:trans phrase="Display in System"></span>
     </label>
     <label>
@@ -242,7 +242,7 @@ $("#<mt:var name="name" escape>").click(function(){
     <input id="has_uuid" class="form-control custom-control-input watch-changed"
      type="checkbox" name="has_uuid" value="1" <mt:if name="object_has_uuid">checked</mt:if>>
         <span class="custom-control-indicator"></span>
-        <span class="custom-control-description"> 
+        <span class="custom-control-description form-inline-span-cb"> 
         <mt:trans phrase="UUID"></span>
     </label>
 
