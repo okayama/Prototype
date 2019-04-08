@@ -29,7 +29,7 @@ spl_autoload_register( '\prototype_auto_loader' );
 class Prototype {
 
     public static $app = null;
-    public    $app_version   = '1.014';
+    public    $app_version   = '1.013';
     public    $id            = 'Prototype';
     public    $name          = 'Prototype';
     public    $db            = null;
@@ -4708,7 +4708,8 @@ class Prototype {
                     $obj->$col = $value;
                 } else {
                     if ( $type == 'blob' ) {
-                        if ( isset( $props['not_null'] ) && $props['not_null'] ) {
+                        if (! $obj->$col &&
+                            isset( $props['not_null'] ) && $props['not_null'] ) {
                             $obj->$col('');
                         }
                     } else {
