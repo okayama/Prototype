@@ -12,6 +12,7 @@ if (! $blob_path ) {
     echo 'PADO::blob_path not specified.';
     exit();
 }
+$db->blob2file = false;
 $sth = $db->show_tables();
 $tables = $sth->fetchAll();
 $pfx = preg_quote( DB_PREFIX, '/' );

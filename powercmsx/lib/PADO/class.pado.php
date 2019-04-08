@@ -162,9 +162,9 @@ class PADO {
             $this->driver = $driver;
         }
         $blob2file = defined( 'PADO_DB_BLOB2FILE' ) ? PADO_DB_BLOB2FILE : $this->blob2file;
-        $blob_path = defined( 'PADO_DB_BLOBPATH' ) ? PADO_DB_BLOBPATH : $this->blob_path;
         if (! $driver ) return;
         if ( $blob2file ) {
+            $blob_path = defined( 'PADO_DB_BLOBPATH' ) ? PADO_DB_BLOBPATH : $this->blob_path;
             if (! $blob_path ) {
                 $this->blob2file = false;
             } else {
