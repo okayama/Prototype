@@ -26,10 +26,10 @@ body.with-debug-footer {
 @supports(--css: variables) {
   @media (min-width: 769px) {
     /* 10px is .disp-option margin-top */
-    body.with-debug-footer .container-fluid {
+    body.with-debug-footer #main-content > .container-fluid {
       min-height: calc(100vh - var(--body-padding-top) - var(--footer-height) - 10px - var(--debug-footer-height));
     }
-    body.with-debug-footer.is-workspace .container-fluid {
+    body.with-debug-footer.is-workspace #main-content > .container-fluid {
       min-height: calc(100vh - var(--body-padding-top) - var(--footer-height) - 37px - var(--debug-footer-height));
     }
   }
