@@ -4708,6 +4708,9 @@ class Prototype {
                     $obj->$col = $value;
                 } else {
                     if ( $type == 'blob' ) {
+                        if ( isset( $props['not_null'] ) && $props['not_null'] ) {
+                            $obj->$col('');
+                        }
                     } else {
                         $obj->$col( $value );
                     }
