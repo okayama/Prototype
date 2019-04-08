@@ -29,7 +29,7 @@ spl_autoload_register( '\prototype_auto_loader' );
 class Prototype {
 
     public static $app = null;
-    public    $app_version   = '1.014';
+    public    $app_version   = '1.013';
     public    $id            = 'Prototype';
     public    $name          = 'Prototype';
     public    $db            = null;
@@ -190,8 +190,6 @@ class Prototype {
     public    $ws_menu_type  = 1;
     public    $dynamic_view  = true;
     public    $force_dynamic = false;
-    public    $allow_static  = false;
-    public    $static_conditional = true;
     public    $in_dynamic    = false;
     public    $form_interval = 180;
     public    $form_upper_limit = 5;
@@ -3916,13 +3914,17 @@ class Prototype {
                 if ( $app->param( 'next_models' ) ) {
                     $next_models = explode( ',', $app->param( 'next_models' ) );
                     if ( isset( $next_models[0] ) ) {
-                        $table = $app->get_table( $next_models[0] );
-                        $title = $app->translate( 'Rebuilding %s...',
-                                 $app->translate( $table->plural ) );
+                        $next_model = $next_models[0];
+                        $table = $app->get_table( $next_model );
+                        $plural = $app->translate( $table->plural );
+                        $title = $app->translate( 'Rebuilding %s...', $plural );
                     }
                 }
+                if (! $title ) {
+                    $title = $app->translate( 'Rebuilding...' );
+                }
                 $ctx->vars['icon_url'] = 'assets/img/loading.gif';
-                $ctx->vars['page_title'] = $title ? $title : $app->translate( 'Rebuilding...' );
+                $ctx->vars['page_title'] = $title;
             }
             $ctx->vars['start_time'] = $start_time;
             return $app->build_page( $tmpl );
@@ -4705,7 +4707,10 @@ class Prototype {
                     // Collision $obj->model( $model )->...
                     $obj->$col = $value;
                 } else {
-                    if ( $type != 'blob' ) $obj->$col( $value );
+                    if ( $type == 'blob' ) {
+                    } else {
+                        $obj->$col( $value );
+                    }
                 }
             }
         }
