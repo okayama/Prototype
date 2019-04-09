@@ -15,7 +15,10 @@ $allow_login  = false; // Specify true to display unpublish URLs to login users.
 
 $workspace_id = 0;
 require_once( $pcmsx_path . 'class.Prototype.php' );
-$app = new Prototype();
+$app = new Prototype( ['id' => 'Bootstrapper'] );
+if ( $app->request_method != 'GET' || $app->query_string ) {
+    $app->force_dynamic = true;
+}
 require_once( LIB_DIR . 'Prototype' . DS . 'class.PTViewer.php' );
 $bootstrapper = new PTViewer;
 if ( isset( $asset_parent ) ) {
