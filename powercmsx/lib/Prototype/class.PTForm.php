@@ -582,14 +582,14 @@ class PTForm {
                         if ( is_array( $value ) ) {
                             $new_vars = [];
                             foreach ( $value as $v ) {
-                                $v = normalizer_normalize( $v, Normalizer::NFKD );
+                                $v = normalizer_normalize( $v, Normalizer::NFKC );
                                 $new_vars[] = $v; 
                             }
                             $value = $new_vars;
                             $_POST['question_' . $basename ] = $new_vars;
                             $_REQUEST['question_' . $basename ] = $new_vars;
                         } else {
-                            $value = normalizer_normalize( $value, Normalizer::NFKD );
+                            $value = normalizer_normalize( $value, Normalizer::NFKC );
                             $_POST['question_' . $basename ] = $value;
                             $_REQUEST['question_' . $basename ] = $value;
                         }
@@ -749,7 +749,7 @@ class PTForm {
                                : trim( $question->options );
                         if ( $normarize ) {
                             if ( function_exists( 'normalizer_normalize' ) ) {
-                                $items = normalizer_normalize( $items, Normalizer::NFKD );
+                                $items = normalizer_normalize( $items, Normalizer::NFKC );
                             }
                         }
                         $items = preg_split( "/\s*,\s*/", $items );
