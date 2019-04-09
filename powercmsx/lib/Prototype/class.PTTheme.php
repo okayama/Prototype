@@ -360,11 +360,25 @@ class PTTheme {
             $app->init_tags( true );
             $scheme = $app->get_scheme_from_db( 'template' );
             $app->db->scheme['template'] = $scheme;
+            $publish_templates = [];
             foreach ( $templates_installed as $template ) {
                 $template->compiled('');
                 $template->save();
                 if ( $template->class == 'Archive' ) {
-                    $app->publish_obj( $template, null, false );
+                    $publish_templates[] = $template;
+                }
+            }
+            $app->db->caching = false;
+            foreach ( $publish_templates as $template ) {
+                $app->publish_obj( $template, null, false );
+            }
+            foreach ( $publish_templates as $template ) {
+                $tmpl = $app->db->model( 'template' )->load(
+                    ['id' => $template->id, 'class' => 'Archive' ] );
+                // Re-Publish Templates
+                if ( is_array( $tmpl ) && !empty( $tmpl ) ) {
+                    $tmpl = $tmpl[0];
+                    $app->publish_obj( $tmpl, null, false );
                 }
             }
             $return_args = "__mode=manage_theme&apply_theme=1";
