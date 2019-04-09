@@ -190,6 +190,8 @@ class Prototype {
     public    $ws_menu_type  = 1;
     public    $dynamic_view  = true;
     public    $force_dynamic = false;
+    public    $allow_static  = false;
+    public    $static_conditional = true;
     public    $in_dynamic    = false;
     public    $form_interval = 180;
     public    $form_upper_limit = 5;
