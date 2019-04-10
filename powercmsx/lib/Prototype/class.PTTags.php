@@ -3304,6 +3304,7 @@ class PTTags {
             $date_col = $app->get_date_col( $obj );
             $terms[ $date_col ] = ['BETWEEN' => [ $start, $end ] ];
         } else {
+            $at = isset( $args['ignore_archive_context'] ) ? 'index' : $at;
             $args = [];
             $container = $ctx->stash( 'current_container' );
             $ws_attr = '';
