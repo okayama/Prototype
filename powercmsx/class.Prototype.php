@@ -249,7 +249,7 @@ class Prototype {
         $this->is_secure = $secure ? true : false;
         $base = isset( $_SERVER['SERVER_NAME'] ) 
             ? "http{$secure}://{$_SERVER['SERVER_NAME']}" : null;
-        $port = isset( $_SERVER['SERVER_PORT'] ) ? ( int ) $_SERVER['SERVER_PORT'] : null;
+        $port = isset( $_SERVER['SERVER_PORT'] ) ? (int) $_SERVER['SERVER_PORT'] : null;
         if (! empty( $port ) && !( $secure === '' ? 80 : 443 ) ) $base .= ":{$port}";
         $request_uri = NULL;
         if ( isset( $_SERVER['HTTP_X_REWRITE_URL'] ) ) {
@@ -6063,7 +6063,14 @@ class Prototype {
         $path = trim( $path );
         $base_url = $app->site_url;
         $base_path = $app->site_path;
-        if ( $workspace = $mapping->workspace ) {
+        $workspace_id = $mapping->workspace_id;
+        $workspace = null;
+        if ( $workspace_id ) {
+            $workspace = $mapping->workspace
+                       ? $mapping->workspace
+                       : $app->db->model( 'workspace' )->load( (int) $workspace_id );
+        }
+        if ( $workspace ) {
             $base_url = $workspace->site_url;
             $base_path = $workspace->site_path;
         }
