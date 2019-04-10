@@ -3216,8 +3216,10 @@ class PTTags {
                     $params = '?__mode=get_temporary_file&amp;data=1&amp;id=session-' . $session->id;
                     return $admin_url . $params;
                 } else if ( $in_preview || $app->force_dynamic ) {
-                    $params = "?__mode=view&view={$key}&_type=edit&_model={$current_context}&id=" . $obj->id;
-                    return $admin_url . $params;
+                    if ( $obj->$key ) {
+                        $params = "?__mode=view&view={$key}&_type=edit&_model={$current_context}&id=" . $obj->id;
+                        return $admin_url . $params;
+                    }
                 }
             }
             return '';
@@ -4499,6 +4501,7 @@ class PTTags {
                     }
                 }
             }
+            $var_prefix = isset( $args['prefix'] ) ? $args['prefix'] . '_' : '';
             foreach ( $values as $key => $value ) {
                 if ( $colprefix ) $key = preg_replace( "/^$colprefix/", '', $key );
                 if ( $key === 'edit' ) {
@@ -4516,7 +4519,7 @@ class PTTags {
                         $ctx->local_vars['disp_option'] = $opt;
                     }
                 }
-                $ctx->local_vars[ $key ] = $value;
+                $ctx->local_vars[ $var_prefix . $key ] = $value;
             }
             $ctx->local_vars['label'] = $app->translate( $obj->label );
         }
