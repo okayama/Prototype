@@ -226,7 +226,8 @@ class PTUpgrader {
                 $search = preg_quote( $app->document_root, '/' );
                 $path = preg_replace( "/^$search/", '', $path );
             }
-            $path = rtrim( $path, DS );
+            $path = rtrim( $path, '/' );
+            $path = str_replace( '/', DS, $path );
             $_path = str_replace( DS, '/', $path );
             $ctx->vars['site_url'] = $app->base . $_path . '/site/';
             $ctx->vars['site_path'] = $app->document_root . $path . DS . 'site';
