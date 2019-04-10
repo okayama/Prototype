@@ -1591,7 +1591,7 @@ class PTTags {
         $limit = isset( $args['limit'] ) ? $args['limit'] : 30;
         $limit += 0;
         if (! $limit ) return;
-        $sort_order = isset( $args['sort_order'] ) ? $args['sort_order'] : 'ascend';
+        $sort_order = isset( $args['sort_order'] ) ? $args['sort_order'] : 'decend';
         $glue = isset( $args['glue'] ) ? $args['glue'] : ',';
         $data = isset( $args['data'] ) ? $args['data'] : '';
         $key = isset( $args['key'] ) ? $args['key'] : '';
@@ -1629,7 +1629,7 @@ class PTTags {
             $values = $activity->get_values();
             $_activities[ $values['time'] ] = (int) $values['count'];
         }
-        $stmt = $sort_order == 'ASC' ? '-' : '+';
+        $stmt = '-';
         $from = substr( $from, 0, 8 );
         $tmp_time = "{$from}000000";
         for ( $i = 0; $i < $limit; $i++ ) {
@@ -1656,6 +1656,11 @@ class PTTags {
                 $offset = count( $activities ) - $limit - 1;
                 $activities = array_slice( $activities, $offset, null );
             }
+        }
+        if ( $sort_order == 'ASC' ) {
+            krsort( $activities );
+        } else {
+            ksort( $activities );
         }
         if ( $key ) {
             return implode( $glue, array_keys( $activities ) );

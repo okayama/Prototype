@@ -34,6 +34,9 @@ class PTUpgrader {
             'update1006'     => ['component' => 'PTUpgrader',
                                  'method'    => 'update1006',
                                  'version_limit' => '1.006' ],
+            'update_perm'    => ['component' => 'PTUpgrader',
+                                 'method'    => 'update_perm',
+                                 'version_limit' => '1.015' ],
         ];
         $upgrade_functions = [];
         foreach ( $functions as $func ) {
@@ -223,7 +226,8 @@ class PTUpgrader {
                 $search = preg_quote( $app->document_root, '/' );
                 $path = preg_replace( "/^$search/", '', $path );
             }
-            $path = rtrim( $path, DS );
+            $path = rtrim( $path, '/' );
+            $path = str_replace( '/', DS, $path );
             $_path = str_replace( DS, '/', $path );
             $ctx->vars['site_url'] = $app->base . $_path . '/site/';
             $ctx->vars['site_path'] = $app->document_root . $path . DS . 'site';
@@ -733,29 +737,19 @@ class PTUpgrader {
                 $record = $db->model( 'column' )->get_by_key(
                     ['table_id' => $table_id, 'name' => $name ] );
                 if (! $force && $record->id ) continue;
-                if ( $name === $primary ) {
-                    $record->is_primary( 1 );
-                } else {
-                    $record->is_primary( 0 );
-                }
+                if ( $name === $primary ) $record->is_primary( 1 );
                 $record->type( $defs['type'] );
                 if ( isset( $defs['size'] ) ) $record->size( $defs['size'] );
                 if ( isset( $defs['default'] ) ) $record->default( $defs['default'] );
-                if ( isset( $defs['not_null'] ) ) {
-                    $record->not_null( 1 );
-                } else {
-                    $record->not_null( 0 );
-                }
-                if ( isset( $indexes[ $name ] ) ) {
-                    $record->index( 1 );
-                } else {
-                    $record->index( 0 );
-                }
-                if ( in_array( $name, $autoset ) ) {
-                    $record->autoset( 1 );
-                } else {
-                    $record->autoset( 0 );
-                }
+                $record->not_null( 0 );
+                $record->index( 0 );
+                $record->autoset( 0 );
+                $record->unique( 0 );
+                $record->unchangeable( 0 );
+                $record->not_delete( 0 );
+                if ( isset( $defs['not_null'] ) ) $record->not_null( 1 );
+                if ( isset( $indexes[ $name ] ) ) $record->index( 1 );
+                if ( in_array( $name, $autoset ) ) $record->autoset( 1 );
                 if ( isset( $column_labels[ $name ] ) ) {
                     $label = $column_labels[ $name ];
                 } else if ( isset( $locale[ $name ] ) ) {
@@ -779,16 +773,8 @@ class PTUpgrader {
                 } else {
                     $record->list();
                 }
-                if ( in_array( $name, $unique ) ) {
-                    $record->unique( 1 );
-                } else {
-                    $record->unique( 0 );
-                }
-                if ( in_array( $name, $unchangeable ) ) {
-                    $record->unchangeable( 1 );
-                } else {
-                    $record->unchangeable( 0 );
-                }
+                if ( in_array( $name, $unique ) ) $record->unique( 1 );
+                if ( in_array( $name, $unchangeable ) ) $record->unchangeable( 1 );
                 $record->not_delete( 1 );
                 $record->order( $i );
                 if ( isset( $scheme['relations'] ) ) {
@@ -796,31 +782,16 @@ class PTUpgrader {
                         $record->options( $scheme['relations'][ $name ] );
                     }
                 }
-                if ( isset( $col_options[ $name ] ) ) {
+                if ( isset( $col_options[ $name ] ) ) 
                     $record->options( $col_options[ $name ] );
-                } else {
-                    $record->options();
-                }
-                if ( isset( $col_extras[ $name ] ) ) {
+                if ( isset( $col_extras[ $name ] ) ) 
                     $record->extra( $col_extras[ $name ] );
-                } else {
-                    $record->extra();
-                }
-                if ( isset( $hints[ $name ] ) ) {
+                if ( isset( $hints[ $name ] ) ) 
                     $record->hint( $hints[ $name ] );
-                } else {
-                    $record->hint();
-                }
-                if ( isset( $disp_edit[ $name ] ) ) {
+                if ( isset( $disp_edit[ $name ] ) ) 
                     $record->disp_edit( $disp_edit[ $name ] );
-                } else {
-                    $record->disp_edit();
-                }
-                if ( in_array( $name, $translates ) ) {
+                if ( in_array( $name, $translates ) ) 
                     $record->translate( 1 );
-                } else {
-                    $record->translate( 0 );
-                }
                 if ( $record->unique ) {
                     if ( empty( $col_unique ) || ! isset( $col_unique[ $name ] ) ) {
                         $record->unique( 0 );
@@ -1581,6 +1552,15 @@ class PTUpgrader {
         }
     }
 
+    function update_perm ( $app ) {
+        $sessions = $app->db->model( 'session' )->load(
+                                                ['name' => 'user_permissions',
+                                                 'kind' => 'PM'] );
+        if ( is_array( $sessions ) && !empty( $sessions ) ) {
+            $app->db->model( 'session' )->remove_multi( $sessions );
+        }
+    }
+  
     function update1006 ( $app ) {
         $cf = $app->get_table( 'field' );
         $column = $app->db->model( 'column' )->get_by_key( ['table_id' => $cf->id,

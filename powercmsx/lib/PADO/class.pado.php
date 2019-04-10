@@ -2560,6 +2560,14 @@ class PADOMySQL extends PADOBaseModel {
             }
             $update = array_merge( $indexes['new'], $indexes['changed'] );
             if (! empty( $update ) ) {
+                $sql = "SHOW INDEX FROM {$table}";
+                $sth = $pdo->prepare( $sql );
+                $existing_idx = $pdo->query( $sql )->fetchAll();
+                $pado->queries[] = $sql;
+                $existing_idxs = [];
+                foreach ( $existing_idx as $idx ) {
+                    $existing_idxs[ $idx['Key_name'] ] = true;
+                }
                 foreach ( $update as $name => $props ) {
                     if (! is_array( $props ) ) $props = explode( ',', $props );
                     if ( $colprefix ) {
@@ -2574,6 +2582,9 @@ class PADOMySQL extends PADOBaseModel {
                         continue;
                     } else {
                         $name = $table . '_' . $name;
+                        if ( isset( $existing_idxs[ $name ] ) ) {
+                            continue;
+                        }
                         $sql = "CREATE INDEX {$name} ON {$table}({$props})";
                         if ( $pado->stash( $sql ) ) continue;
                         if ( $pado->debug === 3 ) $pado->debugPrint( $sql );
