@@ -34,6 +34,9 @@ class PTUpgrader {
             'update1006'     => ['component' => 'PTUpgrader',
                                  'method'    => 'update1006',
                                  'version_limit' => '1.006' ],
+            'update_perm'    => ['component' => 'PTUpgrader',
+                                 'method'    => 'update_perm',
+                                 'version_limit' => '1.015' ],
         ];
         $upgrade_functions = [];
         foreach ( $functions as $func ) {
@@ -1548,6 +1551,15 @@ class PTUpgrader {
         }
     }
 
+    function update_perm ( $app ) {
+        $sessions = $app->db->model( 'session' )->load(
+                                                ['name' => 'user_permissions',
+                                                 'kind' => 'PM'] );
+        if ( is_array( $sessions ) && !empty( $sessions ) ) {
+            $app->db->model( 'session' )->remove_multi( $sessions );
+        }
+    }
+  
     function update1006 ( $app ) {
         $cf = $app->get_table( 'field' );
         $column = $app->db->model( 'column' )->get_by_key( ['table_id' => $cf->id,

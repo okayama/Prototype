@@ -29,7 +29,7 @@ spl_autoload_register( '\prototype_auto_loader' );
 class Prototype {
 
     public static $app = null;
-    public    $app_version   = '1.014';
+    public    $app_version   = '1.015';
     public    $id            = 'Prototype';
     public    $name          = 'Prototype';
     public    $db            = null;
@@ -2840,55 +2840,57 @@ class Prototype {
             }
         }
         $permissions = $app->db->model( 'permission' )->load( ['user_id' => $user->id ] );
+        $user_permissions = [];
         $role_ids = [];
         $workspace_map = [];
-        foreach ( $permissions as $perm ) {
-            $relations = $app->get_relations( $perm );
-            foreach ( $relations as $relation ) {
-                if ( $relation->to_obj === 'role' ) {
-                    $role_ids[] = $relation->to_id;
-                    $workspace_map[ $relation->to_id ] = $perm->workspace_id;
-                }
-            }
-        }
-        $roles = (! empty( $role_ids ) )
-            ? $app->db->model( 'role' )->load( ['id' => ['IN' => $role_ids ] ] ) : [];
-        $user_permissions = [];
         $tables = $app->db->model( 'table' )->load();
         $table_map = [];
         foreach( $tables as $table ) {
             $table_map[ $table->id ] = $table->name;
         }
-        foreach ( $roles as $role ) {
-            $workspace_id = $workspace_map[ $role->id ];
-            $perms = $app->get_relations( $role );
-            $ws_permission = isset( $user_permissions[ $workspace_id ] ) 
-                ? $user_permissions[ $workspace_id ] : [];
-            foreach ( $perms as $p ) {
-                if ( $p->to_obj === 'table' ) {
-                    $model = $table_map[ $p->to_id ];
-                    $name = $p->name . '_' . $model;
-                    if (! in_array( $name, $ws_permission ) ) {
-                        $ws_permission[] = $name;
+        foreach ( $permissions as $perm ) {
+            $relations = $app->get_relations( $perm );
+            foreach ( $relations as $relation ) {
+                if ( $relation->to_obj === 'role' ) {
+                    if ( $role = $app->db->model( 'role' )->load( (int) $relation->to_id ) ) {
+                        $ws_permission = isset( $user_permissions[ $perm->workspace_id ] )
+                                       ? $user_permissions[ $perm->workspace_id ] : [];
+                        $perms = $app->get_relations( $role );
+                        foreach ( $perms as $p ) {
+                            if ( $p->to_obj === 'table' ) {
+                                $model = $table_map[ $p->to_id ];
+                                $name = $p->name . '_' . $model;
+                                if (! in_array( $name, $ws_permission ) ) {
+                                    $ws_permission[] = $name;
+                                }
+                            }
+                        }
+                        if ( $role->workspace_admin &&
+                            ! in_array( 'workspace_admin', $ws_permission ) ) {
+                            $ws_permission[] = 'workspace_admin';
+                        }
+                        if ( $role->can_rebuild &&
+                            ! in_array( 'can_rebuild', $ws_permission ) ) {
+                            $ws_permission[] = 'can_rebuild';
+                        }
+                        if ( $role->manage_plugins &&
+                            ! in_array( 'manage_plugins', $ws_permission ) ) {
+                            $ws_permission[] = 'manage_plugins';
+                        }
+                        if ( $role->import_objects &&
+                            ! in_array( 'import_objects', $ws_permission ) ) {
+                            $ws_permission[] = 'import_objects';
+                        }
+                        if ( $role->can_livepreview &&
+                            ! in_array( 'can_livepreview', $ws_permission ) ) {
+                            $ws_permission[] = 'can_livepreview';
+                        }
+                        $user_permissions[ $perm->workspace_id ] = $ws_permission;
+                        $role_ids[] = $relation->to_id;
+                        $workspace_map[ $relation->to_id ] = $perm->workspace_id;
                     }
                 }
             }
-            if ( $role->workspace_admin ) {
-                $ws_permission[] = 'workspace_admin';
-            }
-            if ( $role->can_rebuild ) {
-                $ws_permission[] = 'can_rebuild';
-            }
-            if ( $role->manage_plugins ) {
-                $ws_permission[] = 'manage_plugins';
-            }
-            if ( $role->import_objects ) {
-                $ws_permission[] = 'import_objects';
-            }
-            if ( $role->can_livepreview ) {
-                $ws_permission[] = 'can_livepreview';
-            }
-            $user_permissions[ $workspace_id ] = $ws_permission;
         }
         $json = json_encode( $user_permissions );
         $session = $app->db->model( 'session' )->get_by_key(
