@@ -1903,3 +1903,9 @@ b,strong {
 #container_scope-wrapper {
   margin-top: 10px;
 }
+
+.copyright {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
