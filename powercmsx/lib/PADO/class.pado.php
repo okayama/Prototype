@@ -2211,7 +2211,7 @@ class PADOBaseModel {
         if ( isset( $pado->methods['db2ts'] ) )
             return $this->_driver->db2ts( $ts );
         $ts = preg_replace( '/[^0-9]/', '', $ts );
-        $ts = (int) $ts;
+        $ts += 0;
         return $ts;
     }
 }
