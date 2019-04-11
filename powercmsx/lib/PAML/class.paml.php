@@ -129,7 +129,7 @@ class PAML {
                         'replace', 'translate', 'count_chars', 'to_json', 'from_json',
                         'nocache', 'split', 'join', 'format_size', 'encode_xml', 'encode_php',
                         'instr', 'mb_instr', 'absolute', 'numify', 'merge_linefeeds', 'array_pop',
-                        'decode_html', 'default'],
+                        'decode_html', 'default', 'normarize'],
       'function'    => ['getvar', 'trans', 'setvar', 'property', 'ldelim', 'include', 'math',
                         'rdelim', 'fetch', 'var', 'date', 'assign', 'count', 'vardump',
                         'gethashvar', 'query'],
@@ -1650,6 +1650,13 @@ class PAML {
 
     function modifier_default ( $str, $args, $ctx ) {
         return $str ? $str : $args;
+    }
+
+    function modifier_normarize ( $str, $arg, $ctx ) {
+        if ( function_exists( 'normalizer_normalize' ) ) {
+            $str = normalizer_normalize( $str, Normalizer::NFKC );
+        }
+        return $str;
     }
 
 /**

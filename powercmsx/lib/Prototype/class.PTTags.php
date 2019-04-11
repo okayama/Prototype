@@ -3241,7 +3241,9 @@ class PTTags {
         $table = $app->get_table( $model );
         $archive_date_based = false;
         if ( $at && ( $at === 'monthly' || $at === 'yearly' || $at === 'fiscal-yearly' ) ) {
-            $archive_date_based = true;
+            if (! isset( $args['ignore_archive_context'] ) ) {
+                $archive_date_based = true;
+            }
         }
         if ( $table->has_status ) {
             $include_draft = isset( $args['include_draft'] )
