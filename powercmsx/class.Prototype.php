@@ -3944,6 +3944,9 @@ class Prototype {
     }
 
     function upload ( $app ) {
+        if ( empty( $_FILES ) ) {
+            $app->json_error( 'Please check the file size and data.' );
+        }
         $app->validate_magic( true );
         $upload_dir = $app->upload_dir();
         $screen_id = $app->param( '_screen_id' );
@@ -4005,6 +4008,9 @@ class Prototype {
     }
 
     function upload_multi ( $app ) {
+        if ( empty( $_FILES ) ) {
+            $app->json_error( 'Please check the file size and data.' );
+        }
         $app->validate_magic( true );
         $name = $app->param( 'name' );
         $magic = '';

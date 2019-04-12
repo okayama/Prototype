@@ -83,7 +83,6 @@ $(function () {
                 var download_url = '<mt:var name="script_uri">?__mode=view&_type=edit&_model=<mt:var name="_model" escape>&_screen_id=<mt:var name="screen_id">&workspace_id=<mt:var name="workspace_id">';
                 download_url += '&view=attachmentfiles&session_id=' + file.session_id;
                 var fInfo = file_name.split('.');
-
                 var fileExtension = fInfo[fInfo.length-1].toLowerCase();
                 var extensionsInline = ['csv', 'xls', 'xlsx', 'doc', 'docx', 'ppt', 'pptx'];
                 if (extensionsInline.indexOf(fileExtension) < 0){
@@ -124,12 +123,14 @@ $(function () {
         .parent().addClass($.support.fileInput ? undefined : 'disabled');
 });
 function finish_<mt:var name="__col_name__"> () {
-    $('#progress-<mt:var name="__col_name__"> .progress-bar').css(
-        'width', 0
-    );
-    $('#<mt:var name="__col_name__">-alert-message').html('<mt:trans phrase="The file has successfully uploaded. The uploaded file will not be reflected until you save this page.">');
-    $('#<mt:var name="__col_name__">-alert').show();
-    $('#<mt:var name="__col_name__">-alert').focus();
+    if ( upload_count ) {
+        $('#progress-<mt:var name="__col_name__"> .progress-bar').css(
+            'width', 0
+        );
+        $('#<mt:var name="__col_name__">-alert-message').html('<mt:trans phrase="The file has successfully uploaded. The uploaded file will not be reflected until you save this page.">');
+        $('#<mt:var name="__col_name__">-alert').show();
+        $('#<mt:var name="__col_name__">-alert').focus();
+    }
 }
 ;(function(){
     var event_type = 'mouseenter mousemove mouseleave';
