@@ -136,7 +136,7 @@ jQuery.fn.extend({
         </mt:if>
         <mt:objectloop cols="id,name" model="workspace" can_access="1" limit="$selector_limit" sort_by="$ws_sort_by" direction="$ws_sort_order">
         <mt:if name="__first__">
-          <div class="hidden nav-item dropdown workspace-dd-wrapper active" id="workspace-selector">
+          <div class="hidden nav-item dropdown workspace-dd-wrapper active" id="workspace-selector" style="z-index:2">
             <a aria-label="<mt:trans phrase="WorkSpaces">" class="nav-link dropdown-toggle" data-toggle="dropdown" href="#">
             <i data-toggle="tooltip" data-placement="right" title="<mt:trans phrase="Select a WorkSpace">" class="fa fa-cube workspace-dd" aria-hidden="true"></i>
             <span class="sr-only"><mt:trans phrase="WorkSpaces"></span>
