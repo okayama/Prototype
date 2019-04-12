@@ -1307,6 +1307,8 @@
         : "'%s'のアップロードはシステム設定にて許可されていません。",
     "Model and View are required."
         : "モデルとビューを選択してください。",
+    "Please check the file size and data."
+        : "ファイルのサイズまたデータを確認してください。",
     "[[The line was skipped because CSV conversion failed!]]"
         : "[[CSV変換に失敗したため行がスキップされました!]]",
     "This Page is WorkSpace %s's Dashboard!"
