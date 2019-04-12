@@ -101,7 +101,7 @@ class Prototype {
     public    $remote_ip;
     public    $user;
     public    $pt_path       = __FILE__;
-    public    $developer_mode= false;
+    public    $develop       = false;
     public    $export_without_bin = false;
     public    $cache_permalink = true;
     public    $appname;
@@ -491,7 +491,7 @@ class Prototype {
         $ctx->vars['languages'] = $this->languages;
         $ctx->vars['request_method'] = $this->request_method;
         $ctx->vars['prototype_path'] = $this->app_path ? $this->app_path : $this->path;
-        $ctx->vars['developer_mode'] = $this->developer_mode;
+        $ctx->vars['develop'] = $this->develop;
         $ctx->vars['app_version'] = $this->app_version;
         $lang = $this->language;
         $ctx->language = $lang;

@@ -904,7 +904,7 @@ class PTUpgrader {
             }
             if (! in_array( $id, $ids ) ) {
                 if ( $col_name !== $obj->primary && ( !$column->not_delete ||
-                    $app->developer_mode ) ) {
+                    $app->develop ) ) {
                     if (! $validation ) {
                         // Cleanup relation
                         if ( $column->type == 'relation' ) {

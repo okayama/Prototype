@@ -36,7 +36,7 @@
 <input id="_name_<mt:var name="id">" name="_name_<mt:var name="id">" type="text" class="form-control" value="<mt:var name="name" escape>" readonly></td>
 <td><input id="_label_<mt:var name="id">" name="_label_<mt:var name="id">" type="text" class="form-control" value="<mt:var name="label" escape>"<mt:if name="is_primary"> readonly</mt:if>></td>
 <td>
-<mt:if name="developer_mode">
+<mt:if name="develop">
   <mt:setvar name="_not_delete" value="0">
 <mt:else>
   <mt:var name="not_delete" setvar="_not_delete">
