@@ -1874,6 +1874,7 @@ b,strong {
 
 .custom-select {
   border-color: #333;
+  margin-bottom: 1px;
 }
 
 .nestableobjects-list .nestableobjects-list {
