@@ -40,11 +40,11 @@ class DisplayOptions extends PTPlugin {
             && $terms['display_system'] && $workspace_id ) {
             $workspace_id = 0;
         }
-        $displayoptions = $app->stash( 'current_displayoptions' )
-                        ? $app->stash( 'current_displayoptions' )
+        $displayoptions = $app->stash( 'current_displayoptions_' . $workspace_id )
+                        ? $app->stash( 'current_displayoptions_' . $workspace_id )
                         : $app->db->model( 'displayoption' )->load(
                                         ['workspace_id' => $workspace_id] );
-        $app->stash( 'current_displayoptions', $displayoptions );
+        $app->stash( 'current_displayoptions_' . $workspace_id , $displayoptions );
         if (empty( $displayoptions ) ) return;
         if ( isset( $terms['menu_type'] ) ) {
             $type = $terms['menu_type'];
