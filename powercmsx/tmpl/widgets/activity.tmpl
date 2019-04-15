@@ -56,7 +56,7 @@
       <input type="hidden" name="__mode" value="change_activity">
       <input type="hidden" name="magic_token" value="<mt:var name="magic_token">">
       <input type="hidden" name="workspace_id" value="<mt:var name="workspace_id">">
-      <select name="_model" class="form-control form-control-sm control-inline form-control-very-sm" style="min-width:85px;">
+      <select name="_model" class="form-control custom-select form-control-sm control-inline form-control-very-sm" style="min-width:85px;">
       <option <mt:if name="name" eq="log">selected</mt:if> value="log"><mt:trans phrase="Logs"></option>
       </mt:if>
       <option <mt:if name="name" eq="$activity_model">selected</mt:if> value="<mt:var name="name" escape>"><mt:var name="plural" escape translate></option>

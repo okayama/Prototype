@@ -805,7 +805,7 @@ $(function () {
           <mt:elseif name="edit" like="select">
             <mt:setvarblock name="__rel_name__">object_<mt:var name="__col_name__"></mt:setvarblock>
             <mt:setvar name="__options_out" value="">
-            <select id="<mt:var name="__col_name__">" class="form-control short watch-changed" name="<mt:var name="__col_name__">">
+            <select id="<mt:var name="__col_name__">" class="form-control custom-select short watch-changed" name="<mt:var name="__col_name__">">
               <mt:objectloop model="$rel_model" sort_by="order" include_draft="1" workspace_id="$workspace_id">
               <mt:if name="readonly">
               <mt:if name="type" eq="int">
@@ -1126,7 +1126,7 @@ $(function () {
     </mt:loop>
     <mt:elseif name="disp_edit" eq="select">
       <mt:unless name="request.id"><mt:unless name="forward_params"><mt:var name="default" escape setvar="__col_value__"></mt:unless></mt:unless>
-    <select id="<mt:var name="__col_name__">" class="form-control short watch-changed" name="<mt:var name="__col_name__">">
+    <select id="<mt:var name="__col_name__">" class="form-control custom-select short watch-changed" name="<mt:var name="__col_name__">">
     <mt:loop name="_options_loop">
       <mt:if name="__first__">
       <mt:unless name="not_null">
