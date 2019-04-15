@@ -136,7 +136,7 @@ jQuery.fn.extend({
         </mt:if>
         <mt:objectloop cols="id,name" model="workspace" can_access="1" limit="$selector_limit" sort_by="$ws_sort_by" direction="$ws_sort_order">
         <mt:if name="__first__">
-          <div class="hidden nav-item dropdown workspace-dd-wrapper active" id="workspace-selector" style="z-index:2">
+          <div class="hidden nav-item dropdown workspace-dd-wrapper active" id="workspace-selector" style="z-index:5">
             <a aria-label="<mt:trans phrase="WorkSpaces">" class="nav-link dropdown-toggle" data-toggle="dropdown" href="#">
             <i data-toggle="tooltip" data-placement="right" title="<mt:trans phrase="Select a WorkSpace">" class="fa fa-cube workspace-dd" aria-hidden="true"></i>
             <span class="sr-only"><mt:trans phrase="WorkSpaces"></span>
@@ -186,7 +186,7 @@ $(window).on('load resize', function(){
           </mt:if>
         </mt:tables>
         <mt:tables menu_type="1" permission="1" cols="id,name,plural">
-          <li class="<mt:if name="__first__">nav-first-item </mt:if>nav-item <mt:if name="name" eq="$model">active</mt:if>">
+          <li class="nav-item <mt:if name="name" eq="$model">active</mt:if>">
             <mt:var name="label" count_chars setvar="count_chars"><a class="nav-link" href="<mt:var name="script_uri">?__mode=view&amp;_type=list&amp;_model=<mt:var name="name" escape>"<mt:if name="count_chars" gt="18"> title="<mt:var name="label" escape>"</mt:if>><mt:var name="label" escape></a>
           </li>
         </mt:tables>
@@ -320,23 +320,23 @@ $(window).on('load resize', function(){
       <mt:var name="workspace_name" count_chars setvar="workspace_chars"><a class="navbar-brand brand-workspace" href="<mt:var name="script_uri">?__mode=dashboard&amp;workspace_id=<mt:var name="workspace_id">"<mt:if name="workspace_chars" gt="18"> title="<mt:var name="workspace_name" escape>"</mt:if>><mt:var name="workspace_name" escape trim_to="20+..."></a>
       <div class="collapse navbar-collapse" id="navbars-ws">
         <ul class="nav-pills navbar-nav mr-auto">
-            <mt:tables type="display_space" menu_type="6" permission="1" workspace_perm="1" cols="id,name,plural">
-              <mt:if name="__first__">
-                <li class="nav-item dropdown">
-                <a aria-label="<mt:trans phrase="Favorites">" class="nav-link dropdown-toggle" data-toggle="dropdown" href="#">
-                  <i data-toggle="tooltip" data-placement="right" title="<mt:trans phrase="Favorites">" class="fa fa-bookmark" aria-hidden="true"></i>
-                  <span class="sr-only"><mt:trans phrase="Favorites"></span>
-                </a>
-                <div class="dropdown-menu">
-              </mt:if>
-                <a class="dropdown-item dropdown-sub btn-sm" href="<mt:var name="script_uri">?__mode=view&amp;_type=list&amp;_model=<mt:var name="name" escape><mt:if name="workspace_id">&amp;workspace_id=<mt:var name="workspace_id"></mt:if>"><mt:var name="label" escape></a>
-              <mt:if name="__last__">
-                </div>
-                </li>
-              </mt:if>
-            </mt:tables>
+          <mt:tables type="display_space" menu_type="6" permission="1" workspace_perm="1" cols="id,name,plural">
+            <mt:if name="__first__">
+              <li class="nav-item dropdown">
+              <a aria-label="<mt:trans phrase="Favorites">" class="nav-link dropdown-toggle" data-toggle="dropdown" href="#">
+                <i data-toggle="tooltip" data-placement="right" title="<mt:trans phrase="Favorites">" class="fa fa-bookmark" aria-hidden="true"></i>
+                <span class="sr-only"><mt:trans phrase="Favorites"></span>
+              </a>
+              <div class="dropdown-menu">
+            </mt:if>
+              <a class="dropdown-item dropdown-sub btn-sm" href="<mt:var name="script_uri">?__mode=view&amp;_type=list&amp;_model=<mt:var name="name" escape><mt:if name="workspace_id">&amp;workspace_id=<mt:var name="workspace_id"></mt:if>"><mt:var name="label" escape></a>
+            <mt:if name="__last__">
+              </div>
+              </li>
+            </mt:if>
+          </mt:tables>
         <mt:tables type="display_space" menu_type="1" permission="1" workspace_perm="1" cols="id,name,plural">
-          <li class="<mt:if name="__first__">nav-first-item </mt:if>nav-item nav-item-ws <mt:if name="name" eq="$model">active</mt:if>">
+          <li class="nav-item nav-item-ws <mt:if name="name" eq="$model">active</mt:if>">
             <mt:var name="label" count_chars setvar="count_chars"><a class="nav-link" href="<mt:var name="script_uri">?__mode=view&amp;_type=list&amp;_model=<mt:var name="name" escape><mt:if name="workspace_id">&amp;workspace_id=<mt:var name="workspace_id"></mt:if>"<mt:if name="count_chars" gt="18"> title="<mt:var name="label" escape>"</mt:if>><mt:var name="label" escape></a>
           </li>
           <mt:if name="__last__">

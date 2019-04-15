@@ -135,6 +135,9 @@ select:focus {
     text-overflow: ellipsis;
     max-width: 600px !important;
   }
+  .dropdown-menu {
+    border: none !important;
+  }
 }
 
 #workspace-selector {
