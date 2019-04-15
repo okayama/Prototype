@@ -334,6 +334,10 @@ body.modal-open {
   .badge-relation span {
     max-width:80px !important;
   }
+  #__workflow_use {
+    display: block;
+    margin-left: 14px;
+  }
 }
 
 select.form-control-very-sm{
