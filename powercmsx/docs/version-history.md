@@ -24,7 +24,7 @@ version 1\.015
 - 環境変数「developer\_mode」を「develop」に変更しました。
 - PHP\_INT\_MAXが 2147483647\(32Bit版PHP\) の時に日付が正しく処理されない問題を修正しました。
 - \_htaccessの設定「php_value upload\_max\_filesize」を "30M"に変更しました。
-
+- PTUtilクラスに send\_multipart\_mail メソッドを追加しました。
 
 ## 2019\-04\-03
 
@@ -63,7 +63,6 @@ version 1\.013
 - boilerplate モデルが有効化されていない時、オブジェクトの作成・編集画面で errorログが残る問題を修正しました。
 - プラグイン管理画面でスキーマアップグレードのメニューのバッヂが表示されない問題を修正しました。
 - プラグイン管理画面でプラグインがない時の表示を調整しました。
-- PTUtilクラスに send\_multipart\_mail メソッドを追加しました。
 
 ## 2019\-03\-13
 
