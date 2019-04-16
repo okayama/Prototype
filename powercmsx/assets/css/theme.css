@@ -148,6 +148,13 @@ select:focus {
   #_activity_log-wrapper{
     margin-bottom: -10px;
   }
+  .header-util {
+    margin-top: 3px !important;
+    margin-bottom: 5px !important;
+  }
+  .workspace-bar .header-util {
+    margin-top: 6px !important;
+  }
 }
 
 #workspace-selector {
@@ -760,7 +767,13 @@ td.num {
 
 .header-util {
   margin-left:-15px;
+  margin-top: -3px;
   margin-bottom: 3px;
+}
+
+.workspace-bar .header-util {
+  margin-top: -2px;
+  margin-bottom: 4px;
 }
 
 .header-util a {
