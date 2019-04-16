@@ -145,6 +145,9 @@ select:focus {
   .dropdown-menu {
     border: none !important;
   }
+  #_activity_log-wrapper{
+    margin-bottom: -10px;
+  }
 }
 
 #workspace-selector {
@@ -310,6 +313,9 @@ select:focus {
   }
   .left-label {
     margin-left: 17px !important;
+  }
+  #_activity_log-wrapper{
+    margin-bottom: -25px;
   }
 }
 

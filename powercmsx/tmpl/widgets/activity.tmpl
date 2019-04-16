@@ -10,7 +10,7 @@
   </h2>
   <mt:var name="activity_label" translate setvar="activity_label">
   <div class="card-block">
-    <div style="height:160px" id="_activity_log-wrapper">
+    <div style="height:160px;max-height:160px;" id="_activity_log-wrapper">
     <canvas id="_activity_log" width="100%" height="160px"
         style="margin-bottom:-10px;display:none;height:160px;max-height:160px"></canvas>
     </div>
@@ -34,14 +34,6 @@
         responsive: true,
         maintainAspectRatio: false,
         animation: false
-      }
-    });
-    $(window).on('resize load', function(){
-      var windowWidth = $(window).width();
-      if ( windowWidth < 700 ) {
-        $('#_activity_log-wrapper').css('margin-bottom', '-25px');
-      } else {
-        $('#_activity_log-wrapper').css('margin-bottom', '3px');
       }
     });
     $('#_activity_log').show(90);
