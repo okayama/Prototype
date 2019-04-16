@@ -14,6 +14,7 @@ class LivePreview extends PTPlugin {
     function post_init ( $app ) {
         if (! $app->user() ) return;
         $app->do_conditional = false;
+        $app->static_conditional = false;
         $datebased = $this->get_config_value( 'livepreview_date_based' );
         if ( $datebased ) {
             $datebased_models = preg_split( '/\s*,\s*/', $datebased );
