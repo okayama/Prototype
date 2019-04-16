@@ -1585,8 +1585,7 @@ class PTUtil {
         ) );
     }
 
-    public static function send_mail ( $to, $subject, $body, $headers,
-        &$error = '', $logging = true ) {
+    public static function send_mail ( $to, $subject, $body, $headers, &$error = '' ) {
         $app = Prototype::get_instance();
         $from = isset( $headers['From'] )
             ? $headers['From'] : $app->get_config( 'system_email' );
@@ -1650,20 +1649,45 @@ class PTUtil {
         return mb_send_mail( $to, $subject, $body, $options, $additional );
     }
 
+    public static function send_multipart_mail ( $to, $subject, $body, $headers,
+                                                 $files = [], &$error = '' ) {
+        $app = Prototype::get_instance();
+        $content_type = isset( $headers['Content-Type'] ) ? $headers['Content-Type'] : 'text/plain';
+        $headers['Content-Type'] = 'multipart/mixed;boundary="__BOUNDARY__"';
+        $charset = $app->mail_encording ? strtoupper( $app->mail_encording ) : 'ISO-2022-JP';
+        $text = $body;
+        $body = "--__BOUNDARY__\n";
+        $body .= "Content-Type: {$content_type}; charset=\"{$charset}\"\n\n";
+        $body .= $text . "\n";
+        $body .= "--__BOUNDARY__\n";
+        foreach ( $files as $file ) {
+            if ( file_exists( $file ) ) {
+                $file_name = basename( $file );
+                $body .= "Content-Type: application/octet-stream; name=\"{$file_name}\"\n";
+                $body .= "Content-Disposition: attachment; filename=\"{$file_name}\"\n";
+                $body .= "Content-Transfer-Encoding: base64\n";
+                $body .= "\n";
+                $body .= chunk_split( base64_encode( file_get_contents( $file ) ) );
+                $body .= "--__BOUNDARY__\n";
+            }
+        }
+        return self::send_mail( $to, $subject, $body, $headers, $error );
+    }
+
     public static function encode_mimeheader ( &$value ) {
         $app = Prototype::get_instance();
         if ( strpos( $value, '<' ) !== false && strpos( $value, '>' ) !== false
             && preg_match( '/(^.*?)<(.*?)>$/', $value, $matches ) ) {
             list( $addr, $value ) = [ $matches[2], $matches[1] ]; 
             if ( $app->mail_encording ) {
-                $value = mb_encode_mimeheader( $value, $app->mail_encording );
+                $value = mb_encode_mimeheader( $value, strtoupper( $app->mail_encording ) );
             } else {
                 $value = mb_encode_mimeheader( $value );
             }
             $value = "{$value}<{$addr}>";
         } else {
             if ( $app->mail_encording ) {
-                $value = mb_encode_mimeheader( $value, $app->mail_encording );
+                $value = mb_encode_mimeheader( $value, strtoupper( $app->mail_encording ) );
             } else {
                 $value = mb_encode_mimeheader( $value );
             }

@@ -241,7 +241,7 @@ class PTForm {
                             }
                             $mail_error = '';
                             if (! PTUtil::send_mail( $contact->email,
-                                $subject, $body, $headers, $mail_error, false ) ) {
+                                $subject, $body, $headers, $mail_error ) ) {
                                 $message =
                                     $this->translate( 'Failed to send a thank you email.(%s)',
                                                      $mail_error );
@@ -329,7 +329,7 @@ class PTForm {
                                 }
                             }
                             if (! PTUtil::send_mail( $to,
-                                $subject, $body, $headers, $mail_error, false ) ) {
+                                $subject, $body, $headers, $mail_error ) ) {
                                 $message =
                                     $this->translate( 'Failed to send a notification email.(%s)',
                                                      $mail_error );
