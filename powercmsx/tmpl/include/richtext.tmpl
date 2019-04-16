@@ -64,7 +64,7 @@ function editorInit () {
                   + '-2px 2px 2px <mt:var name="__object_back_color">,'
                   + '2px -2px 2px <mt:var name="__object_back_color">,'
                   + '-2px -2px 2px <mt:var name="__object_back_color">;'
-                  + 'background-image:url("' + bg_image_url + '?rnd=' + Math.random() + '")} body *{background-color: rgba(' + rgba + ')}';
+                  + 'background-image:url("' + bg_image_url + '?rnd=' + Math.random() + '")} body *{background-color: rgba(' + rgba + '); color: <mt:var name="__object_fore_color">}';
               } else {
                 ed.settings['content_style'] = 'body {margin: 40px; font-size: 110%;color:<mt:var name="__object_fore_color">; background:<mt:var name="__object_back_color">;}';
               }
