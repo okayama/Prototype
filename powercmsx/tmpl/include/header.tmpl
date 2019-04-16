@@ -159,8 +159,8 @@ jQuery.fn.extend({
 $(window).on('load resize', function(){
   var brandOffset = $('#navbar-brand-end').offset();
   $('#workspace-selector').css('position','absolute');
-  $('#workspace-selector').css('left',brandOffset.left + 14);
-  $('#workspace-selector').css('top','0px');
+  $('#workspace-selector').css('left',brandOffset.left + 8);
+  $('#workspace-selector').css('top','1px');
   if ( $('#workspace-selector').is(':hidden') ) {
     $('#workspace-selector').show('fast');
   }
@@ -306,7 +306,7 @@ $(window).on('load resize', function(){
   <mt:if name="this_mode" ne="upgrade">
     <mt:if name="this_mode" ne="login">
       <mt:if name="workspace_id">
-    <nav class="bar navbar navbar-toggleable-md navbar-inverse bg-inverse workspace-bar" style="z-index:4;<mt:unless name="_fix_spacebar">overflow:hidden</mt:unless>">
+    <nav class="bar navbar navbar-toggleable-md navbar-inverse bg-inverse workspace-bar" style="z-index:4;">
       <mt:if name="this_mode" ne="login">
       <button style="background-color: <mt:var name="workspace_barcolor" escape> !important; color: <mt:var name="workspace_bartextcolor"> !important;" class="navbar-toggler navbar-toggler-right btn-ws" type="button" data-toggle="collapse" data-target="#navbars-ws" aria-controls="navbars" aria-expanded="false" aria-label="<mt:trans phrase="Toggle Navigation">">
         <i class="fa fa-bars" aria-hidden="true"></i>

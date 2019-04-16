@@ -63,7 +63,10 @@ select:focus {
 
 @media ( max-width: 991px ) {
   .dropdown {
-  margin-left:-4px;
+    margin-left:-4px;
+  }
+  nav .nav-item{
+    margin-top: 0px !important;
   }
   #system-panel {
     margin-left: 0px;
@@ -75,61 +78,65 @@ select:focus {
     margin-left: 0px !important;
   }
   .workspace-dd-wrapper {
-  margin-left: -4px !important;
+    margin-left: -4px !important;
   }
   .workspace-dd-wrapper i {
-  padding: 5px !important;
+    padding: 5px !important;
   }
   .dropdown a {
-  padding-left: 8px !important;
+    padding-left: 8px !important;
   }
   .header-util {
-  margin-top: 1em;
+    margin-top: 1em;
   }
   .modal {
-  width: 100% !important;
-  padding: 0px !important;
-  overflow: auto !important;
+    width: 100% !important;
+    padding: 0px !important;
+    overflow: auto !important;
   }
   .modal-dialog {
-  width: 80% !important;
-  max-width: 80% !important;
+    width: 80% !important;
+    max-width: 80% !important;
   }
   .modal-content {
-  width: 100% !important;
-  padding: 0px !important;
-  margin: 0px !important;
+    width: 100% !important;
+    padding: 0px !important;
+    margin: 0px !important;
   }
   #action-input-box {
-  margin-top: 2px !important;
-  margin-right: 1px !important;
-  width: 122px !important;
+    margin-top: 2px !important;
+    margin-right: 1px !important;
+    width: 122px !important;
   }
   .lockout-col label {
-  margin-left: 15px;
-  margin-top: 5px !important;
+    margin-left: 15px;
+    margin-top: 5px !important;
   }
   .copy-clipboard {
-  display:none;
+    display:none;
   }
   .input-group-addon {
-  border-left: none;
+    border-left: none;
   }
   #workspace-selector {
-    margin-top: 0px !important;
+    margin-top: -4px !important;
+    margin-bottom: -7px !important;
   }
   #workspace-selector a.dropdown-toggle {
     padding-left: 0px !important;
     padding-right: 0px !important;
-    padding-top: 6px !important;
+    padding-top: 5px !important;
     margin-left: 3px !important;
-    padding-bottom: 5px !important;
+    padding-bottom: 2px !important;
   }
   #workspace-selector a.dropdown-toggle i {
     margin-right: -5px !important;
     margin-left: 0px !important;
   }
   .brand-workspace {
+    margin-top: 1px !important;
+    margin-bottom: 1px !important;
+    padding-bottom: 3px !important;
     overflow: auto;
     white-space: nowrap;
     text-overflow: ellipsis;
@@ -141,7 +148,7 @@ select:focus {
 }
 
 #workspace-selector {
-  margin-top: 1px;
+  margin-top: -1px;
   margin-left: -1px;
   padding-right: 2px;
 }
@@ -152,156 +159,157 @@ select:focus {
 
 @media ( max-width: 768px ) {
   * {
-  font-size: 99%;
+    font-size: 99%;
   }
   rt {
-  font-size: 60%;
+    font-size: 60%;
   }
   .query-box {
-  display:none !important;
+    display:none !important;
   }
   .fileinput-button {
-  margin-top: 3px;
-  margin-bottom: 2px;
+    margin-top: 3px;
+    margin-bottom: 2px;
   }
   .search-button {
-  display:none !important;
-  float: left !important;
-  height: 29px !important;
-  margin-top: -2px !important;
+    display:none !important;
+    float: left !important;
+    height: 29px !important;
+    margin-top: -2px !important;
   }
   .create-new-link {
-  margin-left: -2px !important;
+    margin-left: -2px !important;
   }
   .workspace-bar {
-  top: -1px;
+    top: -1px;
+    padding-bottom: 2px !important;
   }
   .list-actions-col {
-  min-width: 280px;
-  vertical-align: baseline;
+    min-width: 280px;
+    vertical-align: baseline;
   }
   .shrink-button {
-  display:none !important;
+    display:none !important;
   }
   .header-btn-icon {
-  margin-left: -6px !important;
+    margin-left: -6px !important;
   }
   .list-actions-col select {
-  float: left !important;
-  height: 29px !important;
-  margin-top: 2px !important;
-  margin-right: 2px !important;
+    float: left !important;
+    height: 29px !important;
+    margin-top: 2px !important;
+    margin-right: 2px !important;
   }
   .list-actions-col input {
-  float: left !important;
-  height: 29px !important;
-  margin-right: 2px;
-  margin-top: 4px !important;
-  margin-left: 0px !important;
+    float: left !important;
+    height: 29px !important;
+    margin-right: 2px;
+    margin-top: 4px !important;
+    margin-left: 0px !important;
   }
   .list-actions-col button {
-  float: left !important;
-  height: 29px !important;
-  margin-top: 2px !important;
-  margin-right: 2px;
+    float: left !important;
+    height: 29px !important;
+    margin-top: 2px !important;
+    margin-right: 2px;
   }
   button-sm {
-  padding-left: 7px !important;
-  padding-right: 7px !important;
-  margin-left: 0px !important;
+    padding-left: 7px !important;
+    padding-right: 7px !important;
+    margin-left: 0px !important;
   }
   .listing-table_sortable {
-  width: 99%;
+    width: 99%;
   }
   th.not-primary {
-  display: none;
+    display: none;
   }
   td.not-primary {
-  display: none;
+    display: none;
   }
   .toggle-infobox {
-  display: inline !important;
+    display: inline !important;
   }
   .listing-table td {
-  padding-bottom: 4px !important;
+    padding-bottom: 4px !important;
   }
   .create-new-button {
-  display: none;
+    display: none;
   }
   .create-new-button-icon {
-  display: inline !important;
+    display: inline !important;
   }
   .dialog-chooser {
-  margin-top: 1px !important;
+    margin-top: 1px !important;
   }
   .time{
-  height: 2em;
-  margin-bottom: 4px;
+    height: 2em;
+    margin-bottom: 4px;
   }
   .date{
-  height: 2em;
-  margin-bottom: 4px;
+    height: 2em;
+    margin-bottom: 4px;
   }
   .cf-detach-btn {
     top: 8px !important;
   }
   .disp-option-button {
-  display: none;
+    display: none;
   }
   .alt-disp-option-button {
-  display: inline !important;
+    display: inline !important;
   }
   .insert-asset-preview {
-  width: 80px;
-  height: 80px;
+    width: 80px;
+    height: 80px;
   }
   .modal {
-  width: 100% !important;
-  padding: 0px !important;
-  overflow: auto !important;
+    width: 100% !important;
+    padding: 0px !important;
+    overflow: auto !important;
   }
   .badge-relation span {
     max-width:100px !important;
   }
   .modal-dialog {
-  width: 100% !important;
-  max-width: 100% !important;
-  padding: 0px !important;
-  margin: 0px !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    padding: 0px !important;
+    margin: 0px !important;
   }
   .modal-content {
-  width: 100% !important;
-  padding: 0px !important;
-  margin: 0px !important;
+    width: 100% !important;
+    padding: 0px !important;
+    margin: 0px !important;
   }
   .alternative-text-input {
-  display: inline !important;
-  padding: 6px !important;
+    display: inline !important;
+    padding: 6px !important;
   }
   .default-text-input {
-  display: none !important;
+    display: none !important;
   }
   #_field_selector {
-  width: 200px !important;
+    width: 200px !important;
   }
   .pack-left {
     margin-left: -1px !important;
   }
   .widget-cell-detail {
-  display: inline !important;
+    display: inline !important;
   }
   .workflow-option {
-  display: none !important;
+    display: none !important;
   }
   .activity_footer-table {
-  margin-top: 14px !important;
+    margin-top: 14px !important;
   }
   #workspace-selector a.dropdown-toggle {
-  font-size: 95% !important;
-  padding-bottom: 4px !important;
+    font-size: 95% !important;
+    padding-bottom: 2px !important;
   }
   .left-label {
-  margin-left: 17px !important;
+    margin-left: 17px !important;
   }
 }
 
@@ -311,25 +319,25 @@ body.modal-open {
 
 @media ( max-width: 576px ) {
   .table-inner tr th label {
-  margin-top: 8px;
+    margin-top: 8px;
   }
   .filter-selecter-ctrl-dd {
-  width: 240px !important;
+    width: 240px !important;
   }
   .filter-selecter-ctrl-sm {
-  width: 100px !important;
+    width: 100px !important;
   }
   #filter-parant-block {
-  margin-left: -1.5em !important;
+    margin-left: -1.5em !important;
   }
   .min-short {
-  width: 180px !important;
+    width: 180px !important;
   }
   .field-multiple-sortable input {
-  width: 87% !important;
+    width: 87% !important;
   }
   select.form-control-very-sm{
-  width:60px !important;
+    width:60px !important;
   }
   .badge-relation span {
     max-width:80px !important;
@@ -395,11 +403,15 @@ select.form-control-very-sm{
 }
 
 #navbars-ws {
-  margin-left: -14px;
+  margin-left: -10px;
 }
 
 #navbars {
   margin-left: -18px;
+}
+
+.btn-info:focus {
+  color:white !important;
 }
 
 #workspace-selector a.dropdown-toggle {
@@ -680,6 +692,14 @@ input[type="radio"] {
   padding-left:0px !important;
 }
 
+nav .nav-item{
+  margin-top: -1px;
+}
+
+.workspace-bar .dropdown {
+  margin-top:-2px;
+}
+
 .workspace-bar .header-util{
   margin-right: 16px;
   height: 32px;
@@ -852,14 +872,13 @@ select.short {
 .nav-link {
   color:#ddd !important;
   font-size:90%;
-  padding-top: 8px !important;
+  padding: 5px 0px 5px 1px !important;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
   min-width: 30px;
   max-width: 103px;
-  margin-left: 0px;
-  margin-right: -3px;
+  margin: 4px 3px 0px 4px !important;
 }
 
 .header-util {
@@ -890,17 +909,13 @@ select.short {
   font-size:90% !important;
 }
 
-.nav-item {
-  margin-right: -2px !important;
-}
-
 .workspace-dd-wrapper {
   margin-left: -10px;
 }
 
 .brand-workspace {
   background-color: #333 !important;
-  margin: 3px 17px 0px 0px;
+  margin: 2px 17px 0px 0px;
   white-space: nowrap;
   text-overflow: ellipsis;
 }
