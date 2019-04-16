@@ -118,7 +118,7 @@ setTimeout(function(){
 <mt:countgroupby model="urlmapping" count="model" group="'workspace_id','model'" workspace_id="$workspace_id" glue="," setvar="all_models"><mt:var name="count_group_by_model"></mt:countgroupby>
 <mt:countgroupby model="urlmapping" count="model" group="'workspace_id','model'" workspace_id="$workspace_id">
 <mt:if name="__first__">
-<select name="next_models" id="next_models" class="form-control">
+<select name="next_models" id="next_models" class="form-control custom-select">
 <option value="<mt:var name="all_models">"><mt:trans phrase="All"></option>
 </mt:if>
 <option value="<mt:var name="count_group_by_model">"><mt:trans phrase="$count_group_by_model" language="default" setvar="models_label"><mt:trans phrase="$models_label"></option>
