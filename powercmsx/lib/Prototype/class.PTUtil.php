@@ -1653,23 +1653,36 @@ class PTUtil {
                                                  $files = [], &$error = '' ) {
         $app = Prototype::get_instance();
         $content_type = isset( $headers['Content-Type'] ) ? $headers['Content-Type'] : 'text/plain';
-        $headers['Content-Type'] = 'multipart/mixed;boundary="__BOUNDARY__"';
+        $boundary = '__BOUNDARY__' . md5( rand() );
+        $headers['Content-Type'] = "multipart/mixed;boundary=\"{$boundary}\"";
         $charset = $app->mail_encording ? strtoupper( $app->mail_encording ) : 'ISO-2022-JP';
         $text = $body;
-        $body = "--__BOUNDARY__\n";
+        $body = "--{$boundary}\n";
         $body .= "Content-Type: {$content_type}; charset=\"{$charset}\"\n\n";
         $body .= $text . "\n";
-        $body .= "--__BOUNDARY__\n";
+        $body .= "--{$boundary}\n";
+        $existing_files = [];
         foreach ( $files as $file ) {
-            if ( file_exists( $file ) ) {
-                $file_name = basename( $file );
-                $body .= "Content-Type: application/octet-stream; name=\"{$file_name}\"\n";
-                $body .= "Content-Disposition: attachment; filename=\"{$file_name}\"\n";
-                $body .= "Content-Transfer-Encoding: base64\n";
-                $body .= "\n";
-                $body .= chunk_split( base64_encode( file_get_contents( $file ) ) );
-                $body .= "--__BOUNDARY__\n";
+            if ( is_object( $file ) ) { // Session
+                $upload_dir = $app->upload_dir();
+                $file_path = $upload_dir . DS . $file->value;
+                file_put_contents( $file_path, $file->data );
+                $file = $file_path;
             }
+            if ( file_exists( $file ) ) {
+                $existing_files[] = $file;
+            }
+        }
+        $counter = 0;
+        foreach ( $existing_files as $file ) {
+            $file_name = basename( $file );
+            $body .= "Content-Type: application/octet-stream; name=\"{$file_name}\"\n";
+            $body .= "Content-Disposition: attachment; filename=\"{$file_name}\"\n";
+            $body .= "Content-Transfer-Encoding: base64\n";
+            $body .= "\n";
+            $body .= chunk_split( base64_encode( file_get_contents( $file ) ) );
+            $counter++;
+            $body .= $counter == count( $existing_files ) ? "--{$boundary}--\n" : "--{$boundary}\n";
         }
         return self::send_mail( $to, $subject, $body, $headers, $error );
     }

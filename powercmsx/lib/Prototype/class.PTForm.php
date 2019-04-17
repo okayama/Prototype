@@ -4,6 +4,7 @@ class PTForm {
 
     public  $identifer;
     private $sessions = [];
+    private $attachments = []; // Attch to Email
 
     function confirm ( $app, $url ) {
         $ctx = $app->ctx;
@@ -336,8 +337,11 @@ class PTForm {
                                 $headers['Bcc'] = $notify_bcc;
                             }
                         }
-                        if (! PTUtil::send_mail( $to,
-                            $subject, $body, $headers, $mail_error ) ) {
+                        $files = $this->attachments;
+                        $res = empty( $files )
+                             ? PTUtil::send_mail( $to, $subject, $body, $headers, $mail_error )
+                             : PTUtil::send_multipart_mail( $to, $subject, $body, $headers, $files, $mail_error );
+                        if (! $res ) {
                             $message =
                                 $this->translate( 'Failed to send a notification email.(%s)',
                                                  $mail_error );
@@ -565,6 +569,9 @@ class PTForm {
                     }
                 }
                 if ( $sess->id ) {
+                    if ( $question->attach_to_email ) {
+                        $this->attachments[] = $sess;
+                    }
                     $attachmentfiles[] = $sess;
                     $value = $sess->value;
                     $app->ctx->vars['filename_' . $basename ] = $value;

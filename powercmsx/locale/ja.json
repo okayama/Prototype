@@ -568,6 +568,7 @@
     "(Year)"             : "年",
     "(Month)"            : "月",
     "(Day)"              : "日",
+    "Attach to Email"    : "メールに添付",
     "Send Email"         : "メールを送信する",
     "Mail From"          : "メールのFrom",
     "Notify To"          : "通知送信先",
