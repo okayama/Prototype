@@ -15,6 +15,14 @@
         <span class="custom-control-description"> 
         <mt:var name="label" escape></span>
     </label>
+    <input type="hidden" name="not_save" value="0">
+    <label class="custom-control custom-checkbox send_email">
+    <input class="custom-control-input watch-changed"
+     type="checkbox" name="not_save" value="1" <mt:if name="object_not_save">checked</mt:if>>
+        <span class="custom-control-indicator"></span>
+        <span class="custom-control-description"> 
+        <mt:trans phrase="Does not save the data into the database"></span>
+    </label>
   </div>
 </div>
 <div class="row form-group send_email">
@@ -22,7 +30,7 @@
   </div>
   <div class="col-lg-10">
     <input type="hidden" name="send_thanks" value="0">
-    <label class="custom-control custom-checkbox">
+    <label class="custom-control custom-checkbox mb-4">
     <input id="send_thanks" class="custom-control-input watch-changed"
      type="checkbox" name="send_thanks" value="1" <mt:if name="object_send_thanks">checked</mt:if>>
         <span class="custom-control-indicator"></span>
@@ -92,7 +100,7 @@
   </div>
   <div class="col-lg-10">
     <input type="hidden" name="send_notify" value="0">
-    <label class="custom-control custom-checkbox">
+    <label class="custom-control custom-checkbox mb-4">
     <input id="send_notify" class="custom-control-input watch-changed"
      type="checkbox" name="send_notify" value="1" <mt:if name="object_send_notify">checked</mt:if>>
         <span class="custom-control-indicator"></span>

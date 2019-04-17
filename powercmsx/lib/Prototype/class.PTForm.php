@@ -136,221 +136,41 @@ class PTForm {
                     $ctx->vars['errors'] = $errors;
                     return;
                 }
-                if ( $contact->save() ) {
-                    if (! empty( $attachmentfiles ) ) {
-                        $to_ids = [];
-                        foreach ( $attachmentfiles as $sess ) {
-                            $attachment = $app->db->model('attachmentfile')->new();
-                            $attachment->name( $sess->value );
-                            $attachment->mime_type( $sess->key );
-                            $attachment->workspace_id( $contact->workspace_id );
-                            $attachment->file( $sess->data );
-                            $json = json_decode( $sess->text );
-                            $attachment->size( $json->file_size );
-                            $app->set_default( $attachment );
-                            $attachment->save();
-                            $to_ids[] = $attachment->id;
-                            $metadata = $app->db->model( 'meta' )->get_by_key(
-                               ['model' => 'attachmentfile', 'object_id' => $attachment->id,
-                                              'kind' => 'metadata', 'key' => 'file' ] );
-                            $metadata->text( $sess->text );
-                            $metadata->metadata( $sess->metadata );
-                            $metadata->data( $sess->extradata );
-                            $metadata->save();
-                            $this->sessions[] = $sess;
+                if (! $form->not_save ) {
+                    if ( $contact->save() ) {
+                        if (! empty( $attachmentfiles ) ) {
+                            $to_ids = [];
+                            foreach ( $attachmentfiles as $sess ) {
+                                $attachment = $app->db->model('attachmentfile')->new();
+                                $attachment->name( $sess->value );
+                                $attachment->mime_type( $sess->key );
+                                $attachment->workspace_id( $contact->workspace_id );
+                                $attachment->file( $sess->data );
+                                $json = json_decode( $sess->text );
+                                $attachment->size( $json->file_size );
+                                $app->set_default( $attachment );
+                                $attachment->save();
+                                $to_ids[] = $attachment->id;
+                                $metadata = $app->db->model( 'meta' )->get_by_key(
+                                   ['model' => 'attachmentfile', 'object_id' => $attachment->id,
+                                                  'kind' => 'metadata', 'key' => 'file' ] );
+                                $metadata->text( $sess->text );
+                                $metadata->metadata( $sess->metadata );
+                                $metadata->data( $sess->extradata );
+                                $metadata->save();
+                                $this->sessions[] = $sess;
+                            }
+                            $args = ['from_id' => $contact->id, 
+                                     'name' => 'attachmentfiles',
+                                     'from_obj' => 'contact',
+                                     'to_obj' => 'attachmentfile'];
+                            $app->set_relations( $args, $to_ids, true, $errors );
                         }
-                        $args = ['from_id' => $contact->id, 
-                                 'name' => 'attachmentfiles',
-                                 'from_obj' => 'contact',
-                                 'to_obj' => 'attachmentfile'];
-                        $app->set_relations( $args, $to_ids, true, $errors );
+                        $app->init_callbacks( 'contact', 'post_save' );
+                        $callback = ['name' => 'post_save',
+                                     'form' => $form, 'values' => $values ];
+                        $app->run_callbacks( $callback, 'contact', $contact );
                     }
-                    $app->init_callbacks( 'contact', 'post_save' );
-                    $callback = ['name' => 'post_save',
-                                 'form' => $form, 'values' => $values ];
-                    $app->run_callbacks( $callback, 'contact', $contact );
-                    $message = $this->translate(
-                            'The contact posted for %s has been received.', $form->name );
-                    $app->log( ['message'   => $message,
-                                'category'  => 'contact',
-                                'model'     => 'form',
-                                'object_id' => $form->id,
-                                'level'     => 'info'] );
-                    if (! empty( $this->sessions ) ) {
-                        $sessions = $this->sessions;
-                        $app->db->model( 'session' )->remove_multi( $sessions );
-                    }
-                    $ctx->vars['contact_name'] = $contact->name;
-                    $ctx->vars['contact_email'] = $contact->email;
-                    $ctx->vars['contact_id'] = $contact->id;
-                    $err = '';
-                    if ( $form->send_email ) {
-                        $from = $form->email_from ? $form->email_from : '';
-                        $from = $from ? $app->build( $from ) : '';
-                        $system_email = '';
-                        if (! $from || ! $app->is_valid_email( $from, $err ) ) {
-                            $system_email = $app->get_config( 'system_email' );
-                            if (!$system_email ) {
-                                return $app->error( 'System Email Address is not set in System.' );
-                            }
-                            $from = $system_email->value;
-                            $system_email = $from;
-                        }
-                        $headers = ['From' => $from ];
-                        $app->set_mail_param( $ctx );
-                        $ctx->vars['form_name'] = $form->name;
-                        if ( $form->send_thanks && $contact->email ) {
-                            $subject = null;
-                            $body = null;
-                            $template = null;
-                            $template_id = $form->thanks_template;
-                            if ( $template_id ) {
-                                $template =
-                                    $app->db->model( 'template' )->load( (int) $template_id );
-                                if ( $template && $template->text ) {
-                                    $body = $template->text;
-                                }
-                                if ( is_object( $template ) ) {
-                                    $ctx->stash( 'current_template', $template );
-                                }
-                            }
-                            if (! $body ) {
-                                $body = $app->get_mail_tmpl( 'form_thanks', $template );
-                            }
-                            if ( $template ) {
-                                $subject = $template->subject;
-                            }
-                            if (! $subject ) {
-                                $subject = $this->translate(
-                                    'The inquiry you posted for %s has been received.', $form->name );
-                            }
-                            $ctx->vars['mail_type'] = 'thanks';
-                            $subject = $app->build( $subject );
-                            $body = $app->build( $body );
-                            if ( $thanks_cc = $form->thanks_cc ) {
-                                $thanks_cc = $app->build( $thanks_cc );
-                                if ( $thanks_cc ) {
-                                    $headers['Cc'] = $thanks_cc;
-                                }
-                            }
-                            if ( $thanks_bcc = $form->thanks_bcc ) {
-                                $thanks_bcc = $app->build( $thanks_bcc );
-                                if ( $thanks_bcc ) {
-                                    $headers['Bcc'] = $thanks_bcc;
-                                }
-                            }
-                            $mail_error = '';
-                            if (! PTUtil::send_mail( $contact->email,
-                                $subject, $body, $headers, $mail_error ) ) {
-                                $message =
-                                    $this->translate( 'Failed to send a thank you email.(%s)',
-                                                     $mail_error );
-                                $metadata = ['subject' => $subject, 'body' => $body ];
-                                $metadata = json_encode( $metadata,
-                                 JSON_UNESCAPED_UNICODE|JSON_PRETTY_PRINT );
-                                $app->log( ['message'   => $message,
-                                            'category'  => 'contact',
-                                            'metadata'  => $metadata,
-                                            'model'     => 'form',
-                                            'object_id' => $form->id,
-                                            'level'     => 'error'] );
-                            }
-                        }
-                        if ( $form->send_notify ) {
-                            $from = $form->notify_from ? $form->notify_from : $system_email;
-                            $from = $from ? $app->build( $from ) : '';
-                            if (! $from || ! $app->is_valid_email( $from, $err ) ) {
-                                $system_email = $app->get_config( 'system_email' );
-                                if (!$system_email ) {
-                                    return $app->error( 'System Email Address is not set in System.' );
-                                }
-                                $from = $system_email->value;
-                            }
-                            $headers = ['From' => $from ];
-                            $subject = null;
-                            $body = null;
-                            $template = null;
-                            $template_id = $form->notify_template;
-                            if ( $template_id ) {
-                                $template = $app->
-                                    db->model( 'template' )->load( (int) $template_id );
-                                if ( $template && $template->text ) {
-                                    $body = $template->text;
-                                }
-                                if ( is_object( $template ) ) {
-                                    $ctx->stash( 'current_template', $template );
-                                }
-                            }
-                            if (! $body ) {
-                                $body = $app->get_mail_tmpl( 'form_notify', $template );
-                            }
-                            if ( $template ) {
-                                $subject = $template->subject;
-                            }
-                            if (! $subject ) {
-                                $subject = $this->translate(
-                                    'The inquiry posted for %s has been received.', $form->name );
-                            }
-                            // ?__mode=view&_type=edit&_model=contact&id=n
-                            $contact_param = '?__mode=view&_type=edit&_model=contact&id=';
-                            $contact_param .= $contact->id;
-                            if ( $contact->workspace_id ) {
-                                $contact_param .= '&workspace_id=' . $contact->workspace_id;
-                            }
-                            $ctx->vars['contact_param'] = $contact_param;
-                            $ctx->vars['mail_type'] = 'notify';
-                            $subject = $app->build( $subject );
-                            $body = $app->build( $body );
-                            $mail_error = '';
-                            $to = $form->notify_to;
-                            if (! $to ) {
-                                $form_user = $form->created_by ? $form->created_by : $form->modified_by;
-                                if ( $form_user ) {
-                                    $form_user = $app->db->model( 'user' )->load( (int) $form_user );
-                                    if ( $form_user ) $to = $form_user->email;
-                                }
-                                if (! $to ) {
-                                    $to = $from;
-                                }
-                            }
-                            $to = $app->build( $to );
-                            unset( $headers['Cc'] );
-                            unset( $headers['Bcc'] );
-                            if ( $notify_cc = $form->notify_cc ) {
-                                $notify_cc = $app->build( $notify_cc );
-                                if ( $notify_cc ) {
-                                    $headers['Cc'] = $notify_cc;
-                                }
-                            }
-                            if ( $notify_bcc = $form->notify_bcc ) {
-                                $notify_bcc = $app->build( $notify_bcc );
-                                if ( $notify_bcc ) {
-                                    $headers['Bcc'] = $notify_bcc;
-                                }
-                            }
-                            if (! PTUtil::send_mail( $to,
-                                $subject, $body, $headers, $mail_error ) ) {
-                                $message =
-                                    $this->translate( 'Failed to send a notification email.(%s)',
-                                                     $mail_error );
-                                $metadata = ['subject' => $subject, 'body' => $body ];
-                                $metadata = json_encode( $metadata,
-                                 JSON_UNESCAPED_UNICODE|JSON_PRETTY_PRINT );
-                                $app->log( ['message'   => $message,
-                                            'category'  => 'contact',
-                                            'metadata'  => $metadata,
-                                            'model'     => 'form',
-                                            'object_id' => $form->id,
-                                            'level'     => 'error'] );
-                            }
-                        }
-                    }
-                    $redirect_url = $form->redirect_url;
-                    if ( $redirect_url ) {
-                        $redirect_url = $app->build( $redirect_url );
-                        return $app->redirect( $redirect_url );
-                    }
-                    $ctx->vars['submit_ok'] = true;
                 } else {
                     $message = $this->translate(
                             'Failed to save a contact for %s.', $form->name );
@@ -361,6 +181,188 @@ class PTForm {
                                 'level'     => 'error'] );
                     $ctx->vars['submit_ok'] = false;
                 }
+                $message = $this->translate(
+                        'The contact posted for %s has been received.', $form->name );
+                $app->log( ['message'   => $message,
+                            'category'  => 'contact',
+                            'model'     => 'form',
+                            'object_id' => $form->id,
+                            'level'     => 'info'] );
+                $ctx->vars['contact_name'] = $contact->name;
+                $ctx->vars['contact_email'] = $contact->email;
+                $ctx->vars['contact_id'] = $contact->id;
+                $err = '';
+                if ( $form->send_email ) {
+                    $from = $form->email_from ? $form->email_from : '';
+                    $from = $from ? $app->build( $from ) : '';
+                    $system_email = '';
+                    if (! $from || ! $app->is_valid_email( $from, $err ) ) {
+                        $system_email = $app->get_config( 'system_email' );
+                        if (!$system_email ) {
+                            return $app->error( 'System Email Address is not set in System.' );
+                        }
+                        $from = $system_email->value;
+                        $system_email = $from;
+                    }
+                    $headers = ['From' => $from ];
+                    $app->set_mail_param( $ctx );
+                    $ctx->vars['form_name'] = $form->name;
+                    if ( $form->send_thanks && $contact->email ) {
+                        $subject = null;
+                        $body = null;
+                        $template = null;
+                        $template_id = $form->thanks_template;
+                        if ( $template_id ) {
+                            $template =
+                                $app->db->model( 'template' )->load( (int) $template_id );
+                            if ( $template && $template->text ) {
+                                $body = $template->text;
+                            }
+                            if ( is_object( $template ) ) {
+                                $ctx->stash( 'current_template', $template );
+                            }
+                        }
+                        if (! $body ) {
+                            $body = $app->get_mail_tmpl( 'form_thanks', $template );
+                        }
+                        if ( $template ) {
+                            $subject = $template->subject;
+                        }
+                        if (! $subject ) {
+                            $subject = $this->translate(
+                                'The inquiry you posted for %s has been received.', $form->name );
+                        }
+                        $ctx->vars['mail_type'] = 'thanks';
+                        $subject = $app->build( $subject );
+                        $body = $app->build( $body );
+                        if ( $thanks_cc = $form->thanks_cc ) {
+                            $thanks_cc = $app->build( $thanks_cc );
+                            if ( $thanks_cc ) {
+                                $headers['Cc'] = $thanks_cc;
+                            }
+                        }
+                        if ( $thanks_bcc = $form->thanks_bcc ) {
+                            $thanks_bcc = $app->build( $thanks_bcc );
+                            if ( $thanks_bcc ) {
+                                $headers['Bcc'] = $thanks_bcc;
+                            }
+                        }
+                        $mail_error = '';
+                        if (! PTUtil::send_mail( $contact->email,
+                            $subject, $body, $headers, $mail_error ) ) {
+                            $message =
+                                $this->translate( 'Failed to send a thank you email.(%s)',
+                                                 $mail_error );
+                            $metadata = ['subject' => $subject, 'body' => $body ];
+                            $metadata = json_encode( $metadata,
+                             JSON_UNESCAPED_UNICODE|JSON_PRETTY_PRINT );
+                            $app->log( ['message'   => $message,
+                                        'category'  => 'contact',
+                                        'metadata'  => $metadata,
+                                        'model'     => 'form',
+                                        'object_id' => $form->id,
+                                        'level'     => 'error'] );
+                        }
+                    }
+                    if ( $form->send_notify ) {
+                        $from = $form->notify_from ? $form->notify_from : $system_email;
+                        $from = $from ? $app->build( $from ) : '';
+                        if (! $from || ! $app->is_valid_email( $from, $err ) ) {
+                            $system_email = $app->get_config( 'system_email' );
+                            if (!$system_email ) {
+                                return $app->error( 'System Email Address is not set in System.' );
+                            }
+                            $from = $system_email->value;
+                        }
+                        $headers = ['From' => $from ];
+                        $subject = null;
+                        $body = null;
+                        $template = null;
+                        $template_id = $form->notify_template;
+                        if ( $template_id ) {
+                            $template = $app->
+                                db->model( 'template' )->load( (int) $template_id );
+                            if ( $template && $template->text ) {
+                                $body = $template->text;
+                            }
+                            if ( is_object( $template ) ) {
+                                $ctx->stash( 'current_template', $template );
+                            }
+                        }
+                        if (! $body ) {
+                            $body = $app->get_mail_tmpl( 'form_notify', $template );
+                        }
+                        if ( $template ) {
+                            $subject = $template->subject;
+                        }
+                        if (! $subject ) {
+                            $subject = $this->translate(
+                                'The inquiry posted for %s has been received.', $form->name );
+                        }
+                        // ?__mode=view&_type=edit&_model=contact&id=n
+                        $contact_param = '?__mode=view&_type=edit&_model=contact&id=';
+                        $contact_param .= $contact->id;
+                        if ( $contact->workspace_id ) {
+                            $contact_param .= '&workspace_id=' . $contact->workspace_id;
+                        }
+                        $ctx->vars['contact_param'] = $contact_param;
+                        $ctx->vars['mail_type'] = 'notify';
+                        $subject = $app->build( $subject );
+                        $body = $app->build( $body );
+                        $mail_error = '';
+                        $to = $form->notify_to;
+                        if (! $to ) {
+                            $form_user = $form->created_by ? $form->created_by : $form->modified_by;
+                            if ( $form_user ) {
+                                $form_user = $app->db->model( 'user' )->load( (int) $form_user );
+                                if ( $form_user ) $to = $form_user->email;
+                            }
+                            if (! $to ) {
+                                $to = $from;
+                            }
+                        }
+                        $to = $app->build( $to );
+                        unset( $headers['Cc'] );
+                        unset( $headers['Bcc'] );
+                        if ( $notify_cc = $form->notify_cc ) {
+                            $notify_cc = $app->build( $notify_cc );
+                            if ( $notify_cc ) {
+                                $headers['Cc'] = $notify_cc;
+                            }
+                        }
+                        if ( $notify_bcc = $form->notify_bcc ) {
+                            $notify_bcc = $app->build( $notify_bcc );
+                            if ( $notify_bcc ) {
+                                $headers['Bcc'] = $notify_bcc;
+                            }
+                        }
+                        if (! PTUtil::send_mail( $to,
+                            $subject, $body, $headers, $mail_error ) ) {
+                            $message =
+                                $this->translate( 'Failed to send a notification email.(%s)',
+                                                 $mail_error );
+                            $metadata = ['subject' => $subject, 'body' => $body ];
+                            $metadata = json_encode( $metadata,
+                             JSON_UNESCAPED_UNICODE|JSON_PRETTY_PRINT );
+                            $app->log( ['message'   => $message,
+                                        'category'  => 'contact',
+                                        'metadata'  => $metadata,
+                                        'model'     => 'form',
+                                        'object_id' => $form->id,
+                                        'level'     => 'error'] );
+                        }
+                    }
+                }
+                if (! empty( $this->sessions ) ) {
+                    $sessions = $this->sessions;
+                    $app->db->model( 'session' )->remove_multi( $sessions );
+                }
+                $redirect_url = $form->redirect_url;
+                if ( $redirect_url ) {
+                    $redirect_url = $app->build( $redirect_url );
+                    return $app->redirect( $redirect_url );
+                }
+                $ctx->vars['submit_ok'] = true;
             } else {
                 $ctx->vars['errors'] = $errors;
             }
@@ -371,6 +373,7 @@ class PTForm {
             } else {
                 $errors[] = $this->translate( 'Invalid request.' );
             }
+            $ctx->vars['errors'] = $errors;
         }
     }
 

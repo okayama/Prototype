@@ -1,7 +1,7 @@
 {
     "label": "Form",
     "plural": "Forms",
-    "version": "1.6",
+    "version": "1.7",
     "primary": "name",
     "auditing": 1,
     "order": 380,
@@ -59,6 +59,10 @@
             "not_null": 1
         },
         "send_email": {
+            "type": "tinyint",
+            "size": 4
+        },
+        "not_save": {
             "type": "tinyint",
             "size": 4
         },
@@ -214,6 +218,7 @@
         "has_deadline": "checkbox",
         "status": "number",
         "send_email": "checkbox",
+        "not_save": "checkbox",
         "workspace_id": "reference:workspace:name",
         "rev_note": "text",
         "rev_diff": "popover",
@@ -225,5 +230,8 @@
         "status",
         "published_on",
         "unpublished_on"
-    ]
+    ],
+    "column_labels": {
+        "not_save": "Save"
+    }
 }
