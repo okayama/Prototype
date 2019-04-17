@@ -2028,6 +2028,7 @@ class PADOBaseModel {
             }
             return $arr;
         }
+        $default_ts = $pado->default_ts;
         foreach ( $scheme as $col => $props ) {
             if ( $col === $pado->id_column ) continue;
             if ( $update && !isset( $values[ $col ] ) ) continue;
@@ -2040,11 +2041,10 @@ class PADOBaseModel {
                         if ( strpos( $type, 'int' ) !== false ) {
                             $values[ $col ] = 0;
                         } else if ( strpos( $type, 'time' ) !== false ) {
-                            $default = $pado->default_ts;
-                            if ( $default === 'CURRENT_TIMESTAMP') {
+                            if ( $default_ts === 'CURRENT_TIMESTAMP') {
                                 $values[ $col ] = date( 'YmdHis' );
                             } else {
-                                $values[ $col ] = $default;
+                                $values[ $col ] = $default_ts;
                             }
                         } else if ( $type == 'string' || $type == 'text' ) {
                             $values[ $col ] = '';
@@ -2070,7 +2070,15 @@ class PADOBaseModel {
                     $val = intval( $val );
                     break;
                 case ( $type === 'datetime' ):
-                    if ( $this->db2ts( $val ) ) {
+                    if ( $val = $this->db2ts( $val ) ) {
+                        if ( $default_ts &&
+                          ( ( $val < 10000101000000 ) || ( $val > 99991231235959 ) ) ) {
+                            if ( $default_ts === 'CURRENT_TIMESTAMP') {
+                                $val = date( 'YmdHis' );
+                            } else {
+                                $val = $default_ts;
+                            }
+                        }
                         $val = $this->ts2db( $val );
                     } else {
                         $val = null;
