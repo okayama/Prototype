@@ -823,6 +823,7 @@
         : "アクティビティのモデルを「%s」に変更しました。",
     "Fix WorkSpace Menu to the Top"
         : "スペースのメニューを上部に固定する",
+    "Does not save the data into the database" : "投稿をデータベースに保存しない",
     "Are you sure you want to duplicate this %s?"
         : "この%sを複製しますか?",
     "Are you sure you want to save this %s and duplicate?"
