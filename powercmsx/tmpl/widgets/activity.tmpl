@@ -38,7 +38,6 @@
     });
     $('#_activity_log').show(90);
     </script>
-    <mt:ifusercan action="list" model="$activity_model" workspace_id="$workspace_id">
     <table class="activity_footer-table" role="presentation">
     <tr>
     <td>
@@ -59,12 +58,14 @@
     </mt:tables>
     </td>
     <td>
+    <mt:ifusercan action="list" model="$activity_model" workspace_id="$workspace_id">
       <mt:var name="activity_label" translate setvar="activity_label">
-      <div class="text-right"><a href="<mt:var name="script_uri">?__mode=view&_type=list&_model=<mt:var name="activity_model"><mt:if name="workspace_id">&amp;workspace_id=<mt:var name="workspace_id"></mt:if>"
+      <div class="text-right" style="margin-top:-5px"><a href="<mt:var name="script_uri">?__mode=view&_type=list&_model=<mt:var name="activity_model"><mt:if name="workspace_id">&amp;workspace_id=<mt:var name="workspace_id"></mt:if>"
         class="btn btn-info btn-sm"><mt:trans phrase="View all %s" params="$activity_label"></a>
-    </div></td></tr>
-    </table>
+      </div>
     </mt:ifusercan>
+    </td></tr>
+    </table>
   </div>
 </div>
 </mt:if>

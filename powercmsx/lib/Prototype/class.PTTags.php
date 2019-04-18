@@ -1456,6 +1456,7 @@ class PTTags {
         if ( $user = $app->user() ) {
             $action = isset( $args['action'] ) ? $args['action'] : 'edit';
             $model = isset( $args['model'] ) ? $args['model'] : null;
+            $permissions = null;
             if ( isset( $args['workspace_id'] )
                 && $args['workspace_id'] == 'any' && $model && $action ) {
                 $permissions = $app->permissions();
@@ -1494,6 +1495,18 @@ class PTTags {
                 $table = $app->get_table( $model );
                 if ( $table->dialog_view ) {
                     return true;
+                }
+                if (! $workspace ) {
+                    if ( $table->hierarchy ) {
+                        return $app->can_do( $model, $action, $obj, $workspace );
+                    }
+                    $permissions = $permissions ? $permissions : $app->permissions();
+                    foreach ( $permissions as $ws_id => $permission ) {
+                        if ( in_array( "can_list_{$model}", $permission )
+                            || in_array( 'workspace_admin', $permission ) ) {
+                            return true;
+                        }
+                    }
                 }
             }
             if (! $workspace ) 
