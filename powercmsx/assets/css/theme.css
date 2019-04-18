@@ -359,6 +359,9 @@ body.modal-open {
     display: block;
     margin-left: 14px;
   }
+  #__workflow_hide{
+    margin-top: -8px;
+  }
 }
 
 select.form-control-very-sm{
