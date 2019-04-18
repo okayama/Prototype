@@ -76,7 +76,7 @@
 <input id="_autoset_<mt:var name="id">" name="_autoset_<mt:var name="id">" type="hidden" value="<mt:var name="autoset" escape>">
 <input id="_default_<mt:var name="id">" name="_default_<mt:var name="id">" type="hidden" value="<mt:var name="default" escape>">
 <mt:unless name="is_primary"><input id="_not_null_<mt:var name="id">" name="_not_null_<mt:var name="id">" type="checkbox" class="form-control" value="1"<mt:if name="not_null"> checked</mt:if><mt:if name="_not_delete"> onclick="return false;" onkeydown="return false;"</mt:if>><mt:else><input type="checkbox" checked disabled></mt:unless></td>
-<td><mt:unless name="is_primary"><input id="_index_<mt:var name="id">" name="_index_<mt:var name="id">" type="checkbox" class="form-control" value="1"<mt:if name="index"> checked</mt:if><mt:if name="_not_delete"> onclick="return false;" onkeydown="return false;"</mt:if>><mt:else><input type="checkbox" checked disabled><input name="index_<mt:var name="id">" type="hidden" value="PRIMARY"></mt:unless></td>
+<td><mt:unless name="is_primary"><input id="_index_<mt:var name="id">" name="_index_<mt:var name="id">" type="checkbox" class="form-control specify_idx" value="1"<mt:if name="index"> checked</mt:if><mt:if name="_not_delete"> onclick="return false;" onkeydown="return false;"</mt:if>><mt:else><input type="checkbox" checked disabled><input name="index_<mt:var name="id">" type="hidden" value="PRIMARY"></mt:unless></td>
 <td><mt:unless name="is_primary"><input id="_unique_<mt:var name="id">" name="_unique_<mt:var name="id">" type="checkbox" class="form-control" value="1"<mt:if name="unique"> checked</mt:if><mt:if name="_not_delete"> onclick="return false;" onkeydown="return false;"</mt:if>><mt:else><input type="checkbox" checked disabled></mt:unless></td>
 <td><mt:unless name="is_primary"><input id="_unchangeable_<mt:var name="id">" name="_unchangeable_<mt:var name="id">" type="checkbox" class="form-control" value="1"<mt:if name="unchangeable"> checked</mt:if><mt:if name="_not_delete"> onclick="return false;" onkeydown="return false;"</mt:if>><mt:else><input type="checkbox" checked disabled></mt:unless></td>
 <td><mt:unless name="is_primary">
@@ -170,7 +170,7 @@
 <input id="_new_hint_" name="_new_hint_" type="hidden" value="">
 <input id="_new_default_" name="_new_default_" type="hidden" value="">
 <input name="_new_not_null_" type="checkbox" class="form-control" value="1"></td>
-<td><input name="_new_index_" type="checkbox" class="form-control" value="1"></td>
+<td><input name="_new_index_" type="checkbox" class="form-control specify_idx" value="1"></td>
 <td><input name="_new_unique_" type="checkbox" class="form-control" value="1"></td>
 <td><input name="_new_unchangeable_" type="checkbox" class="form-control" value="1"></td>
 <td>
@@ -483,6 +483,28 @@
 </div>
 </div>
 <script>
+$('.specify_idx').change( function() {
+    if ( $(this).prop('checked') ) {
+        var name = $(this).prop('id');
+        var term = name.split('_');
+        var number;
+        var select;
+        if ( term[1]=='new') {
+            number = term[3];
+            select = '_new_type_' + number;
+        } else {
+            number = term[2];
+            select = '_type_' + number;
+        }
+        var type = $('#' + select ).val();
+        //'boolean', 'integer', 'string', 'datetime'
+        if ( type != 'boolean' && type != 'integer' && type != 'string' && type != 'datetime' ) {
+            var label = $('#' + select + ' option:selected').text();
+            alert( '<mt:trans phrase="Can not specify an index for this type.">' + '(' + label + ')' );
+            $(this).prop('checked', false);
+        }
+    }
+});
 $('#_detail_type').change( function(){
     toggle_detail_custom( $(this).val() );
     var _col_type = $('#_detail_type' ).val();
@@ -937,6 +959,8 @@ $('.detail-btn').click( function(){
             $('input[name=_detail_image_option]:checked').prop('checked', false);
             $('#_detail_file_type').val('');
         }
+    } else {
+        $('._detail_file_wrapper').hide();
     }
     if ( $('#_detail_type').val() == 'integer' ) {
         $('._detail_edit_type_relation').hide();

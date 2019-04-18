@@ -885,6 +885,7 @@ class PTUpgrader {
         $edit_types  = ['hidden', 'checkbox', 'number', 'primary', 'text', 'file',
                         'text_short', 'textarea', 'password', 'password(hash)',
                         'datetime', 'languages', 'richtext', 'selection', 'color'];
+        $can_index   = ['boolean', 'integer', 'string', 'datetime'];
         $db = $app->db;
         $db->can_drop = true;
         $columns = $db->model( 'column' )->load( ['table_id' => $obj->id ] );
@@ -940,6 +941,10 @@ class PTUpgrader {
             $default = $app->param( '_default_' . $id );
             $not_null = $app->param( '_not_null_' . $id ) ? 1 : 0;
             $index = $app->param( '_index_' . $id ) ? 1 : 0;
+            if ( $index && ! in_array( $type, $can_index ) ) {
+                $errors[] = $app->translate( 'Can not specify an index for \'%s\'.', $type );
+                $index = 0;
+            }
             $unique = $app->param( '_unique_' . $id ) ? 1 : 0;
             $unchangeable = $app->param( '_unchangeable_' . $id ) ? 1 : 0;
             $list = $app->param( '_list_' . $id );
@@ -1034,6 +1039,10 @@ class PTUpgrader {
             $default = $app->param( '_new_default_' . $id );
             $not_null = $app->param( '_new_not_null_' . $id ) ? 1 : 0;
             $index = $app->param( '_new_index_' . $id ) ? 1 : 0;
+            if ( $index && ! in_array( $type, $can_index ) ) {
+                $errors[] = $app->translate( 'Can not specify an index for \'%s\'.', $type );
+                $index = 0;
+            }
             $unique = $app->param( '_new_unique_' . $id ) ? 1 : 0;
             $unchangeable = $app->param( '_new_unchangeable_' . $id ) ? 1 : 0;
             $list = $app->param( '_new_list_' . $id );
