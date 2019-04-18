@@ -119,7 +119,7 @@ select:focus {
     border-left: none;
   }
   #workspace-selector {
-    margin-top: -4px !important;
+    margin-top: -3px !important;
     margin-bottom: -7px !important;
   }
   #workspace-selector a.dropdown-toggle {
@@ -324,6 +324,9 @@ select:focus {
   #_activity_log-wrapper{
     margin-bottom: -25px;
   }
+  #workspace-selector {
+    margin-top: -3px !important;
+  }
 }
 
 body.modal-open {
@@ -361,6 +364,9 @@ body.modal-open {
   }
   #__workflow_hide{
     margin-top: -8px;
+  }
+  #workspace-selector {
+    margin-top: -3px !important;
   }
 }
 
