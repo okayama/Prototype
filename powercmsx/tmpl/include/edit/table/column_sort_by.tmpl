@@ -13,7 +13,7 @@
         <mt:trans phrase="Sortable"></span>
     </label>
     <mt:var name="request.id" setvar="_table_id">
-    <select id="<mt:var name="name" escape>" name="<mt:var name="name" escape>" class="form-control">
+    <select id="<mt:var name="name" escape>" name="<mt:var name="name" escape>" class="form-control custom-select">
       <mt:objectloop model="column" sort_by="order" table_id="$_table_id">
       <mt:if name="type" eq="int">
       <option value="<mt:var name="name" escape>" <mt:if name="name" eq="$value">selected</mt:if>>
@@ -25,7 +25,7 @@
       </mt:if>
       </mt:objectloop>
     </select>
-    <select name="sort_order" class="form-control">
+    <select name="sort_order" class="form-control custom-select">
       <option value="ascend" <mt:if name="object_sort_order" eq="ascend">selected</mt:if>>
         <mt:trans phrase="Ascend">
       </option>

@@ -9,11 +9,14 @@
   </div>
   <div class="col-lg-5">
   <mt:var name="request.id" setvar="_table_id">
-    <select id="<mt:var name="name" escape>" name="<mt:var name="name" escape>" class="<mt:if name="_not_delete">readonly </mt:if>form-control" <mt:if name="_not_delete">tabindex="-1" onmousedown="return false;" onkeydown="return false;"</mt:if>>
+    <select id="<mt:var name="name" escape>" name="<mt:var name="name" escape>" class="<mt:if name="_not_delete">readonly </mt:if>form-control custom-select"<mt:if name="_not_delete"> onmousedown="return false;"</mt:if>>
       <mt:objectloop model="column" sort_by="order" table_id="$_table_id">
       <mt:if name="type" eq="string"><mt:if name="list"><mt:if name="name" ne="rev_note"><mt:if name="name" ne="rev_changed">
-      <option value="<mt:var name="name" escape>" <mt:if name="name" eq="$value">selected</mt:if>><mt:trans phrase="$label"></option>
-      </mt:if></mt:if></mt:if></mt:if>
+      <mt:setvar name="_show_this_option" value="1">
+      <mt:if name="_not_delete"><mt:if name="name" ne="$value"><mt:setvar name="_show_this_option" value="0"></mt:if></mt:if>
+      <mt:if name="_show_this_option">
+      <option value="<mt:var name="name" escape>" <mt:if name="name" eq="$value">selected<mt:else><mt:if name="_not_delete"> style="display:none"</mt:if></mt:if>><mt:trans phrase="$label"></option>
+      </mt:if></mt:if></mt:if></mt:if></mt:if>
       </mt:objectloop>
     </select>
   </div>

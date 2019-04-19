@@ -17,13 +17,13 @@
     </label>
   </div>
   <div class="col-lg-10 form-inline">
-    <select class="form-control short" name="<mt:var name="__col_name__">">
+    <select class="form-control custom-select short" name="<mt:var name="__col_name__">">
     <mt:loop name="_options_loop">
-        <mt:var name="__value__" split=":" setvar="params">
-        <option <mt:if name="object_status" eq="$__counter__">selected</mt:if> value="<mt:var name="__counter__">"><mt:trans phrase="$params[0]" escape></option>
+      <mt:var name="__value__" split=":" setvar="params">
+      <option <mt:if name="object_status" eq="$__counter__">selected</mt:if> value="<mt:var name="__counter__">"><mt:trans phrase="$params[0]" escape></option>
     </mt:loop>
     </select>
-<mt:tablehascolumn column="published_on">
+  <mt:tablehascolumn column="published_on">
     <input type="hidden" name="has_deadline" value="0">
     <label class="custom-control custom-checkbox status-has_deadline-cb">
     <input id="has_deadline" class="status-has_deadline-cb form-control custom-control-input" type="checkbox" name="has_deadline" value="1" <mt:if name="object_has_deadline">checked</mt:if>>
@@ -32,7 +32,7 @@
         <mt:trans phrase="Specify the Deadline">
         </span>
     </label>
-</mt:tablehascolumn>
+  </mt:tablehascolumn>
   </div>
 </div>
 <mt:tablehascolumn column="published_on">

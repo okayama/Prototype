@@ -8,11 +8,11 @@
   </div>
   <div class="col-lg-10 form-inline">
     <mt:if name="status_published" gt="3">
-    <select <mt:if name="readonly">tabindex="-1" readonly onmousedown="return false;" onkeydown="return false;"</mt:if> id="status-selector" class="form-control short custom-select" name="<mt:var name="__col_name__">">
+    <select <mt:if name="readonly"> readonly onmousedown="return false;"</mt:if> id="status-selector" class="form-control short custom-select" name="<mt:var name="__col_name__">">
     <mt:loop name="_options_loop">
       <mt:if name="__index__" le="$max_status">
       <mt:unless name="request.edit_revision">
-        <option <mt:unless name="object_status"><mt:isset name="object_status"><mt:else><mt:if name="_default_status" eq="$__index__">selected</mt:if></mt:isset></mt:unless><mt:if name="object_status" eq="$__index__">selected</mt:if> value="<mt:var name="__index__">"><mt:trans phrase="$__value__" escape></option>
+        <option <mt:unless name="object_status"><mt:isset name="object_status"><mt:else><mt:if name="_default_status" eq="$__index__">selected<mt:else><mt:if name="readonly"> style="display:none"</mt:if></mt:if></mt:isset></mt:unless><mt:if name="object_status" eq="$__index__">selected<mt:else><mt:if name="readonly"> style="display:none"</mt:if></mt:if> value="<mt:var name="__index__">"><mt:trans phrase="$__value__" escape></option>
       <mt:else>
         <mt:if name="__index__" ne="$status_published">
             <mt:if name="__index__" eq="3">
@@ -20,7 +20,7 @@
             <mt:else>
               <mt:var name="__value__" setvar="__value">
             </mt:if>
-        <option <mt:unless name="object_status"><mt:isset name="object_status"><mt:else><mt:if name="_default_status" eq="$__index__">selected</mt:if></mt:isset></mt:unless><mt:if name="object_status" eq="$__index__">selected</mt:if> value="<mt:var name="__index__">"><mt:trans phrase="$__value" escape></option>
+        <option <mt:unless name="object_status"><mt:isset name="object_status"><mt:else><mt:if name="_default_status" eq="$__index__">selected<mt:else><mt:if name="readonly"> style="display:none"</mt:if></mt:if></mt:isset></mt:unless><mt:if name="object_status" eq="$__index__">selected<mt:else><mt:if name="readonly"> style="display:none"</mt:if></mt:if> value="<mt:var name="__index__">"><mt:trans phrase="$__value" escape></option>
         </mt:if>
       </mt:unless>
       </mt:if>
@@ -34,7 +34,7 @@
     <mt:loop name="_options_loop">
       <mt:if name="__counter__" le="$max_status">
       <mt:unless name="request.edit_revision">
-        <option <mt:unless name="object_status"><mt:if name="_default_status" eq="$__counter__">selected</mt:if></mt:unless><mt:if name="object_status" eq="$__counter__">selected</mt:if> value="<mt:var name="__counter__">"><mt:trans phrase="$__value__" escape></option>
+        <option <mt:unless name="object_status"><mt:if name="_default_status" eq="$__counter__">selected<mt:else><mt:if name="readonly"> style="display:none"</mt:if></mt:if></mt:unless><mt:if name="object_status" eq="$__counter__">selected<mt:else><mt:if name="readonly"> style="display:none"</mt:if></mt:if> value="<mt:var name="__counter__">"><mt:trans phrase="$__value__" escape></option>
       <mt:else>
         <mt:if name="__counter__" ne="$status_published">
             <mt:if name="__counter__" eq="3">
@@ -42,7 +42,7 @@
             <mt:else>
               <mt:var name="__value__" setvar="__value">
             </mt:if>
-        <option <mt:unless name="object_status"><mt:if name="_default_status" eq="$__counter__">selected</mt:if></mt:unless><mt:if name="object_status" eq="$__counter__">selected</mt:if> value="<mt:var name="__counter__">"><mt:trans phrase="$__value" escape></option>
+        <option <mt:unless name="object_status"><mt:if name="_default_status" eq="$__counter__">selected<mt:else><mt:if name="readonly"> style="display:none"</mt:if></mt:if></mt:unless><mt:if name="object_status" eq="$__counter__">selected<mt:else><mt:if name="readonly"> style="display:none"</mt:if></mt:if> value="<mt:var name="__counter__">"><mt:trans phrase="$__value" escape></option>
         </mt:if>
       </mt:unless>
       </mt:if>
