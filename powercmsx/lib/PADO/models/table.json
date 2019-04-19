@@ -1,7 +1,7 @@
 {
     "label"    : "Model",
     "plural"   : "Models",
-    "version"  : "2.3",
+    "version"  : "2.4",
     "primary"  : "name",
     "display_system": 1,
     "sortable" : true,
@@ -152,7 +152,7 @@
         "hierarchy": {
             "type": "tinyint",
             "size": 4,
-            "default": null
+            "default": "0"
         },
         "dialog_view": {
             "type": "tinyint",

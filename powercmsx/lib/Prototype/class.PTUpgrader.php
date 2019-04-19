@@ -37,6 +37,9 @@ class PTUpgrader {
             'update_perm'    => ['component' => 'PTUpgrader',
                                  'method'    => 'update_perm',
                                  'version_limit' => '1.015' ],
+            'set_hierarchy'  => ['component' => 'PTUpgrader',
+                                 'method'    => 'set_hierarchy',
+                                 'version_limit' => '1.016' ],
         ];
         $upgrade_functions = [];
         foreach ( $functions as $func ) {
@@ -1569,7 +1572,17 @@ class PTUpgrader {
             $app->db->model( 'session' )->remove_multi( $sessions );
         }
     }
-  
+
+    function set_hierarchy( $app ) {
+        $tables = $app->db->model( 'table' )->load();
+        foreach ( $tables as $table ) {
+            if (! $table->hierarchy ) {
+                $table->hierarchy( 0 );
+                $table->save();
+            }
+        }
+    }
+
     function update1006 ( $app ) {
         $cf = $app->get_table( 'field' );
         $column = $app->db->model( 'column' )->get_by_key( ['table_id' => $cf->id,
