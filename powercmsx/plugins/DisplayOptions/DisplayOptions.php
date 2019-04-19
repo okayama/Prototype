@@ -29,7 +29,7 @@ class DisplayOptions extends PTPlugin {
         }
     }
 
-    function pre_load_objects ( &$cb, $app, $terms, $args, $cols, &$extra = '' ) {
+    function pre_load_objects ( &$cb, $app, &$terms, $args, $cols, &$extra = '' ) {
         if (! $app->stash( 'model_displayoption' ) ) return;
         $tag_args = $cb['args'];
         if (! isset( $tag_args['this_tag'] ) || $tag_args['this_tag'] != 'tables' ) {
@@ -45,16 +45,25 @@ class DisplayOptions extends PTPlugin {
                         : $app->db->model( 'displayoption' )->load(
                                         ['workspace_id' => $workspace_id] );
         $app->stash( 'current_displayoptions_' . $workspace_id , $displayoptions );
-        if (empty( $displayoptions ) ) return;
+        if ( empty( $displayoptions ) ) return;
+        $target_names = [];
+        if ( isset( $terms['name'] ) && isset( $terms['name']['IN'] ) ) {
+            $target_names = $terms['name']['IN'];
+        }
         if ( isset( $terms['menu_type'] ) ) {
             $type = $terms['menu_type'];
             $exclude_models = [];
             $include_models = [];
             foreach ( $displayoptions as $displayoption ) {
+                $pos = array_search( $displayoption->model , $target_names );
                 if ( $displayoption->menu_type != $type ) {
                     $exclude_models[] = $displayoption->model;
+                    if ( $pos ) {
+                        unset( $target_names[ $pos ] );
+                    }
                 } else {
                     $include_models[] = $displayoption->model;
+                    if (! $pos ) $target_names[] = $displayoption->model;
                 }
             }
             $_extra = '';
@@ -79,7 +88,10 @@ class DisplayOptions extends PTPlugin {
                     $_extra .= ' OR (' . implode( ' OR ', $expressions ) . ') ';
                 }
             }
-            $extra .= "$_extra";
+            $extra .= $_extra;
+            if (! empty( $target_names ) ) {
+                $terms['name']['IN'] = $target_names;
+            }
         }
     }
 
