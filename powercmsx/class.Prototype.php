@@ -1026,7 +1026,7 @@ class Prototype {
     }
 
     function register_callback ( $model, $kind, $meth, $priority, $obj = null ) {
-        unset( $this->registered_callbacks[ $model ][ $kind ] );
+        // unset( $this->registered_callbacks[ $model ][ $kind ] );
         if (!$priority ) $priority = 5;
         $this->callbacks[ $kind ][ $model ][ $priority ][] = [ $meth, $obj ];
     }
