@@ -1853,6 +1853,25 @@ b,strong {
   margin-left: -9px;
 }
 
+input[type="checkbox"] ~ .custom-control-indicator {
+  border: 1px solid gray;
+}
+
+
+input[type="radio"] ~ .custom-control-indicator {
+  border: 1px solid gray;
+}
+
+input[type="checkbox"]:disabled ~ .custom-control-indicator {
+  background-color: gray !important;
+  opacity: 0.7;
+}
+
+input[type="radio"]:disabled ~ .custom-control-indicator {
+  background-color: gray !important;
+  opacity: 0.7;
+}
+
 .badge-relation span {
   max-width:200px;
   display:inline-block;
