@@ -7124,6 +7124,9 @@ class Prototype {
                         $filter_params[ $key ] = $conds;
                         $cond = [];
                         $key = preg_replace( '/^_filter_cond_/', '', $key );
+                        if ( $key == 'status' || $key == 'rev_type' ) {
+                            if ( $app->id == 'Bootstrapper' ) continue;
+                        }
                         $values = isset( $params['_filter_value_' . $key ] )
                                 ? $params['_filter_value_' . $key ] : [];
                         $filter_params[ '_filter_value_' . $key ] = $values;
