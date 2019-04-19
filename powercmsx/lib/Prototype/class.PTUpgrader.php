@@ -885,7 +885,7 @@ class PTUpgrader {
         $edit_types  = ['hidden', 'checkbox', 'number', 'primary', 'text', 'file',
                         'text_short', 'textarea', 'password', 'password(hash)',
                         'datetime', 'languages', 'richtext', 'selection', 'color'];
-        $can_index   = ['boolean', 'integer', 'string', 'datetime'];
+        $can_index   = ['tinyint', 'int', 'string', 'datetime'];
         $db = $app->db;
         $db->can_drop = true;
         $columns = $db->model( 'column' )->load( ['table_id' => $obj->id ] );
