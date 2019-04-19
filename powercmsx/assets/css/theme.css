@@ -1857,7 +1857,6 @@ input[type="checkbox"] ~ .custom-control-indicator {
   border: 1px solid gray;
 }
 
-
 input[type="radio"] ~ .custom-control-indicator {
   border: 1px solid gray;
 }

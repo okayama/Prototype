@@ -24,7 +24,7 @@
     </mt:if>
       <mt:tables template_tags="1" type="$table_type">
       <mt:if name="__first__">
-      <select <mt:if name="model_readonly">readonly onmousedown="return false;" onkeydown="return false;"</mt:if> class="form-control short watch-changed short" name="_<mt:var name="__col_name__">_model" id="<mt:var name="__col_name__">-selector">
+      <select <mt:if name="model_readonly">tabindex="-1" readonly onmousedown="return false;" onkeydown="return false;"</mt:if> class="form-control short watch-changed short" name="_<mt:var name="__col_name__">_model" id="<mt:var name="__col_name__">-selector">
         <mt:unless name="object_model">
         <option value="" <mt:unless name="request.id">selected</mt:unless>>
           <mt:trans phrase="Unspecified">

@@ -56,7 +56,7 @@
 <mt:elseif name="type" eq="relation">
 <mt:setvar name="column_type" value="relation">
 </mt:if>
-<select id="_type_<mt:var name="id">" name="_type_<mt:var name="id">" class="form-control col_types<mt:if name="_not_delete"> readonly</mt:if>"<mt:if name="is_primary"> disabled</mt:if><mt:if name="_not_delete"> onmousedown="return false;" onkeydown="return false;"</mt:if>>
+<select id="_type_<mt:var name="id">" name="_type_<mt:var name="id">" class="form-control col_types<mt:if name="_not_delete"> readonly</mt:if>"<mt:if name="is_primary"> disabled</mt:if><mt:if name="_not_delete"> tabindex="-1" onmousedown="return false;" onkeydown="return false;"</mt:if>>
   <option value="integer"<mt:if name="column_type" eq="integer"> selected</mt:if>><mt:trans phrase="Integer"></option>
   <option value="boolean"<mt:if name="column_type" eq="boolean"> selected</mt:if>><mt:trans phrase="Boolean"></option>
   <option value="string"<mt:if name="column_type" eq="string"> selected</mt:if>><mt:trans phrase="String"></option>
@@ -75,12 +75,12 @@
 <input id="_disp_edit_<mt:var name="id">" name="_disp_edit_<mt:var name="id">" type="hidden" value="<mt:var name="disp_edit" escape>">
 <input id="_autoset_<mt:var name="id">" name="_autoset_<mt:var name="id">" type="hidden" value="<mt:var name="autoset" escape>">
 <input id="_default_<mt:var name="id">" name="_default_<mt:var name="id">" type="hidden" value="<mt:var name="default" escape>">
-<mt:unless name="is_primary"><input id="_not_null_<mt:var name="id">" name="_not_null_<mt:var name="id">" type="checkbox" class="form-control" value="1"<mt:if name="not_null"> checked</mt:if><mt:if name="_not_delete"> onclick="return false;" onkeydown="return false;"</mt:if>><mt:else><input type="checkbox" checked disabled></mt:unless></td>
-<td><mt:unless name="is_primary"><input id="_index_<mt:var name="id">" name="_index_<mt:var name="id">" type="checkbox" class="form-control specify_idx" value="1"<mt:if name="index"> checked</mt:if><mt:if name="_not_delete"> onclick="return false;" onkeydown="return false;"</mt:if>><mt:else><input type="checkbox" checked disabled><input name="index_<mt:var name="id">" type="hidden" value="PRIMARY"></mt:unless></td>
-<td><mt:unless name="is_primary"><input id="_unique_<mt:var name="id">" name="_unique_<mt:var name="id">" type="checkbox" class="form-control" value="1"<mt:if name="unique"> checked</mt:if><mt:if name="_not_delete"> onclick="return false;" onkeydown="return false;"</mt:if>><mt:else><input type="checkbox" checked disabled></mt:unless></td>
-<td><mt:unless name="is_primary"><input id="_unchangeable_<mt:var name="id">" name="_unchangeable_<mt:var name="id">" type="checkbox" class="form-control" value="1"<mt:if name="unchangeable"> checked</mt:if><mt:if name="_not_delete"> onclick="return false;" onkeydown="return false;"</mt:if>><mt:else><input type="checkbox" checked disabled></mt:unless></td>
+<mt:unless name="is_primary"><input id="_not_null_<mt:var name="id">" name="_not_null_<mt:var name="id">" type="checkbox" class="form-control" value="1"<mt:if name="not_null"> checked</mt:if><mt:if name="_not_delete"> tabindex="-1" onclick="return false;" onkeydown="return false;"</mt:if>><mt:else><input type="checkbox" checked disabled></mt:unless></td>
+<td><mt:unless name="is_primary"><input id="_index_<mt:var name="id">" name="_index_<mt:var name="id">" type="checkbox" class="form-control specify_idx" value="1"<mt:if name="index"> checked</mt:if><mt:if name="_not_delete"> tabindex="-1" onclick="return false;" onkeydown="return false;"</mt:if>><mt:else><input type="checkbox" checked disabled><input name="index_<mt:var name="id">" type="hidden" value="PRIMARY"></mt:unless></td>
+<td><mt:unless name="is_primary"><input id="_unique_<mt:var name="id">" name="_unique_<mt:var name="id">" type="checkbox" class="form-control" value="1"<mt:if name="unique"> checked</mt:if><mt:if name="_not_delete"> tabindex="-1" onclick="return false;" onkeydown="return false;"</mt:if>><mt:else><input type="checkbox" checked disabled></mt:unless></td>
+<td><mt:unless name="is_primary"><input id="_unchangeable_<mt:var name="id">" name="_unchangeable_<mt:var name="id">" type="checkbox" class="form-control" value="1"<mt:if name="unchangeable"> checked</mt:if><mt:if name="_not_delete"> tabindex="-1" onclick="return false;" onkeydown="return false;"</mt:if>><mt:else><input type="checkbox" checked disabled></mt:unless></td>
 <td><mt:unless name="is_primary">
-<select id="_list_<mt:var name="id">" name="_list_<mt:var name="id">" class="form-control<mt:if name="_not_delete"> readonly</mt:if>"<mt:if name="_not_delete"> onmousedown="return false;" onkeydown="return false;"</mt:if>>
+<select id="_list_<mt:var name="id">" name="_list_<mt:var name="id">" class="form-control<mt:if name="_not_delete"> readonly</mt:if>"<mt:if name="_not_delete"> tabindex="-1" onmousedown="return false;" onkeydown="return false;"</mt:if>>
   <option value=""<mt:unless name="list"> selected</mt:unless>><mt:trans phrase="None"></option>
   <option value="checkbox"<mt:if name="list" eq="checkbox"> selected</mt:if>><mt:trans phrase="Checkbox"></option>
   <option value="number"<mt:if name="list" eq="number"> selected</mt:if>><mt:trans phrase="Number"></option>
@@ -104,7 +104,7 @@
 <mt:else><input type="checkbox" name="_list_<mt:var name="id">" value="1" <mt:if name="list">checked</mt:if>></mt:unless></td>
 
 <td><mt:unless name="is_primary">
-<select id="_edit_<mt:var name="id">" name="_edit_<mt:var name="id">" class="list_edit_prop form-control<mt:if name="_not_delete"> readonly</mt:if>"<mt:if name="_not_delete"> onmousedown="return false;" onkeydown="return false;"</mt:if>>
+<select id="_edit_<mt:var name="id">" name="_edit_<mt:var name="id">" class="list_edit_prop form-control<mt:if name="_not_delete"> readonly</mt:if>"<mt:if name="_not_delete"> tabindex="-1" onmousedown="return false;" onkeydown="return false;"</mt:if>>
   <option value=""<mt:unless name="edit"> selected</mt:unless>><mt:trans phrase="None"></option>
   <option value="hidden"<mt:if name="edit" eq="hidden"> selected</mt:if>><mt:trans phrase="Hidden"></option>
   <option value="checkbox"<mt:if name="edit" eq="checkbox"> selected</mt:if>><mt:trans phrase="Checkbox"></option>

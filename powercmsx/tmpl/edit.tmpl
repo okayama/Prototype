@@ -204,7 +204,7 @@ $('#__view-permalink').click(function(){
   <div class="col-lg-2">
     <mt:loop name="languages">
     <mt:if name="__first__">
-    <select class="form-control short custom-select" id="<mt:var name="__col_name__">" name="<mt:var name="__col_name__">" <mt:if name="readonly">readonly onmousedown="return false;" onkeydown="return false;"</mt:if>>
+    <select class="form-control short custom-select" id="<mt:var name="__col_name__">" name="<mt:var name="__col_name__">" <mt:if name="readonly">tabindex="-1" readonly onmousedown="return false;" onkeydown="return false;"</mt:if>>
     </mt:if>
       <option value="<mt:var name="__value__">" <mt:if name="value" eq="$__value__">selected</mt:if>><mt:var name="__value__" translate="1"></option>
     <mt:if name="__last__">
