@@ -1211,8 +1211,9 @@ class PAML {
 
     function function_gethashvar ( $args, &$ctx ) {
         if ( isset( $args['name'] ) ) $name = $args['name'];
-        if ( isset( $args['key'] ) ) $key = $args[ 'key' ];
-        if ( (! $name ) || (! $key ) ) return '';
+        if ( isset( $args['key'] ) ) $key = $args['key'];
+        if ( (! $name ) || (! isset( $key )
+                        || $key === '' ) ) return '';
         $hash = $ctx->vars[ $name ];
         if (! $hash ) {
             $hash = $ctx->vars[ strtolower( $name ) ];
