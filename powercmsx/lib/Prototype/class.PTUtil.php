@@ -1675,7 +1675,7 @@ class PTUtil {
         }
         $counter = 0;
         foreach ( $existing_files as $file ) {
-            $file_name = basename( $file );
+            $file_name = self::encode_mimeheader( basename( $file ) );
             $body .= "Content-Type: application/octet-stream; name=\"{$file_name}\"\n";
             $body .= "Content-Disposition: attachment; filename=\"{$file_name}\"\n";
             $body .= "Content-Transfer-Encoding: base64\n";
