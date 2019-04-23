@@ -492,6 +492,7 @@ class PTForm {
                 $sess = $app->db->model( 'session' )
                     ->get_by_key( [ 'name' => $file_token, 'kind' => 'UP' ] );
                 if ( $app->mode == 'confirm' ) {
+                    $error_msg = '';
                     if ( isset( $_FILES['question_' . $basename ] ) ) {
                         $upload_dir = $app->upload_dir();
                         $upload_path = $upload_dir . DS;
@@ -501,7 +502,6 @@ class PTForm {
                         $upload_path .= $filename;
                         if ( move_uploaded_file( $_FILES['question_'
                             . $basename ]['tmp_name'], $upload_path ) ) {
-                            $error_msg = '';
                             $ext = strtolower( pathinfo( $upload_path, PATHINFO_EXTENSION ) );
                             $extensions = $question->options;
                             if ( $extensions ) {
