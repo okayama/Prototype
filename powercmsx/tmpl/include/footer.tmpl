@@ -11,7 +11,9 @@
   <mt:getoption key="copyright" setvar="copyright">
   <mt:if name="copyright">
     <footer class="footer bar">
-      <span class="copyright"><mt:var name="copyright" eval="1"></span>
+      <mt:if name="user_id">
+        <span class="copyright"><mt:var name="copyright" eval="1"></span>
+      </mt:if>
     </footer>
   </mt:if>
 <script>window.jQuery || document.write('<script src="assets/js/vendor/jquery.min.js"><\/script>')</script>
