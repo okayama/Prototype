@@ -135,6 +135,7 @@ function reorder_fields(){
     });
     $('#_field_sort_order').val(field_names.join(','));
     $('#_start_fields').after(field_objects);
+    $(document).trigger('pcmsx.reorder_fields_done');
 }
 $("#disp_options_save").click(function(){
     var str = $("#disp_options_form").serialize();
