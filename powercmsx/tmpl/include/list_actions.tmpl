@@ -13,7 +13,7 @@
 
 <mt:loop name="list_actions">
 <mt:if name="__first__">
-<select name="action_name" class="select-action form-control form-control-sm very-short">
+<select name="action_name" class="select-action form-control custom-select form-control-sm very-short">
   <option value=""><mt:trans phrase="Action..."></option>
 </mt:if>
   <option value="<mt:var name="name">" data-hint="<mt:var name="hint" translate>" data-modal="<mt:var name="modal" escape>" class="<mt:if name="input">with-input</mt:if>"><mt:var name="label" escape></option>

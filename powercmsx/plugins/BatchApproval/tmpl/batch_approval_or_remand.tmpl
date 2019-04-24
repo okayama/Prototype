@@ -42,7 +42,7 @@
         <span class="custom-control-indicator"></span>
         <span class="custom-control-description"><mt:trans phrase="Remand"></span>
       </label>
-      <select class="form-control short" name="__workflow_remand_<mt:var name="_workflow_workspace_id">" id="__workflow_remand_<mt:var name="_workflow_workspace_id">">
+      <select class="form-control custom-select short" name="__workflow_remand_<mt:var name="_workflow_workspace_id">" id="__workflow_remand_<mt:var name="_workflow_workspace_id">">
       <option class="remand-none" value=""><mt:trans phrase="Unspecified"></option>
     </mt:if>
       <mt:if name="current_group" ne="$workflow_relation_name">
@@ -68,7 +68,7 @@
         <span class="custom-control-indicator"></span>
         <span class="custom-control-description"><mt:trans phrase="Approval Request"></span>
       </label>  
-      <select class="form-control short" name="__workflow_approval_<mt:var name="_workflow_workspace_id">" id="__workflow_approval_<mt:var name="_workflow_workspace_id">">
+      <select class="form-control custom-select short" name="__workflow_approval_<mt:var name="_workflow_workspace_id">" id="__workflow_approval_<mt:var name="_workflow_workspace_id">">
       <option class="approval-none" value=""><mt:trans phrase="Unspecified"></option>
     </mt:if>
       <mt:if name="current_group" ne="$workflow_relation_name">

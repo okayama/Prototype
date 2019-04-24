@@ -54,7 +54,7 @@
                   <div class="col-md-9 form-inline">
                     <mt:loop name="system_filters">
                       <mt:if name="__first__">
-                      <select class="form-control form-control-sm filter-selecter-ctrl filter-selecter-ctrl-dd" name="select_system_filters" id="select_system_filters">
+                      <select class="form-control form-control-sm custom-select filter-selecter-ctrl filter-selecter-ctrl-dd" name="select_system_filters" id="select_system_filters">
                         <option value=""><mt:trans phrase="(None selected)"></option>
                       </mt:if>
                         <option data-option="<mt:var name="option">" <mt:if name="current_system_filter" eq="$name">selected</mt:if> value="<mt:var name="name" escape>"><mt:var name="label" escape></option>
@@ -69,7 +69,7 @@
                 <div class="row form-group">
                   <div class="col-md-3"><b><mt:trans phrase="Your Filters"></b></div>
                   <div class="col-md-9 form-inline">
-                      <select class="form-control form-control-sm filter-selecter-ctrl filter-selecter-ctrl-dd" name="select-user_filters" id="select-user_filters">
+                      <select class="form-control form-control-sm custom-select filter-selecter-ctrl filter-selecter-ctrl-dd" name="select-user_filters" id="select-user_filters">
                         <option value=""><mt:trans phrase="(None selected)"></option>
                         <mt:objectloop model="option" kind="list_filter" key="$model" user_id="$user_id" workspace_id="$workspace_id">
                         <mt:setvar name="has_filter" value="1">
@@ -89,7 +89,7 @@
                 <div class="row form-group new-filter-elem hidden">
                   <div class="col-md-3" style="float:left;"><b><mt:trans phrase="Columns"></b></div>
                   <div class="col-md-9 form-inline">
-                    <select name="filters-selector" class="form-control form-control-sm filter-selecter-ctrl filter-selecter-ctrl-dd" id="filters-selector">
+                    <select name="filters-selector" class="form-control form-control-sm custom-select filter-selecter-ctrl filter-selecter-ctrl-dd" id="filters-selector">
                     <mt:loop name="filter_options">
                     <mt:if name="__first__">
                         <option><mt:trans phrase="(None selected)"></option>
@@ -109,7 +109,7 @@
                             <span class="selector_col"></span> 
                             &nbsp; <mt:trans phrase=" is ">
                               <input type="number" class="form-control form-control-sm filter-selecter-ctrl filter-selecter-ctrl-sm" name="">
-                            <select name="" class="form-control form-control-sm filter-selecter-ctrl filter-selecter-ctrl-sm">
+                            <select name="" class="form-control form-control-sm custom-select filter-selecter-ctrl filter-selecter-ctrl-sm">
                               <option value="eq"><mt:trans phrase="Equal"></option>
                               <option value="lt"><mt:trans phrase="Less than"></option>
                               <option value="gt"><mt:trans phrase="Grater than"></option>
@@ -127,7 +127,7 @@
                             <span class="selector_col"></span> 
                             &nbsp; <mt:trans phrase=" is ">
                               <input type="text" class="form-control form-control-sm filter-selecter-ctrl filter-selecter-ctrl-sm" name="">
-                            <select name="" class="form-control form-control-sm filter-selecter-ctrl filter-selecter-ctrl-sm">
+                            <select name="" class="form-control form-control-sm custom-select filter-selecter-ctrl filter-selecter-ctrl-sm">
                               <option value="ct"><mt:trans phrase="Contains"></option>
                               <option value="nc"><mt:trans phrase="Not Contains"></option>
                               <option value="eq"><mt:trans phrase="Equal"></option>
@@ -145,7 +145,7 @@
                             <span class="selector_col"></span> 
                             &nbsp; <mt:trans phrase=" is ">
                               <input type="datetime-local" step="1" class="form-control form-control-sm filter-selecter-ctrl filter-selecter-ctrl-sm" name="">
-                            <select name="" class="form-control form-control-sm filter-selecter-ctrl filter-selecter-ctrl-sm">
+                            <select name="" class="form-control form-control-sm custom-select filter-selecter-ctrl filter-selecter-ctrl-sm">
                               <option value="gt"><mt:trans phrase="Newer than"></option>
                               <option value="lt"><mt:trans phrase="Older than"></option>
                             </select>
@@ -163,7 +163,7 @@
                             <mt:else>
                             <mt:trans phrase="Disable,Enable" split="," setvar="status_label">
                             </mt:if>
-                            <select class="form-control form-control-sm short filter-selecter-ctrl filter-selecter-ctrl-sm" name="">
+                            <select class="form-control form-control-sm custom-select short filter-selecter-ctrl filter-selecter-ctrl-sm" name="">
                             <mt:if name="status_published" ne="2">
                             <mt:loop name="status_label">
                               <mt:if name="__index__" le="$list_max_status">

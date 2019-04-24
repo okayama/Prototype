@@ -183,7 +183,7 @@
     </label>
   </div>
   <div class="col-lg-3">
-    <select class="form-control" id="tmpl_markup" name="tmpl_markup">
+    <select class="form-control custom-select" id="tmpl_markup" name="tmpl_markup">
       <option value="mt" <mt:if name="tmpl_markup" eq="mt">selected</mt:if>><mt:trans phrase="PowerCMS Compatible"></option>
       <mt:ignore><option value="smarty" <mt:if name="tmpl_markup" eq="smarty">selected</mt:if>><mt:trans phrase="Smarty Compatible"></option></mt:ignore>
     </select>
@@ -271,7 +271,7 @@
   <div class="col-lg-3">
     <mt:loop name="languages">
     <mt:if name="__first__">
-    <select class="form-control short" id="language" name="language">
+    <select class="form-control custom-select short" id="language" name="language">
     </mt:if>
       <option value="<mt:var name="__value__">" <mt:if name="language" eq="$__value__">selected</mt:if>><mt:var name="__value__" escape translate></option>
     <mt:if name="__last__">
