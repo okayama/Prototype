@@ -5836,7 +5836,7 @@ class Prototype {
         } else {
             $archive_type = is_object( $map ) ? $map->model : 'index';
             $ctx->stash( 'current_archive_type', $archive_type );
-            $tmpl = $template->text;
+            $tmpl = $app->param( 'text' ) !== null ? $app->param( 'text' ) : $template->text;
             $primary = $table->primary;
             if ( is_object( $map ) && $map->model == $obj->_model ) {
                 $ctx->stash( 'current_archive_title', $obj->$primary );
