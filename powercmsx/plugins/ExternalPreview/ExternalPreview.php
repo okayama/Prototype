@@ -30,7 +30,7 @@ class ExternalPreview extends PTPlugin {
         if ( $workspace_id ) {
             $workspace_ids = [0, $workspace_id];
         } else {
-            $workspace_ids = 0;
+            $workspace_ids = [0];
         }
         $app = $ctx->app;
         $mappings = $app->db->model( 'urlmapping' )->count(
