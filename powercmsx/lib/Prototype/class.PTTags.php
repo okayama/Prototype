@@ -106,7 +106,10 @@ class PTTags {
             $relations = isset( $scheme['relations'] ) ? $scheme['relations'] : [];
             $obj = $app->db->model( $table->name )->new();
             $relation_alias = [];
-            $tbl_label = $app->tags_compat ? $table->name : $label;
+            $tbl_label = $table->name;
+            if (! $app->tags_compat ) {
+                $tbl_label = preg_replace( '/[^a-z0-9]/', '' , $tbl_label );
+            }
             foreach ( $columns as $key => $props ) {
                 if ( in_array( $key, $excludes ) ) continue;
                 if ( strpos( $props['type'], 'password' ) !== false ) {
