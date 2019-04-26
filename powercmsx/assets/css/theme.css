@@ -1976,3 +1976,7 @@ input[type="radio"]:disabled ~ .custom-control-indicator {
   white-space: nowrap;
   text-overflow: ellipsis;
 }
+
+#widget-selecter {
+  width: 166px;
+}
