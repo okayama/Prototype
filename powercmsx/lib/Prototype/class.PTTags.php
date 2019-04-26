@@ -106,6 +106,7 @@ class PTTags {
             $relations = isset( $scheme['relations'] ) ? $scheme['relations'] : [];
             $obj = $app->db->model( $table->name )->new();
             $relation_alias = [];
+            $tbl_label = $app->tags_compat ? $table->name : $label;
             foreach ( $columns as $key => $props ) {
                 if ( in_array( $key, $excludes ) ) continue;
                 if ( strpos( $props['type'], 'password' ) !== false ) {
@@ -123,51 +124,51 @@ class PTTags {
                         $prop = $edit_properties[ $key ];
                         if ( strpos( $prop, ':' ) !== false ) {
                             $edit = explode( ':', $prop );
-                            $this->register_tag( $ctx, $tbl_name . $label . 'context',
+                            $this->register_tag( $ctx, $tbl_label . $label . 'context',
                             'block', 'hdlr_referencecontext', $tags, $r_tags );
-                            $reference_tags[ $tbl_name . $label . 'context' ]
+                            $reference_tags[ $tbl_label . $label . 'context' ]
                                 = [ $tbl_name, $key, $edit[1] ];
                             if ( $key !== $tag_name ) {
-                                $this->register_tag( $ctx, $tbl_name . $tag_name . 'context',
+                                $this->register_tag( $ctx, $tbl_label . $tag_name . 'context',
                                 'block', 'hdlr_referencecontext', $tags, $r_tags );
-                                $reference_tags[ $tbl_name . $tag_name . 'context' ]
+                                $reference_tags[ $tbl_label . $tag_name . 'context' ]
                                     = [ $tbl_name, $key, $edit[1] ];
                             }
                         }
                     }
                     if ( $key !== $tag_name ) {
-                        $alias[ $table->name . $tag_name ] = $tbl_name . $key;
-                        $function_tags[ $tbl_name . $key ] = [ $tbl_name, $key ];
+                        $alias[ $table->name . $tag_name ] = $tbl_label . $key;
+                        $function_tags[ $tbl_label . $key ] = [ $tbl_name, $key ];
                     }
-                    $this->register_tag( $ctx, $tbl_name . $tag_name, 'function',
+                    $this->register_tag( $ctx, $tbl_label . $tag_name, 'function',
                         'hdlr_get_objectcol', $tags, $r_tags );
-                    $function_tags[ $tbl_name . $tag_name ] = [ $tbl_name, $key ];
+                    $function_tags[ $tbl_label . $tag_name ] = [ $tbl_name, $key ];
                     if ( $table->name === 'workspace' ) {
                         $workspace_tags[] = $tbl_name . $tag_name;
                     }
                     if ( $label && $label != $tag_name ) {
                         if (! $obj->has_column( $label ) ) {
                             $this->register_tag( $ctx,
-                                $tbl_name . $label,
+                                $tbl_label . $label,
                                     'function', 'hdlr_get_objectcol', $tags, $r_tags );
-                            $alias[ $table->name . $label ] = $tbl_name . $key;
+                            $alias[ $tbl_label . $label ] = $tbl_label . $key;
                         }
                     }
                     if ( $key === 'published_on' ) {
                         $this->register_tag( $ctx,
-                            $tbl_name . 'date', 'function',
+                            $tbl_label . 'date', 'function',
                                                 'hdlr_get_objectcol', $tags, $r_tags );
-                            $alias[ $tbl_name . 'date'] = $tbl_name . $key;
+                            $alias[ $tbl_label . 'date'] = $tbl_label . $key;
                     }
                     if ( isset( $edit_properties[ $key ] ) 
                         && $edit_properties[ $key ] === 'file' ) {
                         if (! $obj->has_column( $tag_name . 'url' ) ) {
-                            $fileurl_tags[ $tbl_name . $tag_name . 'url'] = $key;
+                            $fileurl_tags[ $tbl_label . $tag_name . 'url'] = $key;
                             if ( $tbl_name === 'workspace' ) {
                                 $workspace_tags[] = $tbl_name . $tag_name . 'url';
                             }
                             $this->register_tag( $ctx,
-                                $tbl_name . $tag_name . 'url',
+                                $tbl_label . $tag_name . 'url',
                                     'function', 'hdlr_get_objecturl', $tags, $r_tags );
                         }
                     }
@@ -182,15 +183,15 @@ class PTTags {
                         if ( strpos( $prop, ':' ) !== false ) {
                             $edit = explode( ':', $prop );
                             if ( $edit[0] === 'relation' || $edit[0] === 'reference' ) {
-                                $this->register_tag( $ctx, $tbl_name . $mts[1],
+                                $this->register_tag( $ctx, $tbl_label . $mts[1],
                                     'function', 'hdlr_get_objectcol', $tags, $r_tags );
-                                $function_relations[ $tbl_name . $mts[1] ]
+                                $function_relations[ $tbl_label . $mts[1] ]
                                     = [ $key, $tbl_name, $mts[1], $edit[2] ];
-                                $alias[ $tbl_name . $label ] = $tbl_name . $mts[1];
+                                $alias[ $tbl_label . $label ] = $tbl_label . $mts[1];
                                 if ( $key === 'user_id' ) {
-                                    $this->register_tag( $ctx, $tbl_name . 'author',
+                                    $this->register_tag( $ctx, $tbl_label . 'author',
                                             'function', 'hdlr_get_objectcol', $tags, $r_tags );
-                                    $alias[ $tbl_name . 'author'] = $tbl_name . $mts[1];
+                                    $alias[ $tbl_label . 'author'] = $tbl_label . $mts[1];
                                 }
                             }
                         }
@@ -200,44 +201,44 @@ class PTTags {
             $maps = $app->db->model( 'urlmapping' )->count( ['model' => $tbl_name ] );
             if ( $maps ) {
                 $this->register_tag( $ctx,
-                    $tbl_name . 'permalink',
+                    $tbl_label . 'permalink',
                         'function', 'hdlr_get_objectcol', $tags, $r_tags );
-                $permalink_tags[ $tbl_name . 'permalink' ] = $tbl_name;
+                $permalink_tags[ $tbl_label . 'permalink' ] = $tbl_name;
                 $this->register_tag( $ctx,
-                    $tbl_name . 'archivelink',
+                    $tbl_label . 'archivelink',
                         'function', 'hdlr_get_objectcol', $tags, $r_tags );
             }
-            $count_tagname = strtolower( $table->plural ) . 'count';
+            $count_tagname = $plural . 'count';
             $this->register_tag( $ctx,
                 $count_tagname,
                     'function', 'hdlr_container_count', $tags, $r_tags );
             $count_tags[ $count_tagname ] = $tbl_name;
             foreach ( $relations as $key => $model ) {
                 $tagName = preg_replace( '/[^a-z0-9]/', '' , $key );
-                $this->register_tag( $ctx, $tbl_name . $tagName, 'block',
+                $this->register_tag( $ctx, $tbl_label . $tagName, 'block',
                     'hdlr_get_relatedobjs', $tags, $r_tags );
-                $block_relations[ $tbl_name . $tagName ] = [ $key, $tbl_name, $model ];
-                $this->register_tag( $ctx, $tbl_name . $tagName . 'count', 'function',
+                $block_relations[ $tbl_label . $tagName ] = [ $key, $tbl_name, $model ];
+                $this->register_tag( $ctx, $tbl_label . $tagName . 'count', 'function',
                     'hdlr_get_relationscount', $tags, $r_tags );
-                $function_relcount[ $tbl_name . $tagName . 'count']
+                $function_relcount[ $tbl_label . $tagName . 'count']
                     = [ $key, $tbl_name, $model ];
                 if ( isset( $relation_alias[ $key ] ) ) {
                     $aliasName = $relation_alias[ $key ];
-                    $this->register_tag( $ctx, $tbl_name . $aliasName, 'block',
+                    $this->register_tag( $ctx, $tbl_label . $aliasName, 'block',
                         'hdlr_get_relatedobjs', $tags, $r_tags );
-                    $block_relations[ $tbl_name . $aliasName ] = [ $key, $tbl_name, $model ];
-                    $this->register_tag( $ctx, $tbl_name . $aliasName . 'count', 'function',
+                    $block_relations[ $tbl_label . $aliasName ] = [ $key, $tbl_name, $model ];
+                    $this->register_tag( $ctx, $tbl_label . $aliasName . 'count', 'function',
                         'hdlr_get_relationscount', $tags, $r_tags );
-                    $function_relcount[ $tbl_name . $aliasName . 'count']
+                    $function_relcount[ $tbl_label . $aliasName . 'count']
                         = [ $key, $tbl_name, $model ];
                 }
             }
             if ( $table->taggable ) {
-                $this->register_tag( $ctx, $tbl_name . 'iftagged',
+                $this->register_tag( $ctx, $tbl_label . 'iftagged',
                     'conditional', 'hdlr_iftagged', $tags, $r_tags );
             }
             if ( $table->hierarchy ) {
-                $this->register_tag( $ctx, $tbl_name . 'path',
+                $this->register_tag( $ctx, $tbl_label . 'path',
                     'function', 'hdlr_get_objectpath', $tags, $r_tags );
             }
         }

@@ -137,6 +137,7 @@ class Prototype {
     public    $admin_protect = false;
     public    $build_published_only = true;
     public    $ip_protect    = false;
+    public    $tags_compat   = false;
     public    $delayed       = [];
     public    $versions      = [];
     public    $hooks         = [];
