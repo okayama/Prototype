@@ -24,7 +24,11 @@
     <mt:if name="confirm_ok">
       <p class="text-center"><mt:trans phrase="Confirm the following and click Submit button."  language="$language"></p>
     <mt:else>
+      <mt:if tag="formdescription">
+        <mt:formdescription convert_breaks="auto">
+      <mt:else>
       <p class="text-center"><mt:trans phrase="Please complete the form below and click Confirm button."  language="$language"></p>
+      </mt:if>
     </mt:if>
   </mt:if>
   </div>

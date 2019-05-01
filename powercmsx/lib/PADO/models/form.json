@@ -1,7 +1,7 @@
 {
     "label": "Form",
     "plural": "Forms",
-    "version": "1.7",
+    "version": "2.0",
     "primary": "name",
     "auditing": 1,
     "order": 380,
@@ -23,6 +23,13 @@
         "name": {
             "type": "string",
             "size": 255
+        },
+        "text_format": {
+            "type": "string",
+            "size": 255
+        },
+        "text": {
+            "type": "text"
         },
         "questions": {
             "type": "relation"
@@ -174,6 +181,7 @@
         "questions": "question"
     },
     "options": {
+        "text": "8",
         "status": "Draft,Review,Approval Pending,Reserved,Publish,Ended"
     },
     "sort_by": {
@@ -200,6 +208,7 @@
     "edit_properties": {
         "id": "hidden",
         "name": "primary",
+        "text": "richtext",
         "questions": "relation:question:label:dialog",
         "requires_token": "checkbox",
         "redirect_url": "text_short",
@@ -232,6 +241,7 @@
         "unpublished_on"
     ],
     "column_labels": {
+        "text": "Description",
         "not_save": "Save"
     }
 }
