@@ -7,7 +7,7 @@
     <label class="custom-control custom-checkbox">
     <input id="<mt:var name="__col_name__">" class="custom-control-input watch-changed"
     <mt:if name="readonly">onclick="return false;"</mt:if>
-     type="checkbox" name="<mt:var name="__col_name__">" value="1" <mt:unless name="request.id">checked</mt:unless><mt:if name="value">checked</mt:if>>
+     type="checkbox" name="<mt:var name="__col_name__">" value="1" <mt:unless name="request.id"><mt:if name="request_method" eq="GET">checked</mt:if></mt:unless> <mt:if name="value">checked</mt:if>>
         <span class="custom-control-indicator<mt:if name="readonly"> disabled-cb</mt:if>"></span>
         <span class="custom-control-description"> 
         <mt:var name="label" escape></span>
