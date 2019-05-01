@@ -183,6 +183,7 @@ class Prototype {
                                 'import_objects', 'can_livepreview'];
     public    $disp_option;
     public    $workspace_param;
+    public    $workspace_id;
     public    $output_compression = true;
     public    $force_filter  = false;
     public    $return_args   = [];
@@ -7828,7 +7829,7 @@ class Prototype {
             if ( $template && $template->status != 2 ) {
                 $unlink = true;
             }
-            $workspace = $key->workspace;
+            $workspace = $key->workspace ? $key->workspace : $workspace;
             if ( $urlmapping->container ) {
                 $container = $app->get_table( $urlmapping->container );
                 if ( is_object( $container ) ) {
