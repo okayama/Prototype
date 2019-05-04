@@ -40,7 +40,7 @@ class Prototype {
     public    $copyright     = null;
     public    $app_path      = null;
     protected $dbprefix      = 'mt_';
-    protected $cookie_name   = 'pt-user';
+    public    $cookie_name   = 'pt-user';
     public    $encoding      = 'UTF-8';
     public    $mode          = 'dashboard';
     public    $timezone      = 'Asia/Tokyo';
@@ -305,12 +305,12 @@ class Prototype {
             $this->document_root = rtrim( $this->document_root, DS );
         }
         $path_part = '';
-        if ( $this->id == 'Prototype' ) {
+        if ( $this->id != 'Bootstrapper' ) {
             if ( preg_match( "!(^.*?)([^/]*$)!", $request, $mts ) ) {
                 list ( $d, $path_part, $this->script ) = $mts;
                 if (! $this->path ) $this->path = $path_part;
             }
-        } else if ( $this->id == 'Bootstrapper' ) {
+        } else {
             $this->script = 'index.php';
             if (! $this->path ) {
                 $root_quote = preg_quote( $this->document_root, '/' );
@@ -331,7 +331,8 @@ class Prototype {
         }
         $path = str_replace( DS, '/', $path );
         $this->path = $path;
-        $this->admin_url = $this->admin_url ? $this->admin_url : $this->base . $this->path . 'index.php';
+        $basename = isset( $_SERVER['SCRIPT_FILENAME'] ) ? basename( $_SERVER['SCRIPT_FILENAME'] ) : 'index.php';
+        $this->admin_url = $this->admin_url ? $this->admin_url : $this->base . $this->path . $basename;
         if ( isset( $_SERVER['HTTP_ACCEPT_LANGUAGE'] ) )
             $this->language = substr( $_SERVER['HTTP_ACCEPT_LANGUAGE'], 0, 2 );
     }
@@ -1114,13 +1115,12 @@ class Prototype {
         return $all_registries;
     }
 
-    function __mode ( $mode ) {
+    function __mode ( $mode, $tmpl = null ) {
         $app = $this;
         if ( $mode === 'logout' ) $app->logout();
         if ( strpos( $mode, '.' ) !== false || strpos( $mode, DS ) !== false ) {
             return $app->error( 'Invalid request.' );
         }
-        $tmpl = $mode . '.tmpl';
         $ctx = $app->ctx;
         $ctx->vars['this_mode'] = $mode;
         if ( $mode === 'login' ) {
@@ -1294,6 +1294,7 @@ class Prototype {
             $ctx->vars['page_title'] = $app->translate( $ctx->vars['page_title'] );
         }
         $ctx->params['this_mode'] = $mode;
+        $tmpl = $tmpl ? $tmpl : $mode . '.tmpl';
         return $app->build_page( $tmpl );
     }
 
@@ -1345,7 +1346,7 @@ class Prototype {
         }
     }
 
-    function login () {
+    function login ( $model = 'user', $return_url = null ) {
         $app = $this;
         $user = null;
         if ( $app->request_method === 'POST' ) {
@@ -1363,7 +1364,7 @@ class Prototype {
             if ( $two_factor_auth && $token ) {
                 $key = $app->param( 'confirmation_code' );
                 $user_id = (int) $app->param( 'user_id' );
-                $user = $app->db->model( 'user' )->load( ['id' => $user_id, 'status' => 2] );
+                $user = $app->db->model( $model )->load( ['id' => $user_id, 'status' => 2] );
                 if ( empty( $user ) ) {
                     return $app->error( 'Invalid request.' );
                 }
@@ -1407,7 +1408,7 @@ class Prototype {
             } else {
                 $name = $app->param( 'name' );
                 $password = $app->param( 'password' );
-                $user = $app->db->model( 'user' )->load( ['name' => $name, 'status' => 2] );
+                $user = $app->db->model( $model )->load( ['name' => $name, 'status' => 2] );
                 if ( empty( $user ) ) return;
                 if (! empty( $user ) ) {
                     $user = $user[0];
@@ -1489,7 +1490,7 @@ class Prototype {
             $name = $app->cookie_name;
             $app->bake_cookie( $name, $token, $expires, $path, $remember );
             $return_args = $return_args ? '?' . $return_args : '';
-            $return_url = $app->param( 'return_url' );
+            $return_url = $return_url ? $return_url : $app->param( 'return_url' );
             $return_url = $return_url && strpos( $return_url, '/' ) === 0
                         ? $return_url : $app->admin_url;
             $app->redirect( $return_url . $return_args. '#__login=1' );
@@ -2504,18 +2505,22 @@ class Prototype {
             $alternative = "{$type}_{$model}.tmpl";
             $alternative = $app->ctx->get_template_path( $alternative );
         }
-        $tmpl = $alternative ? $alternative : $app->ctx->get_template_path( $tmpl );
-        if (!$tmpl ) return;
-        $src = file_get_contents( $tmpl );
-        $cache_id = null;
-        $callback = ['name' => 'template_source', 'template' => $tmpl, 'model' => $model ];
-        $basename = pathinfo( $tmpl, PATHINFO_FILENAME );
-        $app->init_callbacks( $basename, 'template_source' );
-        $app->run_callbacks( $callback, $basename, $param, $src );
-        $out = $app->ctx->build_page( $tmpl, $param, $cache_id, false, $src );
-        $app->init_callbacks( $basename, 'template_output' );
-        $callback = ['name' => 'template_output', 'template' => $tmpl ];
-        $app->run_callbacks( $callback, $basename, $param, $src, $out );
+        if ( $tmpl && is_object( $tmpl ) ) {
+            $out = $app->build( $tmpl->text );
+        } else {
+            $tmpl = $alternative ? $alternative : $app->ctx->get_template_path( $tmpl );
+            if (!$tmpl ) return;
+            $src = file_get_contents( $tmpl );
+            $cache_id = null;
+            $callback = ['name' => 'template_source', 'template' => $tmpl, 'model' => $model ];
+            $basename = pathinfo( $tmpl, PATHINFO_FILENAME );
+            $app->init_callbacks( $basename, 'template_source' );
+            $app->run_callbacks( $callback, $basename, $param, $src );
+            $out = $app->ctx->build_page( $tmpl, $param, $cache_id, false, $src );
+            $app->init_callbacks( $basename, 'template_output' );
+            $callback = ['name' => 'template_output', 'template' => $tmpl ];
+            $app->run_callbacks( $callback, $basename, $param, $src, $out );
+        }
         if (!$output ) return $out;
         if ( $app->debug ) {
             $ctx = new PAML;
@@ -8536,7 +8541,7 @@ class Prototype {
         return true;
     }
 
-    function recover_password () {
+    function recover_password ( $model = 'user' ) {
         $app = $this;
         $token = $app->param( 'token' );
         if ( $token ) {
@@ -8564,7 +8569,7 @@ class Prototype {
                     $app->param( '_type', 'recover' );
                     return $app->__mode( 'start_recover' );
                 }
-                $user = $app->db->model( 'user' )->load( $session->user_id );
+                $user = $app->db->model( $model )->load( $session->user_id );
                 if (!$user ) {
                     return $app->error( 'Invalid request.' );
                 }
@@ -8581,7 +8586,7 @@ class Prototype {
                     $app->ctx->vars['error'] = $msg;
                     return $app->__mode( 'start_recover' );
                 }
-                $user = $app->db->model( 'user' )->load( ['email' => $email ] );
+                $user = $app->db->model( $model )->load( ['email' => $email ] );
                 if ( count( $user ) ) {
                     $user = $user[0];
                     $session_id = $app->magic();
@@ -9077,7 +9082,7 @@ class Prototype {
         exit();
     }
 
-    function is_login () {
+    function is_login ( $model = 'user' ) {
         $app = $this;
         if ( $app->stash( 'logged-in' ) ) return true;
         $cookie = $app->cookie_val( $app->cookie_name );
@@ -9094,7 +9099,7 @@ class Prototype {
             $token = md5( $cookie );
             $app->ctx->vars['magic_token'] = $token;
             $app->current_magic = $token;
-            $user = $app->db->model( 'user' )->load( $sess->user_id );
+            $user = $app->db->model( $model )->load( $sess->user_id );
             if ( is_object ( $user ) ) {
                 $app->user = $user;
                 $app->language = $user->language;
