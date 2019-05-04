@@ -128,7 +128,7 @@ class PAML {
                         'wrap', 'encode_url', 'trim_space', 'regex_replace', 'setvartemplate',
                         'replace', 'translate', 'count_chars', 'to_json', 'from_json',
                         'nocache', 'split', 'join', 'format_size', 'encode_xml', 'encode_php',
-                        'instr', 'mb_instr', 'absolute', 'numify', 'merge_linefeeds', 'array_pop',
+                        'instr', 'mb_instr', 'relative', 'numify', 'merge_linefeeds', 'array_pop',
                         'decode_html', 'default', 'normarize'],
       'function'    => ['getvar', 'trans', 'setvar', 'property', 'ldelim', 'include', 'math',
                         'rdelim', 'fetch', 'var', 'date', 'assign', 'count', 'vardump',
@@ -1504,7 +1504,7 @@ class PAML {
         if ( $instr !== false ) return $instr + 1;
     }
 
-    function modifier_absolute ( $str, $arg, $ctx ) {
+    function modifier_relative ( $str, $arg, $ctx ) {
         if ( strpos( $str, 'http' ) === 0 ) {
             $str = preg_replace( "/^https{0,1}:\/\/.*?\//", '/', $str );
         }
