@@ -2,12 +2,13 @@
     "label"       : "LivePreview",
     "id"          : "livepreview",
     "component"   : "LivePreview",
-    "version"     : "1.0",
+    "version"     : "2.0",
     "author"      : "Alfasado Inc.",
     "author_link" : "https://alfasado.net/",
     "description" : "It provides site preview in future.",
     "cfg_template": "cfg_template.tmpl",
     "cfg_system"  : 1,
+    "cfg_space"  : 1,
     "settings"    : {
         "livepreview_page_url"      : "",
         "livepreview_date_based"    : "entry",
@@ -17,6 +18,7 @@
     "menus": {
         "live_preview": {
             "display_system" : 1,
+            "display_space" : 1,
             "component"  : "LivePreview",
             "mode"       : "live_preview",
             "label"      : "Live Preview",

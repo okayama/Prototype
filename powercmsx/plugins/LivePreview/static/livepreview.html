@@ -26,6 +26,21 @@
         <main class="col-md-12 pt-3">
           <h1 class=""><span class="title">Live Preview</span>
           </h1>
+<script>
+_postfix = '';
+if ( workspaceId = getParam('workspace_id') ) {
+    _postfix = '-' + workspaceId;
+}
+function getParam(name, url) {
+    if (!url) url = window.location.href;
+    name = name.replace(/[\[\]]/g, "\\$&");
+    var regex = new RegExp("[?&]" + name + "(=([^&#]*)|&|#|$)"),
+        results = regex.exec(url);
+    if (!results) return null;
+    if (!results[2]) return '';
+    return decodeURIComponent(results[2].replace(/\+/g, " "));
+}
+</script>
   <div id="header-alert" class="alert alert-warning" role="alert" tabindex="0" style="margin-bottom:2em">
     <span id="header-alert-message">
     <script>
@@ -75,7 +90,7 @@
         return escape[match];
       });
     }
-    var ts = $.cookie('pt-live-preview-ts');
+    var ts = $.cookie('pt-live-preview-ts'+_postfix);
     if ( ts ) {
         ts = htmlEscape(ts);
         var y = ts.substr( 0, 4 );
@@ -90,6 +105,7 @@
     } else {
         document.write('Live preview is not set.');
     }
+    $('#header-alert').focus();
     </script>
     </span>
   </div>
@@ -136,7 +152,7 @@
 <script>
 $('#_date').val(_date);
 $('#_time').val(_time);
-var in_pending = $.cookie('pt-live-preview-pending');
+var in_pending = $.cookie('pt-live-preview-pending'+_postfix);
 if ( in_pending ) {
     $('input[name=_pending]').val(['1']);
 } else {
@@ -187,14 +203,14 @@ $('#__save').click(function(){
         alert('The past date can not be specified.');
         return false;
     }
-    $.cookie('pt-live-preview-ts', _ts, { path: '/' });
-    $.cookie('pt-live-preview-date', _d, { path: '/' });
-    $.cookie('pt-live-preview-time', _t, { path: '/' });
+    $.cookie('pt-live-preview-ts'+_postfix, _ts, { path: '/' });
+    $.cookie('pt-live-preview-date'+_postfix, _d, { path: '/' });
+    $.cookie('pt-live-preview-time'+_postfix, _t, { path: '/' });
     var __pending = $('input[name=_pending]:checked').val();
     if ( __pending ) {
-        $.cookie('pt-live-preview-pending', 1, { path: '/' });
+        $.cookie('pt-live-preview-pending'+_postfix, 1, { path: '/' });
     } else {
-        $.cookie('pt-live-preview-pending', '', { path: '/', expires: -1 });
+        $.cookie('pt-live-preview-pending'+_postfix, '', { path: '/', expires: -1 });
     }
     alert('Set the date and time to live preview at ' + __d + ' ' + __t + '.');
     $('#header-alert-message').html('<span>Live preview is set on ' + __d + ' ' + __t + '.</span>');
@@ -205,12 +221,13 @@ $('#__delete').click(function(){
     if(!confirm('Are you sure you want to clear preview date and time?')){
         return false;
     }
-    $.cookie('pt-live-preview-ts', '', { path: '/', expires: -1 });
-    $.cookie('pt-live-preview-date', '', { path: '/', expires: -1 });
-    $.cookie('pt-live-preview-time', '', { path: '/', expires: -1 });
-    $.cookie('pt-live-preview-pending', '', { path: '/', expires: -1 });
-    $('#header-alert-message').html('<span>Live preview is not set.</span>');
-    $('#header-alert').focus();
+    $.cookie('pt-live-preview-ts'+_postfix, '', { path: '/', expires: -1 });
+    $.cookie('pt-live-preview-date'+_postfix, '', { path: '/', expires: -1 });
+    $.cookie('pt-live-preview-time'+_postfix, '', { path: '/', expires: -1 });
+    $.cookie('pt-live-preview-pending'+_postfix, '', { path: '/', expires: -1 });
+    // $('#header-alert-message').html('<span>Live preview is not set.</span>');
+    location.reload();
+    // $('#header-alert').focus();
     return false;
 });
 </script>
@@ -218,7 +235,7 @@ $('#__delete').click(function(){
       </div>
     </div>
     <footer class="footer bar">
-      <span>Copyright © 2018 Alfasado Inc. All rights reserved.</span>
+      <span>Copyright © 2019 Alfasado Inc. All rights reserved.</span>
     </footer>
 </body>
 </html>

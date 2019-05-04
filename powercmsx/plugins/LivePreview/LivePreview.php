@@ -6,6 +6,7 @@ class LivePreview extends PTPlugin {
     protected $preview_ts = null;
     protected $status_pending = false;
     protected $status_in_pending = false;
+    protected $in_workspace = false;
 
     function __construct () {
         parent::__construct();
@@ -15,34 +16,37 @@ class LivePreview extends PTPlugin {
         if (! $app->user() ) return;
         $app->do_conditional = false;
         $app->static_conditional = false;
-        $datebased = $this->get_config_value( 'livepreview_date_based' );
-        if ( $datebased ) {
-            $datebased_models = preg_split( '/\s*,\s*/', $datebased );
-            foreach ( $datebased_models as $model ) {
-                $app->register_callback( $model, 'publish_date_based',
-                                         'publish_date_based', 1000, $this );
-            }
-        }
-        $status_pending = $this->get_config_value( 'livepreview_status_pending' );
-        if ( $status_pending ) {
-            $this->status_pending = true;
+        $workspace_id = (int) $app->workspace_id;
+        $workspace = $app->workspace_id
+                   ? $app->db->model( 'workspace' )->load( $workspace_id ) : null;
+        $ts = isset( $_COOKIE['pt-live-preview-ts'] )
+                         ? $_COOKIE['pt-live-preview-ts'] : '';
+        if ( $app->workspace_id && isset( $_COOKIE['pt-live-preview-ts-' . $app->workspace_id ] ) ) {
+            $ts = $_COOKIE['pt-live-preview-ts-' . $app->workspace_id ];
+            $this->in_workspace = true;
         }
         if ( $app->id != 'Bootstrapper' ) {
             return;
         }
-        if (! $app->can_do( 'can_livepreview' ) ) {
-            return;
+        if (! $workspace ) {
+            if (! $app->can_do( 'can_livepreview' ) ) {
+                return;
+            }
+        } else {
+            if (! $app->can_do( 'can_livepreview' )
+                && ! $app->can_do( 'can_livepreview', null, null, $workspace ) ) {
+                return;
+            }
         }
         if ( $app->mode == 'live_preview' ) {
             $bootstrapper = $app->bootstrapper;
             if ( $bootstrapper->allow_login ) {
                 $app->ctx->vars['prototype_path'] = $bootstrapper->prototype_path
                                 ? $bootstrapper->prototype_path : $app->path;
+                $app->ctx->vars['workspace_id'] = $app->workspace_id;
                 return $app->build_page( 'live_preview_site.tmpl' );
             }
         }
-        $ts = isset( $_COOKIE['pt-live-preview-ts'] )
-                         ? $_COOKIE['pt-live-preview-ts'] : '';
         if (! $ts ) return;
         if ( $ts ) {
             $ts = preg_replace( '/[^0-9]/', '', $ts );
@@ -57,29 +61,49 @@ class LivePreview extends PTPlugin {
         if ( date('YmdHis') > $ts ) {
             $this->clear_lp_cookie();
             return;
+        }
+        $datebased = $this->in_workspace
+                   ? $this->get_config_value( 'livepreview_date_based', $workspace_id )
+                   : $this->get_config_value( 'livepreview_date_based' );
+        if ( $datebased ) {
+            $datebased_models = preg_split( '/\s*,\s*/', $datebased );
+            foreach ( $datebased_models as $model ) {
+                $app->register_callback( $model, 'publish_date_based',
+                                         'publish_date_based', 1000, $this );
+            }
+        }
+        $status_pending = $this->in_workspace
+                        ? $this->get_config_value( 'livepreview_status_pending', $workspace_id )
+                        : $this->get_config_value( 'livepreview_status_pending' );
+        if ( $status_pending ) {
+            $this->status_pending = true;
+        }
+        $app->force_filter = true;
+        $app->force_dynamic = true;
+        $app->no_cache = true;
+        $status_models = $app->db->model( 'table' )->load( ['start_end' => 1] );
+        foreach ( $status_models as $table ) {
+            $model = $table->name;
+            $app->register_callback( $model, 'pre_listing', 'pre_listing', 1000, $this );
+            $app->register_callback( $model, 'post_load_objects', 'post_load_objects', 1000, $this );
+            $app->register_callback( $model, 'post_load_object', 'post_load_object', 1000, $this );
+            $app->register_callback( $model, 'pre_view', 'pre_view', 1000, $this );
+            $app->register_callback( $model, 'pre_archive_list', 'pre_archive_list', 1000, $this );
+            $app->register_callback( $model, 'pre_archive_count', 'pre_listing', 1000, $this );
+        }
+        $app->register_callback( 'meta', 'pre_view', 'pre_view', 1000, $this );
+        $app->register_callback( 'template', 'post_publish', 'post_publish', 1000, $this );
+        $this->preview = true;
+        $this->preview_ts = $ts;
+        if ( $this->in_workspace ) {
+            $status_in_pending = isset( $_COOKIE['pt-live-preview-pending-' . $app->workspace_id ] )
+                     ? $_COOKIE['pt-live-preview-pending-' . $app->workspace_id ] : '';
         } else {
-            $app->force_filter = true;
-            $app->force_dynamic = true;
-            $app->no_cache = true;
-            $status_models = $app->db->model( 'table' )->load( ['start_end' => 1] );
-            foreach ( $status_models as $table ) {
-                $model = $table->name;
-                $app->register_callback( $model, 'pre_listing', 'pre_listing', 1000, $this );
-                $app->register_callback( $model, 'post_load_objects', 'post_load_objects', 1000, $this );
-                $app->register_callback( $model, 'post_load_object', 'post_load_object', 1000, $this );
-                $app->register_callback( $model, 'pre_view', 'pre_view', 1000, $this );
-                $app->register_callback( $model, 'pre_archive_list', 'pre_archive_list', 1000, $this );
-                $app->register_callback( $model, 'pre_archive_count', 'pre_listing', 1000, $this );
-            }
-            $app->register_callback( 'meta', 'pre_view', 'pre_view', 1000, $this );
-            $app->register_callback( 'template', 'post_publish', 'post_publish', 1000, $this );
-            $this->preview = true;
-            $this->preview_ts = $ts;
             $status_in_pending = isset( $_COOKIE['pt-live-preview-pending'] )
-                         ? $_COOKIE['pt-live-preview-pending'] : '';
-            if ( $status_in_pending ) {
-                $this->status_in_pending = true;
-            }
+                     ? $_COOKIE['pt-live-preview-pending'] : '';
+        }
+        if ( $status_in_pending ) {
+            $this->status_in_pending = true;
         }
     }
 
@@ -142,7 +166,10 @@ class LivePreview extends PTPlugin {
             $this->clear_lp_cookie();
             return;
         }
-        $html = $this->get_config_value( 'livepreview_insert_html' );
+        $workspace_id = (int) $app->workspace_id;
+        $html = $this->in_workspace
+              ? $this->get_config_value( 'livepreview_insert_html', $workspace_id )
+              : $this->get_config_value( 'livepreview_insert_html' );
         if ( $html ) {
             if ( preg_match ( '/<\/body>/i', $data ) ) {
                 $html = $app->build( $html );
@@ -364,21 +391,23 @@ class LivePreview extends PTPlugin {
     }
 
     function clear_lp_cookie () {
-        setcookie( 'pt-live-preview-ts', '', -1, '/' );
-        setcookie( 'pt-live-preview-date', '', -1, '/' );
-        setcookie( 'pt-live-preview-time', '', -1, '/' );
-        setcookie( 'pt-live-preview-pending', '', -1, '/' );
-        if ( isset( $_COOKIE['pt-live-preview-ts'] ) ) {
-            unset( $_COOKIE['pt-live-preview-ts'] );
+        $app = Prototype::get_instance();
+        $postfix = $this->in_workspace ? '-' . $app->workspace_id : '';
+        setcookie( "pt-live-preview-ts{$postfix}", '', -1, '/' );
+        setcookie( "pt-live-preview-date{$postfix}", '', -1, '/' );
+        setcookie( "pt-live-preview-time{$postfix}", '', -1, '/' );
+        setcookie( "pt-live-preview-pending{$postfix}", '', -1, '/' );
+        if ( isset( $_COOKIE["pt-live-preview-ts{$postfix}"] ) ) {
+            unset( $_COOKIE["pt-live-preview-ts{$postfix}"] );
         }
-        if ( isset( $_COOKIE['pt-live-preview-date'] ) ) {
-            unset( $_COOKIE['pt-live-preview-date'] );
+        if ( isset( $_COOKIE["pt-live-preview-date{$postfix}"] ) ) {
+            unset( $_COOKIE["pt-live-preview-date{$postfix}"] );
         }
-        if ( isset( $_COOKIE['pt-live-preview-time'] ) ) {
-            unset( $_COOKIE['pt-live-preview-time'] );
+        if ( isset( $_COOKIE["pt-live-preview-time{$postfix}"] ) ) {
+            unset( $_COOKIE["pt-live-preview-time{$postfix}"] );
         }
-        if ( isset( $_COOKIE['pt-live-preview-pending'] ) ) {
-            unset( $_COOKIE['pt-live-preview-pending'] );
+        if ( isset( $_COOKIE["pt-live-preview-pending{$postfix}"] ) ) {
+            unset( $_COOKIE["pt-live-preview-pending{$postfix}"] );
         }
     }
 
@@ -386,10 +415,29 @@ class LivePreview extends PTPlugin {
         if (! $app->can_do( 'can_livepreview' ) ) {
             return $app->error( 'Permission denied.' );
         }
-        $page_url = $this->get_config_value( 'livepreview_page_url' );
+        $workspace_id = $app->workspace() ? $app->workspace()->id : 0;
+        $postfix = '';
+        if ( $workspace_id ) {
+            if ( ! $app->can_do( 'can_livepreview', null, null, $app->workspace() ) ) {
+                return $app->error( 'Permission denied.' );
+            }
+            $this->in_workspace = true;
+            $postfix = '-' . $workspace_id;
+        } else {
+            if (! $app->can_do( 'can_livepreview' ) ) {
+                return $app->error( 'Permission denied.' );
+            }
+        }
+        $page_url = $this->get_config_value( 'livepreview_page_url', $workspace_id );
         $this_page = $app->base . $_SERVER['REQUEST_URI'];
+        $page_url = $page_url ? $app->build( $page_url ) : '';
         if ( $app->request_method === 'GET' ) {
             if ( $page_url && $page_url != $this_page ) {
+                if ( $workspace_id && strpos( $page_url, 'workspace_id=' ) === false ) {
+                    $page_url = strpos( $page_url, '?' ) === false
+                              ? $page_url .= '?workspace_id=' . $workspace_id
+                              : $page_url .= '&workspace_id=' . $workspace_id;
+                }
                 $app->redirect( $page_url );
                 exit();
             }
@@ -398,9 +446,9 @@ class LivePreview extends PTPlugin {
         $app->ctx->vars['live_preview_date'] = date( 'Y-m-d' );
         $app->ctx->vars['live_preview_time'] = date( 'H:i:s' );
         $app->ctx->vars['status_pending']
-            = $this->get_config_value( 'livepreview_status_pending' );
-        if ( isset( $_COOKIE['pt-live-preview-ts'] ) ) {
-            $ts = $_COOKIE['pt-live-preview-ts'];
+            = $this->get_config_value( 'livepreview_status_pending', $workspace_id );
+        if ( isset( $_COOKIE["pt-live-preview-ts{$postfix}"] ) ) {
+            $ts = $_COOKIE["pt-live-preview-ts{$postfix}"];
             if ( $ts && date('YmdHis') > $ts ) {
                 $this->clear_lp_cookie();
             }
@@ -439,21 +487,21 @@ class LivePreview extends PTPlugin {
                     $app->ctx->vars['error'] = $error_msg;
                     return $app->build_page( $tmpl );
                 }
-                setcookie( 'pt-live-preview-ts', $ts, 0, '/' );
-                setcookie( 'pt-live-preview-date', $date, 0, '/' );
-                setcookie( 'pt-live-preview-time', $_time, 0, '/' );
-                $_COOKIE['pt-live-preview-ts'] = $ts;
+                setcookie( "pt-live-preview-ts{$postfix}", $ts, 0, '/' );
+                setcookie( "pt-live-preview-date{$postfix}", $date, 0, '/' );
+                setcookie( "pt-live-preview-time{$postfix}", $_time, 0, '/' );
+                $_COOKIE["pt-live-preview-ts{$postfix}"] = $ts;
                 $date = preg_replace( '/[^0-9]/', '', $date );
                 $_time = preg_replace( '/[^0-9]/', '', $_time );
-                $_COOKIE['pt-live-preview-date'] = $date;
-                $_COOKIE['pt-live-preview-time'] = $_time;
+                $_COOKIE["pt-live-preview-date{$postfix}"] = $date;
+                $_COOKIE["pt-live-preview-time{$postfix}"] = $_time;
                 if ( $pending ) {
-                    setcookie( 'pt-live-preview-pending', 1, 0, '/' );
-                    $_COOKIE['pt-live-preview-pending'] = 1;
+                    setcookie( "pt-live-preview-pending{$postfix}", 1, 0, '/' );
+                    $_COOKIE["pt-live-preview-pending{$postfix}"] = 1;
                 } else {
-                    setcookie( 'pt-live-preview-pending', '', -1, '/' );
-                    if ( isset( $_COOKIE['pt-live-preview-pending'] ) ) {
-                        unset( $_COOKIE['pt-live-preview-pending'] );
+                    setcookie( "pt-live-preview-pending{$postfix}", '', -1, '/' );
+                    if ( isset( $_COOKIE["pt-live-preview-pending{$postfix}"] ) ) {
+                        unset( $_COOKIE["pt-live-preview-pending{$postfix}"] );
                     }
                 }
                 $app->ctx->vars['header_alert_message'] = $this->translate(

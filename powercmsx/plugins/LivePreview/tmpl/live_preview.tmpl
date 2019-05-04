@@ -1,8 +1,13 @@
 <mt:trans phrase="Live Preview" component="LivePreview" setvar="page_title">
 <mt:include file="include/header.tmpl">
 
-<mt:if name="cookie.pt-live-preview-ts">
-  <mt:var name="cookie.pt-live-preview-ts" format_ts="Y-m-d H:i:s" setvar="current_setting">
+<mt:setvarblock name="livepreviewts">cookie.pt-live-preview-ts<mt:if name="workspace_id">-<mt:var name="workspace_id"></mt:setvarblock>
+<mt:setvarblock name="livepreviewdate">cookie.pt-live-preview-date<mt:if name="workspace_id">-<mt:var name="workspace_id"></mt:setvarblock>
+<mt:setvarblock name="livepreviewtime">cookie.pt-live-preview-time<mt:if name="workspace_id">-<mt:var name="workspace_id"></mt:setvarblock>
+<mt:setvarblock name="livepreviewpending">cookie.pt-live-preview-pending<mt:if name="workspace_id">-<mt:var name="workspace_id"></mt:setvarblock>
+
+<mt:if name="$livepreviewts">
+  <mt:var name="$livepreviewts" format_ts="Y-m-d H:i:s" setvar="current_setting">
   <div class="alert alert-warning" role="alert" tabindex="0" style="margin-bottom:2em">
     <span id="header-alert-message">
     <mt:trans phrase="Live preview is set on %s." params="$current_setting" component="LivePreview">
@@ -20,6 +25,8 @@
 <input type="hidden" name="__mode" value="live_preview">
 <input type="hidden" name="magic_token" value="<mt:var name="magic_token">">
 <input type="hidden" id="action_type" name="action_type" value="">
+<input type="hidden" name="workspace_id" value="<mt:var name="request.workspace_id" escape>">
+
 <div class="row form-group">
   <div class="col-lg-2">
     <label for="live_preview_date">
@@ -27,9 +34,9 @@
     </label>
   </div>
   <div class="col-lg-10 form-inline">
-    <input id="live_preview_date" type="date" class="form-control date watch-changed" name="live_preview_date" value="<mt:if name="cookie.pt-live-preview-date"><mt:var name="cookie.pt-live-preview-date" escape format_ts="Y-m-d"><mt:else><mt:var name="live_preview_date" format_ts="Y-m-d"></mt:if>">
+    <input id="live_preview_date" type="date" class="form-control date watch-changed" name="live_preview_date" value="<mt:if name="$livepreviewdate"><mt:var name="$livepreviewdate" escape format_ts="Y-m-d"><mt:else><mt:var name="live_preview_date" format_ts="Y-m-d"></mt:if>">
     &nbsp;
-    <input id="live_preview_time" type="time" step="1" class="form-control time watch-changed" name="live_preview_time" value="<mt:if name="cookie.pt-live-preview-time"><mt:var name="cookie.pt-live-preview-time" escape format_ts="H:i:s"><mt:else><mt:var name="live_preview_time" format_ts="H:i:s"></mt:if>">
+    <input id="live_preview_time" type="time" step="1" class="form-control time watch-changed" name="live_preview_time" value="<mt:if name="$livepreviewtime"><mt:var name="$livepreviewtime" escape format_ts="H:i:s"><mt:else><mt:var name="live_preview_time" format_ts="H:i:s"></mt:if>">
   </div>
 </div>
 
@@ -42,12 +49,12 @@
   </div>
   <div class="col-lg-10">
   <label class="custom-control custom-radio">
-    <input class="custom-control-input" type="radio" <mt:unless name="cookie.pt-live-preview-pending">checked</mt:unless> name="livepreview_status_pending" value="">
+    <input class="custom-control-input" type="radio" <mt:unless name="$livepreviewpending">checked</mt:unless> name="livepreview_status_pending" value="">
     <span class="custom-control-indicator"></span>
     <span class="custom-control-description"><mt:trans phrase="Disable"></span>
   </label>
   <label class="custom-control custom-radio">
-    <input id="live_preview_pending" class="custom-control-input" type="radio" <mt:if name="cookie.pt-live-preview-pending">checked</mt:if> name="livepreview_status_pending" value="1">
+    <input id="live_preview_pending" class="custom-control-input" type="radio" <mt:if name="$livepreviewpending">checked</mt:if> name="livepreview_status_pending" value="1">
     <span class="custom-control-indicator"></span>
     <span class="custom-control-description"><mt:trans phrase="Enable"></span>
   </label>
