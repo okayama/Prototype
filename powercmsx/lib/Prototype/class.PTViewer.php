@@ -8,6 +8,7 @@ class PTViewer {
     function view ( $app, $workspace_id = null ) {
         $app->id = 'Bootstrapper';
         $app->bootstrapper = $this;
+        $app->workspace_id = (int) $workspace_id;
         $app->init();
         if ( $language = $app->param( '_language' ) ) {
             $app->language = $language;

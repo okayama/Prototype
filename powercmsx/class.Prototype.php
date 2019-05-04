@@ -866,6 +866,7 @@ class Prototype {
             $ctx->include_paths[ $app->site_path ] = true;
             if ( $workspace ) {
                 $workspace_id = $workspace->id;
+                $app->workspace_id = (int) $workspace_id;
                 $ctx->vars['workspace_scope'] = 1;
                 $ctx->vars['workspace_url'] = $workspace->site_url;
                 $ws_values = $workspace->get_values();
