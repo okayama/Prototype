@@ -12,7 +12,8 @@ RewriteCond %{REQUEST_METHOD} !=GET
 RewriteCond %{REQUEST_FILENAME} !\.php$ [NC]
 RewriteRule ^ <mt:websitepath>/pt-view.php
 
-ErrorDocument 404 <mt:var name="websiteurl" relative="1">/pt-view.php
+ErrorDocument 404 <mt:websiteurl absolute="1">pt-view.php
+ErrorDocument 403 <mt:websiteurl absolute="1">pt-view.php
 
 <Files ~ "^\.ht">
 deny from all
