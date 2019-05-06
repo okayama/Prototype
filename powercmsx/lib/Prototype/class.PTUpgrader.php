@@ -304,6 +304,7 @@ class PTUpgrader {
         $model_names = [];
         $components = [];
         $cfg_settings = $app->cfg_settings;
+        $json_basenames = [];
         foreach ( $schemes as $item ) {
             $model = $item->key;
             $model_names[] = $model;
@@ -326,6 +327,7 @@ class PTUpgrader {
                 if ( is_readable( $file ) ) {
                     $model_files[ $model ] = $file;
                     $scheme = json_decode( file_get_contents( $file ), true );
+                    $json_basenames[] = basename( $file, '.json' );
                     $scheme_version = isset( $scheme['version'] ) ? $scheme['version'] : '';
                     $db_version = $item->value;
                     if ( $db_version < $scheme_version ) {
@@ -354,7 +356,7 @@ class PTUpgrader {
                 $extension = pathinfo( $json )['extension'];
                 if ( $extension !== 'json' ) continue;
                 $model = pathinfo( $json )['filename'];
-                if (! in_array( $model, $model_names ) ) {
+                if (! in_array( $model, $model_names ) || ! in_array( $model, $json_basenames ) ) {
                     $component = in_array( $dir, $app->model_paths )
                                ? 'Prototype'
                                : strtolower( basename( dirname( dirname( $file ) ) ) );
