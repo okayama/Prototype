@@ -290,11 +290,15 @@ class PTPlugin {
         return $app->__mode( 'manage_plugins' );
     }
 
-    function get_config_value ( $name, $ws_id = 0 ) {
+    function get_config_value ( $name, $ws_id = 0, $inheritance = false ) {
         $app = Prototype::get_instance();
         $plugin_id = strtolower( get_class( $this ) );
         $terms = ['extra' => $plugin_id, 'key' => $name, 'workspace_id' => $ws_id ];
         $setting_obj = $app->db->model( 'option' )->get_by_key( $terms );
+        if ( $ws_id && $inheritance && !$setting_obj->id ) {
+            $terms['workspace_id'] = 0;
+            $setting_obj = $app->db->model( 'option' )->get_by_key( $terms );
+        }
         if ( $setting_obj->id ) {
             return $setting_obj->value;
         }
