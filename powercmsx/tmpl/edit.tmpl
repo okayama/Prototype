@@ -1082,6 +1082,27 @@ $(function () {
   </div>
 </div>
 
+<mt:elseif name="edit" eq="date">
+
+<div class="row form-group">
+  <div class="col-lg-2">
+    <label for="<mt:var name="__col_name__">">
+      <mt:var name="label" escape>
+      <mt:if name="not_null"><mt:var name="field_required"></mt:if>
+    </label>
+  </div>
+  <div class="col-lg-10 form-inline">
+    <mt:setvarblock name="date_col_name"><mt:var name="__col_name__">_date</mt:setvarblock>
+    <mt:setvarblock name="time_col_name"><mt:var name="__col_name__">_time</mt:setvarblock>
+    <input id="<mt:var name="__col_name__">" type="date" class="form-control date watch-changed" name="<mt:var name="__col_name__">_date" value="<mt:if name="value"><mt:var name="value" format_ts="Y-m-d"><mt:else><mt:var name="$date_col_name" escape></mt:if>"
+      <mt:if name="readonly">readonly</mt:if>>
+    &nbsp;
+    <span class="time-input"><input id="<mt:var name="__col_name__">_time" type="hidden" step="1" class="form-control time watch-changed" name="<mt:var name="__col_name__">_time" value="<mt:if name="value"><mt:var name="value" format_ts="H:i:s"><mt:else><mt:var name="$time_col_name" escape></mt:if>"
+      <mt:if name="readonly">readonly</mt:if>></span>
+    <mt:var name="_hint">
+  </div>
+</div>
+
 <mt:elseif name="edit" like="selection">
 
 <mt:var name="options" split="," setvar="_options_loop">

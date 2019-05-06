@@ -4596,9 +4596,10 @@ class Prototype {
                     if ( $col === 'id' || $col === 'workspace_id' ) {
                         continue;
                     }
-                } else if ( $prop === 'datetime' ) {
+                } else if ( $prop === 'datetime' || $prop === 'date' ) {
                     $date = $app->param( $col . '_date' );
                     $time = $app->param( $col . '_time' );
+                    if ( $prop === 'date' ) $time = '000000';
                     $ts = $obj->db2ts( $date . $time );
                     $value = $obj->ts2db( $ts );
                 } else if ( $prop === 'number' ) {
