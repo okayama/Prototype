@@ -757,9 +757,9 @@
     "Current theme is '%s'." : "現在のテーマは「%s」です。",
     "Are you sure you want to apply this theme?" : "このテーマを適用してもよろしいですか?",
     "Please complete the form below and click Confirm button."
-        : "以下のフォームに入力して「確認」ボタンをクリックしてください。",
+        : "以下のフォームに入力して「確認する」ボタンをクリックしてください。",
     "Confirm the following and click Submit button."
-        : "内容を確認の上、よろしければ「送信」をクリックして投稿してください。",
+        : "内容を確認の上、よろしければ「送信する」をクリックして投稿してください。",
     "Thank you for your inquiry." : "お問い合わせありがとうございました。",
     "Please check your entries." : "入力内容を確認してください。",
     "The contact posted for %s has been received."
@@ -1136,6 +1136,8 @@
         : "%sの表示順の変更を保存しました。",
     "A %1$s with the same %2$s already exists."
         : "同じ値の%2$s「%1$s」が既に存在します。",
+    "A %1$s with the same %2$s '%3$s' already exists."
+        : "同じ%2$sの%1$s「%3$s」が既に存在します。",
     "Both passwords must match."
         : "パスワードが一致しません。",
     "Username, Password and Email are required."
