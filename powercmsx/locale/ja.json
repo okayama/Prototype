@@ -564,6 +564,7 @@
     "Rows"               : "行の高さ",
     "Connector"          : "コネクタ",
     "%s is invalid."     : "%sが正しくありません。",
+    "%s is invalid date.": "%sが正しくない日付です。",
     "Date & Time"        : "日付と時刻",
     "(Year)"             : "年",
     "(Month)"            : "月",
