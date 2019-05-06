@@ -126,7 +126,7 @@ jQuery.fn.extend({
       <mt:if name="this_mode" ne="upgrade">
       <a class="navbar-brand"<mt:if name="user_id"> href="<mt:var name="script_uri">"</mt:if> style="z-index:1"><mt:var name="appname" escape trim_to="20+..."><span id="navbar-brand-end"></span></a>
       <mt:setvar name="workspace_counter" value="0">
-      <mt:if name="this_mode" ne="login">
+      <mt:if name="this_mode" ne="login"><mt:if name="user_id">
         <mt:setvar name="selector_limit" value="16">
         <mt:setvar name="ws_sort_by" value="last_update">
         <mt:setvar name="ws_sort_order" value="descend">
@@ -271,7 +271,6 @@ $(window).on('load resize', function(){
             </li>
         </mt:loop>
         </ul>
-      <mt:if name="user_id">
         <div class="header-util">
           <a href="<mt:var name="site_url">" target="_blank" class="btn btn-sm btn-secondary my-2 my-sm-0 view-external" data-toggle="tooltip" data-placement="bottom" title="<mt:trans phrase="View">">
             <i class="fa fa-external-link-square" aria-hidden="true"></i>
@@ -300,13 +299,13 @@ $(window).on('load resize', function(){
           </a>
           </mt:isadmin>
         </div>
-      </mt:if>
       </div>
+        </mt:if>
       </mt:if>
       </mt:if>
     </nav>
   <mt:if name="this_mode" ne="upgrade">
-    <mt:if name="this_mode" ne="login">
+    <mt:if name="this_mode" ne="login"><mt:if name="user_id">
       <mt:if name="workspace_id">
     <nav class="bar navbar navbar-toggleable-md navbar-inverse bg-inverse workspace-bar" style="z-index:4;">
       <mt:if name="this_mode" ne="login">
@@ -442,6 +441,7 @@ $(window).on('load resize', function(){
       </div>
     </nav>
       </mt:if>
+    </mt:if>
 <mt:if name="_fix_spacebar">
   </div>
 </mt:if>
