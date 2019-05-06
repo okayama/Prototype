@@ -569,6 +569,15 @@ class Prototype {
             $app->set_config( ['app_version' => $this->app_version ] );
         }
         $sys_language = $this->language;
+        if ( $this->image_quality > 100 ) $this->image_quality = 100;
+        $ctx->vars['site_url'] = $this->site_url;
+        $ctx->vars['site_path'] = $this->site_path;
+        $this->components['core'] = $this;
+        if ( $table && $this->use_plugin ) {
+            if ( ( $plugin_d = __DIR__ . DS . 'plugins' ) && is_dir( $plugin_d ) )
+                $this->plugin_paths[] = $plugin_d;
+            $this->init_plugins();
+        }
         if ( $this->installed && $this->user() ) {
             $this->language = $this->user()->language;
             $ctx->vars['user_language'] = $this->language;
@@ -614,15 +623,6 @@ class Prototype {
             if ( $lang != $sys_language && $this->id == 'Bootstrapper' ) {
                 $this->set_language( $locale_dir, $sys_language );
             }
-        }
-        if ( $this->image_quality > 100 ) $this->image_quality = 100;
-        $ctx->vars['site_url'] = $this->site_url;
-        $ctx->vars['site_path'] = $this->site_path;
-        $this->components['core'] = $this;
-        if ( $table && $this->use_plugin ) {
-            if ( ( $plugin_d = __DIR__ . DS . 'plugins' ) && is_dir( $plugin_d ) )
-                $this->plugin_paths[] = $plugin_d;
-            $this->init_plugins();
         }
         if ( count( $this->tmpl_paths ) ) {
             $this->template_paths = array_merge( $this->tmpl_paths, $this->template_paths );
