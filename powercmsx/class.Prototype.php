@@ -552,10 +552,6 @@ class Prototype {
                     $this->sys_language = $cfg->value;
                 } else if ( $key === 'copyright' ) {
                     $this->copyright = $cfg->value;
-                } else if ( $key === 'upgrade_count' ) {
-                    if ( $cfg->data > ( time() - 60 ) ) {
-                        $upgrade_count = $cfg->value;
-                    }
                 }
             }
             $this->stash( 'configs', $configs );

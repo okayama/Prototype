@@ -725,8 +725,7 @@ class PTUpgrader {
                 $scheme['list_properties'] : [];
             $edit_props = isset( $scheme['edit_properties'] ) ?
                 $scheme['edit_properties'] : [];
-            $unique = isset( $scheme['unique'] ) ?
-                $scheme['unique'] : [];
+            $unique = isset( $scheme['unique'] ) ? $scheme['unique'] : [];
             $unchangeable = isset( $scheme['unchangeable'] ) ?
                 $scheme['unchangeable'] : [];
             $autoset = isset( $scheme['autoset'] ) ? $scheme['autoset'] : [];
@@ -735,7 +734,6 @@ class PTUpgrader {
             $translates = isset( $scheme['translate'] ) ? $scheme['translate'] : [];
             $hints = isset( $scheme['hint'] ) ? $scheme['hint'] : [];
             $disp_edit = isset( $scheme['disp_edit'] ) ? $scheme['disp_edit'] : [];
-            $col_unique = isset( $scheme['unique'] ) ? $scheme['unique'] : [];
             $i = 1;
             $locale = $app->dictionary['default'];
             foreach ( $column_defs as $name => $defs ) {
@@ -778,7 +776,11 @@ class PTUpgrader {
                 } else {
                     $record->list();
                 }
-                if ( in_array( $name, $unique ) ) $record->unique( 1 );
+                if ( in_array( $name, $unique ) ) {
+                    $record->unique( 1 );
+                } else {
+                    $record->unique( 0 );
+                }
                 if ( in_array( $name, $unchangeable ) ) $record->unchangeable( 1 );
                 $record->not_delete( 1 );
                 $record->order( $i );
@@ -797,11 +799,6 @@ class PTUpgrader {
                     $record->disp_edit( $disp_edit[ $name ] );
                 if ( in_array( $name, $translates ) ) 
                     $record->translate( 1 );
-                if ( $record->unique ) {
-                    if ( empty( $col_unique ) || ! isset( $col_unique[ $name ] ) ) {
-                        $record->unique( 0 );
-                    }
-                }
                 $app->set_default( $record );
                 $record->save();
                 if ( $name === 'workspace_id' ) {
@@ -1689,11 +1686,6 @@ class PTUpgrader {
                 }
             }
         }
-        $cfg = $app->db->model( 'option' )->get_by_key(
-            ['kind' => 'config', 'key' => 'upgrade_count'] );
-        $cfg->value( $upgrade_count );
-        $cfg->data( time() );
-        $cfg->save();
         return $upgrade_count;
     }
 
