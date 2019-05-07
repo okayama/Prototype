@@ -29,7 +29,7 @@ spl_autoload_register( '\prototype_auto_loader' );
 class Prototype {
 
     public static $app = null;
-    public    $app_version   = '1.016';
+    public    $app_version   = '1.017';
     public    $id            = 'Prototype';
     public    $name          = 'Prototype';
     public    $db            = null;
