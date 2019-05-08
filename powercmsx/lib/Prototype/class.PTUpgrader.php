@@ -40,6 +40,9 @@ class PTUpgrader {
             'set_hierarchy'  => ['component' => 'PTUpgrader',
                                  'method'    => 'set_hierarchy',
                                  'version_limit' => '1.016' ],
+            'set_session_key'=> ['component' => 'PTUpgrader',
+                                 'method'    => 'set_session_key',
+                                 'version_limit' => '1.017' ],
         ];
         $upgrade_functions = [];
         foreach ( $functions as $func ) {
@@ -886,7 +889,7 @@ class PTUpgrader {
                         'text_short', 'password', 'datetime', 'date'];
         $edit_types  = ['hidden', 'checkbox', 'number', 'primary', 'text', 'file',
                         'text_short', 'textarea', 'password', 'password(hash)',
-                        'datetime', 'languages', 'richtext', 'selection', 'color'];
+                        'datetime', 'date', 'languages', 'richtext', 'selection', 'color'];
         $can_index   = ['tinyint', 'int', 'string', 'datetime'];
         $db = $app->db;
         $db->can_drop = true;
@@ -1572,13 +1575,21 @@ class PTUpgrader {
         }
     }
 
-    function set_hierarchy( $app ) {
+    function set_hierarchy ( $app ) {
         $tables = $app->db->model( 'table' )->load();
         foreach ( $tables as $table ) {
             if (! $table->hierarchy ) {
                 $table->hierarchy( 0 );
                 $table->save();
             }
+        }
+    }
+
+    function set_session_key ( $app ) {
+        $sessions = $app->db->model( 'session' )->load( ['kind' => 'US'] );
+        foreach ( $sessions as $session ) {
+            $session->key( 'user' );
+            $session->save();
         }
     }
 

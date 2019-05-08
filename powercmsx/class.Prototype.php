@@ -29,7 +29,7 @@ spl_autoload_register( '\prototype_auto_loader' );
 class Prototype {
 
     public static $app = null;
-    public    $app_version   = '1.017';
+    public    $app_version   = '1.018';
     public    $id            = 'Prototype';
     public    $name          = 'Prototype';
     public    $db            = null;
@@ -1475,6 +1475,7 @@ class Prototype {
             } else {
                 $token = $sess->name;
             }
+            $sess->key( $model );
             $sess->expires( time() + $expires );
             $sess->start = ( time() );
             $sess->save();
@@ -1508,12 +1509,12 @@ class Prototype {
         }
     }
 
-    function logout () {
+    function logout ( $user = null ) {
         $app = $this;
-        $user = $app->user();
+        $user = $user ? $user : $app->user();
         if ( $user ) {
             $sess = $app->db->model( 'session' )
-                    ->get_by_key( ['user_id' => $user->id, 'kind' => 'US'] );
+                ->get_by_key( ['user_id' => $user->id, 'kind' => 'US', 'key' => $user->_model ] );
             if ( $sess->id ) $sess->remove();
             $name = $app->cookie_name;
             $path = $app->cookie_path ? $app->cookie_path : $app->path;
@@ -9085,7 +9086,7 @@ class Prototype {
         $cookie = $app->cookie_val( $app->cookie_name );
         if (!$cookie ) return false;
         $sess = $app->db->model( 'session' )->load(
-            ['name' => $cookie, 'kind' => 'US'] );
+            ['name' => $cookie, 'kind' => 'US', 'key' => $model ] );
         if (! empty( $sess ) ) {
             $sess = $sess[0];
             $expires = $sess->expires ? $sess->expires : $sess->start + $app->sess_timeout;
