@@ -101,6 +101,8 @@ class Prototype {
     public    $remote_ip;
     public    $user;
     public    $pt_path       = __FILE__;
+    public    $pt_dir;
+    public    $app_protect   = true;
     public    $develop       = false;
     public    $export_without_bin = false;
     public    $cache_permalink = true;
@@ -227,6 +229,7 @@ class Prototype {
                 $this->$k = $v;
             }
         }
+        $this->pt_dir = dirname( __FILE__ );
         $this->configure_from_json( __DIR__ . DS . 'config.json' );
         $this->start_time = microtime( true );
         ini_set( 'memory_limit', -1 );
@@ -341,6 +344,8 @@ class Prototype {
         if (! empty ( $this->upload_dirs ) ) {
             $fmgr = $this->fmgr;
             $upload_dirs = $this->upload_dirs;
+            $keys = array_map( 'strlen', array_keys( $upload_dirs ) );
+            array_multisort( $keys, SORT_DESC, $upload_dirs );
             foreach ( $upload_dirs as $dir => $bool ) {
                 if ( $bool ) PTUtil::remove_dir( $dir );
             }

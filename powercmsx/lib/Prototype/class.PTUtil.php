@@ -589,6 +589,9 @@ class PTUtil {
     }
 
     public static function remove_dir ( $dir, $children_only = false ) {
+        if (! self::is_removable( $dir ) ) {
+            return false;
+        }
         if (! is_dir( $dir ) ) return;
         if ( $handle = opendir( $dir ) ) {
             while ( false !== ( $item = readdir( $handle ) ) ) {
@@ -616,11 +619,47 @@ class PTUtil {
         $does_act = false;
         foreach ( $dirs as $dir ) {
             if ( is_dir( $dir ) && count( glob( $dir . "/*" ) ) == 0 ) {
-                rmdir( $dir );
-                $does_act = true;
+                if ( self::is_dir_empty( $dir ) ) {
+                    if (! self::is_removable( $dir ) ) {
+                        continue;
+                    }
+                    rmdir( $dir );
+                    $does_act = true;
+                }
             }
         }
         return $does_act;
+    }
+
+    public static function is_removable ( $dir ) {
+        $app = Prototype::get_instance();
+        if ( strpos( $dir, realpath( $app->temp_dir ) ) === 0 ) {
+            return true;
+        }
+        if (! $app->app_protect ) return true;
+        $dir = rtrim( $dir, DS );
+        $app_path = $app->pt_dir;
+        if ( strpos( $dir, $app_path ) === 0 ) {
+            return false;
+        }
+        if ( $dir == $app->site_path ) {
+            return false;
+        }
+        if ( $app->workspace() && $app->workspace()->site_path == $dir ) {
+            return false;
+        }
+        return true;
+    }
+
+    public static function is_dir_empty ( $dir ) {
+        if (!is_readable( $dir ) ) return NULL; 
+        $handle = opendir( $dir );
+        while ( false !== ( $entry = readdir( $handle ) ) ) {
+            if ( $entry != '.' && $entry != '..' ) {
+                return false;
+            }
+        }
+        return true;
     }
 
     public static function make_basename ( $obj, $basename = '', $unique = false ) {

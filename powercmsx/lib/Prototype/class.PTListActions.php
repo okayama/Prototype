@@ -584,6 +584,16 @@ class PTListActions {
                         $app->fmgr->mkpath( dirname( $outpath ) );
                         file_put_contents( $outpath, $value );
                     }
+                    $mata = $app->db->model( 'meta' )->get_by_key(
+                        ['kind' => 'metadata', 'object_id' => $obj->id, 'model' => $obj->_model ] );
+                    $metadata = $mata->text;
+                    if ( $metadata && preg_match( '/^{.*}$/s', $metadata ) ) {
+                        $metadata = json_decode( $mata->text, true );
+                        if ( is_array( $metadata ) && isset( $metadata['label'] ) ) {
+                            $label = $metadata['label'];
+                            $relative_path .= ';' . $label;
+                        }
+                    }
                     $value = $relative_path;
                 } else if ( $column_defs[ $key ]['type'] == 'datetime' ) {
                     $value = $obj->db2ts( $value );
@@ -610,6 +620,16 @@ class PTListActions {
                                     }
                                     // $relative_path = $rel_obj->workspace_id ?
                                     //     "%w/{$relative_path}" : "%s/{$relative_path}";
+                                    $mata = $app->db->model( 'meta' )->get_by_key(
+                                        ['kind' => 'metadata', 'object_id' => $rel_obj->id, 'model' => $rel_obj->_model ] );
+                                    $metadata = $mata->text;
+                                    if ( $metadata && preg_match( '/^{.*}$/s', $metadata ) ) {
+                                        $metadata = json_decode( $mata->text, true );
+                                        if ( is_array( $metadata ) && isset( $metadata['label'] ) ) {
+                                            $label = $metadata['label'];
+                                            $relative_path .= ';' . $label;
+                                        }
+                                    }
                                     $value = $relative_path;
                                 }
                             }
@@ -658,6 +678,20 @@ class PTListActions {
                                         }
                                         // $relative_path = $rel_obj->workspace_id ?
                                         //     "%w/{$relative_path}" : "%s/{$relative_path}";
+                                        if ( $rel_obj->_model != 'attachmentfile' ) {
+                                            $mata = $app->db->model( 'meta' )->get_by_key(
+                                                ['kind' => 'metadata', 'object_id' => $rel_obj->id, 'model' => $rel_obj->_model ] );
+                                            $metadata = $mata->text;
+                                            if ( $metadata && preg_match( '/^{.*}$/s', $metadata ) ) {
+                                                $metadata = json_decode( $mata->text, true );
+                                                if ( is_array( $metadata ) && isset( $metadata['label'] ) ) {
+                                                    $label = $metadata['label'];
+                                                    $relative_path .= ';' . $label;
+                                                }
+                                            }
+                                        } else {
+                                            $relative_path .= ';' . $rel_obj->name;
+                                        }
                                         $labels[] = $relative_path;
                                     }
                                 }

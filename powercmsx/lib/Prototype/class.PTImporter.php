@@ -258,6 +258,7 @@ class PTImporter {
                                     $extra = $blob_col->extra;
                                     // $type = $blob_col->options;
                                     if ( strpos( $value, '%r' ) === 0 ) {
+                                        list( $value, $label ) = preg_split( '/\;/', $value, 2 );
                                         $value = str_replace( '%r', $dirname, $value );
                                         $value = preg_replace( "/\//", DS, $value );
                                         if ( file_exists( $value ) ) {
@@ -274,8 +275,9 @@ class PTImporter {
                                                 if (! $obj->id ) {
                                                     $obj->save();
                                                 }
+                                                $label = $label ? $label : basename( $value );
                                                 PTUtil::file_attach_to_obj(
-                                                    $app, $obj, $col, $value, basename( $value ) );
+                                                    $app, $obj, $col, $value, $label );
                                                 $has_blob = true;
                                             }
                                         }
@@ -291,6 +293,7 @@ class PTImporter {
                                         $extra = $blob_col->extra;
                                         // $type = $blob_col->options;
                                         if ( strpos( $value, '%r' ) === 0 ) {
+                                            list( $value, $label ) = preg_split( '/\;/', $value, 2 );
                                             $value = str_replace( '%r', $dirname, $value );
                                             $value = preg_replace( "/\//", DS, $value );
                                             if ( file_exists( $value ) ) {
@@ -331,7 +334,8 @@ class PTImporter {
                                                         $attachmentfile->size( $upload_info['file_size'] );
                                                         $app->set_default( $attachmentfile );
                                                         $attachmentfile->save();
-                                                        PTUtil::file_attach_to_obj( $app, $attachmentfile, 'file', $value );
+                                                        $label = $label ? $label : basename( $value );
+                                                        PTUtil::file_attach_to_obj( $app, $attachmentfile, 'file', $value, $label );
                                                         $callback = ['name' => 'post_import'];
                                                         $app->run_callbacks( $callback, 'attachmentfile', $attachmentfile );
                                                         // $app->publish_obj( $attachmentfile );
@@ -512,12 +516,14 @@ class PTImporter {
                                         foreach ( $csv as $path ) {
                                             $error = '';
                                             $realpath = '';
+                                            $label = '';
                                             if ( strpos( $path, '%r' ) === 0 ) {
+                                                list( $path, $label ) = preg_split( '/\;/', $path, 2 );
                                                 $realpath = str_replace( '%r', $dirname, $path );
                                                 $realpath = preg_replace( "/\//", DS, $realpath );
                                             }
                                             if ( $realpath && file_exists( $realpath ) ) {
-                                                $res = PTUtil::upload_check( $extra, $path, false, $error );
+                                                $res = PTUtil::upload_check( $extra, $realpath, false, $error );
                                                 if ( $this->print_state && $res == 'resized' ) {
                                                     echo $app->translate(
                                                     "The image (%s) was larger than the size limit, so it was reduced.",
@@ -553,6 +559,7 @@ class PTImporter {
                                                     }
                                                 }
                                             }
+                                            $orig_path = $path;
                                             $path = str_replace( '%r', $dirname, $path );
                                             $_update = false;
                                             $orig_asset_obj = null;
@@ -584,9 +591,15 @@ class PTImporter {
                                                            ['workspace_id' => $ws_id ] );
                                                         $app->set_default( $asset_obj );
                                                         $asset_obj->$to_primary( basename( $path ) );
+                                                        $label = $label ? $label : basename( $path );
+                                                        if ( $asset_obj->has_column( 'name' ) ) {
+                                                            $asset_obj->name( $label );
+                                                        } else if ( $asset_obj->has_column( 'label' ) ) {
+                                                            $asset_obj->label( $label );
+                                                        }
                                                         $asset_obj->save();
                                                         PTUtil::file_attach_to_obj(
-                                                            $app, $asset_obj, 'file', $path, basename( $path ) );
+                                                            $app, $asset_obj, 'file', $path, $label );
                                                         $to_ids[] = (int) $asset_obj->id;
                                                         $_update = true;
                                                         $_is_new = true;
@@ -737,7 +750,7 @@ class PTImporter {
         if ( $image_height ) {
             $obj->image_height( $image_height );
         }
-        $meta = $app->db->model( 'meta' )->new( ['model' => $obj->_model,
+        $meta = $app->db->model( 'meta' )->get_by_key( ['model' => $obj->_model,
              'object_id' => $obj->id, 'kind' => 'metadata', 'key' => 'file'] );
         $metadata = ['file_size' => $size, 'image_width' => $image_width,
                      'image_height' => $image_height, 'class' => $class,
@@ -745,7 +758,6 @@ class PTImporter {
                      'mime_type' => $mime_type, 'file_name' => $file_name ];
         $metadata['uploaded'] = date( 'Y-m-d H:i:s' );
         $metadata['user_id'] = $app->user()->id;
-        $meta->text( json_encode( $metadata ) );
         if ( $class == 'image' ) {
             $app->logging = false;
             $error_reporting = ini_get( 'error_reporting' ); 
@@ -777,7 +789,10 @@ class PTImporter {
             error_reporting( $error_reporting );
             $app->logging = $logging;
         }
-        $meta->save();
+        if (! $meta->id ) {
+            $meta->text( json_encode( $metadata ) );
+            $meta->save();
+        }
     }
 
     function pause ( $app = null) {
