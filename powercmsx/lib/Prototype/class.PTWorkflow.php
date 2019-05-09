@@ -30,14 +30,14 @@ class PTWorkflow {
                 }
                 $new_id = $new_id ? (int) $new_id : $user_id;
                 if ( $new_id ) {
-                    $new_user = $app->db->model( 'user' )->load( $new_id );
+                    $new_user = $app->db->model( 'user' )->load( (int) $new_id );
                     if (! $new_user ) return;
                     $group_name = $app->permission_group( $new_user, $model, $workspace_id );
                     if (! $group_name ) return;
                     if ( $group_name == 'creator' ) {
                         $obj->status( 0 );
                     } else if ( $group_name == 'reviewer' ) {
-                        if ( $obj->status > 1 ) {
+                        if ( $obj->status != 1 ) {
                             $obj->status( 1 );
                         }
                     } else if ( $group_name == 'publisher' ) {

@@ -1986,8 +1986,13 @@ class Prototype {
                         $extra .= ' OR ';
                         $count_extra .= ' OR ';
                     }
-                    $extra .= "({$_colprefix}workspace_id={$_ws_id} AND {$condition})";
-                    $count_extra .= "({$_colprefix}workspace_id={$_ws_id} AND {$condition})";
+                    $extra .= 
+                        $obj->has_column( 'workspace_id' )
+                        ? "({$_colprefix}workspace_id={$_ws_id} AND {$condition})"
+                        : "({$condition})";
+                    $count_extra .= $obj->has_column( 'workspace_id' )
+                        ? "({$_colprefix}workspace_id={$_ws_id} AND {$condition})"
+                        : "({$condition})";
                     $_loop_cnt++;
                 }
                 $extra .= ')';
@@ -2003,8 +2008,12 @@ class Prototype {
                         $extra .= ' OR ';
                         $count_extra .= ' OR ';
                     }
-                    $extra .= "({$_colprefix}workspace_id={$_ws_id} AND {$condition})";
-                    $count_extra .= "({$_colprefix}workspace_id={$_ws_id} AND {$condition})";
+                    $extra .= $obj->has_column( 'workspace_id' )
+                            ? "({$_colprefix}workspace_id={$_ws_id} AND {$condition})"
+                            : "({$condition})";
+                    $count_extra .= $obj->has_column( 'workspace_id' )
+                            ? "({$_colprefix}workspace_id={$_ws_id} AND {$condition})"
+                            : "({$condition})";
                     $_loop_cnt++;
                 }
                 $extra .= ')';
