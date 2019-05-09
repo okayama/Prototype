@@ -258,6 +258,9 @@ class PTImporter {
                                     $extra = $blob_col->extra;
                                     // $type = $blob_col->options;
                                     if ( strpos( $value, '%r' ) === 0 ) {
+                                        if ( strpos( $value, ';' ) === false ) {
+                                            $value .= ';';
+                                        }
                                         list( $value, $label ) = preg_split( '/\;/', $value, 2 );
                                         $value = str_replace( '%r', $dirname, $value );
                                         $value = preg_replace( "/\//", DS, $value );
@@ -293,6 +296,9 @@ class PTImporter {
                                         $extra = $blob_col->extra;
                                         // $type = $blob_col->options;
                                         if ( strpos( $value, '%r' ) === 0 ) {
+                                            if ( strpos( $value, ';' ) === false ) {
+                                                $value .= ';';
+                                            }
                                             list( $value, $label ) = preg_split( '/\;/', $value, 2 );
                                             $value = str_replace( '%r', $dirname, $value );
                                             $value = preg_replace( "/\//", DS, $value );
@@ -518,6 +524,9 @@ class PTImporter {
                                             $realpath = '';
                                             $label = '';
                                             if ( strpos( $path, '%r' ) === 0 ) {
+                                                if ( strpos( $path, ';' ) === false ) {
+                                                    $path .= ';';
+                                                }
                                                 list( $path, $label ) = preg_split( '/\;/', $path, 2 );
                                                 $realpath = str_replace( '%r', $dirname, $path );
                                                 $realpath = preg_replace( "/\//", DS, $realpath );
