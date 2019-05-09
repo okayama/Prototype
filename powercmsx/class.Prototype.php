@@ -2563,6 +2563,7 @@ class Prototype {
     }
 
     function get_permalink ( $obj, $has_map = false, $rebuild = true, $system = false ) {
+        if (! $obj->id ) return '';
         $app = $this;
         $table = $app->get_table( $obj->_model );
         if ( $obj->_model == 'asset' || $obj->_model == 'attachmentfile' ) {
