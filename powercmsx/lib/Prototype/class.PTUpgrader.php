@@ -1295,7 +1295,7 @@ class PTUpgrader {
                            'label'=> 'Status', 'list' => 'number',
                            'edit' => 'selection', 'disp_edit' => 'select',
                            'options' => $status_opt, 'index' => 1, 'order' => $last ];
-                if ( $this->make_column( $obj, 'status', $values, $force ) ) {
+                if ( $this->make_column( $obj, 'status', $values, true ) ) {
                     $last++;
                     $upgrade = true;
                 }
