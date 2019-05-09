@@ -325,7 +325,48 @@ class PTTags {
                 }
             }
             if ( $container ) {
-                $relation = $app->get_related_objs( $obj, $container );
+                $preview_template = $ctx->stash( 'preview_template' );
+                $in_preview = false;
+                if ( $app->param( '_preview' ) ) {
+                    $in_preview = true;
+                }
+                $relation = [];
+                if ( $in_preview ) {
+                    $obj_scheme = $app->get_scheme_from_db( $obj->_model );
+                    $obj_relations = isset( $obj_scheme['relations'] ) ? $obj_scheme['relations'] : [];
+                    $param_name = '';
+                    $primary_param_name = '';
+                    foreach ( $obj_relations as $colname => $relmodel ) {
+                        if ( $container == $relmodel ) {
+                            $param_name = $colname;
+                            $primary_param_name = "{$param_name}_primary_id";
+                            continue;
+                        }
+                    }
+                    if (! $param_name ) {
+                        $edit_props = $obj_scheme['edit_properties'];
+                        foreach ( $edit_props as $colname => $edit_prop ) {
+                            if ( strpos( $edit_prop, "relation:{$container}" ) === 0 ) {
+                                $param_name = $colname;
+                            }
+                        }
+                    }
+                    if ( $param_name ) {
+                        if ( $primary_param_name && $app->param( $primary_param_name ) ) {
+                            $container_id = $app->param( $primary_param_name );
+                        } else {
+                            $container_id = $app->param( $param_name );
+                        }
+                        if ( is_array( $container_id ) ) {
+                            $container_id = $container_id[0];
+                        }
+                        if ( $container_id ) {
+                            $relation = $app->db->model( $container )->load( ['id' => $container_id ] );
+                        }
+                    }
+                } else {
+                    $relation = $app->get_related_objs( $obj, $container );
+                }
                 if ( count( $relation ) ) {
                     $app->init_callbacks( $container, 'post_load_objects' );
                     $parent = $relation[0];

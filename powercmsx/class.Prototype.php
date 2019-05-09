@@ -2577,7 +2577,7 @@ class Prototype {
     }
 
     function get_permalink ( $obj, $has_map = false, $rebuild = true, $system = false ) {
-        if (! $obj->id ) return '';
+        if (! $obj->id && $has_map === false ) return null;
         $app = $this;
         $table = $app->get_table( $obj->_model );
         if ( $obj->_model == 'asset' || $obj->_model == 'attachmentfile' ) {
@@ -2607,6 +2607,7 @@ class Prototype {
             $urlmapping = $app->db->model( 'urlmapping' )->load( $terms, $args );
         }
         if (! empty( $urlmapping ) && ! $obj->id ) {
+            if ( $has_map ) return $urlmapping[0];
             return $app->build_path_with_map( $obj, $urlmapping[0], $table, null, true );
         } else if (! $obj->id ) {
             return '';
@@ -5807,7 +5808,7 @@ class Prototype {
         }
         $map = $app->get_permalink( $obj, true );
         if ( $obj->_model !== 'template' ) {
-            if (!$map || ! $map->template || ! $map->model ) {
+            if (!$map || !$map->template || !$map->model ) {
                 return $app->error( 'View or Model not specified.' );
             }
         } else {
@@ -5857,7 +5858,11 @@ class Prototype {
         } else {
             $archive_type = is_object( $map ) ? $map->model : 'index';
             $ctx->stash( 'current_archive_type', $archive_type );
-            $tmpl = $app->param( 'text' ) !== null ? $app->param( 'text' ) : $template->text;
+            $tmpl = $template->text;
+            if ( $app->mode == 'save' && $app->param( '_model' )
+                && $app->param( '_model' ) == 'template' ) {
+                $tmpl = $app->param( 'text' );
+            }
             $primary = $table->primary;
             if ( is_object( $map ) && $map->model == $obj->_model ) {
                 $ctx->stash( 'current_archive_title', $obj->$primary );
