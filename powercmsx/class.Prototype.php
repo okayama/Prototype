@@ -1473,7 +1473,7 @@ class Prototype {
                 $expires = 60 * 60 * 24 * 365;
             }
             $sess = $app->db->model( 'session' )
-                ->get_by_key( ['user_id' => $user->id, 'kind' => 'US'] );
+                ->get_by_key( ['user_id' => $user->id, 'kind' => 'US', 'key' => $model ] );
             if (! $sess->name ) {
                 $token = $app->magic(); # TODO more secure?
                 $sess->name( $token );

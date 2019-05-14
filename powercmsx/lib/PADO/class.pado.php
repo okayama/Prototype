@@ -914,6 +914,9 @@ class PADOBaseModel {
             return $model;
         }
         foreach ( $params as $key => $value ) {
+            if ( is_array( $value ) && isset( $value['BINARY'] ) ) {
+                $value = $value['BINARY'];
+            }
             if ( $colprefix && strpos( $key, $colprefix ) !== 0 )
                 $key = $colprefix . $key;
             if ( $model->$key !== $value ) {
@@ -1133,11 +1136,14 @@ class PADOBaseModel {
                 }
                 if ( $scheme && !isset( $scheme[ $orig_key ] ) )
                     continue;
-                $regex = '/(=|>=|<=|<|>|BETWEEN|NOT\sBETWEEN|LIKE|IN|NOT\sLIKE|'
+                // TODO
+                // $regex = '/^(=|>=|<=|<|>|BETWEEN|NOT\sBETWEEN|BINARY|LIKE|IN|NOT\sLIKE|'
+                //        . 'AND|OR|IS\sNULL|IS\sNOT\sNULL|\!=)$/i';
+                $regex = '/(=|>=|<=|<|>|BETWEEN|NOT\sBETWEEN|BINARY|LIKE|IN|NOT\sLIKE|'
                        . 'AND|OR|IS\sNULL|IS\sNOT\sNULL|\!=)/i';
                 list( $op, $v ) = ['=', $cond ];
                 if ( is_array( $cond ) ) {
-                    $op = key( $cond );
+                    $op = strtoupper( key( $cond ) );
                     $v  = $cond[ $op ];
                 }
                 if ( $cond === null ) $cond = [];
@@ -1145,8 +1151,12 @@ class PADOBaseModel {
                     || ( is_array( $cond ) && count( $cond ) === 1 ) )
                     || ( stripos( $op, 'BETWEEN' ) !== false || $op === 'IN' ) ) {
                     if ( preg_match( $regex, $op, $matchs ) ) {
+                        $orig_op = $op;
                         $op = strtoupper( $matchs[1] );
-                        if ( stripos( $op, 'NULL' ) !== false ) {
+                        if ( $orig_op == 'BINARY' ) {
+                            $stms[] = " BINARY {$key}=?";
+                            $vals[] = $v;
+                        } else if ( stripos( $op, 'NULL' ) !== false ) {
                             $stms[] = " {$key} {$op} ";
                         } elseif ( is_array( $v ) &&
                             stripos( $op, 'BETWEEN' ) !== false ) {

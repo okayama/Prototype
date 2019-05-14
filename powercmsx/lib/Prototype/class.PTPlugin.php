@@ -126,7 +126,7 @@ class PTPlugin {
                                             $valus = str_getcsv( $line );
                                             list ( $phrase, $trans ) = $valus;
                                             $phrase = $db->model( 'phrase' )->get_by_key
-                                            ( ['phrase' => $phrase,
+                                            ( ['phrase' => ['BINARY' => $phrase ],
                                                'component' => $name, 'lang' => $lang ] );
                                             $phrase->trans( $trans );
                                             $app->set_default( $phrase );
