@@ -702,6 +702,7 @@ class PTTags {
                     $repeat = false;
                     return $session->data;
                 }
+                if ( $session->id ) $session->remove();
             }
         }
         if ( isset( $content ) ) {
@@ -2118,6 +2119,7 @@ class PTTags {
                            'kind' => 'CH',
                            'key'  => $cache_key ] );
             if ( $session->id && ( $session->expires > time() ) ) return $session->data;
+            if ( $session->id ) $session->remove();
         }
         if (! $f && ! $m && ! $b ) return '';
         if ( $f ) {
