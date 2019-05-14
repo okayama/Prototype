@@ -8475,7 +8475,17 @@ class Prototype {
             $props = [];
             $props['type'] = $column->type;
             if ( $column->type == 'relation' ) {
-                $relations[ $col_name ] = $column->options;
+                $options = $column->options;
+                if (! $options ) {
+                    $options = $column->edit ? $column->edit : $column->list;
+                    if (! $options ) continue;
+                    $options = explode( ':', $options );
+                    $options = isset( $options[1] ) ? $options[1] : '';
+                    if (! $options ) continue;
+                    $column->options( $options );
+                    $column->save();
+                }
+                $relations[ $col_name ] = $options;
             } else if ( $column->options ) {
                 $col_options[ $col_name ] = $column->options;
             }
