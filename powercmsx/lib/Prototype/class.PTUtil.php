@@ -2048,7 +2048,7 @@ class PTUtil {
     }
 
     public static function upload_check ( $extra, $name = 'files',
-        $json = true, $error = '' ) {
+        $json = true, &$error = '' ) {
         $app = Prototype::get_instance();
         if (! $extra ) {
             if ( $app->upload_size_limit || $app->upload_max_pixel ) {
