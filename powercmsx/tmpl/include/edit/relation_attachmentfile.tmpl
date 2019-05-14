@@ -36,7 +36,7 @@ $('#drop-zone-<mt:var name="__col_name__">').css('margin','1px');
 $('#drop-zone-<mt:var name="__col_name__">').css('padding','8px');
 $(function () {
     'use strict';
-    var url = '<mt:var name="script_uri">?__mode=upload_multi&magic_token=<mt:var name="magic_token">&workspace_id=<mt:var name="workspace_id">&file_attachment=1&_screen_id=<mt:var name="screen_id">&name=<mt:var name="__col_name__">&model=attachmentfile&column=file&permission=<mt:var name="model">';
+    var url = '<mt:var name="script_uri">?__mode=upload_multi&magic_token=<mt:var name="magic_token">&workspace_id=<mt:var name="workspace_id">&file_attachment=1&_screen_id=<mt:var name="screen_id">&name=<mt:var name="__col_name__">&model=attachmentfile&name=file&permission=<mt:var name="model">';
     $('#fileupload-<mt:var name="__col_name__">').fileupload({
         url: url,
         dataType: 'json',
