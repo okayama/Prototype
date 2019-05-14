@@ -910,6 +910,9 @@ class PADOBaseModel {
         if ( $params === null ) {
             return $model;
         }
+        if (! is_array( $params ) ) {
+            return $model;
+        }
         foreach ( $params as $key => $value ) {
             if ( $colprefix && strpos( $key, $colprefix ) !== 0 )
                 $key = $colprefix . $key;
