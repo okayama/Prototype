@@ -5851,6 +5851,7 @@ class Prototype {
                 $title_col = $table->primary;
                 $ctx->stash( 'current_archive_title', $obj->$title_col );
                 $ctx->stash( 'current_archive_type', $obj->_model );
+                $ctx->stash( 'preview_object', $obj );
             } else {
                 $ctx->stash( 'current_archive_title', $template->name );
                 $ctx->stash( 'current_archive_type', 'index' );

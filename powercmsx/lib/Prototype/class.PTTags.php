@@ -296,7 +296,8 @@ class PTTags {
             $exclude_workspace =
               isset( $args['exclude_workspace'] ) ? $args['exclude_workspace'] : false;
             $current_context = $ctx->stash( 'current_context' );
-            $obj = $ctx->stash( 'current_object' );
+            $obj = $ctx->stash( 'preview_object' )
+                 ? $ctx->stash( 'preview_object' ) : $ctx->stash( 'current_object' );
             if (! $obj ) {
                 $repeat = $ctx->false();
                 return;
@@ -315,19 +316,19 @@ class PTTags {
             $breadcrumbs = [];
             if ( $include_system ) {
                 $breadcrumbs[] =
-                  ['prymary' => $ctx->app->appname, 'url' => $ctx->app->site_url ];
+                  ['primary' => $ctx->app->appname, 'url' => $ctx->app->site_url ];
             }
             if (! $exclude_workspace ) {
                 $workspace = $ctx->stash( 'workspace' );
                 if ( $workspace ) {
                     $breadcrumbs[] =
-                        ['prymary' => $workspace->name, 'url' => $workspace->site_url ];
+                        ['primary' => $workspace->name, 'url' => $workspace->site_url ];
                 }
             }
             if ( $container ) {
                 $preview_template = $ctx->stash( 'preview_template' );
                 $in_preview = false;
-                if ( $app->param( '_preview' ) ) {
+                if ( $app->param( '_preview' ) && !$ctx->stash( 'preview_object' ) ) {
                     $in_preview = true;
                 }
                 $relation = [];
@@ -408,7 +409,7 @@ class PTTags {
                     $primary = $cTable->primary;
                     foreach ( $parents as $parent ) {
                         $permalink = $app->get_permalink( $parent );
-                        $breadcrumbs[] = ['prymary' => $parent->$primary, 'url' => $permalink ];
+                        $breadcrumbs[] = ['primary' => $parent->$primary, 'url' => $permalink ];
                     }
                 }
             }
@@ -449,12 +450,12 @@ class PTTags {
                 $primary = $table->primary;
                 foreach ( $parents as $parent ) {
                     $permalink = $app->get_permalink( $parent );
-                    $breadcrumbs[] = ['prymary' => $parent->$primary, 'url' => $permalink ];
+                    $breadcrumbs[] = ['primary' => $parent->$primary, 'url' => $permalink ];
                 }
             } else {
                 $permalink = $app->get_permalink( $obj );
                 $primary = $table->primary;
-                $breadcrumbs[] = ['prymary' => $ctx->stash( 'current_archive_title' ),
+                $breadcrumbs[] = ['primary' => $ctx->stash( 'current_archive_title' ),
                                   'url' => $ctx->stash( 'current_archive_url' ) ];
             }
             $ctx->local_params = $breadcrumbs;
@@ -464,9 +465,9 @@ class PTTags {
         if ( isset( $params[ $counter ] ) ) {
             $param = $params[ $counter ];
             $ctx->local_vars['__key__'] = $param['url'] ? $param['url'] : '';
-            $ctx->local_vars['__value__'] = $param['prymary'];
+            $ctx->local_vars['__value__'] = $param['primary'];
             $ctx->local_vars['__breadcrumbs_url__'] = $ctx->local_vars['__key__'];
-            $ctx->local_vars['__breadcrumbs_title__'] = $param['prymary'];
+            $ctx->local_vars['__breadcrumbs_title__'] = $param['primary'];
             $repeat = true;
         } else {
             $repeat = false;
