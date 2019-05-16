@@ -1143,8 +1143,9 @@ class PADOBaseModel {
                        . 'AND|OR|IS\sNULL|IS\sNOT\sNULL|\!=)/i';
                 list( $op, $v ) = ['=', $cond ];
                 if ( is_array( $cond ) ) {
-                    $op = strtoupper( key( $cond ) );
+                    $op = key( $cond );
                     $v  = $cond[ $op ];
+                    $op = strtoupper( $op );
                 }
                 if ( $cond === null ) $cond = [];
                 if ( ( ( is_string( $cond ) || is_numeric( $cond ) )
