@@ -2814,6 +2814,9 @@ class Prototype {
             } else {
                 $range = $action != 'delete' ? 'can_update_all_' . $model
                                              : 'can_delete_' . $model;
+                if (! $obj->has_column( 'user_id' ) && $action != 'delete' ) {
+                    $range = 'can_create_' . $model;
+                }
                 if ( $obj->has_column( 'status' ) ) {
                     $max_status = $app->max_status( $user, $model, $workspace );
                     if ( $obj->status > $max_status ) {
