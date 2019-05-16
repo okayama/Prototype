@@ -7790,7 +7790,7 @@ class Prototype {
     }
 
     function publish ( $file_path, $obj, $key,
-                       $mime_type = 'text/html', $type = 'file' ) {
+                       $mime_type = null, $type = 'file' ) {
         $app = $this;
         $fmgr = $app->fmgr;
         $cache_vars = $app->ctx->vars;
@@ -7954,7 +7954,7 @@ class Prototype {
         $relative_path = str_replace( '/', DS, $relative_path );
         $relative_url = preg_replace( '!^https{0,1}:\/\/.*?\/!', '/', $url );
         $orig_url = $ui->url;
-        if (! $mime_type ) $mime_type =  PTUtil::get_mime_type($url);
+        if (! $mime_type ) $mime_type =  PTUtil::get_mime_type( $url );
         $ui->set_values( ['model' => $table->name,
                           'url' => $url,
                           'key' => $key,
