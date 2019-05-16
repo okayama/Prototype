@@ -2812,7 +2812,8 @@ class Prototype {
                 }
                 if ( $action == 'create' ) return false;
             } else {
-                $range = $action != 'delete' ? 'can_update_all_' . $model : '';
+                $range = $action != 'delete' ? 'can_update_all_' . $model
+                                             : 'can_delete_' . $model;
                 if ( $obj->has_column( 'status' ) ) {
                     $max_status = $app->max_status( $user, $model, $workspace );
                     if ( $obj->status > $max_status ) {
@@ -2839,7 +2840,7 @@ class Prototype {
                 }
                 return false;
             } else if ( $action == 'delete' ) {
-                return false;
+                return in_array( $range, $perms );
             } else {
                 return true;
             }
