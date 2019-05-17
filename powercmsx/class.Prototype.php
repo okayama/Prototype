@@ -2714,6 +2714,7 @@ class Prototype {
         $workspace = null, $user = null ) {
         $app = $this;
         $user = !$user ? $app->user() : $user;
+        if ( $user && $user->_model == 'member' ) return false;
         $workspace = is_object( $workspace ) ? $workspace : $app->workspace();
         if (!$user ) return false;
         $orig_action = $action ? $action : $model;
@@ -9472,6 +9473,7 @@ class Prototype {
     }
 
     function errorHandler ( $errno, $errmsg, $f, $line ) {
+        if (!ini_get( 'error_reporting' ) ) return;
         $q = $this->query_string( true );
         $q = preg_replace( "/(^.*?)\n.*$/si", "$1", $q );
         if ( $tmpl = $this->ctx->template_file ) $errmsg = " $errmsg( in {$tmpl} )";
