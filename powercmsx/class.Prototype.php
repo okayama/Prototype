@@ -7166,7 +7166,7 @@ class Prototype {
                         $i = 0;
                         $_values = [];
                         foreach ( $conds as $val ) {
-                            $value = $values[ $i ];
+                            $value = isset( $values[ $i ] ) ? $values[ $i ] : null;
                             if (! isset( $op_map[ $val ] ) ) continue;
                             $op = $op_map[ $val ];
                             if ( $type == 'datetime' ) {
@@ -7361,6 +7361,7 @@ class Prototype {
                         '&' . http_build_query( $filter_add_params );
                 }
                 foreach ( $conditions as $col => $cond ) {
+                    if ( is_array( $cond ) && $cond[ key( $cond ) ] === null ) continue;
                     $and_or = $app->param( "_filter_and_or_{$col}" )
                             ? $app->param( "_filter_and_or_{$col}" ) : 'AND';
                     $and_or = strtoupper( $and_or );
