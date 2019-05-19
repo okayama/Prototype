@@ -37,10 +37,16 @@ class PTListActions {
         $app = Prototype::get_instance();
         $table = $app->get_table( $model );
         if ( $table->has_status && !$app->param( 'manage_revision' ) ) {
-            $list_actions[] = ['name' => 'set_status', 'input' => 0,
-                               'label' => $app->translate( 'Set Status' ),
-                               'component' => $this,
-                               'method' => 'set_status'];
+            $max_status = $app->max_status( $app->user(), $model );
+            if ( $max_status ) {
+                $list_actions[] = ['name' => 'set_status', 'input' => 0,
+                                   'label' => $app->translate( 'Set Status' ),
+                                   'component' => $this,
+                                   'method' => 'set_status'];
+            }
+            if (! $max_status && ! $table->start_end ) {
+                return;
+            }
         }
         $obj = $app->db->model( $model );
         if ( $obj->has_column( 'state' ) ) {

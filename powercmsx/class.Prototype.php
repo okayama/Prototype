@@ -1885,6 +1885,7 @@ class Prototype {
                 $extra_permission = [];
                 $count_permission = [];
                 $ws_ids = [];
+                $min_status = $table->start_end ? 1 : 2;
                 foreach ( $permissions as $ws_id => $perms ) {
                     if (! in_array( 'workspace_admin', $perms ) &&
                         ! in_array( 'can_list_' . $model, $perms )
@@ -1918,14 +1919,14 @@ class Prototype {
                                     if ( $workspace ) {
                                         if ( $ws_permission ) $ws_permission .= ' AND ';
                                         if (! in_array( 'can_review_' . $model, $perms ) ) {
-                                            $ws_permission .= " {$_colprefix}status < 2";
+                                            $ws_permission .= " {$_colprefix}status < {$min_status}";
                                         } else {
                                             $ws_permission .=
                                                 " {$_colprefix}status <= {$status_published}";
                                         }
                                     } else {
                                         if (! in_array( 'can_review_' . $model, $perms ) ) {
-                                            $ws_status_map[ $ws_id ] = " {$_colprefix}status < 2";
+                                            $ws_status_map[ $ws_id ] = " {$_colprefix}status < {$min_status}";
                                         } else {
                                             $ws_status_map[ $ws_id ] =
                                                 " {$_colprefix}status <= {$status_published}";
@@ -2687,6 +2688,8 @@ class Prototype {
                 } else {
                     if ( $group_name == 'publisher' ) {
                         return 2;
+                    } else if (! $group_name ) {
+                        return 0;
                     }
                 }
             }

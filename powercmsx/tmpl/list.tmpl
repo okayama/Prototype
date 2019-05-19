@@ -396,12 +396,14 @@ $('#dialog-cancel-btn').click(function(){
   </mt:unless>
   <mt:tablehascolumn model="$_this_model" column="workspace_id">
   <mt:ifusercan model="$_this_model" action="delete" workspace_id="$workspace_id">
+    <mt:setvar name="has_checkbox" value="1">
   <mt:else>
-    <mt:setvar name="has_checkbox" value="">
+    <mt:setvar name="has_checkbox" value="$actions_count">
   </mt:ifusercan>
   </mt:tablehascolumn>
   <mt:unless name="_single_select">
   <mt:if name="has_checkbox">
+    <mt:ifusercan action="edit" model="$this_model" id="$id" workspace_id="$workspace_id">
     <label class="custom-control custom-checkbox">
       <input id="box_<mt:var name="id">" type="checkbox" name="id[]"
         value="<mt:var name="id">" class="custom-control-input"
@@ -409,6 +411,7 @@ $('#dialog-cancel-btn').click(function(){
       <span class="custom-control-indicator"></span>
       <span class="custom-control-description"></span>
     </label>
+    </mt:ifusercan>
   </mt:if>
   <mt:else>
     <label class="custom-control custom-radio">
@@ -510,14 +513,12 @@ $('#dialog-cancel-btn').click(function(){
             <span class="badge badge-dark badge-pill badge-sm"><mt:trans phrase="Revision"></span>
             </mt:if>
           </mt:if>
-          <mt:if name="has_checkbox">
-        <mt:ifusercan action="edit" model="$this_model" id="$id" workspace_id="$workspace_id">
-          <a id="edit-link-<mt:var name="id" escape>" <mt:unless name="request.workspace_select"><mt:if name="request.dialog_view">target="_blank"</mt:if><mt:else>target="_parent"</mt:unless> href="<mt:var name="script_uri">?__mode=<mt:unless name="request.workspace_select">view&amp;_type=edit&amp;_model=<mt:var name="this_model" escape>&amp;id=<mt:var name="id" escape><mt:if name="workspace_id">&amp;workspace_id=<mt:var name="workspace_id"></mt:if><mt:if name="model" eq="workspace">&amp;workspace_id=<mt:var name="id" escape></mt:if><mt:if name="request.revision_select">&amp;edit_revision=1</mt:if><mt:else>dashboard&amp;workspace_id=<mt:var name="id" escape></mt:unless><mt:if name="request.dialog_view">&amp;from_dialog=1</mt:if>">
-        </mt:ifusercan>
-          <mt:else>
-            <mt:if name="request.workspace_select">
+          <mt:if name="request.workspace_select">
             <a target="_parent" href="<mt:var name="script_uri">?__mode=dashboard&amp;workspace_id=<mt:var name="id" escape>">
-            </mt:if>
+          <mt:else>
+            <mt:ifusercan action="edit" model="$this_model" id="$id" workspace_id="$workspace_id">
+              <a id="edit-link-<mt:var name="id" escape>" <mt:unless name="request.workspace_select"><mt:if name="request.dialog_view">target="_blank"</mt:if><mt:else>target="_parent"</mt:unless> href="<mt:var name="script_uri">?__mode=<mt:unless name="request.workspace_select">view&amp;_type=edit&amp;_model=<mt:var name="this_model" escape>&amp;id=<mt:var name="id" escape><mt:if name="workspace_id">&amp;workspace_id=<mt:var name="workspace_id"></mt:if><mt:if name="model" eq="workspace">&amp;workspace_id=<mt:var name="id" escape></mt:if><mt:if name="request.revision_select">&amp;edit_revision=1</mt:if><mt:else>dashboard&amp;workspace_id=<mt:var name="id" escape></mt:unless><mt:if name="request.dialog_view">&amp;from_dialog=1</mt:if>">
+            </mt:ifusercan>          
           </mt:if>
         </mt:ifusercan>
           <mt:unless name="$_name">
@@ -525,13 +526,13 @@ $('#dialog-cancel-btn').click(function(){
           <mt:else>
             <mt:var name="$_name" escape>
           </mt:unless>
-        <mt:ifusercan action="edit" model="$this_model" id="$id" workspace_id="$workspace_id">
-          </a>
-        <mt:else>
           <mt:if name="request.workspace_select">
-          </a>
+            </a>
+          <mt:else>
+            <mt:ifusercan action="edit" model="$this_model" id="$id" workspace_id="$workspace_id">
+              </a>
+            </mt:ifusercan>
           </mt:if>
-        </mt:ifusercan>
         <mt:unless name="request.revision_select">
           <mt:unless name="request.workspace_select"><mt:if name="can_duplicate">
           &nbsp;
