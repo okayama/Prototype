@@ -1000,7 +1000,7 @@ class PTListActions {
             foreach ( $add_tags as $tag ) {
                 $normalize = preg_replace( '/\s+/', '', trim( strtolower( $tag ) ) );
                 if (! $tag ) continue;
-                $terms = ['normalize' => $normalize ];
+                $terms = ['normalize' => $normalize, 'class' => $model ];
                 $tags = $app->db->model( 'tag' )->load( $terms );
                 if (! empty( $tags ) ) {
                     $tag_objs = array_merge( $tag_objs, $tags );
@@ -1441,7 +1441,7 @@ class PTListActions {
             foreach ( $add_tags as $tag ) {
                 $normalize = preg_replace( '/\s+/', '', trim( strtolower( $tag ) ) );
                 if (! $tag ) continue;
-                $terms = ['normalize' => $normalize ];
+                $terms = ['normalize' => $normalize, 'class' => $obj->_model ];
                 if ( $workspace_id )
                     $terms['workspace_id'] = $workspace_id;
                 $tag_obj = $db->model( 'tag' )->get_by_key( $terms );

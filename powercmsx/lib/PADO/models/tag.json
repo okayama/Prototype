@@ -1,7 +1,7 @@
 {
     "label"    : "Tag",
     "plural"   : "Tags",
-    "version"  : "1.1",
+    "version"  : "1.5",
     "auditing" : 1,
     "display_system": 1,
     "sortable" : 1,
@@ -22,6 +22,11 @@
             "not_null": 1
         },
         "normalize": {
+            "type": "string",
+            "size": "255",
+            "not_null": 1
+        },
+        "class": {
             "type": "string",
             "size": "255",
             "not_null": 1
@@ -58,6 +63,7 @@
         "PRIMARY": "id",
         "name": "name",
         "normalize": "normalize",
+        "class": "class",
         "order": "order",
         "workspace_id": "workspace_id",
         "created_on": "created_on",
@@ -83,15 +89,23 @@
         "id": "hidden",
         "name": "primary",
         "normalize": "text",
+        "class": "text_short",
         "order": "number"
     },
     "list_properties": {
         "id": "number",
         "name": "primary",
         "normalize": "text",
+        "class": "text_short",
         "order": "number",
         "workspace_id": "reference:workspace:name",
         "modified_on": "datetime",
         "modified_by": "reference:user:name"
+    },
+    "translate": [
+        "table_id"
+    ],
+    "column_labels": {
+        "class": "Model"
     }
 }

@@ -1213,6 +1213,8 @@
         : "ファイルを編集しました。編集されたファイルは、このページを保存するまで反映されません。",
     "It has been reduced as it exceeds the maximum size of the image."
         : "画像の最大サイズを超えていたため、画像は縮小されました。",
+    "It has been reduced as it exceeds the maximum size of the image file '%s'."
+        : "画像'%s'は最大サイズを超えていたため、画像は縮小されました。",
     "It has been reduced as it exceeds the maximum size of the image. The uploaded file will not be reflected until you save this page."
         : "画像の最大サイズを超えていたため、画像は縮小されました。アップロードしたファイルは、このページを保存するまで反映されません。",
     "This view could not be deleted because it is being used for a URL map. To delete a view, delete the URL map first."

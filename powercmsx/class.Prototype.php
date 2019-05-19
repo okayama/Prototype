@@ -29,7 +29,7 @@ spl_autoload_register( '\prototype_auto_loader' );
 class Prototype {
 
     public static $app = null;
-    public    $app_version   = '1.018';
+    public    $app_version   = '1.019';
     public    $id            = 'Prototype';
     public    $name          = 'Prototype';
     public    $db            = null;
@@ -4983,7 +4983,7 @@ class Prototype {
                 // }
                 $normalize = str_replace( ' ', '', trim( mb_strtolower( $tag ) ) );
                 if (!$normalize ) continue;
-                $terms = ['normalize' => $normalize ];
+                $terms = ['normalize' => $normalize, 'class' => $table->name ];
                 if ( $workspace_id )
                     $terms['workspace_id'] = $workspace_id;
                 $tag_obj = $db->model( 'tag' )->get_by_key( $terms );
@@ -7235,7 +7235,11 @@ class Prototype {
                                 }
                                 ++$i;
                             }
-                            $rel_objs = $rel_obj->load( [ $rel_col => $_cond ] );
+                            $rel_terms = [ $rel_col => $_cond ];
+                            if ( $rel_model == 'tag' ) {
+                                $rel_terms['class'] = $model;
+                            }
+                            $rel_objs = $rel_obj->load( $rel_terms );
                             $and_or = $app->param( "_filter_and_or_{$key}" )
                                     ? $app->param( "_filter_and_or_{$key}" ) : 'AND';
                             $and_or = strtoupper( $and_or );

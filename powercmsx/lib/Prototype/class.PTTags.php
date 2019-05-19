@@ -795,6 +795,9 @@ class PTTags {
                     $terms['parent_id'] = $parent_id;
                     $terms[ $primary ] = $value;
                 }
+                if ( $context == 'tag' && $container ) {
+                    $terms['class'] = $container;
+                }
                 $obj = $app->db->model( $context )->get_by_key( $terms );
                 if (! $obj->id ) {
                     $repeat = $ctx->false();
@@ -3908,6 +3911,9 @@ class PTTags {
             $template_tags = isset( $args['template_tags'] ) ? $args['template_tags'] : 0;
             if ( $template_tags ) {
                 $terms['template_tags'] = 1;
+            }
+            if ( isset( $args['taggable'] ) && $args['taggable'] ) {
+                $terms['taggable'] = 1;
             }
             if ( $show_activity ) {
                 $terms['show_activity'] = 1;

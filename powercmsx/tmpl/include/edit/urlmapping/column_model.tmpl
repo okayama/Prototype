@@ -1,4 +1,4 @@
-<mt:setvar name="no_disp" value="Role,Permission,Question Type,Question,Log,Workflow,Comment,URL">
+<mt:setvar name="no_disp" value="Model,Attachment File,Field,Field Type,IP Address,Contact,URL Map,Phrase,Role,Permission,Question Type,Question,Log,Workflow,Comment,URL">
 <mt:var name="no_disp" split="," setvar="no_disp">
 
 <div class="row form-group">
@@ -24,16 +24,14 @@
         <mt:trans phrase="Index">
       </option>
     </mt:if>
-      <mt:if name="menu_type" ne="2">
-        <mt:ifinarray array="no_disp" value="$label">
-        <mt:else>
-        <mt:unless name="name" eq="template">
-        <option <mt:if name="__col_value__" eq="$name">selected</mt:if> value="<mt:var name="name">">
-        <mt:trans phrase="$label" escape>
-        </option>
-        </mt:unless>
-        </mt:ifinarray>
-      </mt:if>
+      <mt:ifinarray array="no_disp" value="$label">
+      <mt:else>
+      <mt:unless name="name" eq="template">
+      <option <mt:if name="__col_value__" eq="$name">selected</mt:if> value="<mt:var name="name">">
+      <mt:trans phrase="$label" escape>
+      </option>
+      </mt:unless>
+      </mt:ifinarray>
     </mt:objectloop>
     </select>
   </div>

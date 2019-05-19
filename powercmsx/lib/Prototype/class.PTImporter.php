@@ -476,7 +476,7 @@ class PTImporter {
                                                 if ( $app->can_do( 'tag', 'create', null, $workspace ) ) {
                                                     $normalize = str_replace( ' ', '',
                                                         trim( mb_strtolower( $name ) ) );
-                                                    $terms = ['normalize' => $normalize ];
+                                                    $terms = ['normalize' => $normalize, 'class' => $obj->_model ];
                                                     if ( $workspace )
                                                         $terms['workspace_id'] = $workspace->id;
                                                     $tag_obj =
