@@ -355,7 +355,7 @@ $('#dialog-cancel-btn').click(function(){
   </mt:if>
   <mt:if name="show_all_selected">
   <tr>
-    <td colspan="<mt:var name="list_colspan">" class="all-selected-cell hidden">
+    <td colspan="<mt:var name="list_colspan">" class="all-selected-cell">
 <label class="custom-control custom-checkbox" style="display:inline;">
   <input type="checkbox" class="custom-control-input cb-all-selected" name="all_selected" value="1">
   <span class="custom-control-indicator"></span>
@@ -363,6 +363,9 @@ $('#dialog-cancel-btn').click(function(){
     &nbsp; <mt:trans phrase="Select all %s items" params="$permitted_count">
 </label>
     </td>
+<script>
+$('.all-selected-cell').hide();
+</script>
   </tr>
 </mt:if>
   </mt:unless>
