@@ -334,7 +334,8 @@ class Prototype {
         }
         $path = str_replace( DS, '/', $path );
         $this->path = $path;
-        $basename = isset( $_SERVER['SCRIPT_FILENAME'] ) ? basename( $_SERVER['SCRIPT_FILENAME'] ) : 'index.php';
+        $basename = $this->id != 'Bootstrapper'
+                  && isset( $_SERVER['SCRIPT_FILENAME'] ) ? basename( $_SERVER['SCRIPT_FILENAME'] ) : 'index.php';
         $this->admin_url = $this->admin_url ? $this->admin_url : $this->base . $this->path . $basename;
         if ( isset( $_SERVER['HTTP_ACCEPT_LANGUAGE'] ) )
             $this->language = substr( $_SERVER['HTTP_ACCEPT_LANGUAGE'], 0, 2 );
