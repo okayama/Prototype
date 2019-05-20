@@ -17,9 +17,9 @@ class upgrader_tag {
                 $app->db->model( 'relation' )->load( ['to_obj' => 'tag', 'to_id' => $tag->id ] );
             $tag_models = [];
             foreach ( $relations as $relation ) {
-                $ids = [ $relation->from_id ];
-                if ( isset( $tag_models[ $relation->from_obj ] ) ) {
-                    $tag_models[ $relation->from_obj ] = $relation;
+                if ( isset( $tag_models[ $relation->from_obj ] )
+                    && is_array( $tag_models[ $relation->from_obj ] ) ) {
+                    $tag_models[ $relation->from_obj ][] = $relation;
                 } else {
                     $tag_models[ $relation->from_obj ] = [ $relation ];
                 }
