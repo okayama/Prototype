@@ -4671,7 +4671,7 @@ class Prototype {
                         $terms['rev_type'] = 0;
                     }
                     if ( $obj->has_column( 'workspace_id' ) ) {
-                        $workspace_id = $obj->workspace_id ? $obj->workspace_id : 0;
+                        $workspace_id = $app->workspace() ? $app->workspace()->id : 0;
                         $terms['workspace_id'] = $workspace_id;
                     }
                     $compare = $db->model( $model )->load( $terms );
