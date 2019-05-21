@@ -81,6 +81,18 @@ class PTViewer {
         unset( $ctx->vars['magic_token'] );
         $ctx->vars['appname'] = $app->appname;
         $ctx->include_paths[ $app->site_path ] = true;
+        if ( $workspace_id ) {
+            $workspace_id = (int) $workspace_id;
+            $workspace = $app->db->model( 'workspace' )->load( $workspace_id );
+        } else {
+            $request_uri = $app->base . $app->request_uri;
+            $workspace = $this->get_workspace_from_url( $app, $request_uri );
+        }
+        if ( $workspace ) {
+            $app->stash( 'workspace', $workspace );
+            $ctx->stash( 'workspace', $workspace );
+            $ctx->include_paths[ $workspace->site_path ] = true;
+        }
         if (! $url->id ) {
             if (! $existing_data && file_exists( $file_path ) && $app->allow_static ) {
                 $data = file_get_contents( $file_path );
@@ -95,18 +107,6 @@ class PTViewer {
                     $existing_data = $data;
                 }
             } else {
-                if ( $workspace_id ) {
-                    $workspace_id = (int) $workspace_id;
-                    $workspace = $app->db->model( 'workspace' )->load( $workspace_id );
-                } else {
-                    $request_uri = $app->base . $app->request_uri;
-                    $workspace = $this->get_workspace_from_url( $app, $request_uri );
-                }
-                if ( $workspace ) {
-                    $app->stash( 'workspace', $workspace );
-                    $ctx->stash( 'workspace', $workspace );
-                    $ctx->include_paths[ $workspace->site_path ] = true;
-                }
                 $this->page_not_found( $app, $workspace );
             }
         }
