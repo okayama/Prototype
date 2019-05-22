@@ -446,16 +446,20 @@ $(function () {
             $.each(data.result.files, function (index, file) {
                 $('#files-<mt:var name="__col_name__">').html('');
                 $('#download-<mt:var name="__col_name__">').show();
+                $('#download-<mt:var name="__col_name__">').css('display', 'inline');
                 $('#file-<mt:var name="__col_name__">-label').show();
+                $('#file-<mt:var name="__col_name__">-label').css('display', 'inline');
                 $('#<mt:var name="__col_name__">-magic').val(file.magic);
                 var file_name = escape_html( decodeURI(file.name) );
                 var file_class = escape_html( file.class );
                 if (file_class == 'image') {
                     $('#edit-<mt:var name="__col_name__">').show();
+                    $('#edit-<mt:var name="__col_name__">').css('display', 'inline');
                 } else {
                     $('#edit-<mt:var name="__col_name__">').hide();
                 }
                 $('#inline-<mt:var name="__col_name__">').show();
+                $('#inline-<mt:var name="__col_name__">').css('display', 'inline');
                 $('<p/>').text(file_name).appendTo('#files-<mt:var name="__col_name__">');
                 file_<mt:var name="__col_name__">_class = file_class;
                 if (file_class == 'image') {
@@ -468,6 +472,7 @@ $(function () {
                 }
                 if (file_class == 'image') {
                     $('#image_preview-<mt:var name="__col_name__">').show();
+                    $('#image_preview-<mt:var name="__col_name__">').css('display', 'inline');
                     $('#image_preview-<mt:var name="__col_name__">').prop('src','data:'+file.type+';base64,'+file.thumbnail);
                     if(file.width < <mt:var name="preview_width"> ){
                         $('#image_preview-<mt:var name="__col_name__">').prop('width',file.width);
