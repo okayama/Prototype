@@ -8,7 +8,11 @@
   <div class="col-lg-3">
   <mt:tables taggable="1">
     <mt:if name="__first__"><select id="<mt:var name="__col_name__">" name="<mt:var name="__col_name__">" class="form-control custom-select"></mt:if>
-    <mt:if name="__col_value__" eq="$name"><option value="<mt:var name="name">" <mt:if name="__col_value__" eq="$name">selected</mt:if>><mt:var name="label" translate></option></mt:if>
+    <mt:if name="__col_value__" eq="$name">
+      <option value="<mt:var name="name">" <mt:if name="__col_value__" eq="$name">selected</mt:if>><mt:var name="label" translate></option>
+    <mt:elseif name="__col_value__" eq="">
+      <option value="<mt:var name="name">" <mt:if name="__col_value__" eq="$name">selected</mt:if>><mt:var name="label" translate></option>
+    </mt:if>
     <mt:if name="__last__"></select></mt:if>
   </mt:tables>
   </div>
