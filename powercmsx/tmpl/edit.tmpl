@@ -642,6 +642,7 @@ $(function () {
               <mt:setvarblock name="__rel_name__">object_<mt:var name="__col_name__"></mt:setvarblock>
               <mt:objectloop model="$rel_model" sort_by="order" include_draft="1" workspace_id="$workspace_id">
               <mt:if name="__first__">
+                <mt:unless name="not_null">
               <label class="custom-control custom-radio">
                 <input class="custom-control-input" type="radio"
                   <mt:if name="type" eq="int">
@@ -652,6 +653,7 @@ $(function () {
                 <span class="custom-control-indicator"></span>
                 <span class="custom-control-description"><mt:trans phrase="Unspecified"></span>
               </label>
+                </mt:unless>
               </mt:if>
               <label class="custom-control custom-radio">
                 <input class="custom-control-input watch-changed" type="radio"
@@ -818,7 +820,9 @@ $(function () {
               </mt:if>
               <mt:else>
                 <mt:if name="__first__">
-                  <option value=""><mt:trans phrase="Unspecified"></option>
+                  <mt:unless name="not_null">
+                    <option value=""><mt:trans phrase="Unspecified"></option>
+                  </mt:unless>
                 </mt:if>
                 <option <mt:if name="type" eq="int">
                   <mt:if name="__col_value__" eq="$id">selected</mt:if><mt:else>
