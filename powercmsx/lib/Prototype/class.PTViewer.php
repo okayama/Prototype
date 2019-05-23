@@ -57,7 +57,8 @@ class PTViewer {
         }
         $url = $app->db->model( 'urlinfo' )->get_by_key( $terms );
         if (! $url->id ) {
-            $request = urldecode( $request );
+            $request = rawurldecode( $request );
+            $terms = ['relative_url' => $request ];
             $url = $app->db->model( 'urlinfo' )->get_by_key( $terms );
         }
         $app->init_callbacks( 'urlinfo', 'post_load_object' );

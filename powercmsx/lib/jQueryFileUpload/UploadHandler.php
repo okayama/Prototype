@@ -1434,11 +1434,11 @@ class UploadHandler
         if ( is_array( $name ) ) {
             $new_names = array();
             foreach ( $name as $n ) {
-                $new_names[] = urlencode( $n );
+                $new_names[] = rawurlencode( $n );
             }
             $_FILES[$id]['name'] = $new_names;
         } else {
-            $_FILES[$id]['name'] = urlencode( $name );
+            $_FILES[$id]['name'] = rawurlencode( $name );
         }
         return @$_FILES[$id];
     }
