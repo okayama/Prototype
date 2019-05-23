@@ -293,7 +293,8 @@ class PTPlugin {
     function get_config_value ( $name, $ws_id = 0, $inheritance = false ) {
         $app = Prototype::get_instance();
         $plugin_id = strtolower( get_class( $this ) );
-        $terms = ['extra' => $plugin_id, 'key' => $name, 'workspace_id' => $ws_id ];
+        $terms = ['extra' => $plugin_id, 'key' => $name, 'workspace_id' => $ws_id,
+                  'kind' => 'plugin_setting'];
         $setting_obj = $app->db->model( 'option' )->get_by_key( $terms );
         if ( $ws_id && $inheritance && !$setting_obj->id ) {
             $terms['workspace_id'] = 0;
@@ -316,7 +317,8 @@ class PTPlugin {
     function set_config_value ( $name, $value, $ws_id = 0 ) {
         $app = Prototype::get_instance();
         $plugin_id = strtolower( get_class( $this ) );
-        $terms = ['extra' => $plugin_id, 'key' => $name, 'workspace_id' => $ws_id ];
+        $terms = ['extra' => $plugin_id, 'key' => $name,
+                  'workspace_id' => $ws_id, 'kind' => 'plugin_setting'];
         $setting_obj = $app->db->model( 'option' )->get_by_key( $terms );
         $setting_obj->value( $value );
         $setting_obj->save();
