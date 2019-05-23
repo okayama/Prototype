@@ -1420,6 +1420,8 @@ class Prototype {
                     }
                     if ( password_verify( $password, $user->password ) ) {
                         if ( $two_factor_auth ) {
+                            $app->language = $user->language;
+                            $app->ctx->language = $user->language;
                             $token = $app->magic();
                             $key = rand( 10000, 99999 );
                             $sess = $app->db->model( 'session' )->get_by_key( [
