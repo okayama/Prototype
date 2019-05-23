@@ -1,5 +1,7 @@
 <mt:for merge_linefeeds="1">
-<mt:var name="confirmation_code">
+<mt:trans phrase="Your Confirmation Code is '%s'. Please enter the code to authentication screen." params="$confirmation_code">
+
+<mt:trans phrase="* Please be aware that it will be invalidated after a certain amount of time has passed.">
 
 <mt:include file="mail_footer.tmpl">
 </mt:for>

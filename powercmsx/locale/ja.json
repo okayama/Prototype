@@ -738,6 +738,7 @@
     "Column's Permissions" : "カラムの権限",
     "Start Install..."   : "インストールを開始します。...",
     "Create %s tables."  : "%s個のテーブルを作成しました。",
+    "[%s] Your Confirmation Code" : "【%s】ログイン確認用コード",
     "Creating TABLE \\'%s\\'..."
         : "テーブル「%s」を作成しています。...",
     "The theme '%s' has been applied."
@@ -899,6 +900,10 @@
         : "確認用コードが一致しません。",
     "The confirmation code has been expired."
         : "確認用コードの有効期限が切れました。",
+    "Your Confirmation Code is '%s'. Please enter the code to authentication screen."
+        : "確認用コードは「%s」です。認証画面にコードを入力してログインしてください。",
+    "* Please be aware that it will be invalidated after a certain amount of time has passed."
+        : "※ 一定時間が経過すると無効となりますのでご注意ください。",
     "The status at replacement will be status of the master."
         : "予約差し替え時のステータスは、マスタのステータスになります。",
     "The status at apply will be status of the master."

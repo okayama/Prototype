@@ -29,7 +29,7 @@ spl_autoload_register( '\prototype_auto_loader' );
 class Prototype {
 
     public static $app = null;
-    public    $app_version   = '1.019';
+    public    $app_version   = '1.020';
     public    $id            = 'Prototype';
     public    $name          = 'Prototype';
     public    $db            = null;
@@ -49,6 +49,7 @@ class Prototype {
     public    $per_rebuild   = 120;
     public    $rebuilt_ids   = [];
     public    $rebuild_interval = 0;
+    public    $two_factor_auth = false;
     public    $basename_len  = 40;
     public    $password_min  = 8;
     public    $retry_auth    = 3;
@@ -558,6 +559,8 @@ class Prototype {
                     $this->sys_language = $cfg->value;
                 } else if ( $key === 'copyright' ) {
                     $this->copyright = $cfg->value;
+                } else if ( $key === 'two_factor_auth' && $cfg->value ) {
+                    $this->two_factor_auth = true;
                 }
             }
             $this->stash( 'configs', $configs );
@@ -1340,8 +1343,7 @@ class Prototype {
         $name = $this->param( 'name' );
         $password = $this->param( 'password' );
         if ( $name && $password ) {
-            $two_factor_auth = $this->get_config( 'two_factor_auth' );
-            if ( $two_factor_auth && $two_factor_auth->value ) {
+            if ( $this->two_factor_auth ) {
                 return;
             }
             return $this->login();
@@ -1360,8 +1362,7 @@ class Prototype {
             $return_args = $app->param( 'return_args' );
             if ( strpos( $return_args, '__mode=logout' ) !== false ) $return_args = '';
             if ( strpos( $return_args, '__mode=login' ) !== false ) $return_args = '';
-            $two_factor_auth = $app->get_config( 'two_factor_auth' );
-            $two_factor_auth = $two_factor_auth ? $two_factor_auth->value : false;
+            $two_factor_auth = $app->two_factor_auth;
             $token = $app->param( 'token' );
             if ( $two_factor_auth && $token ) {
                 $key = $app->param( 'confirmation_code' );
@@ -1435,17 +1436,17 @@ class Prototype {
                             }
                             $headers = ['From' => $system_email->value ];
                             $ctx = $app->ctx;
-                            $ctx->vars['confirmation_code'] = $token;
+                            $ctx->vars['confirmation_code'] = $key;
                             $app->set_mail_param( $ctx );
                             $subject = null;
                             $body = null;
                             $template = null;
-                            $body = $app->get_mail_tmpl( 'recover_password', $template );
+                            $body = $app->get_mail_tmpl( 'confirmation_code', $template );
                             if ( $template ) {
                                 $subject = $template->subject;
                             }
                             if (! $subject ) {
-                                $subject = $app->translate( 'Your Confirmation Code' );
+                                $subject = $app->translate( "[%s] Your Confirmation Code", $ctx->vars['appname'] );
                             }
                             $body = $app->build( $body );
                             $subject = $app->build( $subject );
