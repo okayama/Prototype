@@ -405,8 +405,7 @@ $('.all-selected-cell').hide();
   </mt:ifusercan>
   </mt:tablehascolumn>
   <mt:unless name="_single_select">
-  <mt:if name="has_checkbox">
-    <mt:ifusercan action="edit" model="$this_model" id="$id" workspace_id="$workspace_id">
+  <mt:setvarblock name="selector_checkbox">
     <label class="custom-control custom-checkbox">
       <input id="box_<mt:var name="id">" type="checkbox" name="id[]"
         value="<mt:var name="id">" class="custom-control-input"
@@ -414,6 +413,12 @@ $('.all-selected-cell').hide();
       <span class="custom-control-indicator"></span>
       <span class="custom-control-description"></span>
     </label>
+  </mt:setvarblock>
+  <mt:if name="has_checkbox">
+    <mt:ifusercan action="edit" model="$this_model" id="$id" workspace_id="$workspace_id">
+      <mt:var name="selector_checkbox">
+    <mt:elseif name="request.dialog_view">
+      <mt:var name="selector_checkbox">
     </mt:ifusercan>
   </mt:if>
   <mt:else>
