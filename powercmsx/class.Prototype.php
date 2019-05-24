@@ -124,6 +124,7 @@ class Prototype {
     public    $request_method;
     public    $current_magic;
     public    $preview_redirect = true;
+    public    $publish_callbacks= false;
     public    $mail_return_path = '';
     public    $mail_encording = '';
     public    $mail_language = 'ja';
@@ -8202,8 +8203,21 @@ class Prototype {
                             //     $ctx->compile( $tmpl, false );
                             // }
                             $ctx->vars['publish_type'] = $urlmapping ? $urlmapping->publish_file : 1;
+                            if ( $app->publish_callbacks ) {
+                                $app->init_callbacks( 'template', 'pre_publish' );
+                                $callback = ['name' => 'pre_publish', 'model' => 'template',
+                                             'urlmapping' => $urlmapping, 'template' => $template,
+                                             'urlinfo' => $ui ];
+                                $res = $app->run_callbacks( $callback, 'template', $tmpl );
+                                if (! $res ) return $file_path;
+                            }
                             $data = $app->tmpl_markup === 'mt' ? $ctx->build( $tmpl )
                                                                : $app->build( $tmpl, $ctx );
+                            if ( $app->publish_callbacks ) {
+                                $app->init_callbacks( 'template', 'post_publish' );
+                                $callback['name'] = 'post_publish';
+                                $app->run_callbacks( $callback, 'template', $tmpl, $data );
+                            }
                             $old_hash = $ui->md5;
                             $hash = md5( $data );
                             $app->ctx->vars = $cache_vars;

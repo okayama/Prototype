@@ -14,6 +14,9 @@ class PTPublisher {
         while( $result = $sth->fetch( PDO::FETCH_ASSOC ) ) {
             $obj = $db->model( 'urlinfo' )->new( $result );
             $data = $this->publish( $obj );
+            if ( $data === false ) {
+                continue;
+            }
             $hash = md5( $data );
             $publish = false;
             $file_path = $obj->file_path;
@@ -21,7 +24,7 @@ class PTPublisher {
             if ( !$md5 && file_exists( $file_path ) ) {
                 $md5 = md5( $fmgr->get( $file_path ) );
             }
-            if ( !$md5 || $md5 !== $hash ) {
+            if (! file_exists( $file_path ) || ( !$md5 || $md5 !== $hash ) ) {
                 $publish = true;
             }
             if ( $publish ) {
@@ -41,7 +44,8 @@ class PTPublisher {
         return $counter;
     }
 
-    function publish ( &$url, $existing_data = null, &$mtime = null, $obj = null ) {
+    function publish ( &$url, $existing_data = null, &$mtime = null,
+                      $obj = null, &$update = false ) {
         $app = Prototype::get_instance();
         if (! $mtime ) $mtime = (int)$url->filemtime;
         $ctx = $app->ctx;
@@ -150,12 +154,31 @@ class PTPublisher {
                 // if ( stripos( $tmpl, 'setvartemplate' ) !== false ) {
                 //     $ctx->compile( $tmpl, false );
                 // }
-                $callback = ['name' => 'pre_publish', 'model' => 'template' ];
-                $app->run_callbacks( $callback, 'template', $tmpl );
+                if ( $app->publish_callbacks ) {
+                    $app->init_callbacks( 'template', 'pre_publish' );
+                    $callback = ['name' => 'pre_publish', 'model' => 'template',
+                                 'urlmapping' => $mapping, 'template' => $template,
+                                 'urlinfo' => $url ];
+                    $res = $app->run_callbacks( $callback, 'template', $tmpl );
+                    if (! $res ) {
+                        return false;
+                    }
+                }
                 $data = $app->tmpl_markup === 'mt' ? $ctx->build( $tmpl )
                                                    : $app->build( $tmpl, $ctx );
-                $callback = ['name' => 'post_publish', 'model' => 'template' ];
-                $app->run_callbacks( $callback, 'template', $tmpl, $data );
+                if ( $app->publish_callbacks ) {
+                    $app->init_callbacks( 'template', 'post_publish' );
+                    $callback['name'] = 'post_publish';
+                    $app->run_callbacks( $callback, 'template', $tmpl, $data );
+                }
+                if ( $mapping->publish_file == 3 && !$app->user() ) {
+                    $fmgr = $app->fmgr;
+                    $fmgr->put( $url->file_path, $data );
+                    if (! $url->is_published ) {
+                        $url->is_published( 1 );
+                        $update = true;
+                    }
+                }
             }
             return $data;
         }

@@ -232,15 +232,10 @@ class PTViewer {
             } else {
                 $mtime = $url->filemtime;
             }
-            $data = $pub->publish( $url, $existing_data, $mtime, $obj );
             $update = false;
-            if ( $url->publish_file == 3 && ! $user ) {
-                $fmgr = $app->fmgr;
-                $fmgr->put( $url->file_path, $data );
-                if (! $url->is_published ) {
-                    $url->is_published( 1 );
-                    $update = true;
-                }
+            $data = $pub->publish( $url, $existing_data, $mtime, $obj, $update );
+            if ( $data === false ) {
+                $this->page_not_found( $app, $workspace );
             }
             if (! $app->query_string() ) {
                 $page = str_replace( $magic_token, '', $data );
