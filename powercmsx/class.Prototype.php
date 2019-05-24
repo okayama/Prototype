@@ -2753,7 +2753,7 @@ class Prototype {
             }
         }
         if ( $model === 'superuser' ) return $user->is_superuser;
-            if ( !in_array( $model, $sys_perms ) ) {
+        if ( !in_array( $model, $sys_perms ) ) {
             if ( $app->mode !== 'list_action' && $app->mode !== 'get_thumbnail' ) {
                 if (!$workspace && ( $obj && ! $obj->workspace ) ) {
                     if ( $table && $table->space_child && $action === 'edit' ) {
@@ -2779,7 +2779,8 @@ class Prototype {
         if ( $workspace ) {
             $perms = $ws_perms;
             if ( in_array( 'workspace_admin', $perms ) ) {
-                if ( $obj && ! $obj->has_column( 'workspace_id' ) ) {
+                if ( $obj && ( $model != 'workspace'
+                    && !$obj->has_column( 'workspace_id' ) ) ) {
                     return false;
                 }
                 return true;
