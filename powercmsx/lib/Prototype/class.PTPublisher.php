@@ -143,6 +143,7 @@ class PTPublisher {
                     $theme_static = $app->path . 'theme-static/';
                     $app->theme_static = $theme_static;
                 }
+                $ctx->vars['publish_type'] = $mapping->publish_file;
                 $ctx->vars['theme_static'] = $app->theme_static;
                 $ctx->vars['current_archive_type'] = $ctx->stash( 'current_archive_type' );
                 $ctx->vars['current_archive_url'] = $url->url;

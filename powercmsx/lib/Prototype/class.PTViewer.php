@@ -192,6 +192,7 @@ class PTViewer {
             }
         } else if ( $url->class === 'archive' ) {
             $mapping = $url->urlmapping;
+            $ctx->vars['publish_type'] = $mapping ? $mapping->publish_file : 6;
             $ctx->stash( 'current_context', $url->model );
             $ctx->stash( $url->model, $obj );
             if ( $mapping && $mapping->container ) {
@@ -257,6 +258,7 @@ class PTViewer {
 
     function page_not_found ( $app, $workspace = null, $error = null, $mime_type = 'text/html' ) {
         header( $app->protocol. ' 404 Not Found' );
+        $app->ctx->vars['publish_type'] = 6;
         $tmpl = null;
         if (! $error ) $error = $app->translate( 'Page not found.' );
         if ( $workspace ) {

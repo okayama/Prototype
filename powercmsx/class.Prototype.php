@@ -8201,6 +8201,7 @@ class Prototype {
                             // if ( stripos( $tmpl, 'setvartemplate' ) !== false ) {
                             //     $ctx->compile( $tmpl, false );
                             // }
+                            $ctx->vars['publish_type'] = $urlmapping ? $urlmapping->publish_file : 1;
                             $data = $app->tmpl_markup === 'mt' ? $ctx->build( $tmpl )
                                                                : $app->build( $tmpl, $ctx );
                             $old_hash = $ui->md5;
