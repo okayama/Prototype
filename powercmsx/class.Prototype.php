@@ -671,9 +671,9 @@ class Prototype {
             $plugin_objs[ $setting->key ] = $setting;
         }
         $plugin_paths = $this->plugin_paths;
-        $php_classes = [];
         $plugin_dirs = [];
         foreach ( $plugin_paths as $dir ) {
+            $php_classes = [];
             $items = scandir( $dir, $this->plugin_order );
             foreach ( $items as $plugin ) {
                 if ( strpos( $plugin, '.' ) === 0 ) continue;
