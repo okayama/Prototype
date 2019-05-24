@@ -310,7 +310,7 @@ class Prototype {
             $this->document_root = rtrim( $this->document_root, DS );
         }
         $path_part = '';
-        if ( $this->id != 'Bootstrapper' ) {
+        if ( $this->id != 'Bootstrapper' && $this->id != 'Worker' ) {
             if ( preg_match( "!(^.*?)([^/]*$)!", $request, $mts ) ) {
                 list ( $d, $path_part, $this->script ) = $mts;
                 if (! $this->path ) $this->path = $path_part;
@@ -8207,7 +8207,7 @@ class Prototype {
                                 $app->init_callbacks( 'template', 'pre_publish' );
                                 $callback = ['name' => 'pre_publish', 'model' => 'template',
                                              'urlmapping' => $urlmapping, 'template' => $template,
-                                             'urlinfo' => $ui ];
+                                             'urlinfo' => $ui, 'object' => $obj ];
                                 $res = $app->run_callbacks( $callback, 'template', $tmpl );
                                 if (! $res ) return $file_path;
                             }

@@ -74,6 +74,7 @@ class PTPublisher {
         }
         if ( $obj ) {
             $callback = ['name' => 'pre_view', 'model' => $obj->_model ];
+            $app->init_callbacks( $obj->_model, 'pre_view' );
             $app->run_callbacks( $callback, $obj->_model, $obj, $url );
             $ctx->vars['current_archive_model'] = $obj->_model;
             $ctx->vars['current_object_id'] = $obj->id;
@@ -158,7 +159,7 @@ class PTPublisher {
                     $app->init_callbacks( 'template', 'pre_publish' );
                     $callback = ['name' => 'pre_publish', 'model' => 'template',
                                  'urlmapping' => $mapping, 'template' => $template,
-                                 'urlinfo' => $url ];
+                                 'urlinfo' => $url, 'object' => $obj ];
                     $res = $app->run_callbacks( $callback, 'template', $tmpl );
                     if (! $res ) {
                         return false;
