@@ -102,7 +102,7 @@ class PTPlugin {
                     $version = 0;
                     $version = $component ? $component->version() : 0;
                     $obj = $plugin_switch[ $plugin_id ];
-                    if ( $obj->number != $status || $obj->value != $version 
+                    if ( $obj->number != $status || $obj->value != $version
                         || $_type === 'upgrade' ) {
                         if ( $status && $component ) {
                             $locale = $component->path() . DS . 'locale';
@@ -131,6 +131,19 @@ class PTPlugin {
                                             $phrase->trans( $trans );
                                             $app->set_default( $phrase );
                                             $phrase->save();
+                                        }
+                                    }
+                                }
+                                if ( property_exists( $component, 'upgrade_functions' ) ) {
+                                    $upgrade_functions = $component->upgrade_functions;
+                                    foreach ( $upgrade_functions as $upgrade_function ) {
+                                        $version_limit = isset( $upgrade_function['version_limit'] )
+                                                       ? $upgrade_function['version_limit'] : 0;
+                                        if ( $obj->value < $version_limit ) {
+                                            $meth = $upgrade_function['method'];
+                                            if ( method_exists( $component, $meth ) ) {
+                                                $component->$meth( $app, $this, $obj->value );
+                                            }
                                         }
                                     }
                                 }
