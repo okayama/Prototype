@@ -1448,9 +1448,8 @@ class Prototype {
                             if ( $template ) {
                                 $subject = $template->subject;
                             }
-                            if (! $subject ) {
-                                $subject = $app->translate( "[%s] Your Confirmation Code", $ctx->vars['appname'] );
-                            }
+                            $subject = $subject ? $app->translate( $subject, $ctx->vars['appname'] )
+                                     : $app->translate( "[%s] Your Confirmation Code", $ctx->vars['appname'] );
                             $body = $app->build( $body );
                             $subject = $app->build( $subject );
                             if (! PTUtil::send_mail(
