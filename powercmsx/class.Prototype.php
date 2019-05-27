@@ -8216,7 +8216,7 @@ class Prototype {
                                                                : $app->build( $tmpl, $ctx );
                             if ( $app->publish_callbacks ) {
                                 $app->init_callbacks( 'template', 'post_publish' );
-                                $callback['name'] = 'post_publish';
+                                $callback['name'] = 'post_rebuild';
                                 $app->run_callbacks( $callback, 'template', $tmpl, $data );
                             }
                             $old_hash = $ui->md5;
