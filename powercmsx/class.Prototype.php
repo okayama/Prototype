@@ -8214,7 +8214,7 @@ class Prototype {
                             $data = $app->tmpl_markup === 'mt' ? $ctx->build( $tmpl )
                                                                : $app->build( $tmpl, $ctx );
                             if ( $app->publish_callbacks ) {
-                                $app->init_callbacks( 'template', 'post_publish' );
+                                $app->init_callbacks( 'template', 'post_rebuild' );
                                 $callback['name'] = 'post_rebuild';
                                 $app->run_callbacks( $callback, 'template', $tmpl, $data );
                             }

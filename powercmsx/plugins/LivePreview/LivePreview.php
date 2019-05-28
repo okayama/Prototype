@@ -92,7 +92,7 @@ class LivePreview extends PTPlugin {
             $app->register_callback( $model, 'pre_archive_count', 'pre_listing', 1000, $this );
         }
         $app->register_callback( 'meta', 'pre_view', 'pre_view', 1000, $this );
-        $app->register_callback( 'template', 'post_publish', 'post_publish', 1000, $this );
+        $app->register_callback( 'template', 'post_rebuild', 'post_rebuild', 1000, $this );
         $this->preview = true;
         $this->preview_ts = $ts;
         if ( $this->in_workspace ) {
@@ -155,7 +155,7 @@ class LivePreview extends PTPlugin {
         return $ts;
     }
 
-    function post_publish ( $cb, $app, $tmpl, &$data ) {
+    function post_rebuild ( $cb, $app, $tmpl, &$data ) {
         if ( $app->id != 'Bootstrapper' ) {
             return;
         }
