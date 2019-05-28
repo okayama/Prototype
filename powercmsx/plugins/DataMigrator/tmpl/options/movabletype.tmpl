@@ -1,18 +1,18 @@
 <label class="custom-control custom-radio">
-<input id="movabletype_author_current" class="custom-control-input" type="radio" checked name="movabletype_author_setting" value="1">
+<input id="movabletype_author_current" class="custom-control-input watch-changed" type="radio" checked name="movabletype_author_setting" value="1">
 <span class="custom-control-indicator"></span>
 <span class="custom-control-description"><mt:trans phrase="Import as me" component="DataMigrator"></span>
 </label>
 <mt:ifusercan action="create" model="user">
 <label class="custom-control custom-radio">
-<input id="movabletype_author_create" class="custom-control-input" type="radio" name="movabletype_author_setting" value="2">
+<input id="movabletype_author_create" class="custom-control-input watch-changed" type="radio" name="movabletype_author_setting" value="2">
 <span class="custom-control-indicator"></span>
 <span class="custom-control-description"><mt:trans phrase="Preserve original user" component="DataMigrator"></span>
 </label>
 <div class="row form-group hidden" id="movabletype_password-wrapper">
   <div class="form-inline-padding form-inline col-lg-10 option-content hidden">
     <mt:trans phrase="Default password for new users:" component="DataMigrator">
-    <input id="movabletype_new_author_password" type="password" class="form-control" name="movabletype_new_author_password" value="">
+    <input id="movabletype_new_author_password" type="password" class="form-control watch-changed" name="movabletype_new_author_password" value="">
     <p class="text-muted hint-block">
     <i class="fa fa-question-circle-o" aria-hidden="true"></i>
     <span class="sr-only"><mt:trans phrase="Hint"></span>
@@ -24,9 +24,9 @@
   <div class="form-inline-padding form-inline col-lg-10 option-content">
     <label>
     <mt:trans phrase="Status for Comments:" component="DataMigrator">
-    <select class="form-control custom-select short" name="movabletype_comment_status">
-        <option value="1"><mt:trans phrase="Disable"></option>
-        <option value="2"><mt:trans phrase="Enable"></option>
+    <select class="form-control custom-select short watch-changed" name="movabletype_comment_status">
+      <option value="1"><mt:trans phrase="Disable"></option>
+      <option value="2"><mt:trans phrase="Enable"></option>
     </select>
     </label>
   </div>
@@ -100,7 +100,7 @@ $('#movabletype_new_author_password').change(function(){
 </script>
 <hr style="margin-bottom:1.5em" />
 <div>
-<textarea id="movabletype_field_settings" name="movabletype_field_settings" rows="4" class="form-control" placeholder="CF50_BASENAME1=text"><mt:var name="cookie.pt-movabletype_field_settings" escape></textarea>
+<textarea id="movabletype_field_settings" name="movabletype_field_settings" rows="4" class="form-control watch-changed" placeholder="CF50_BASENAME1=text"><mt:var name="cookie.pt-movabletype_field_settings" escape></textarea>
   <p class="text-muted hint-block">
     <i class="fa fa-question-circle-o" aria-hidden="true"></i>
     <span class="sr-only"><mt:trans phrase="Hint"></span>

@@ -31,11 +31,13 @@
     "Please set the new user's email address later."
         : "新しいユーザーのメールアドレスは別途設定してください。",
     "Write 1 line 1 setting. Movable Type's Field name CF50_BASENAME=Field name of PowerCMS X(Duplicates are merged)."
-        : "Movable Typeのカスタムフィールド名=PowerCMS Xのフィールド名形式で、1行1設定を記述します(重複はマージされます)。",
+        : "Movable Typeのカスタムフィールド名=PowerCMS Xのフィールド名形式で、1行1設定を記述します(複数指定のあるカラムの値はマージされます)。",
     "Write 1 line 1 setting. WordPress's Field name meta_key=Field name of PowerCMS X(Duplicates are merged)."
-        : "WordPressのフィールド名=PowerCMS Xのフィールド名形式で、1行1設定を記述します(重複はマージされます)。",
+        : "WordPressのフィールド名=PowerCMS Xのフィールド名形式で、1行1設定を記述します(複数指定のあるカラムの値はマージされます)。",
     "You do not have permission to create users. Import as me." : "ユーザーを作成する権限がないため、自分の記事/ページとしてインポートします。",
     "Import Keywords" : "キーワードをインポート",
     "Keywords to Tags" : "キーワードをタグにする",
-    "Keywords to Keywords and Tags" : "キーワード欄とタグの両方に利用"
+    "Keywords to Keywords and Tags" : "キーワード欄とタグの両方に利用",
+    "Are you sure you want to move from this page? The settings you entered will be lost."
+        : "このページから移動してもよろしいですか? あなたが入力した設定は失われます。"
 }

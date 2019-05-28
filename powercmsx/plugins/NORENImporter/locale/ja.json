@@ -1,5 +1,5 @@
 {
     "It provides data migration function from NOREN XML format." : "NOREN XML フォーマットからのデータ移行機能を提供します。",
     "Write 1 line 1 setting. Field name of NOREN's=name of PowerCMS X(Duplicates are merged)."
-        : "NORENのフィールド名=PowerCMS Xのフィールド名形式で、1行1設定を記述します(重複はマージされます)。"
+        : "NORENのフィールド名=PowerCMS Xのフィールド名形式で、1行1設定を記述します(複数指定のあるカラムの値はマージされます)。"
 }

@@ -102,7 +102,7 @@ var cancel_select = false;
   </div>
 </div>
 <hr>
-<button type="submit" id="save" class="btn btn-primary disabled" disabled><mt:trans phrase="Do Import"></button>
+<button type="submit" id="save" class="btn btn-primary disabled mb-5" disabled><mt:trans phrase="Do Import"></button>
 </form>
 <!-- The jQuery UI widget factory, can be omitted if jQuery UI is already included -->
 <script src="assets/js/vendor/jquery.ui.widget.js"></script>
@@ -111,6 +111,19 @@ var cancel_select = false;
 <!-- The basic File Upload plugin -->
 <script src="assets/js/jquery.fileupload.js"></script>
 <script>
+var editContentChanged = false;
+$('.watch-changed').change(function(){
+    editContentChanged = true;
+});
+$(function(){
+    $(window).on('beforeunload', function() {
+        if (! editContentChanged ) {
+            $(window).off('beforeunload');
+            return;
+        }
+        return '<mt:trans phrase="Are you sure you want to move from this page? The settings you entered will be lost." component="DataMigrator">';
+    });
+});
 $('#import_format').change(function(){
     if ( cancel_select ) {
         cancel_select = false;
@@ -197,6 +210,7 @@ $(function () {
                 if ( $('#import_format').val() && $('input[name="import_model"]:checked').val() ) {
                     $('#save').removeClass('disabled');
                     $("#save").prop("disabled", false);
+                    editContentChanged = true;
                     $('#progress .progress-bar').css(
                         'width','0%'
                     );
