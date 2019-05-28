@@ -572,7 +572,7 @@ class Prototype {
             $app_version = $this->app_version;
         }
         if ( $this->installed && ! $app_version ) {
-            $app->set_config( ['app_version' => $this->app_version ] );
+            $this->set_config( ['app_version' => $this->app_version ] );
         }
         $sys_language = $this->language;
         if ( $this->image_quality > 100 ) $this->image_quality = 100;
