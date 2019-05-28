@@ -55,8 +55,12 @@
     </mt:loop>
   </div>
 </div>
-
-<div class="row form-group">
+<script>
+var current_select = '';
+var previous_select = '';
+var cancel_select = false;
+</script>
+<div class="row form-group" id="fileupload-wrapper">
   <div class="col-lg-2">
     <label for="fileupload">
     <mt:trans phrase="File">
@@ -82,7 +86,7 @@
 </div>
 
 <div class="row form-group">
-  <div class="col-lg-2 option-content hidden">
+  <div class="col-lg-2 option-content hidden" id="option-content-label">
     <mt:trans phrase="Options">
   </div>
   <div class="col-lg-10 option-content hidden">
@@ -107,6 +111,57 @@
 <!-- The basic File Upload plugin -->
 <script src="assets/js/jquery.fileupload.js"></script>
 <script>
+$('#import_format').change(function(){
+    if ( cancel_select ) {
+        cancel_select = false;
+        return;
+    }
+    if ( current_select ) {
+        $('.option-content').hide();
+        if ($('#' + current_select + '-option').length) {
+            $('#' + current_select + '-option').hide();
+        }
+    }
+    if ( $(this).val() ) {
+        if ( $('#magic').val() ) {
+            $('#save').removeClass('disabled');
+            $("#save").prop("disabled", false);
+        }
+        if ($('#' + $(this).val() + '-option').length) {
+            $('#' + $(this).val() + '-option').show();
+            $('.option-content').show();
+        }
+        var models = importer_map[$(this).val()];
+        var rb_hide = false;
+        $('input[name="import_model"]').each(function(){
+            var srb = '#' + 'rb-' + $(this).val();
+            if ( models.indexOf($(this).val()) == -1 ) {
+                if ( $(this).prop('checked') ) {
+                    $(this).prop('checked', false);
+                    rb_hide = true;
+                }
+                $(srb).hide();
+            } else {
+                $(srb).show();
+            }
+        });
+        var cnt = 0;
+        if ( rb_hide ) {
+            $('input[name="import_model"]:first-of-type').prop('checked', true);
+        }
+    }
+    previous_select = current_select;
+    current_select = $(this).val();
+    if ( current_select ) {
+        <mt:loop name="importer_loop">
+        if ( current_select == '<mt:var name="key">' ) {
+            if( typeof select_format_<mt:var name="key"> == 'function') {
+                select_format_<mt:var name="key">();
+            }
+        }
+        </mt:loop>
+    }
+});
 var DropZone = document.getElementById('drop-zone');
 DropZone.addEventListener('dragover', function (event) {
     $('#drop-zone').css('background-color','#ddf');
@@ -158,57 +213,10 @@ $(function () {
     }).prop('disabled', !$.support.fileInput)
         .parent().addClass($.support.fileInput ? undefined : 'disabled');
 });
-var current_select = '';
 <mt:loop name="importer_loop" glue=","><mt:if name="__first__">
 var json = '{</mt:if>"<mt:var name="key">":<mt:var name="models" to_json><mt:if name="__last__">}';
 importer_map = JSON.parse(json);
 </mt:if></mt:loop>
-$('#import_format').change(function(){
-    if ( current_select ) {
-        $('.option-content').hide();
-        if ($('#' + current_select + '-option').length) {
-            $('#' + current_select + '-option').hide();
-        }
-    }
-    if ( $(this).val() ) {
-        if ( $('#magic').val() ) {
-            $('#save').removeClass('disabled');
-            $("#save").prop("disabled", false);
-        }
-        if ($('#' + $(this).val() + '-option').length) {
-            $('#' + $(this).val() + '-option').show();
-            $('.option-content').show();
-        }
-        var models = importer_map[$(this).val()];
-        var rb_hide = false;
-        $('input[name="import_model"]').each(function(){
-            var srb = '#' + 'rb-' + $(this).val();
-            if ( models.indexOf($(this).val()) == -1 ) {
-                if ( $(this).prop('checked') ) {
-                    $(this).prop('checked', false);
-                    rb_hide = true;
-                }
-                $(srb).hide();
-            } else {
-                $(srb).show();
-            }
-        });
-        var cnt = 0;
-        if ( rb_hide ) {
-            $('input[name="import_model"]:first-of-type').prop('checked', true);
-        }
-    }
-    current_select = $(this).val();
-    if ( current_select ) {
-        <mt:loop name="importer_loop">
-        if ( current_select == '<mt:var name="key">' ) {
-            if( typeof select_format_<mt:var name="key"> == 'function') {
-                select_format_<mt:var name="key">();
-            }
-        }
-        </mt:loop>
-    }
-});
 $('input[name="import_model"]').change(function(){
     select_model = $(this).val();
     $("#import_format option").each(function(i){
