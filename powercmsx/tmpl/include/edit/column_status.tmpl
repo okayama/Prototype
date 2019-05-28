@@ -49,7 +49,7 @@
     </mt:loop>
     </select>
     </mt:if>
-<mt:tablehascolumn column="published_on">
+<mt:tablehascolumn column="has_deadline">
     <input type="hidden" name="has_deadline" value="0">
     <label class="custom-control custom-checkbox status-has_deadline-cb">
     <input <mt:if name="readonly">disabled</mt:if> id="has_deadline" class="status-has_deadline-cb form-control custom-control-input" type="checkbox" name="has_deadline" value="1" <mt:if name="object_has_deadline">checked</mt:if>>
@@ -202,6 +202,7 @@ $(function () {
 $('#has_deadline').click(function(){
     if ( $(this).prop('checked') ) {
         $('.unpublished-on-col').show();
+        $('#unpublished_on_date').focus();
     } else {
         $('.unpublished-on-col').hide();
     }
