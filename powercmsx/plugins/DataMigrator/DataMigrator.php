@@ -623,6 +623,7 @@ class DataMigrator extends PTPlugin {
         if (! $comment_status || $comment_status > 3 ) {
             $comment_status = 1;
         }
+        $text_format = $app->param( 'wordpress_text_format' );
         $entry = $app->db->model( $import_model );
         $field_settings = $app->param( 'wordpress_field_settings' );
         $field_mappings = [];
@@ -651,6 +652,7 @@ class DataMigrator extends PTPlugin {
                 $this->print( $title );
                 $post_date = (string) $item->children( 'wp', true )->post_date;
                 $entry = $app->db->model( $import_model )->new();
+                $entry->text_format( $text_format );
                 $basename = (string) $item->children( 'wp', true )->post_name;
                 $basename = strtolower( $basename );
                 $basename = preg_replace( "/[^a-z0-9\-]/", ' ', $basename );

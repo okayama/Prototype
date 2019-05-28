@@ -39,5 +39,6 @@
     "Keywords to Tags" : "キーワードをタグにする",
     "Keywords to Keywords and Tags" : "キーワード欄とタグの両方に利用",
     "Are you sure you want to move from this page? The settings you entered will be lost."
-        : "このページから移動してもよろしいですか? あなたが入力した設定は失われます。"
+        : "このページから移動してもよろしいですか? あなたが入力した設定は失われます。",
+    "Other Columns" : "その他のカラム"
 }

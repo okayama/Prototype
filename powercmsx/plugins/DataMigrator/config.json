@@ -41,7 +41,7 @@
             "method"     : "import_wordpress",
             "models"     : ["entry", "page"],
             "order"      : 10,
-            "options"    : ["author_setting", "new_author_password",
+            "options"    : ["author_setting", "new_author_password", "text_format",
                             "comment_status", "set_folder", "field_settings"]
         },        
         "movabletype": {

@@ -249,6 +249,7 @@ $('#save').click(function(){
     if(!confirm('<mt:trans phrase="Are you sure you want to import objects?" component="DataMigrator">')){
         return false;
     }
+    editContentChanged = false;
     $(this).attr('disabled', true);
     $('#import-form').submit();
 });
