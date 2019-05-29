@@ -212,6 +212,7 @@ class Prototype {
     public    $password_symbol = false;
     public    $password_letternum = false;
     public    $password_upperlower = false;
+    public    $evel_in_preview = false;
     public    $error_document404 = null;
     public    $system_info_url = 'https://www.powercms.jp/x/information/index.php';
     public    $news_box_url    = 'https://www.powercms.jp/x/information/news.php';
@@ -5976,21 +5977,20 @@ class Prototype {
                      'mime_type' => $mime_type, 'workspace' => $workspace ];
         $app->init_callbacks( 'preview', 'pre_preview' );
         $app->run_callbacks( $callback, 'preview', $tmpl );
+        $mime_type = $callback['mime_type'];
         $preview = $app->tmpl_markup === 'mt' ? $ctx->build( $tmpl )
                                               : $app->build( $tmpl, $ctx );
+        if ( $app->evel_in_preview && strpos( $preview, '<?php' ) !== false ) {
+            ob_start();
+            eval( '?>' . $preview );
+            $preview = ob_get_clean();
+            if ( $err = error_get_last() ) {
+                return $app->error( $err );
+            }
+        }
         $callback['name'] = 'post_preview';
         $app->init_callbacks( 'preview', 'post_preview' );
         $app->run_callbacks( $callback, 'preview', $preview );
-        if ( $mime_type == 'text/html' || stripos( $preview, '<html' ) !== false ) {
-            $cleanup_tmp = $app->admin_url . '?__mode=cleanup_tmp&session_id=' .$app->screen_id;
-            $script = "<script>\nvar __cleanup_tmp = function(){\nvar __rem_obj = new Image();\n";
-            $script.= "__rem_obj.src = '{$cleanup_tmp}';\n}\nsetTimeout(__cleanup_tmp, 1500);\n</script>";
-            if ( preg_match( '/<\/body>/i', $preview ) ) {
-                $preview = preg_replace( '/(<\/body>)/i', "{$script}$1", $preview );
-            } else {
-                $preview .= $script;
-            }
-        }
         if (!$app->preview_redirect ) {
             echo $preview;
             exit();
@@ -6020,6 +6020,7 @@ class Prototype {
 
     function cleanup_tmp ( $app ) {
         $session_id = $app->param( 'session_id' );
+        $app->log( $session_id );
         if (! $session_id ) return;
         $sessions =
             $app->db->model( 'session' )->load(
