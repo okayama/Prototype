@@ -250,14 +250,37 @@
   <div class="col-lg-2 input-group">
     <input type="text" id="extra_path" name="extra_path" class="form-control" value="<mt:var name="extra_path" escape>">
   </div>
-
-  <div class="col-lg-2 input-group">
+  <div class="col-lg-2 input-group mt-1">
     <label class="custom-control custom-checkbox">
     <input id="asset_publish" class="custom-control-input"
      type="checkbox" name="asset_publish" value="1" <mt:if name="asset_publish">checked</mt:if>>
         <span class="custom-control-indicator"></span>
         <span class="custom-control-description"> 
         <mt:trans phrase="Output the File"></span>
+    </label>
+  </div>
+</div>
+
+<div class="row form-group">
+  <div class="col-lg-2">
+    <label for="show_path">
+      <mt:trans phrase="Show Path Field">
+    </label>
+  </div>
+  <div class="col-lg-10">
+    <label class="custom-control custom-checkbox">
+    <input id="show_path" class="custom-control-input"
+     type="checkbox" name="show_path_entry" value="1" <mt:if name="show_path_entry">checked</mt:if>>
+        <span class="custom-control-indicator"></span>
+        <span class="custom-control-description"> 
+        <mt:trans phrase="Entry"></span>
+    </label>
+    <label class="custom-control custom-checkbox">
+    <input class="custom-control-input"
+     type="checkbox" name="show_path_page" value="1" <mt:if name="show_path_page">checked</mt:if>>
+        <span class="custom-control-indicator"></span>
+        <span class="custom-control-description"> 
+        <mt:trans phrase="Page"></span>
     </label>
   </div>
 </div>

@@ -2460,6 +2460,17 @@ class Prototype {
                 $ctx->vars['header_alert_force'] = true;
             }
         }
+        if ( $type == 'edit' && ( $model == 'entry' || $model == 'page' ) ) {
+            if ( $workspace ) {
+                $ctx->vars['show_path_entry'] = $workspace->show_path_entry;
+                $ctx->vars['show_path_page'] = $workspace->show_path_page;
+            } else {
+                $show_path_entry = $app->get_config( 'show_path_entry' );
+                $ctx->vars['show_path_entry'] = $show_path_entry && $show_path_entry->value;
+                $show_path_page = $app->get_config( 'show_path_page' );
+                $ctx->vars['show_path_page'] = $show_path_page && $show_path_page->value;
+            }
+        }
         $ctx->vars['return_args'] = http_build_query( $app->return_args );
         $ctx->local_vars = [];
         return $app->build_page( $tmpl );
@@ -4178,6 +4189,8 @@ class Prototype {
         $description = $app->param( 'description' );
         $extra_path = $app->param( 'extra_path' );
         $asset_publish = $app->param( 'asset_publish' );
+        $show_path_entry = $app->param( 'show_path_entry' );
+        $show_path_page = $app->param( 'show_path_page' );
         $copyright = $app->param( 'copyright' );
         $system_email = $app->param( 'system_email' );
         $administrator_ip = $app->param( 'administrator_ip' );
@@ -4228,6 +4241,8 @@ class Prototype {
                  'site_path'  => $site_path,
                  'site_url'   => $site_url,
                  'extra_path' => $extra_path,
+                 'show_path_entry' => $show_path_entry,
+                 'show_path_page' => $show_path_page,
                  'language'   => $language,
                  'barcolor'   => $barcolor,
                  'bartextcolor' => $bartextcolor,

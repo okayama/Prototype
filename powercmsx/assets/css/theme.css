@@ -204,6 +204,9 @@ select:focus {
   .header-btn-icon {
     margin-left: -6px !important;
   }
+  #basename-wrapper input.extra-path {
+    width: 190px !important;
+  }
   .list-actions-col select {
     float: left !important;
     height: 29px !important;

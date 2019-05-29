@@ -1,0 +1,34 @@
+<mt:tablehascolumn column="extra_path">
+  <mt:if name="model" eq="entry">
+    <mt:if name="show_path_entry">
+      <mt:setvar name="has_extra_path" value="1">
+    </mt:if>
+  <mt:elseif name="model" eq="page">
+    <mt:if name="show_path_page">
+      <mt:setvar name="has_extra_path" value="1">
+    </mt:if>
+  </mt:if>
+</mt:tablehascolumn>
+<div class="row form-group">
+  <div class="col-lg-2">
+    <mt:if name="has_extra_path"><label for="basename_extra_path"><mt:trans phrase="Path"></label> &middot; </mt:if>
+    <label for="<mt:var name="__col_name__">">
+    <mt:var name="label" escape>
+    <mt:unless name="has_extra_path"><mt:if name="not_null"><mt:var name="field_required"></mt:if></mt:unless>
+    </label>
+  </div>
+  <div class="col-lg-10<mt:if name="has_extra_path"> form-inline</mt:if>">
+    <mt:if name="has_extra_path">
+    <input type="text" id="basename_extra_path" class="form-control watch-changed <mt:if name="has_extra_path">extra-path</mt:if>" name="extra_path" value="<mt:var name="object_extra_path" escape>">
+    </mt:if>
+    <mt:unless name="request.id"><mt:unless name="forward_params"><mt:var name="default" escape setvar="value"></mt:unless></mt:unless>
+    <mt:if name="__col_name__" eq="uuid">
+      <mt:if name="request._duplicate">
+        <mt:setvar name="value" value="">
+      </mt:if>
+    </mt:if>
+    <input id="<mt:var name="__col_name__">" type="<mt:if name="disp_option" like="num">number<mt:else>text</mt:if>" class="form-control watch-changed <mt:var name="ctrl_class"><mt:if name="has_extra_path"> extra-path</mt:if>" name="<mt:var name="__col_name__">" value="<mt:var name="value">"
+      <mt:if name="readonly">readonly</mt:if>>
+    <mt:var name="_hint">
+  </div>
+</div>
