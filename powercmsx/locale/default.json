@@ -235,5 +235,7 @@
     "workspace_admin": "Workspace Administrator",
     "display_dashboard": "Display in Dashboard",
     "can_livepreview": "Live Preview",
-    "do_not_output"  : "Do not output file(s)"
+    "do_not_output"  : "Do not output file(s)",
+    "show_path_entry": "Show Path of Entry",
+    "show_path_page" : "Show Path of Page"
 }
