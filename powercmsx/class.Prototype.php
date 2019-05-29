@@ -5959,7 +5959,7 @@ class Prototype {
         $ctx->vars['application_path'] = $app->path;
         $ctx->vars['current_archive_type'] = $ctx->stash( 'current_archive_type' );
         $ctx->vars['current_archive_title'] = $ctx->stash( 'current_archive_title' );
-        $mapping = is_object( $map ) ? $map->mapping : 'preview.html';
+        $mapping = is_object( $map ) ? $map->mapping : 'preview.tmpl';
         if ( isset( $obj ) && is_object( $map ) && isset( $table ) ) {
             $ts = $ctx->stash( 'current_timestamp' )
                 ? $ctx->stash( 'current_timestamp' ) : '';
@@ -5981,7 +5981,7 @@ class Prototype {
         $callback['name'] = 'post_preview';
         $app->init_callbacks( 'preview', 'post_preview' );
         $app->run_callbacks( $callback, 'preview', $preview );
-        if ( $mime_type == 'text/html' ) {
+        if ( $mime_type == 'text/html' || stripos( $preview, '<html' ) !== false ) {
             $cleanup_tmp = $app->admin_url . '?__mode=cleanup_tmp&session_id=' .$app->screen_id;
             $script = "<script>\nvar __cleanup_tmp = function(){\nvar __rem_obj = new Image();\n";
             $script.= "__rem_obj.src = '{$cleanup_tmp}';\n}\nsetTimeout(__cleanup_tmp, 1500);\n</script>";
