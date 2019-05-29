@@ -96,15 +96,15 @@ $('#noren_new_author_password').change(function(){
 </div>
 <hr style="margin-bottom:1.2em" />
 <div class="form-inline">
-<mt:trans phrase="Text Format"> : 
-    <select id="noren_text_format" name="noren_text_format" class="form-control custom-select short watch-changed">
-      <option value=""><mt:trans phrase="None"></option>
-      <option value="convert_breaks" <mt:if name="object_text_format" eq="convert_breaks">selected</mt:if>><mt:trans phrase="Convert Line Breaks"></option>
-      <option value="markdown" <mt:if name="object_text_format" eq="markdown">selected</mt:if>><mt:trans phrase="Markdown"></option>
-      <mt:ignore><option value="markdown_with_smartypants" <mt:if name="object_text_format" eq="markdown_with_smartypants">selected</mt:if>>Markdown + SmartyPants</option></mt:ignore>
-      <option value="richtext" <mt:if name="object_text_format" eq="richtext">selected</mt:if>><mt:trans phrase="RichText"></option>
-      <mt:ignore><option value="textile_2" <mt:if name="object_text_format" eq="textile_2">selected</mt:if>><mt:trans phrase="Textile 2"></option></mt:ignore>
-    </select>
+<mt:trans phrase="Text Format">
+  <select id="noren_text_format" name="noren_text_format" class="form-control custom-select short watch-changed">
+    <option value=""><mt:trans phrase="None"></option>
+    <option value="convert_breaks"><mt:trans phrase="Convert Line Breaks"></option>
+    <option value="markdown"><mt:trans phrase="Markdown"></option>
+    <mt:ignore><option value="markdown_with_smartypants">Markdown + SmartyPants</option></mt:ignore>
+    <option value="richtext" selected><mt:trans phrase="RichText"></option>
+    <mt:ignore><option value="textile_2"><mt:trans phrase="Textile 2"></option></mt:ignore>
+  </select>
 </div>
 <hr style="margin-bottom:1.5em" />
 <div class="row form-group" id="noren_set_folder-wrapper">
@@ -123,13 +123,16 @@ $('#noren_new_author_password').change(function(){
   </div>
 </div>
 <hr style="margin-bottom:1.5em" id="noren_set_folder-separator" />
-<div>
-<textarea id="noren_field_settings" name="noren_field_settings" rows="4" class="form-control watch-changed" placeholder="ns_field_name1=text"><mt:var name="cookie.pt-noren_field_settings" escape></textarea>
+<div class="row form-group">
+  <div class="col-lg-12">
+  <label for="wordpress_field_settings"><mt:trans phrase="Other Columns" component="DataMigrator"></label>
+  <textarea id="noren_field_settings" name="noren_field_settings" rows="4" class="form-control watch-changed" placeholder="ns_field_name1=text"><mt:var name="cookie.pt-noren_field_settings" escape></textarea>
   <p class="text-muted hint-block">
     <i class="fa fa-question-circle-o" aria-hidden="true"></i>
     <span class="sr-only"><mt:trans phrase="Hint"></span>
     <mt:trans phrase="Write 1 line 1 setting. Field name of NOREN's=name of PowerCMS X(Duplicates are merged)." component="NORENImporter">
   </p>
+  </div>
 </div>
 <script>
 $('#import-form').submit(function(){
