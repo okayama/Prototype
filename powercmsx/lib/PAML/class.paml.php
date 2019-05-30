@@ -1646,7 +1646,15 @@ class PAML {
             $args[ $i ] = $arg;
             $i += 1;
         }
-        return preg_replace( $args[0], $args[1], $str );
+        $g = isset( $args[2] ) ? $args[2] + 0 : -1;
+        $pattern = $args[0];
+        if ( preg_match('!([a-zA-Z\s]+)$!s', $pattern, $matches ) && ( preg_match('/[eg]/', $matches[1] ) ) ) {
+            // if ( strpos( $matches[1], 'g' ) !== false ) $g = -1;
+            $pattern = substr( $pattern, 0, - strlen( $matches[1] ) )
+                     . preg_replace( '/[eg\s]+/', '', $matches[1] );
+        }
+        if (! $g ) $g = -1;
+        return preg_replace( $pattern, $args[1], $str, $g );
     }
 
     function modifier_default ( $str, $args, $ctx ) {
