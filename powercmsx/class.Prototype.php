@@ -29,7 +29,7 @@ spl_autoload_register( '\prototype_auto_loader' );
 class Prototype {
 
     public static $app = null;
-    public    $app_version   = '1.020';
+    public    $app_version   = '1.021';
     public    $id            = 'Prototype';
     public    $name          = 'Prototype';
     public    $db            = null;
@@ -7252,12 +7252,15 @@ class Prototype {
                             }
                             $rel_obj = $app->db->model( $rel_model )->new();
                             $i = 0;
+                            $count_rels = 0;
                             foreach ( $conds as $val ) {
                                 $value = $values[ $i ];
                                 if ( count( $values ) > 1 ) {
                                     $_cond[ $op ] = [ 'OR' => $values ];
+                                    $count_rels = count( $values );
                                 } else {
                                     $_cond[ $op ] = $value;
+                                    $count_rels = 1;
                                 }
                                 ++$i;
                             }
@@ -7331,7 +7334,7 @@ class Prototype {
                                             }
                                             $and_cnt = count( $rel_ids );
                                             foreach ( $rel_map as $rel_id => $rel_cnt ) {
-                                                if ( $rel_cnt == $and_cnt ) {
+                                                if ( $rel_cnt == $and_cnt && ( $count_rels && $count_rels == $rel_cnt ) ) {
                                                     $from_ids[] = $rel_id;
                                                 }
                                             }
