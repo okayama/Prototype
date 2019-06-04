@@ -8611,7 +8611,7 @@ class Prototype {
     function validate_magic ( $json = false ) {
         $app = $this;
         $is_valid = true;
-        if (!$app->user() ) $is_valid = false;
+        if (!$app->user() && !$app->current_magic ) $is_valid = false;
         $token = $app->param( 'magic_token' );
         if (!$token || $token !== $app->current_magic ) $is_valid = false;
         if (!$is_valid ) {
