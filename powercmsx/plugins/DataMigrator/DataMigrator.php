@@ -4,6 +4,7 @@ class DataMigrator extends PTPlugin {
 
     private $allowed = ['txt', 'xml', 'rss', 'rdf', 'csv', 'zip', 'gzip'];
     public  $import_format = '';
+    public  $import_model;
 
     function __construct () {
         $app = Prototype::get_instance();
@@ -30,6 +31,7 @@ class DataMigrator extends PTPlugin {
         $importers = $app->registry['import_format'];
         require_once( 'class.PTUtil.php' );
         PTUtil::sort_by_order( $importers );
+        $workspace = $app->workspace() ? $app->workspace() : null;
         $importer_loop = [];
         $import_models = [];
         $import_labels = [];
@@ -42,10 +44,12 @@ class DataMigrator extends PTPlugin {
                 $models = $importer['models'];
                 foreach ( $models as $model ) {
                     if (! in_array( $model, $import_models ) ) {
-                        $table = $app->get_table( $model );
-                        if ( $table ) {
-                            $import_models[] = $model;
-                            $import_labels[] = $table->plural;
+                        if ( $app->can_do( $model, 'create', null, $workspace ) ) {
+                            $table = $app->get_table( $model );
+                            if ( $table ) {
+                                $import_models[] = $model;
+                                $import_labels[] = $table->plural;
+                            }
                         }
                     }
                 }
@@ -62,6 +66,7 @@ class DataMigrator extends PTPlugin {
         $app->validate_magic();
         $workspace = $app->workspace() ? $app->workspace() : null;
         $import_model = $app->param( 'import_model' );
+        $this->import_model = $import_model;
         if (! $app->can_do( $import_model, 'create', null, $workspace ) ) {
             return $app->error( 'Permission denied.' );
         }
@@ -948,7 +953,8 @@ class DataMigrator extends PTPlugin {
         flush();
     }
 
-    function pause ( $app ) {
+    function pause ( $app = null ) {
+        if (! $app ) $app = Prototype::get_instance();
         echo "<script>window.parent.importDone = true;</script>";
         if ( $app->txn_active ) {
             $app->db->rollback();
@@ -968,10 +974,11 @@ class DataMigrator extends PTPlugin {
         $dir = $session->value;
         PTUtil::remove_dir( $dir );
         $session->remove();
+        $model = $this->import_model ? $this->import_model : 'entry';
         $import_format = $this->import_format;
         $app->log( ['message'  => $message,
                     'category' => 'import',
-                    'model'    => 'entry',
+                    'model'    => $model,
                     'metadata' => json_encode( ['import_format' => $import_format ] ),
                     'level'    => 'info'] );
     }
