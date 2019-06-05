@@ -160,6 +160,7 @@
     "created_on"    : "Date Created",
     "modified_on"   : "Date Modified",
     "last_login_on" : "Last Login",
+    "last_login_ip" : "Last Login IP",
     "created_by"    : "Created By",
     "modified_by"   : "Modified By",
     "lang"          : "Language",

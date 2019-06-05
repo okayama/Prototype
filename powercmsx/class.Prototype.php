@@ -214,6 +214,7 @@ class Prototype {
     public    $password_upperlower = false;
     public    $eval_in_preview = false;
     public    $error_document404 = null;
+    public    $always_update_login = false;
     public    $system_info_url = 'https://www.powercms.jp/x/information/index.php';
     public    $news_box_url    = 'https://www.powercms.jp/x/information/news.php';
     private   $powercmsx_auth  = 'powercmsx:xlpXLP';
@@ -1493,7 +1494,16 @@ class Prototype {
             $sess->save();
             if ( $user ) {
                 $user->last_login_on( date( 'YmdHis' ) );
+                $user->last_login_ip( $app->remote_ip );
                 $user->save();
+                $app->set_language( __DIR__ . DS . 'locale', $user->language );
+                $message = $app->translate( "%s '%s' (ID:%s) logged in successfully.",
+                                [ $app->translate( ucwords( $user->_model ) ), $user->name, $user->id ] );
+                $app->log( ['message'  => $message,
+                            'category' => 'login',
+                            'model'    => $user->_model,
+                            'object_id'=> $user->id,
+                            'level'    => 'info'] );
             }
             $path = $app->cookie_path ? $app->cookie_path : $app->path;
             $name = $app->cookie_name;
@@ -9183,6 +9193,11 @@ class Prototype {
             $app->current_magic = $token;
             $user = $app->db->model( $model )->load( $sess->user_id );
             if ( is_object ( $user ) ) {
+                if ( $app->always_update_login ) {
+                    $user->last_login_on( date( 'YmdHis' ) );
+                    $user->last_login_ip( $app->remote_ip );
+                    $user->save();
+                }
                 $app->user = $user;
                 $app->language = $user->language;
                 $app->ctx->language = $user->language;

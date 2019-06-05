@@ -429,6 +429,7 @@
     "items per Page"     : "件 / ページあたり",
     "Display Options"    : "画面オプション",
     "Last Login"         : "最終ログイン",
+    "Last Login IP"      : "最終ログインIP",
     "Search"             : "検索",
     "Save"               : "保存",
     "Save Changes"       : "変更を保存",
@@ -750,6 +751,8 @@
         : "ユーザー %2$s がテーマ「%1$s」を適用しました。",
     "%s object(s) has been skipped because it already existed."
         : "%sのオブジェクトについては重複があったためスキップされました。",
+    "%s '%s' (ID:%s) logged in successfully."
+        : "%s「%s」(ID:%s)がログインしました。",
     "To see the details, go to the list of Logs."
         : "詳細を確認するには、ログの一覧を表示してください。",
     "Allow Identical Basename" : "ベースネームの重複を許可",
@@ -843,9 +846,9 @@
     "The upload that 0 byte size file is not allowed."
         : "空のファイルはアップロードできません。",
     "Create %s (%s / ID : %s)."
-        : "新規 : %s (%s / ID : %s).",
+        : "新規 : %s (%s / ID : %s)",
     "Update %s (%s / ID : %s)."
-        : "更新 : %s (%s / ID : %s).",
+        : "更新 : %s (%s / ID : %s)",
     "The %sth %s tag is not closed ( at line %s )."
         : "%s番目の%sタグが閉じられていません(%s行目)。",
     "The tag %s is not found ( at line %s )."
