@@ -212,7 +212,7 @@ class Prototype {
     public    $password_symbol = false;
     public    $password_letternum = false;
     public    $password_upperlower = false;
-    public    $evel_in_preview = false;
+    public    $eval_in_preview = false;
     public    $error_document404 = null;
     public    $system_info_url = 'https://www.powercms.jp/x/information/index.php';
     public    $news_box_url    = 'https://www.powercms.jp/x/information/news.php';
@@ -5982,7 +5982,7 @@ class Prototype {
         $mime_type = $callback['mime_type'];
         $preview = $app->tmpl_markup === 'mt' ? $ctx->build( $tmpl )
                                               : $app->build( $tmpl, $ctx );
-        if ( $app->evel_in_preview && strpos( $preview, '<?php' ) !== false ) {
+        if ( $app->eval_in_preview && strpos( $preview, '<?php' ) !== false ) {
             ob_start();
             eval( '?>' . $preview );
             $preview = ob_get_clean();
