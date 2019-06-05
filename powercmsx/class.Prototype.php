@@ -7257,7 +7257,7 @@ class Prototype {
                                 $value = $values[ $i ];
                                 if ( count( $values ) > 1 ) {
                                     $_cond[ $op ] = [ 'OR' => $values ];
-                                    $count_rels = count( $values );
+                                    $count_rels = count( array_unique( $values ) );
                                 } else {
                                     $_cond[ $op ] = $value;
                                     $count_rels = 1;
