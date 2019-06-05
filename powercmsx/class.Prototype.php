@@ -1493,6 +1493,7 @@ class Prototype {
             $sess->start = ( time() );
             $sess->save();
             if ( $user ) {
+                $app->user = $user;
                 $user->last_login_on( date( 'YmdHis' ) );
                 $user->last_login_ip( $app->remote_ip );
                 $user->save();
