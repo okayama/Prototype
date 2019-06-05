@@ -934,8 +934,10 @@ $('#dialog-selector-btn').click(function(){
         var newli = _li.clone( true ).appendTo('#'+target_control );
         newli.removeClass('hidden');
         var col_value = $('#_get_col_' + checked_ids[i] ).val();
+        <mt:var name="request.target" setvar="this_target">
         <mt:if name="this_model" eq="asset">
           // todo Set URL and add input field.// #line_
+            <mt:if name="this_target" eq="assets">
             var obj_permalink = $('#permalink_'+checked_ids[i]);
             if ( obj_permalink.length ) {
                 obj_permalink = obj_permalink.attr( 'href' );
@@ -963,6 +965,9 @@ $('#dialog-selector-btn').click(function(){
             } else {
                 newli.children('.label_edit_btn').hide();
             }
+            <mt:else>
+                newli.children('input').val( checked_ids[i] );
+            </mt:if>
         <mt:else>
         newli.children('input').val( checked_ids[i] );
         </mt:if>
