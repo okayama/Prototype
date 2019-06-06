@@ -361,10 +361,12 @@ class Prototype {
         if (! empty( $this->hooks ) ) {
             $this->run_hooks( 'post_run' );
         }
-        $this->db->db = null;
-        unset( $this->db->db );
-        $this->db = null;
-        unset( $this->db );
+        if ( $this->db ) {
+            $this->db->db = null;
+            unset( $this->db->db );
+            $this->db = null;
+            unset( $this->db );
+        }
     }
 
     function init ( $dsn = null, $dbuser = null, $dbpasswd = null ) {
@@ -1343,6 +1345,7 @@ class Prototype {
     function user () {
         if ( $this->user ) return $this->user;
         if ( $this->mode === 'upgrade' ) return;
+        if (! $this->installed ) return;
         if ( $this->is_login() ) {
             return $this->user;
         }
