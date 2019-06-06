@@ -215,6 +215,7 @@ class Prototype {
     public    $eval_in_preview = false;
     public    $error_document404 = null;
     public    $always_update_login = false;
+    public    $add_port_to_url = true;
     public    $system_info_url = 'https://www.powercms.jp/x/information/index.php';
     public    $news_box_url    = 'https://www.powercms.jp/x/information/news.php';
     private   $powercmsx_auth  = 'powercmsx:xlpXLP';
@@ -259,7 +260,7 @@ class Prototype {
         $base = isset( $_SERVER['SERVER_NAME'] ) 
             ? "http{$secure}://{$_SERVER['SERVER_NAME']}" : null;
         $port = isset( $_SERVER['SERVER_PORT'] ) ? (int) $_SERVER['SERVER_PORT'] : null;
-        if ( $port && ( ( $secure && $port != 443 ) || ( !$secure && $port != 80 ) ) ) {
+        if ( $this->add_port_to_url && $port && ( ( $secure && $port != 443 ) || ( !$secure && $port != 80 ) ) ) {
             $base .= ":{$port}";
         }
         $request_uri = NULL;
