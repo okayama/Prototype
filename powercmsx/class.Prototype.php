@@ -6673,8 +6673,7 @@ class Prototype {
             if (! $obj->has_column( 'parent_id' ) ) {
                 $app->get_scheme_from_db( $obj->_model );
             }
-            $children = $db->model( $obj->_model )->load(
-                ['parent_id' => $obj->id ], [], 'id,parent_id' );
+            $children = $db->model( $obj->_model )->load( ['parent_id' => $obj->id ] );
             $_children = [];
             foreach ( $children as $child ) {
                 $child->parent_id( $obj->parent_id );
