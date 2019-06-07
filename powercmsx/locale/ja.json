@@ -147,7 +147,7 @@
     "Edit..."            : "編集...",
     "Tool"               : "ツール",
     "Tools"              : "ツール",
-    "Required"           : "必須項目",
+    "Required"           : "必須",
     "Copy to Clipboard"  : "クリップボードにコピー",
     "Apply to Master"    : "マスタに適用",
     "Upgrade"            : "アップグレード",
@@ -694,6 +694,12 @@
     "Publish Again"      : "再構築しなおす",
     "Publish Again"      : "再構築しなおす",
     "Preview URL"        : "プレビューURL",
+    "Setting Name"       : "設定名",
+    "Result"             : "結果",
+    "Recommendation"     : "推奨",
+    "Modules"            : "モジュール",
+    "Enabled"            : "有効",
+    "Disabled"           : "無効",
     "Enabled %s"         : "有効な%s",
     "Disabled %s"        : "無効な%s",
     "Import Objects"     : "インポート",
@@ -1342,5 +1348,19 @@
     "You are about to edit the revision."
         : "リビジョンを編集しようとしています。",
     "You are about to edit the revision. To apply this revision to the master click the \\'Apply to Master\\' button."
-        : "リビジョンを編集しようとしています。このリビジョンをマスタに適用するには「マスタに適用」ボタンをクリックしてください。"
+        : "リビジョンを編集しようとしています。このリビジョンをマスタに適用するには「マスタに適用」ボタンをクリックしてください。",
+    "PowerCMS X System Check" : "PowerCMS X システムチェック",
+    "PowerCMS X already Installed." : "PowerCMS X は既にインストール済みです。",
+    "The connection to MySQL was successful." : "MySQLへの接続に成功しました。",
+    "Recommended value is %s or more" : "推奨値は%s以上です",
+    "( %s ) '%s' recommended value is %s or more." : "( %s ) '%s'の推奨値は%s以上です。",
+    "MySQL connection failed( %s )." : "MySQLへの接続に失敗しました( %s )。",
+    "MySQL connection check was skipped because db-config.php does not exist."
+        : "db-config.phpが存在しないため、MySQLへの接続は確認できませんでした。",
+    "%s is not enabled." : "%s が有効ではありません。",
+    "The version of PHP installed on your server (%s) is lower than the minimum supported version %s."
+        : "インストールされている PHP %s は、PowerCMS X でサポートされている最低限のバージョン%sを満たしていません。",
+    "You can install PowerCMS X( although some recommended settings are not sufficient )."
+        : "いくつかの推奨設定を満たしていませんが、PowerCMS Xをインストールできます。",
+    "You can install PowerCMS X." : "PowerCMS Xをインストールできます。"
 }
