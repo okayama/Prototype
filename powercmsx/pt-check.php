@@ -300,7 +300,7 @@
         $warning_messages[] = $app->translate( '%s is not enabled.', 'memcached' );
     }
     $max_input_vars = ini_get( 'max_input_vars' );
-    if ( $max_input_vars <= 2000 ) {
+    if ( $max_input_vars < 2000 ) {
         $warning_messages[] = $app->translate( "( %s ) '%s' recommended value is %s or more.", ['php.ini', 'max_input_vars', 2000 ] );
     }
     if ( $max_allowed_packet && $max_allowed_packet < 16 ) {
