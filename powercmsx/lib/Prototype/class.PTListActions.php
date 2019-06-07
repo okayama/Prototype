@@ -937,7 +937,7 @@ class PTListActions {
             $status_text = $status;
             if ( $options ) {
                 $options = explode( ',', $options );
-                $status_text = $app->translate( $options[ $status - 1 ] );
+                $status_text = $app->translate( $options[ $status ] );
             }
             $action = $action['label'] . " ({$status_text})";
             $this->log( $action, $model, $counter );
