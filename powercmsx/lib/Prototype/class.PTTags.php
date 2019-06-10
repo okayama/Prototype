@@ -425,6 +425,7 @@ class PTTags {
                              'table' => $table ];
                 while ( $parent !== null ) {
                     if ( $parent_id = $parent->parent_id ) {
+                        $container = $container ? $container : $parent->_model;
                         $parent_id = (int) $parent_id;
                         $parent = $app->db->model( $container )->load( ['id' => $parent_id ] );
                         $count_obj = count( $parent );
