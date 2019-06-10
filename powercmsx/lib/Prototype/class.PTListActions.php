@@ -1178,11 +1178,11 @@ class PTListActions {
                            ? $workspaces[ $obj->workspace_id ] : $obj->workspace;
                 $workspaces[ $obj->workspace_id ] = $workspace;
             }
-            $url = $workspace ? $workspace->site_url : $site_url;
+            $url = $workspace ? $workspace->site_url : $site_url->value;
             if ( mb_substr( $url, -1 ) == '/' ) {
                 $url = rtrim( $url, '/' );
             }
-            $path = $workspace ? $workspace->site_path : $site_path;
+            $path = $workspace ? $workspace->site_path : $site_path->value;
             if ( mb_substr( $path, -1 ) == '/' ) {
                 $url = rtrim( $path, '/' );
             }
