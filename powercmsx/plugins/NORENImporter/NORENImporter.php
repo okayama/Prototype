@@ -284,6 +284,9 @@ class NORENImporter extends PTPlugin {
                     if (! empty( $keywords ) && $keywords_to != 1 ) {
                         $to_ids = [];
                         foreach ( $keywords as $tag ) {
+                            if ( function_exists( 'normalizer_normalize' ) ) {
+                                $tag = normalizer_normalize( $tag, Normalizer::NFKC );
+                            }
                             $normalize = preg_replace( '/\s+/', '',
                                                 trim( strtolower( $tag ) ) );
                             if (! $tag ) continue;

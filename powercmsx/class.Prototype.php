@@ -5019,9 +5019,9 @@ class Prototype {
             $workspace_id = (int) $app->param( 'workspace_id' );
             $props = $placements['tags']['tag'];
             foreach ( $add_tags as $tag ) {
-                // if ( function_exists( 'normalizer_normalize' ) ) {
-                //     $normalize = normalizer_normalize( $normalize, Normalizer::NFKD );
-                // }
+                if ( function_exists( 'normalizer_normalize' ) ) {
+                    $tag = normalizer_normalize( $tag, Normalizer::NFKC );
+                }
                 $normalize = str_replace( ' ', '', trim( mb_strtolower( $tag ) ) );
                 if (!$normalize ) continue;
                 $terms = ['normalize' => $normalize, 'class' => $table->name ];

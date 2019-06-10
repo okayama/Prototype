@@ -474,6 +474,9 @@ class PTImporter {
                                               {
                                                 $workspace = $obj->workspace ? $obj->workspace : null;
                                                 if ( $app->can_do( 'tag', 'create', null, $workspace ) ) {
+                                                    if ( function_exists( 'normalizer_normalize' ) ) {
+                                                        $name = normalizer_normalize( $name, Normalizer::NFKC );
+                                                    }
                                                     $normalize = str_replace( ' ', '',
                                                         trim( mb_strtolower( $name ) ) );
                                                     $terms = ['normalize' => $normalize, 'class' => $obj->_model ];

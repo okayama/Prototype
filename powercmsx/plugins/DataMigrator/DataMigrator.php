@@ -338,6 +338,9 @@ class DataMigrator extends PTPlugin {
                             $tags = array_unique( $tags );
                             $to_ids = [];
                             foreach ( $tags as $tag ) {
+                                if ( function_exists( 'normalizer_normalize' ) ) {
+                                    $tag = normalizer_normalize( $tag, Normalizer::NFKC );
+                                }
                                 $normalize = preg_replace( '/\s+/', '',
                                                     trim( strtolower( $tag ) ) );
                                 if (! $tag ) continue;
@@ -819,6 +822,9 @@ class DataMigrator extends PTPlugin {
                     $tags = array_unique( $_categories['post_tag'] );
                     $to_ids = [];
                     foreach ( $tags as $tag ) {
+                        if ( function_exists( 'normalizer_normalize' ) ) {
+                            $tag = normalizer_normalize( $tag, Normalizer::NFKC );
+                        }
                         $normalize = preg_replace( '/\s+/', '',
                                             trim( strtolower( $tag ) ) );
                         if (! $tag ) continue;
