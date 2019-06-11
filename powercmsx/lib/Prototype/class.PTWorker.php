@@ -563,6 +563,9 @@ class PTWorker {
                             if ( $res ) {
                                 $worker_labels[] = $label;
                             }
+                            if ( is_string( $res ) ) {
+                                $worker_messages[ $label ] = $res;
+                            }
                             $session->start( $start );
                             $session->expires( $start + $frequency + 3600 );
                             $session->save();
