@@ -147,7 +147,8 @@ class DataMigrator extends PTPlugin {
                 if ( method_exists( $component, 'init_migration' ) ) {
                     $component->init_migration( $app, $this, $import_files );
                 }
-                echo str_pad( '', 4096 ) . "\n";
+                echo str_repeat( ' ', 1024 );
+                // echo str_pad( '', 4096 ) . "\n";
                 // ob_end_flush();
                 echo '<html><body style="font-family: sans-serif">';
                 return $component->$meth( $app, $import_files, $session );
@@ -956,6 +957,7 @@ class DataMigrator extends PTPlugin {
         }
         $message = $component->translate( $message, $param );
         echo $message, "<br>\n";
+        @ob_flush();
         flush();
     }
 
