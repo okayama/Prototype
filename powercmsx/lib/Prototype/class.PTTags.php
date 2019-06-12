@@ -963,7 +963,7 @@ class PTTags {
             }
             $extra = '';
             if ( $obj->has_column( 'workspace_id' ) ) {
-                $ws_attr = $this->include_exclude_workspaces( $app, $args );
+                $ws_attr = $this->include_exclude_workspaces( $app, $args, $obj );
                 if ( $ws_attr ) {
                     $ws_attr = ' AND ' . $obj->_model . "_workspace_id ${ws_attr}";
                     $extra .= $ws_attr;
@@ -1340,7 +1340,7 @@ class PTTags {
         $type = isset( $args['archive_type'] ) ? $args['archive_type'] : $args['type'];
         if (! $type ) return false;
         $extra = '';
-        $ws_attr = $this->include_exclude_workspaces( $app, $args );
+        $ws_attr = $this->include_exclude_workspaces( $app, $args, $app->db->model( 'urlinfo' ) );
         if ( $ws_attr ) {
             $extra = " AND urlinfo_workspace_id ${ws_attr}";
         }
@@ -1366,7 +1366,7 @@ class PTTags {
         $inherit = isset( $args['inherit'] ) ? $args['inherit'] : '';
         if ( $inherit && $user->is_superuser ) return true;
         $extra = '';
-        $ws_attr = $this->include_exclude_workspaces( $app, $args );
+        $ws_attr = $this->include_exclude_workspaces( $app, $args, $app->db->model( 'permission' ) );
         if ( $ws_attr ) {
             $ws_attr = " AND permission_workspace_id ${ws_attr}";
             $extra .= $ws_attr;
@@ -3358,7 +3358,7 @@ class PTTags {
             list( $title, $start, $end ) = $app->title_start_end( $at, $ts, $fiscal_start );
             $ws_attr = '';
             if ( $_model->has_column( 'workspace_id' ) ) {
-                $ws_attr = $this->include_exclude_workspaces( $app, $args );
+                $ws_attr = $this->include_exclude_workspaces( $app, $args, $_model );
                 if ( $ws_attr ) {
                     $ws_attr = " AND {$model}_workspace_id ${ws_attr}";
                     $extra .= $ws_attr;
@@ -3380,7 +3380,7 @@ class PTTags {
                     || (! $container && $model )
                     || ( $container && ( $container != $model ) ) ) {
                     if ( $_model->has_column( 'workspace_id' ) ) {
-                        $ws_attr = $this->include_exclude_workspaces( $app, $args );
+                        $ws_attr = $this->include_exclude_workspaces( $app, $args, $_model );
                         if ( $ws_attr ) {
                             $ws_attr = " AND {$model}_workspace_id ${ws_attr}";
                             $extra .= $ws_attr;
@@ -4089,7 +4089,6 @@ class PTTags {
                         }
                     }
                 }
-                // $relations = [];
                 if ( $container && $context ) {
                     if ( $container == $model ) {
                         $to_obj = $ctx->stash( $context );
@@ -4195,25 +4194,14 @@ class PTTags {
                     || ( isset( $args['include_private'] ) && !$args['include_private'] ) ) {
                     $terms['name'] = ['not like' => '@%'];
                 }
-                $_filter = $app->param( '_filter' );
-                if ( ( $_filter && $_filter == $model ) || $app->force_filter ) {
-                    $app->register_callback( $model, 'pre_listing', 'pre_listing', 1, $app );
-                    $app->init_callbacks( $model, 'pre_listing' );
-                    $callback = ['name' => 'pre_listing', 'model' => $model,
-                                 'scheme' => $scheme, 'table' => $table,
-                                 'args' => $orig_args ];
-                    $app->run_callbacks( $callback, $model, $terms, $args, $extra );
-                }
-                $count_args = $args;
-                unset( $count_args['limit'] );
-                unset( $count_args['offset'] );
                 if ( $obj->has_column( 'workspace_id' ) ) {
-                    $ws_attr = $this->include_exclude_workspaces( $app, $args );
+                    if ( $ignore_context ) $orig_args['ignore_archive_context'] = 1;
+                    $ws_attr = $this->include_exclude_workspaces( $app, $orig_args, $obj );
                     if ( $ws_attr ) {
                         $ws_attr = ' AND ' . $obj->_model . "_workspace_id ${ws_attr}";
                         $extra .= $ws_attr;
                     }
-                    if (! $ws_attr ) {
+                    if (! $ws_attr && !isset( $args['ignore_archive_context'] ) ) {
                         $current_urlmap = $ctx->stash( 'current_urlmapping' );
                         if ( $current_urlmap ) {
                             if ( $current_urlmap->container_scope
@@ -4228,6 +4216,18 @@ class PTTags {
                         }
                     }
                 }
+                $_filter = $app->param( '_filter' );
+                if ( ( $_filter && $_filter == $model ) || $app->force_filter ) {
+                    $app->register_callback( $model, 'pre_listing', 'pre_listing', 1, $app );
+                    $app->init_callbacks( $model, 'pre_listing' );
+                    $callback = ['name' => 'pre_listing', 'model' => $model,
+                                 'scheme' => $scheme, 'table' => $table,
+                                 'args' => $orig_args ];
+                    $app->run_callbacks( $callback, $model, $terms, $args, $extra );
+                }
+                $count_args = $args;
+                unset( $count_args['limit'] );
+                unset( $count_args['offset'] );
                 $caching = $app->db->caching;
                 $select_cols = isset( $args['cols'] ) ? $args['cols'] : null;
                 $column_defs = $scheme['column_defs'];
@@ -4376,7 +4376,7 @@ class PTTags {
             ? $args['glue'] . $content : $content;
     }
 
-    public function include_exclude_workspaces ( $app, $args ) {
+    public function include_exclude_workspaces ( $app, $args, $obj = null ) {
         $attr = null;
         $is_excluded = null;
         $workspace = $app->ctx->stash( 'workspace' );
@@ -4402,8 +4402,14 @@ class PTTags {
             is_numeric( $args['workspace_id'] ) ) {
             return ' = ' . $args['workspace_id'];
         } else {
-            if ( $workspace && $workspace->id ) {
-                return ' = ' . $workspace->id;
+            if (! isset( $args['ignore_archive_context'] ) ) {
+                if ( $obj && $obj->has_column( 'workspace_id' ) ) {
+                    if ( $workspace && $workspace->id ) {
+                        return ' = ' . $workspace->id;
+                    } else {
+                        return ' = 0';
+                    }
+                }
             }
         }
         if ( preg_match( '/-/', $attr ) ) {
