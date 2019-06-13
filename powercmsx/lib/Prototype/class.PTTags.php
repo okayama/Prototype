@@ -4196,7 +4196,7 @@ class PTTags {
                 }
                 if ( $obj->has_column( 'workspace_id' ) ) {
                     if ( $ignore_context ) $orig_args['ignore_archive_context'] = 1;
-                    $ws_attr = $this->include_exclude_workspaces( $app, $orig_args, $obj );
+                    $ws_attr = $this->include_exclude_workspaces( $app, $orig_args, $obj, $terms );
                     if ( $ws_attr ) {
                         $ws_attr = ' AND ' . $obj->_model . "_workspace_id ${ws_attr}";
                         $extra .= $ws_attr;
@@ -4376,7 +4376,7 @@ class PTTags {
             ? $args['glue'] . $content : $content;
     }
 
-    public function include_exclude_workspaces ( $app, $args, $obj = null ) {
+    public function include_exclude_workspaces ( $app, $args, $obj = null, $terms = null ) {
         $attr = null;
         $is_excluded = null;
         $workspace = $app->ctx->stash( 'workspace' );
@@ -4398,9 +4398,11 @@ class PTTags {
         } elseif ( isset( $args['exclude_workspaces'] ) ) {
             $attr = $args['exclude_workspaces'];
             $is_excluded = 1;
-        } elseif ( isset( $args['workspace_id'] ) &&
-            is_numeric( $args['workspace_id'] ) ) {
-            return ' = ' . $args['workspace_id'];
+        } elseif ( isset( $args['workspace_id'] ) && isset( $terms ) ) {
+            if ( isset( $terms['workspace_id'] ) && $terms['workspace_id'] == $args['workspace_id'] ) {
+                  return;
+            }
+            return ' = ' . (int) $args['workspace_id'];
         } else {
             if (! isset( $args['ignore_archive_context'] ) ) {
                 if ( $obj && $obj->has_column( 'workspace_id' ) ) {
