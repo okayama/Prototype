@@ -146,6 +146,7 @@ class Prototype {
     public    $versions      = [];
     public    $hooks         = [];
     public    $registry      = [];
+    public    $panel_width   = 103;
 
     public    $videos        = ['mov', 'avi', 'qt', 'mp4', 'wmv',
                                 '3gp', 'asx', 'mpg', 'flv', 'mkv', 'ogm'];
@@ -628,6 +629,9 @@ class Prototype {
                     $ctx->vars['scheme_upgrade_count'] = $upgrade_count;
                 }
             }
+        }
+        if ( $this->mode != 'rebuild_phase' && $this->mode != 'preview' ) {
+            $ctx->vars['panel_width'] = (int) $this->panel_width;
         }
         if ( $lang = $this->language ) {
             $ctx->language = $lang;

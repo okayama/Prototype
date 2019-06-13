@@ -34,6 +34,7 @@
       <mt:if name="user_control_border">
       .form-control, .custom-select .relation_nestable_list, .custom-control-indicator, .mce-tinymce, .btn-secondary, .group-relation-list .card { border: 1px solid <mt:var name="user_control_border" escape> !important }
       </mt:if>
+      <mt:if name="panel_width">.nav-link{ max-width: <mt:var name="panel_width" escape>px !important }</mt:if>
     </style>
   <mt:if name="request._type" eq="edit">
     <script src="<mt:var name="prototype_path">assets/js/tinymce/tinymce.min.js"></script>
