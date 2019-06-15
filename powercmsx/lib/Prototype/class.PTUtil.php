@@ -2270,6 +2270,7 @@ class PTUtil {
             'pbm'     => 'image/x-portable-bitmap',
             'pgm'     => 'image/x-portable-graymap',
             'ppm'     => 'image/x-portable-pixmap',
+            'svg'     => 'image/svg+xml',
             'rgb'     => 'image/x-rgb',
             'xbm'     => 'image/x-xbitmap',
             'xls'     => 'application/vnd.ms-excel',

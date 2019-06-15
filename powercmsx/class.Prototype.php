@@ -2303,7 +2303,6 @@ class Prototype {
             }
             if ( $key = $app->param( 'view' ) ) {
                 $session = [];
-                //__mode=edit_image&_model=attachmentfile&id=1&view=file&_screen_id=1b34a83d7d116ff4bf529b3c86390543&attachmentfile=attachment
                 if ( $screen_id ) {
                     if ( $attachmentfile = $app->param( 'attachmentfile' ) ) {
                         $screen_id .= '-' . $attachmentfile;
@@ -2994,7 +2993,7 @@ class Prototype {
         $download = $app->param( 'download' ) ? true : false;
         if (! $download ) {
             if (! in_array( $extension, $app->images ) && $extension != 'pdf'
-                && strpos( $mime_type, 'text' ) === false ) {
+                && $extension != 'svg' && strpos( $mime_type, 'text' ) === false ) {
                 $download = true;
             }
         }
