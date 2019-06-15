@@ -226,6 +226,10 @@ function finish_<mt:var name="__col_name__"> () {
           <mt:var name="__value__" mb_instr="session-" setvar="instr_session">
           <mt:if name="instr_session" eq="1">
             <mt:setvarblock name="foward_name">request._<mt:var name="__col_name__">_foward_<mt:var name="__value__"></mt:setvarblock>
+            <mt:if name="forward_params">
+            <mt:setvarblock name="foward_name">request._attachmentfiles_label_<mt:var name="__value__" escape></mt:setvarblock>
+            <mt:var name="$foward_name" escape setvar="_related_object">
+            </mt:if>
             <mt:var name="$foward_name" escape>
           <mt:else>
           <mt:getobjectname id="$__value__" type="$edit" escape setvar="_related_object">
@@ -258,7 +262,7 @@ function finish_<mt:var name="__col_name__"> () {
           <i class="fa fa-download"></i>
         </a>
         </mt:if>
-        <input type="hidden" value="" name="_<mt:var name="__col_name__">_label_<mt:var name="__value__" escape>" id="_<mt:var name="__col_name__">_label_<mt:var name="__value__" escape>">
+        <input type="hidden" value="<mt:if name="forward_params"><mt:var name="$foward_name" escape></mt:if>" name="_<mt:var name="__col_name__">_label_<mt:var name="__value__" escape>" id="_<mt:var name="__col_name__">_label_<mt:var name="__value__" escape>">
         <button type="button" class="_<mt:var name="__col_name__">-edit btn btn-info btn-sm" aria-label="<mt:trans phrase="Edit">" data-name="_<mt:var name="__col_name__">_label_<mt:var name="__value__" escape>"
           data-label="<mt:var name="_related_object">">
           <i class="fa fa-pencil"></i>
