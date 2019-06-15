@@ -666,19 +666,6 @@ class PTUtil {
         $app = Prototype::get_instance();
         $basename_len = $app->basename_len;
         $table = $app->get_table( $obj->_model );
-        if ( $table->allow_identical ) {
-            $permalink = $app->get_permalink( $obj );
-            if ( $permalink ) {
-                $url = $app->db->model( 'urlinfo' )->get_by_key(
-                  ['url' => $permalink, 'delete_flag' => 0, 'model' => $obj->_model ] );
-                if ( $url->id && $url->object_id != $obj->id ) {
-                } else if ( $basename ) {
-                    return $basename;
-                }
-            } else if ( $basename ) {
-                return $basename;
-            }
-        }
         if (! $basename ) $basename = $obj->_model;
         $basename = strtolower( $basename );
         $basename = preg_replace( "/[^a-z0-9\-]/", ' ', $basename );
@@ -686,6 +673,19 @@ class PTUtil {
         $basename = str_replace( ' ', '_', $basename );
         $basename = trim( $basename, '_' );
         $basename = mb_substr( $basename, 0, $basename_len, $app->db->charset );
+        if ( $unique && $table->allow_identical ) {
+            $permalink = $app->get_permalink( $obj );
+            if ( $permalink ) {
+                $url = $app->db->model( 'urlinfo' )->get_by_key(
+                  ['url' => $permalink, 'delete_flag' => 0, 'model' => $obj->_model ] );
+                if ( $url->id && $url->object_id != $obj->id ) {
+                } else {
+                    $unique = false;
+                }
+            } else if ( $basename ) {
+                $unique = false;
+            }
+        }
         if (! $basename ) $basename = $obj->_model;
         if ( $unique ) {
             $terms = [];
