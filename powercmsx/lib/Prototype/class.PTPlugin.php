@@ -153,6 +153,13 @@ class PTPlugin {
                         if (! $obj->value || $_type === 'upgrade' ) {
                             $obj->value( $version );
                         }
+                        if ( is_object( $component ) ) {
+                            if ( $status == 1 && method_exists( $component, 'activate' ) ) {
+                                $component->activate( $app, $this, $obj->value );
+                            } else if ( $status == 0 && method_exists( $component, 'deactivate' ) ) {
+                                $component->deactivate( $app, $this, $obj->value );
+                            }
+                        }
                         $obj->save();
                         $counter++;
                     }
