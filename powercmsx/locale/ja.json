@@ -297,6 +297,7 @@
     "Name"               : "名前",
     "Data Type"          : "データ型",
     "Size"               : "サイズ",
+    "Specify size"       : "サイズを指定",
     "Default"            : "既定値",
     "Label"              : "ラベル",
     "Labels"             : "ラベル",

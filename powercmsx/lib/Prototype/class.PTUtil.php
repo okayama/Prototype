@@ -1471,7 +1471,8 @@ class PTUtil {
                     $meta_vars['url'] = $url;
                     $vars['_icon_class'] = isset( $meta_vars['class'] )
                                          ? $meta_vars['class'] : '';
-                    if (! $thumbnail && $vars['_icon_class'] == 'image' ) {
+                    $ext = $meta_vars['extension'];
+                    if (! $thumbnail && ( $vars['_icon_class'] == 'image' || $ext == 'svg' ) ) {
                         $icon = $app->admin_url
                               . '?__mode=get_thumbnail&square=1&id=' . $meta->id;
                         $vars['_icon'] = $icon;

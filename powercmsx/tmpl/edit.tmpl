@@ -291,11 +291,11 @@ $('#__view-permalink').click(function(){
       </button>
       <span id="<mt:var name="__col_name__">-alert-message"><mt:trans phrase="The file has successfully uploaded. The uploaded file will not be reflected until you save this page."></span>
     </div>
-
 <mt:assetproperty name="$name" model="$model" property="image_width" thumbnail_height="$preview_width" setvar="thumbnail_height">
+<mt:assetproperty name="$name" model="$model" property="extension" setvar="fule_extension">
 <div id="drop-<mt:var name="__col_name__">">
-<i id="icon-<mt:var name="__col_name__">" class="btn fa <mt:if name="class" eq="image">fa-file-image-o<mt:elseif name="class" eq="pdf">fa-file-pdf-o<mt:elseif name="class" eq="video">fa-file-video-o<mt:elseif name="class" eq="audio">fa-file-audio-o<mt:else>fa-file-o</mt:if> fa-3x" aria-hidden="true"></i>
-  <img class="<mt:unless name="class" eq="image">hidden</mt:unless>
+<i id="icon-<mt:var name="__col_name__">" class="btn fa <mt:if name="class" eq="image">fa-file-image-o<mt:elseif name="fule_extension" eq="svg">fa-file-image-o<mt:elseif name="class" eq="pdf">fa-file-pdf-o<mt:elseif name="class" eq="video">fa-file-video-o<mt:elseif name="class" eq="audio">fa-file-audio-o<mt:else>fa-file-o</mt:if> fa-3x" aria-hidden="true"></i>
+  <img class="<mt:unless name="class" eq="image"><mt:unless name="fule_extension" eq="svg">hidden</mt:unless></mt:unless>
     <mt:unless name="file_name"> hidden</mt:unless> preview-file-field lazy"
     id="image_preview-<mt:var name="__col_name__">"
     src="<mt:var name="prototype_path">assets/img/spacer.gif"
@@ -470,15 +470,15 @@ $(function () {
                 if (! $('#files-<mt:var name="__col_name__">-label').val() ) {
                     $('#files-<mt:var name="__col_name__">-label').val( file_name );
                 }
-                if (file_class == 'image') {
+                if (file_class == 'image' || file.extension == 'svg' ) {
                     $('#image_preview-<mt:var name="__col_name__">').show();
                     $('#image_preview-<mt:var name="__col_name__">').css('display', 'inline');
-                    $('#image_preview-<mt:var name="__col_name__">').prop('src','data:'+file.type+';base64,'+file.thumbnail);
+                    $('#image_preview-<mt:var name="__col_name__">').prop('src','data:' + file.type + ';base64,' + file.thumbnail);
                     if(file.width < <mt:var name="preview_width"> ){
-                        $('#image_preview-<mt:var name="__col_name__">').prop('width',file.width);
-                        $('#image_preview-<mt:var name="__col_name__">').prop('height',file.height);
+                        $('#image_preview-<mt:var name="__col_name__">').prop('width', file.width);
+                        $('#image_preview-<mt:var name="__col_name__">').prop('height', file.height);
                     } else {
-                        $('#image_preview-<mt:var name="__col_name__">').prop('width',<mt:var name="preview_width">);
+                        $('#image_preview-<mt:var name="__col_name__">').prop('width', <mt:var name="preview_width">);
                         $('#image_preview-<mt:var name="__col_name__">').removeAttr('height');
                     }
                     $('#icon-<mt:var name="__col_name__">').removeClass('fa-file-pdf-o');
@@ -494,7 +494,7 @@ $(function () {
                     $('#icon-<mt:var name="__col_name__">').removeClass('fa-file-image-o');
                     $('#icon-<mt:var name="__col_name__">').addClass('fa-file-o');
                 }
-                if (file_class != 'image') {
+                if (file_class != 'image' && file.extension != 'svg' ) {
                     $('#image_preview-<mt:var name="__col_name__">').hide();
                 }
                 var file_size = file.size;

@@ -1563,6 +1563,17 @@ class UploadHandler
         $resized = $this->options['resized'];
         $content['files'][0]->resized = $resized;
         if ($print_response) {
+            $app = $this->options['prototype'];
+            $file = (array) $content['files'][0];
+            $file_ext = $file['extension'];
+            $label = $file['name'];
+            $upload_dir = $this->options['upload_dir'];
+            $upload_dir = rtrim( $upload_dir, DS );
+            $path = realpath( $upload_dir . DS . $label );
+            if ( $file_ext == 'svg' ) {
+                $content['files'][0]->thumbnail = base64_encode( file_get_contents( $path ) );
+                $content['files'][0]->thumbnail_square = $content['files'][0]->thumbnail;
+            }
             $json = json_encode($content);
             $redirect = stripslashes($this->get_post_param('redirect'));
             if ($redirect && preg_match($this->options['redirect_allow_target'], $redirect)) {
@@ -1579,20 +1590,13 @@ class UploadHandler
                     ));
                 }
             }
-            $app = $this->options['prototype'];
             if ( $app->param( '__mode' ) == 'upload_multi' ) {
-                $file = (array) $content['files'][0];
-                $label = $file['name'];
                 $file_name = $file['name'];
-                $file_ext = $file['extension'];
                 $mime_type = $file['type'];
                 $size = $file['size'];
                 $class = $file['class'];
                 $image_width = ( $class == 'image' ) ? $file['width'] : '';
                 $image_height = ( $class == 'image' ) ? $file['height'] : '';
-                $upload_dir = $this->options['upload_dir'];
-                $upload_dir = rtrim( $upload_dir, DS );
-                $path = realpath( $upload_dir . DS . $label );
                 if ( $class == 'image' ) {
                     $thumbnail = dirname( $path ) . DS . 'thumbnail' . DS . $label;
                     $square = dirname( $path ) . DS . 'thumbnail' . DS . "square-{$label}";
@@ -1712,8 +1716,12 @@ class UploadHandler
                     $sess->text(json_encode($props));
                     $sess->save();
                     $content['files'][0]->session_id = $sess->id;
-                    $content['files'][0]->thumbnail = $thumb_base64;
-                    $content['files'][0]->thumbnail_square = $square_base64 ? $square_base64 : $thumb_base64;
+                    if (! $content['files'][0]->thumbnail ) {
+                        $content['files'][0]->thumbnail = $thumb_base64;
+                    }
+                    if (! $content['files'][0]->thumbnail_square ) {
+                        $content['files'][0]->thumbnail_square = $square_base64 ? $square_base64 : $thumb_base64;
+                    }
                     $content['files'][0]->type = $mime_type;
                     $content['files'][0]->class = $class;
                 }

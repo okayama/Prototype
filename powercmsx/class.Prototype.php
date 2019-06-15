@@ -3176,12 +3176,31 @@ class Prototype {
                                         'can_edit' => $can_edit,
                                         'id' => $id, 'permalink' => $permalink ];
                     } else {
-                        $file_size = $assetproperty['file_size'];
-                        $loop_vars[] = ['url' => $url, 'label' => $label,
-                                        'file_size' => $file_size,
-                                        'class' => $obj->class,
-                                        'can_edit' => $can_edit,
-                                        'id' => $id, 'permalink' => $permalink ];
+                        if ( $obj->file_ext == 'svg' ) {
+                            $use_thumb = $app->param( 'use-thumb-' . $id );
+                            $width = '';
+                            $height = '';
+                            if ( $use_thumb ) {
+                                $width = (int) $app->param( 'thumb-width-' . $id );
+                                $height = (int) $app->param( 'thumb-height-' . $id );
+                                $scale = $width / 100;
+                                $height = round( $height * $scale );
+                                $height = (int) $height;
+                            }
+                            $align = $app->param( 'insert-align-' . $id );
+                            $loop_vars[] = ['align' => $align, 'width' => $width,
+                                            'class' => 'image', 'height' => $height,
+                                            'url' => $url, 'label' => $label,
+                                            'can_edit' => $can_edit,
+                                            'id' => $id, 'permalink' => $permalink ];
+                        } else {
+                            $file_size = $assetproperty['file_size'];
+                            $loop_vars[] = ['url' => $url, 'label' => $label,
+                                            'file_size' => $file_size,
+                                            'class' => $obj->class,
+                                            'can_edit' => $can_edit,
+                                            'id' => $id, 'permalink' => $permalink ];
+                        }
                     }
                 }
                 $ctx->vars['insert_loop'] = $loop_vars;
@@ -3551,6 +3570,9 @@ class Prototype {
                     $meta = json_decode( $session->text );
                     $mime_type = $meta->mime_type;
                 }
+                if ( $mime_type == 'image/svg+xml' ) {
+                    $app->print( $session->data, $mime_type );
+                }
                 if ( $app->param( 'square' ) && $session->extradata ) {
                     $app->print( $session->extradata, $mime_type );
                 } else if ( $app->param( 'data' ) && $session->data ) {
@@ -3569,7 +3591,6 @@ class Prototype {
         $_model = $app->param( '_model' );
         if ( $has_thumbnail ) {
             header( 'Content-type: application/json' );
-            //__mode=get_thumbnail&square=1&_model=asset&has_thumbnail=1&id=n
         }
         if ( $_model ) {
             $table = $app->get_table( $_model );
@@ -3617,7 +3638,6 @@ class Prototype {
         $md = null;
         $mime_type = '';
         if ( $_model ) {
-            // __mode=get_thumbnail&square=1&_model=asset&id=n
             $meta_objs = $app->db->model( 'meta' )
                 ->load( ['object_id' => $id, 'model' => $_model ] );
             if (! is_array( $meta_objs ) || empty( $meta_objs ) ) {
@@ -3628,7 +3648,8 @@ class Prototype {
             }
             foreach ( $meta_objs as $m ) {
                 $md = json_decode( $m->text, true );
-                if ( isset( $md['class'] ) && $md['class'] == 'image' ) {
+                if ( isset( $md['class'] )
+                    && ( $md['class'] == 'image' || $md['extension'] == 'svg' ) ) {
                     $meta = $m;
                     break;
                 }
@@ -3653,22 +3674,14 @@ class Prototype {
                 echo json_encode( ['has_thumbnail' => false ] );
                 return;
             } else {
-                $icon_base = $this->app_path . 'assets/img/model-icons/';
+                $icon_base = $app->app_path . 'assets/img/model-icons/';
                 $asset_dir = $app->document_root .
                         $app->path . 'assets' . DS . 'img' . DS . 'model-icons';
                 $icon_path = $asset_dir . DS . $_model . '.png';
                 $default_path = $asset_dir . DS . 'default.png';
                 $icon_path = file_exists( $icon_path ) ? $icon_path : $default_path;
-                $app->redirect(  $icon_base . basename( $icon_path ) );
+                $app->redirect( $icon_base . basename( $icon_path ) );
                 return;
-                /*
-                $data = file_exists( $icon_path )
-                      ? file_get_contents( $icon_path )
-                      : file_get_contents( $default_path );
-                if ( $data ) {
-                    $app->print( $data, 'image/png' );
-                }
-                */
             }
         }
         if (! is_object( $meta ) ) {
@@ -3686,6 +3699,17 @@ class Prototype {
         $mime_type = $mime_type ? $mime_type : $matadata['mime_type'];
         $column = $app->param( 'square' ) ? 'metadata' : 'data';
         $data = $data ? $data : $meta->$column;
+        if ( $matadata['extension'] == 'svg' ) {
+            $obj = $app->db->model( $model )->load( (int) $meta->object_id );
+            if ( $obj ) {
+                $col = $meta->key;
+                $data = $obj->$col;
+            }
+            if (! $data ) {
+                return 
+                    $app->redirect( $app->app_path . 'assets/img/model-icons/default.png' );
+            }
+        }
         if (! $data ) {
             $data = $app->param( 'square' ) ? $meta->data : $meta->metadata;
         }
@@ -4803,7 +4827,6 @@ class Prototype {
             $app->error( 'Permission denied.' );
         }
         $callback = ['name' => 'save_filter', 'error' => '', 'errors' => $errors ];
-                    // 'changed_cols' => $changed_cols, 'errors' => $errors ];
         if ( $app->param( '_preview' ) ) {
             $save_filter = true;
         } else {
@@ -7448,6 +7471,14 @@ class Prototype {
                         $terms['id'] = ['OR' => ['IN' => $all_ids ] ];
                     }
                 }
+                if ( $model == 'asset' && $app->param( 'insert_editor' ) && $app->param( 'dialog_view' ) ) {
+                    if ( $app->param( 'select_system_filters' ) == 'filter_class_image' ) {
+                        unset( $terms['class'] );
+                        $images = $app->images;
+                        $images[] = 'svg';
+                        $terms['file_ext'] = ['IN' => $images ];
+                    }
+                }
                 if ( $filter_name = $app->param( '_save_filter_name' ) ) {
                     $filter_terms = ['user_id' => $app->user()->id,
                                      'workspace_id' => $workspace_id,
@@ -8788,7 +8819,7 @@ class Prototype {
     function get_assetproperty ( $obj, $name, $property = 'all' ) {
         $app = $this;
         $model = is_object( $obj ) ? $obj->_model : $app->param( '_model' );
-        $obj_id = is_object( $obj ) ? $obj->id : 0;
+        $obj_id = is_object( $obj ) ? $obj->id : (int) $app->param('id');
         $ctx = $app->ctx;
         $session = $ctx->stash( 'current_session_' . $name );
         if ( $property === 'url' || $property === 'relative_path' ) {
@@ -8799,8 +8830,8 @@ class Prototype {
             }
             if ( $session ) {
                 $screen_id = $app->param( '_screen_id' );
-                $params = '?__mode=view&amp;_type=edit&amp;_model=' . $obj->_model;
-                $params .= '&amp;id=' . $obj->id . '&amp;view=' . $name 
+                $params = '?__mode=view&amp;_type=edit&amp;_model=' . $model;
+                $params .= '&amp;id=' . $obj_id . '&amp;view=' . $name 
                         . '&amp;_screen_id=' . $screen_id;
                 if ( $workspace = $app->workspace() ) {
                     $params .= '&amp;workspace_id=' . $workspace->id;
