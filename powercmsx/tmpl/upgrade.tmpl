@@ -271,6 +271,9 @@ window.onload = function(){
 
 <script>
 $('#__upgrade').click(function(){
+    if (! confirm( '<mt:trans phrase="Are you sure you want to continue Install?">' ) ) {
+        return;
+    }
     $(this).attr('disabled', true);
     $('#__loader-bg').show();
     $('#upgrade-form-main').submit();
