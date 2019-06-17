@@ -89,7 +89,7 @@ class DisplayOptions extends PTPlugin {
                 }
             }
             $extra .= $_extra;
-            if (! empty( $target_names ) ) {
+            if ( isset( $terms['name'] ) && isset( $terms['name']['IN'] ) ) {
                 $terms['name']['IN'] = $target_names;
             }
         }
