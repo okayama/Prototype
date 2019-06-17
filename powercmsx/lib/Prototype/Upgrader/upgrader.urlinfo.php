@@ -1,4 +1,4 @@
-<?php
+ <?php
 
 class upgrader_urlinfo {
 
@@ -6,6 +6,10 @@ class upgrader_urlinfo {
         'dirname_and_filemtime' => [
             'method' => 'dirname_and_filemtime',
             'version_limit' => 1.4
+        ],
+        'mime_type_svg' => [
+            'method' => 'mime_type_svg',
+            'version_limit' => 1.8
         ]
     ];
 
@@ -24,4 +28,15 @@ class upgrader_urlinfo {
         }
     }
 
+    function mime_type_svg ( $app, $upgrader, $old_version ) {
+        $objects = $app->db->model( 'urlinfo' )->load(
+                      ['mime_type' => 'text/plain',
+                       'relative_path' => ['like' => '%.svg'],
+                       'delete_flag' => ['IN' => [0,1] ] ], [],
+                       'id,relative_path,mime_type' );
+        foreach ( $objects as $obj ) {
+            $obj->mime_type( 'image/svg+xml' );
+            $obj->save();
+        }
+    }
 }

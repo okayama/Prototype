@@ -1,7 +1,7 @@
 {
     "label"    : "URL",
     "plural"   : "URLs",
-    "version"  : "1.8",
+    "version"  : "1.9",
     "display_system": 1,
     "order"    : 110,
     "primary"  : "relative_path",
