@@ -192,6 +192,49 @@ class DisplayOptions extends PTPlugin {
         return true;
     }
 
+    function hdlr_get_menu_position ( $args, $ctx ) {
+        $app = $ctx->app;
+        $workspace_id = $app->workspace() ? (int)$app->workspace()->id : 0;
+        $table = $app->get_table( $ctx->local_vars['name'] );
+        $display_option =
+          $app->db->model( 'displayoption' )->get_by_key(
+            ['model' => $table->name, 'workspace_id' => $workspace_id ] );
+        return $display_option->id ? $display_option->menu_type : $table->menu_type;
+    }
+
+    function customize_menus ( $app ) {
+        $workspace_id = $app->workspace() ? (int)$app->workspace()->id : 0;
+        if ( $app->request_method === 'POST' ) {
+            $update = 0;
+            $app->validate_magic();
+            $params = $app->param();
+            foreach ( $params as $key => $param ) {
+                if ( strpos( $key, 'menu_type_' ) !== 0 ) {
+                    continue;
+                }
+                $param = (int) $param;
+                $key = preg_replace( '/^menu_type_/', '', $key );
+                $table = $app->get_table( $key );
+                if (! $table ) return;
+                $display_option =
+                  $app->db->model( 'displayoption' )->get_by_key(
+                    ['model' => $table->name, 'workspace_id' => $workspace_id ] );
+                $menu_type = $display_option->id ? $display_option->menu_type : $table->menu_type;
+                if ( $menu_type != $param ) {
+                    $display_option->menu_type( $param );
+                    $app->set_default( $display_option );
+                    $display_option->save();
+                    $update++;
+                }
+            }
+            $redirect_url = $app->admin_url . '?__mode=customize_menus';
+            $redirect_url .= $workspace_id ? '&workspace_id=' . $workspace_id : '';
+            $redirect_url .= '&saved=1&update=' . (int) $update;
+            $app->redirect( $redirect_url );
+        }
+        return $app->__mode( 'customize_menus' );
+    }
+
     function template_source_list ( $cb, $app, $param, $src ) {
         if (! $app->stash( 'model_displayoption' ) ) return true;
         $ctx = $app->ctx;

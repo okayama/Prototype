@@ -9,6 +9,12 @@
     "Edit Screen" : "編集画面",
     "List Screen" : "一覧画面",
     "Hidden" : "非表示にする",
+    "Customize Menus" : "メニューの表示調整",
+    "Are you sure you want to set menu positions?"
+        : "メニューの表示位置を保存してもよろしいですか?",
     "Make custom display options configurable for each workspace or system."
-        : "スペースまたはシステムごとにカスタム画面オプションを設定可能にします。"
+        : "スペースまたはシステムごとにカスタム画面オプションを設定可能にします。",
+    "Changed the menu position of the two model(s)."
+        : "%s個のモデルのメニュー表示位置を変更しました。",
+    "There is no model to change menu position." : "変更対象のモデルはありませんでした。"
 }
