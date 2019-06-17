@@ -888,6 +888,7 @@ class Prototype {
             if ( $workspace ) {
                 $workspace_id = $workspace->id;
                 $app->workspace_id = (int) $workspace_id;
+                $ctx->stash( 'workspace', $workspace );
                 $ctx->vars['workspace_scope'] = 1;
                 $ctx->vars['workspace_url'] = $workspace->site_url;
                 $ws_values = $workspace->get_values();
