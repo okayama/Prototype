@@ -592,6 +592,9 @@ class Prototype {
                 $this->plugin_paths[] = $plugin_d;
             $this->init_plugins();
         }
+        if (! empty( $this->hooks ) ) {
+            $this->run_hooks( 'start_app' );
+        }
         if ( $this->installed && $this->user() ) {
             $this->language = $this->user()->language;
             $ctx->vars['user_language'] = $this->language;
