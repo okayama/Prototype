@@ -127,11 +127,12 @@ class PTTags {
                         $prop = $edit_properties[ $key ];
                         if ( strpos( $prop, ':' ) !== false ) {
                             $edit = explode( ':', $prop );
-                            $this->register_tag( $ctx, $tbl_label . $label . 'context',
-                            'block', 'hdlr_referencecontext', $tags, $r_tags );
+                            if ( $label )
+                                $this->register_tag( $ctx, $tbl_label . $label . 'context',
+                                'block', 'hdlr_referencecontext', $tags, $r_tags );
                             $reference_tags[ $tbl_label . $label . 'context' ]
                                 = [ $tbl_name, $key, $edit[1] ];
-                            if ( $key !== $tag_name ) {
+                            if ( $label !== $tag_name ) {
                                 $this->register_tag( $ctx, $tbl_label . $tag_name . 'context',
                                 'block', 'hdlr_referencecontext', $tags, $r_tags );
                                 $reference_tags[ $tbl_label . $tag_name . 'context' ]
