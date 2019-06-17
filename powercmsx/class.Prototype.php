@@ -9235,6 +9235,11 @@ class Prototype {
             $user = $app->db->model( $model )->load( $sess->user_id );
             if ( is_object ( $user ) ) {
                 if ( $app->always_update_login ) {
+                    $expires = time() + $app->sess_timeout;
+                    if ( $sess->expires < $expires ) {
+                        $sess->expires( $expires );
+                        $sess->save();
+                    }
                     $user->last_login_on( date( 'YmdHis' ) );
                     $user->last_login_ip( $app->remote_ip );
                     $user->save();
