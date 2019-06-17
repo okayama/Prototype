@@ -62,7 +62,6 @@
     },
     "methods": {
         "live_preview": {
-            "display_system" : 1,
             "component"  : "LivePreview",
             "permission" : "can_livepreview",
             "method"     : "live_preview"
