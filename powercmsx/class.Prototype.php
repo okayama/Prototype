@@ -6018,6 +6018,9 @@ class Prototype {
             $ctx->vars['current_archive_url'] = $url;
         }
         $ctx->vars['current_archive_title'] = $ctx->stash( 'current_archive_title' );
+        if ( strpos( $mapping, '.' ) === false ) {
+            $mapping = $app->get_permalink( $obj );
+        }
         $parts = explode( '.', $mapping );
         $extIndex = count( $parts ) - 1;
         $extension = strtolower( @$parts[ $extIndex ] );
