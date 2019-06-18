@@ -67,6 +67,7 @@ class Prototype {
     public    $stash         = [];
     public    $installed     = false;
     public    $do_conditional= true;
+    public    $unify_breaks  = true;
     public    $theme_static  = null;
     public    $csv_delimiter = ',';
     public    $init_tags;
@@ -442,6 +443,7 @@ class Prototype {
         $ctx->app = $this;
         $ctx->default_component = $this;
         $ctx->csv_delimiter = $this->csv_delimiter;
+        $ctx->unify_breaks  = $this->unify_breaks;
         $ctx->force_compile = true;
         if ( $this->cache_driver && $this->cache_driver == 'File' ) {
             $this->cache_driver = null;

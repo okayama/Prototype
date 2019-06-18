@@ -15,6 +15,7 @@ class template extends PADOBaseModel {
         $local_vars = $ctx->local_vars;
         $vars = $ctx->vars;
         $compiled = $ctx->build( $text, true );
+        $compiled = rtrim( $compiled );
         $this->compiled( $compiled );
         $this->cache_key( md5( $text ) );
         $ctx->vars = $vars;
