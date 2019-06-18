@@ -25,19 +25,19 @@ $('#alert-saved').focus();
 <mt:else>
   <mt:setvarblock name="table_option">'display','1','space_child','0'</mt:setvarblock>
 </mt:if>
-<mt:objectloop model="table" sort_by="order" options="$table_option">
+<mt:objectloop model="table" sort_by="menu_type" options="$table_option">
 <mt:if name="__first__">
 <table class="table">
 <tr>
-  <th><mt:trans phrase="Model"></th>
+  <th style="width:30%"><mt:trans phrase="Model"></th>
   <th><mt:trans phrase="Menu Type"></th>
 </tr>
 </mt:if>
 <tr>
-  <th><mt:trans phrase="$label" escape></th>
+  <th style="width:30%"><mt:trans phrase="$label" escape></th>
 <td>
-<mt:getmenuposition setvar="current_menu_type">
-  <select name="menu_type_<mt:var name="name">" class="form-control custom-select">
+  <mt:getmenuposition setvar="current_menu_type">
+  <select name="menu_type_<mt:var name="name">" class="form-control custom-select" style="width:70%">
     <option value="9" <mt:if name="current_menu_type" eq="9">selected</mt:if>><mt:trans phrase="Hidden" component="DisplayOptions"></option>
     <option value="1" <mt:if name="current_menu_type" eq="1">selected</mt:if>><mt:trans phrase="Panel"></option>
     <option value="2" <mt:if name="current_menu_type" eq="2">selected</mt:if>><mt:trans phrase="System Object"></option>
