@@ -3638,7 +3638,7 @@ class Prototype {
                 echo json_encode( ['has_thumbnail' => false ] );
                 return;
             }
-            return;
+            $app->redirect( $app->app_path . 'assets/img/model-icons/default.png' );
         }
         $meta = null;
         $md = null;
