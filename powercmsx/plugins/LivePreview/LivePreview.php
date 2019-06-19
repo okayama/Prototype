@@ -93,6 +93,7 @@ class LivePreview extends PTPlugin {
         }
         $app->register_callback( 'meta', 'pre_view', 'pre_view', 1000, $this );
         $app->register_callback( 'template', 'post_rebuild', 'post_rebuild', 1000, $this );
+        $app->publish_callbacks = true;
         $this->preview = true;
         $this->preview_ts = $ts;
         if ( $this->in_workspace ) {
@@ -168,7 +169,7 @@ class LivePreview extends PTPlugin {
         }
         $workspace_id = (int) $app->workspace_id;
         $html = $this->in_workspace
-              ? $this->get_config_value( 'livepreview_insert_html', $workspace_id )
+              ? $this->get_config_value( 'livepreview_insert_html', $workspace_id, true )
               : $this->get_config_value( 'livepreview_insert_html' );
         if ( $html ) {
             if ( preg_match ( '/<\/body>/i', $data ) ) {
