@@ -262,6 +262,7 @@ class Prototype {
         $base = isset( $_SERVER['SERVER_NAME'] ) 
             ? "http{$secure}://{$_SERVER['SERVER_NAME']}" : null;
         $port = isset( $_SERVER['SERVER_PORT'] ) ? (int) $_SERVER['SERVER_PORT'] : null;
+        $port = isset( $_SERVER['HTTP_X_FORWARDED_PORT'] ) ? (int) $_SERVER['HTTP_X_FORWARDED_PORT'] : $port;
         if ( $this->add_port_to_url && $port && ( ( $secure && $port != 443 ) || ( !$secure && $port != 80 ) ) ) {
             $base .= ":{$port}";
         }
