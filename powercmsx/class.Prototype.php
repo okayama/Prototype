@@ -8974,7 +8974,7 @@ class Prototype {
         $id = $obj->id;
         $extra = " AND relation_from_obj='{$model}' AND relation_from_id={$id}"
                . " AND relation_to_obj='{$to_obj}' ";
-        $args = ['join' => [ 'relation', ['id', 'to_id'] ], 'distinct' => 1];
+        $args = ['join' => ['relation', ['id', 'to_id'] ], 'distinct' => 1];
         if ( $name ) {
             $name = $app->db->quote( $name );
             $extra .= " AND relation_name={$name} ";
