@@ -1,13 +1,13 @@
 <mt:if name="widget_class" eq="full-band-dark">
 </div>
 </mt:if>
-<div class="<mt:var name="widget_class" escape> widget-panel" style="background-color:<mt:widgetbackcolor escape>; color:<mt:widgetforecolor escape>;<mt:if tag="widgetimageurl">background-image:url(<mt:widgetimageurl>)</mt:if>">
+<div class="<mt:var name="widget_class" escape> widget-panel" style="background-color:<mt:widgetbackcolor escape>; color:<mt:widgetforecolor escape>;<mt:if tag="widgetimage">background-image:url(<mt:widgetimageurl>)</mt:if>">
   <mt:widgetbackcolor escape setvar="widgetbackcolor">
   <div style="background-color:rgba(<mt:hex2rgba hex="$widgetbackcolor">)">
     <mt:if name="widget_class" eq="jumbotron">
-      <mt:widgetbody convert_breaks decode_html _eval="1">
+      <mt:widgetbody convert_breaks="auto" decode_html _eval="1">
     <mt:else>
-      <mt:widgetbody convert_breaks _eval="1">
+      <mt:widgetbody convert_breaks="auto" _eval="1">
     </mt:if>
   </div>
 </div>

@@ -1,0 +1,134 @@
+<label class="custom-control custom-radio">
+<input id="wordpress_author_current" class="custom-control-input watch-changed" type="radio" checked name="wordpress_author_setting" value="1">
+<span class="custom-control-indicator"></span>
+<span class="custom-control-description"><mt:trans phrase="Import as me" component="DataMigrator"></span>
+</label>
+<mt:ifusercan action="create" model="user">
+<label class="custom-control custom-radio">
+<input id="wordpress_author_create" class="custom-control-input watch-changed" type="radio" name="wordpress_author_setting" value="2">
+<span class="custom-control-indicator"></span>
+<span class="custom-control-description"><mt:trans phrase="Preserve original user" component="DataMigrator"></span>
+</label>
+<div class="row form-group hidden" id="wordpress_password-wrapper">
+  <div class="form-inline-padding form-inline col-lg-10 option-content hidden">
+    <mt:trans phrase="Default password for new users:" component="DataMigrator">
+    <input id="wordpress_new_author_password" type="password" class="form-control watch-changed" name="wordpress_new_author_password" value="">
+    <p class="text-muted hint-block">
+    <i class="fa fa-question-circle-o" aria-hidden="true"></i>
+    <span class="sr-only"><mt:trans phrase="Hint"></span>
+    <mt:trans phrase="Please set the new user's email address later." component="DataMigrator"></p>
+  </div>
+</div>
+<hr>
+</mt:ifusercan>
+<div class="row form-group" id="wordpress_comment_status-wrapper">
+  <div class="form-inline-padding form-inline col-lg-10 option-content">
+    <label>
+    <mt:trans phrase="Status for Comments:" component="DataMigrator">
+    <select class="form-control custom-select short watch-changed" name="wordpress_comment_status">
+        <option value="1"><mt:trans phrase="Disable"></option>
+        <option value="2"><mt:trans phrase="Enable"></option>
+    </select>
+    </label>
+  </div>
+</div>
+<hr>
+<div class="form-inline">
+  <label>
+  <mt:trans phrase="Text Format">
+  <select id="wordpress_text_format" name="wordpress_text_format" class="form-control custom-select short watch-changed">
+    <option value=""><mt:trans phrase="None"></option>
+    <option value="convert_breaks"><mt:trans phrase="Convert Line Breaks"></option>
+    <option value="markdown"><mt:trans phrase="Markdown"></option>
+    <mt:ignore><option value="markdown_with_smartypants">Markdown + SmartyPants</option></mt:ignore>
+    <option value="richtext" selected><mt:trans phrase="RichText"></option>
+    <mt:ignore><option value="textile_2" <mt:if name="object_text_format" eq="textile_2">selected</mt:if>><mt:trans phrase="Textile 2"></option></mt:ignore>
+  </select>
+  </label>
+</div>
+<div class="row form-group" id="wordpress_set_folder-wrapper">
+  <div class="form-inline-padding form-inline col-lg-10 option-content">
+    <label class="custom-control custom-checkbox">
+    <input class="custom-control-input watch-changed" type="checkbox" name="wordpress_set_folder" value="1">
+      <span class="custom-control-indicator"></span>
+      <span class="custom-control-description"> 
+      <mt:ifusercan action="create" model="folder" workspace_id="$workspace_id">
+        <mt:trans phrase="Create and set folder from first category label" component="DataMigrator">
+      <mt:else>
+        <mt:trans phrase="Set folder from first category label" component="DataMigrator">
+      </mt:ifusercan>
+      </span>
+    </label>
+  </div>
+</div>
+<script>
+function select_format_wordpress () {
+    if ( $('input[name="import_model"]:checked').val() == 'entry' ) {
+        $('#wordpress_set_folder-wrapper').hide();
+    } else {
+        $('#wordpress_set_folder-wrapper').show();
+    }
+}
+$('input[name="import_model"]').change(function(){
+    if ( $(this).val() == 'entry' ) {
+        $('#wordpress_set_folder-wrapper').hide();
+    } else {
+        $('#wordpress_set_folder-wrapper').show();
+    }
+});
+<mt:ifusercan action="create" model="user">
+$('#wordpress_author_current').change(function(){
+    if ( $(this).prop('checked') ) {
+        $('#wordpress_password-wrapper').hide();
+    }
+});
+$('#wordpress_author_create').change(function(){
+    if ( $(this).prop('checked') ) {
+        $('#wordpress_password-wrapper').show();
+    }
+});
+</mt:ifusercan>
+$('#import-form').submit(function(){
+    if ( $('#import_format').val() == 'wordpress' ) {
+        <mt:ifusercan action="create" model="user">
+        if ( $('#wordpress_author_create').prop('checked') ) {
+            if (! $('#wordpress_new_author_password').val() ) {
+                alert('<mt:trans phrase="Enter a default password for new users." component="DataMigrator">');
+                $('#wordpress_new_author_password').focus();
+                return false;
+            }
+        }
+        </mt:ifusercan>
+    }
+    return true;
+});
+<mt:ifusercan action="create" model="user">
+$('#wordpress_new_author_password').change(function(){
+    if ( $(this).val() ) {
+        if ( $('#wordpress_author_create').prop('checked') ) {
+            $('#save').removeClass('disabled');
+            $("#save").prop("disabled", false);
+        }
+    }
+});
+</mt:ifusercan>
+</script>
+<hr style="margin-bottom:1.5em" />
+<div class="row form-group">
+  <div class="col-lg-12">
+  <label for="wordpress_field_settings"><mt:trans phrase="Other Columns" component="DataMigrator"></label>
+  <textarea id="wordpress_field_settings" name="wordpress_field_settings" rows="4" class="form-control watch-changed" placeholder="meta_key=text"><mt:var name="cookie.pt-wordpress_field_settings" escape></textarea>
+  <p class="text-muted hint-block">
+    <i class="fa fa-question-circle-o" aria-hidden="true"></i>
+    <span class="sr-only"><mt:trans phrase="Hint"></span>
+    <mt:trans phrase="Write 1 line 1 setting. WordPress's Field name meta_key=Field name of PowerCMS X(Duplicates are merged)." component="DataMigrator">
+  </p>
+  </div>
+</div>
+<script>
+$('#import-form').submit(function(){
+    var settings = $('#wordpress_field_settings').val();
+    document.cookie = 'pt-wordpress_field_settings=' + encodeURIComponent( settings ) + ';max-age=319740000'; 
+    return true;
+});
+</script>

@@ -241,11 +241,20 @@ $('#dialog-cancel-btn').click(function(){
 <td class="list-actions-col">
 <mt:if name="can_action">
 <mt:unless name="request.dialog_view">
-<mt:ifusercan model="$_this_model" action="delete" workspace_id="$workspace_id">
+<mt:setvarblock name="delete_button">
   <button type="submit" class="__delete list-delete-btn btn btn-secondary btn-sm">
   <i class="fa fa-trash" aria-hidden="true"></i>
   <span class="sr-only"><mt:trans phrase="Delete"></span>
   </button>
+</mt:setvarblock>
+<mt:ifusercan model="$_this_model" action="delete" workspace_id="$workspace_id">
+  <mt:var name="delete_button">
+<mt:else>
+  <mt:unless name="request.workspace_id">
+    <mt:ifusercan model="$_this_model" action="delete" workspace_id="any">
+      <mt:var name="delete_button">
+    </mt:ifusercan>
+  </mt:unless>
 </mt:ifusercan>
 </mt:unless>
 <mt:unless name="request.dialog_view">
@@ -271,13 +280,13 @@ $('#dialog-cancel-btn').click(function(){
 <nav aria-label="<mt:trans phrase="Page navigation">" class="pull-right">
   <ul class="pagination pagination-sm">
     <li class="page-item <mt:unless name="has_prev">disabled</mt:unless>">
-      <a class="page-link" href="<mt:if name="has_prev"><mt:var name="this_url">&amp;offset=<mt:var name="prev_offset"><mt:var name="sort_cond"><mt:var name="query_cond"><mt:var name="dialog_param"><mt:var name="filter_cond" strip_linefeeds="1"><mt:var name="selected_ids_cond" strip_linefeeds="1"><mt:if name="workspace_id">&amp;workspace_id=<mt:var name="workspace_id"></mt:if><mt:var name="filter_add_params"><mt:var name="selector_cond"><mt:else>#</mt:if>" aria-label="<mt:trans phrase="Previous">">
+      <a class="page-link" href="<mt:if name="has_prev"><mt:var name="this_url">&amp;offset=<mt:var name="prev_offset"><mt:var name="sort_cond"><mt:var name="query_cond"><mt:var name="dialog_param"><mt:var name="filter_cond" strip_linefeeds="1"><mt:var name="selected_ids_cond" strip_linefeeds="1"><mt:if name="workspace_id">&amp;workspace_id=<mt:var name="workspace_id"></mt:if><mt:var name="filter_add_params"><mt:var name="selector_cond"><mt:var name="insert_cond" strip_linefeeds="1"><mt:else>#</mt:if>" aria-label="<mt:trans phrase="Previous">">
         <span aria-hidden="true">&laquo;</span>
         <span class="sr-only"><mt:trans phrase="Previous"></span>
       </a>
     </li>
     <li class="page-item <mt:unless name="next_offset">disabled</mt:unless>">
-      <a class="page-link" href="<mt:if name="next_offset"><mt:var name="this_url">&amp;offset=<mt:var name="next_offset"><mt:var name="sort_cond"><mt:var name="query_cond"><mt:var name="dialog_param"><mt:var name="filter_cond" strip_linefeeds="1"><mt:var name="selected_ids_cond" strip_linefeeds="1"><mt:if name="workspace_id">&amp;workspace_id=<mt:var name="workspace_id"></mt:if><mt:var name="filter_add_params"><mt:var name="selector_cond"><mt:else>#</mt:if>" aria-label="<mt:trans phrase="Next">">
+      <a class="page-link" href="<mt:if name="next_offset"><mt:var name="this_url">&amp;offset=<mt:var name="next_offset"><mt:var name="sort_cond"><mt:var name="query_cond"><mt:var name="dialog_param"><mt:var name="filter_cond" strip_linefeeds="1"><mt:var name="selected_ids_cond" strip_linefeeds="1"><mt:if name="workspace_id">&amp;workspace_id=<mt:var name="workspace_id"></mt:if><mt:var name="filter_add_params"><mt:var name="selector_cond"><mt:var name="insert_cond" strip_linefeeds="1"><mt:else>#</mt:if>" aria-label="<mt:trans phrase="Next">">
         <span aria-hidden="true">&raquo;</span>
         <span class="sr-only"><mt:trans phrase="Next"></span>
       </a>
@@ -346,7 +355,7 @@ $('#dialog-cancel-btn').click(function(){
   </mt:if>
   <mt:if name="show_all_selected">
   <tr>
-    <td colspan="<mt:var name="list_colspan">" class="all-selected-cell hidden">
+    <td colspan="<mt:var name="list_colspan">" class="all-selected-cell">
 <label class="custom-control custom-checkbox" style="display:inline;">
   <input type="checkbox" class="custom-control-input cb-all-selected" name="all_selected" value="1">
   <span class="custom-control-indicator"></span>
@@ -354,6 +363,9 @@ $('#dialog-cancel-btn').click(function(){
     &nbsp; <mt:trans phrase="Select all %s items" params="$permitted_count">
 </label>
     </td>
+<script>
+$('.all-selected-cell').hide();
+</script>
   </tr>
 </mt:if>
   </mt:unless>
@@ -385,15 +397,29 @@ $('#dialog-cancel-btn').click(function(){
       <mt:setvar name="has_checkbox" value="1">
     </mt:if>
   </mt:unless>
+  <mt:tablehascolumn model="$_this_model" column="workspace_id">
+  <mt:ifusercan model="$_this_model" action="delete" workspace_id="$workspace_id">
+    <mt:setvar name="has_checkbox" value="1">
+  <mt:else>
+    <mt:setvar name="has_checkbox" value="$actions_count">
+  </mt:ifusercan>
+  </mt:tablehascolumn>
   <mt:unless name="_single_select">
-  <mt:if name="has_checkbox">
+  <mt:setvarblock name="selector_checkbox">
     <label class="custom-control custom-checkbox">
       <input id="box_<mt:var name="id">" type="checkbox" name="id[]"
         value="<mt:var name="id">" class="custom-control-input"
-        aria-label="<mt:trans phrase="Select or deselect %s in this row." params="$label">">
+        aria-label="<mt:trans phrase="Select or deselect %s in this row." params="$label" escape>">
       <span class="custom-control-indicator"></span>
       <span class="custom-control-description"></span>
     </label>
+  </mt:setvarblock>
+  <mt:if name="has_checkbox">
+    <mt:ifusercan action="edit" model="$this_model" id="$id" workspace_id="$workspace_id">
+      <mt:var name="selector_checkbox">
+    <mt:elseif name="request.dialog_view">
+      <mt:var name="selector_checkbox">
+    </mt:ifusercan>
   </mt:if>
   <mt:else>
     <label class="custom-control custom-radio">
@@ -495,14 +521,12 @@ $('#dialog-cancel-btn').click(function(){
             <span class="badge badge-dark badge-pill badge-sm"><mt:trans phrase="Revision"></span>
             </mt:if>
           </mt:if>
-          <mt:if name="has_checkbox">
-        <mt:ifusercan action="edit" model="$this_model" id="$id" workspace_id="$workspace_id">
-          <a id="edit-link-<mt:var name="id" escape>" <mt:unless name="request.workspace_select"><mt:if name="request.dialog_view">target="_blank"</mt:if><mt:else>target="_parent"</mt:unless> href="<mt:var name="script_uri">?__mode=<mt:unless name="request.workspace_select">view&amp;_type=edit&amp;_model=<mt:var name="this_model" escape>&amp;id=<mt:var name="id" escape><mt:if name="workspace_id">&amp;workspace_id=<mt:var name="workspace_id"></mt:if><mt:if name="model" eq="workspace">&amp;workspace_id=<mt:var name="id" escape></mt:if><mt:if name="request.revision_select">&amp;edit_revision=1</mt:if><mt:else>dashboard&amp;workspace_id=<mt:var name="id" escape></mt:unless><mt:if name="request.dialog_view">&amp;from_dialog=1</mt:if>">
-        </mt:ifusercan>
-          <mt:else>
-            <mt:if name="request.workspace_select">
+          <mt:if name="request.workspace_select">
             <a target="_parent" href="<mt:var name="script_uri">?__mode=dashboard&amp;workspace_id=<mt:var name="id" escape>">
-            </mt:if>
+          <mt:else>
+            <mt:ifusercan action="edit" model="$this_model" id="$id" workspace_id="$workspace_id">
+              <a id="edit-link-<mt:var name="id" escape>" <mt:unless name="request.workspace_select"><mt:if name="request.dialog_view">target="_blank"</mt:if><mt:else>target="_parent"</mt:unless> href="<mt:var name="script_uri">?__mode=<mt:unless name="request.workspace_select">view&amp;_type=edit&amp;_model=<mt:var name="this_model" escape>&amp;id=<mt:var name="id" escape><mt:if name="workspace_id">&amp;workspace_id=<mt:var name="workspace_id"></mt:if><mt:if name="model" eq="workspace">&amp;workspace_id=<mt:var name="id" escape></mt:if><mt:if name="request.revision_select">&amp;edit_revision=1</mt:if><mt:else>dashboard&amp;workspace_id=<mt:var name="id" escape></mt:unless><mt:if name="request.dialog_view">&amp;from_dialog=1</mt:if>">
+            </mt:ifusercan>          
           </mt:if>
         </mt:ifusercan>
           <mt:unless name="$_name">
@@ -510,13 +534,13 @@ $('#dialog-cancel-btn').click(function(){
           <mt:else>
             <mt:var name="$_name" escape>
           </mt:unless>
-        <mt:ifusercan action="edit" model="$this_model" id="$id" workspace_id="$workspace_id">
-          </a>
-        <mt:else>
           <mt:if name="request.workspace_select">
-          </a>
+            </a>
+          <mt:else>
+            <mt:ifusercan action="edit" model="$this_model" id="$id" workspace_id="$workspace_id">
+              </a>
+            </mt:ifusercan>
           </mt:if>
-        </mt:ifusercan>
         <mt:unless name="request.revision_select">
           <mt:unless name="request.workspace_select"><mt:if name="can_duplicate">
           &nbsp;
@@ -824,8 +848,8 @@ $('#dialog-selector-btn').click(function(){
     <mt:if name="this_model" eq="asset">
     window.parent.$('#_'+target_control+'_name').html(col_value);
     var obj_permalink = $('#permalink_'+selected);
+    var viewLink = window.parent.$('#'+target_control+'-view-asset-link');
     if ( obj_permalink.length ) {
-        var viewLink = window.parent.$('#'+target_control+'-view-asset-link');
         viewLink.removeClass('hidden');
         viewLink.show();
         var editButton = window.parent.$('#_'+target_control+'-edit');
@@ -910,8 +934,10 @@ $('#dialog-selector-btn').click(function(){
         var newli = _li.clone( true ).appendTo('#'+target_control );
         newli.removeClass('hidden');
         var col_value = $('#_get_col_' + checked_ids[i] ).val();
+        <mt:var name="request.target" setvar="this_target">
         <mt:if name="this_model" eq="asset">
           // todo Set URL and add input field.// #line_
+            <mt:if name="this_target" eq="assets">
             var obj_permalink = $('#permalink_'+checked_ids[i]);
             if ( obj_permalink.length ) {
                 obj_permalink = obj_permalink.attr( 'href' );
@@ -939,6 +965,9 @@ $('#dialog-selector-btn').click(function(){
             } else {
                 newli.children('.label_edit_btn').hide();
             }
+            <mt:else>
+                newli.children('input').val( checked_ids[i] );
+            </mt:if>
         <mt:else>
         newli.children('input').val( checked_ids[i] );
         </mt:if>

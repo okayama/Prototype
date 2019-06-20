@@ -52,7 +52,7 @@ class PTUtil {
         return [ $hours, $minutes, $seconds ];
     }
 
-    public static function clone_object ( $app, $obj ) {
+    public static function clone_object ( $app, $obj, $strict = true ) {
         $clone = clone $obj;
         $clone->id( null );
         $blob_cols = $app->db->get_blob_cols( $obj->_model, true );
@@ -91,6 +91,38 @@ class PTUtil {
         }
         if ( $obj->has_column( 'uuid' ) ) {
             $clone->uuid( $app->generate_uuid() );
+        }
+        if (! $strict ) {
+            if ( $obj->has_column( 'status' ) ) {
+                $workspace = $obj->workspace;
+                if ( $app->user() ) {
+                    $max_status = $app->max_status( $app->user(), $obj->_model, $workspace );
+                    if ( $obj->status > $max_status ) {
+                        $clone->status( $max_status );
+                    }
+                }
+                $status_published = $app->status_published( $obj->_model );
+                if ( $obj->status == $status_published ) {
+                    if ( $status_published == 4 ) {
+                        $clone->status = '0';
+                    } else {
+                        $clone->status( 1 );
+                    }
+                }
+            }
+            if ( $obj->has_column( 'created_by' ) ) {
+                $clone->created_by('');
+            }
+            if ( $obj->has_column( 'modified_by' ) ) {
+                $clone->modified_by('');
+            }
+            if ( $obj->has_column( 'created_on' ) ) {
+                $clone->created_on('');
+            }
+            if ( $obj->has_column( 'modified_on' ) ) {
+                $clone->modified_on('');
+            }
+            $app->set_default( $clone );
         }
         $clone->save();
         $orig_relations = $app->get_relations( $obj );
@@ -175,10 +207,11 @@ class PTUtil {
             if ( $rel->number ) $terms['number'] = $rel->number;
             $comp = $app->db->model( 'meta' )->get_by_key( $terms );
             if (! $comp->id ) {
-                $changed_cols[ $rel->key ] = true;
+                if ( $rel->kind != 'thumbnail' ) {
+                    $changed_cols[ $rel->key ] = true;
+                }
             } else {
                 if ( $rel->text != $comp->text ) {
-                    // $rel->value != $comp->value
                     $changed_cols[ $rel->key ] = true;
                 } else {
                     foreach ( $blobs as $blob ) {
@@ -324,7 +357,7 @@ class PTUtil {
         $excludes = ['id', 'uuid', 'rev_type', 'rev_object_id', 'rev_changed', 'rev_diff',
                      'created_on', 'modified_on', 'created_by', 'modified_by', 'password',
                      'rev_note', 'user_id', 'status', 'previous_owner', 'published_on',
-                     'compiled'];
+                     'compiled', 'cache_key'];
         $obj->_relations = $obj->_relations
                           ? $obj->_relations : $app->get_relations( $obj );
         if ( $obj->_relations && $original->_relations ) {
@@ -556,6 +589,9 @@ class PTUtil {
     }
 
     public static function remove_dir ( $dir, $children_only = false ) {
+        if (! self::is_removable( $dir ) ) {
+            return false;
+        }
         if (! is_dir( $dir ) ) return;
         if ( $handle = opendir( $dir ) ) {
             while ( false !== ( $item = readdir( $handle ) ) ) {
@@ -583,16 +619,53 @@ class PTUtil {
         $does_act = false;
         foreach ( $dirs as $dir ) {
             if ( is_dir( $dir ) && count( glob( $dir . "/*" ) ) == 0 ) {
-                rmdir( $dir );
-                $does_act = true;
+                if ( self::is_dir_empty( $dir ) ) {
+                    if (! self::is_removable( $dir ) ) {
+                        continue;
+                    }
+                    rmdir( $dir );
+                    $does_act = true;
+                }
             }
         }
         return $does_act;
     }
 
+    public static function is_removable ( $dir ) {
+        $app = Prototype::get_instance();
+        if ( strpos( $dir, realpath( $app->temp_dir ) ) === 0 ) {
+            return true;
+        }
+        if (! $app->app_protect ) return true;
+        $dir = rtrim( $dir, DS );
+        $app_path = $app->pt_dir;
+        if ( strpos( $dir, $app_path ) === 0 ) {
+            return false;
+        }
+        if ( $dir == $app->site_path ) {
+            return false;
+        }
+        if ( $app->workspace() && $app->workspace()->site_path == $dir ) {
+            return false;
+        }
+        return true;
+    }
+
+    public static function is_dir_empty ( $dir ) {
+        if (!is_readable( $dir ) ) return NULL; 
+        $handle = opendir( $dir );
+        while ( false !== ( $entry = readdir( $handle ) ) ) {
+            if ( $entry != '.' && $entry != '..' ) {
+                return false;
+            }
+        }
+        return true;
+    }
+
     public static function make_basename ( $obj, $basename = '', $unique = false ) {
         $app = Prototype::get_instance();
         $basename_len = $app->basename_len;
+        $table = $app->get_table( $obj->_model );
         if (! $basename ) $basename = $obj->_model;
         $basename = strtolower( $basename );
         $basename = preg_replace( "/[^a-z0-9\-]/", ' ', $basename );
@@ -600,6 +673,19 @@ class PTUtil {
         $basename = str_replace( ' ', '_', $basename );
         $basename = trim( $basename, '_' );
         $basename = mb_substr( $basename, 0, $basename_len, $app->db->charset );
+        if ( $unique && $table->allow_identical ) {
+            $permalink = $app->get_permalink( $obj );
+            if ( $permalink ) {
+                $url = $app->db->model( 'urlinfo' )->get_by_key(
+                  ['url' => $permalink, 'delete_flag' => 0, 'model' => $obj->_model ] );
+                if ( $url->id && $url->object_id != $obj->id ) {
+                } else {
+                    $unique = false;
+                }
+            } else if ( $basename ) {
+                $unique = false;
+            }
+        }
         if (! $basename ) $basename = $obj->_model;
         if ( $unique ) {
             $terms = [];
@@ -1385,7 +1471,8 @@ class PTUtil {
                     $meta_vars['url'] = $url;
                     $vars['_icon_class'] = isset( $meta_vars['class'] )
                                          ? $meta_vars['class'] : '';
-                    if (! $thumbnail && $vars['_icon_class'] == 'image' ) {
+                    $ext = $meta_vars['extension'];
+                    if (! $thumbnail && ( $vars['_icon_class'] == 'image' || $ext == 'svg' ) ) {
                         $icon = $app->admin_url
                               . '?__mode=get_thumbnail&square=1&id=' . $meta->id;
                         $vars['_icon'] = $icon;
@@ -1479,8 +1566,8 @@ class PTUtil {
             $item_by_order[] = $registry;
             $registries_all[ $order ] = $item_by_order;
         }
+        ksort( $registries_all );
         if ( $widget ) {
-            ksort( $registries_all );
             $ordered = [];
             foreach ( $registries_all as $appWidget ) {
                 $appWidget = $appWidget[0];
@@ -1538,10 +1625,8 @@ class PTUtil {
         ) );
     }
 
-    public static function send_mail ( $to, $subject, $body, $headers,
-        &$error = '', $logging = true ) {
+    public static function send_mail ( $to, $subject, $body, $headers, &$error = '' ) {
         $app = Prototype::get_instance();
-        mb_internal_encoding( $app->encoding );
         $from = isset( $headers['From'] )
             ? $headers['From'] : $app->get_config( 'system_email' );
         if ( strpos( $to, ',' ) !== false ) {
@@ -1566,13 +1651,101 @@ class PTUtil {
         if (!$app->is_valid_email( $from, $error ) ) {
             return false;
         }
+        mb_internal_encoding( $app->encoding );
+        if ( $app->mail_language ) {
+            mb_language( $app->mail_language );
+        }
         unset( $headers['From'] );
+        $from = self::encode_mimeheader( $from );
         $options = "From: {$from}\r\n";
         foreach ( $headers as $key => $value ) {
-            $options .= "{$key}: {$value}\r\n";
+            $value = self::encode_mimeheader( $value );
+            $key = ucwords( $key );
+            if ( $key == 'Cc' || $key == 'Bcc' ) {
+                $addrs = [];
+                if ( is_array( $value ) || strpos( $value, ',' ) !== false ) {
+                    if (! is_array( $value ) ) {
+                        $value = preg_split( '/\s*,\s*/', $value );
+                    }
+                    foreach ( $value as $addr ) {
+                        if ( $app->is_valid_email( $addr, $error ) ) {
+                            $addrs[] = $addr;
+                        }
+                    }
+                } else {
+                    if ( $app->is_valid_email( $value, $error ) ) {
+                        $addrs[] = $value;
+                    }
+                }
+                if (! empty( $addrs ) ) {
+                    $value = implode( ',', $addrs );
+                    $options .= "{$key}: {$value}\r\n";
+                }
+            } else {
+                $options .= "{$key}: {$value}\r\n";
+            }
         }
-        // $app->log( "{$from}, {$to}, {$subject}, {$body}" );
-        return mb_send_mail( $to, $subject, $body, $options );
+        $additional = $app->mail_return_path ? '-f' . $app->mail_return_path : null;
+        return mb_send_mail( $to, $subject, $body, $options, $additional );
+    }
+
+    public static function send_multipart_mail ( $to, $subject, $body, $headers,
+                                                 $files = [], &$error = '' ) {
+        $app = Prototype::get_instance();
+        $content_type = isset( $headers['Content-Type'] ) ? $headers['Content-Type'] : 'text/plain';
+        $boundary = '__BOUNDARY__' . md5( rand() );
+        $headers['Content-Type'] = "multipart/mixed;boundary=\"{$boundary}\"";
+        $charset = $app->mail_encording ? strtoupper( $app->mail_encording ) : 'ISO-2022-JP';
+        $text = $body;
+        $body = "--{$boundary}\n";
+        $body .= "Content-Type: {$content_type}; charset=\"{$charset}\"\n\n";
+        $body .= $text . "\n";
+        $body .= "--{$boundary}\n";
+        $existing_files = [];
+        foreach ( $files as $file ) {
+            if ( is_object( $file ) ) { // Session
+                $upload_dir = $app->upload_dir();
+                $file_path = $upload_dir . DS . $file->value;
+                file_put_contents( $file_path, $file->data );
+                $file = $file_path;
+            }
+            if ( file_exists( $file ) ) {
+                $existing_files[] = $file;
+            }
+        }
+        $counter = 0;
+        foreach ( $existing_files as $file ) {
+            $file_name = self::encode_mimeheader( basename( $file ) );
+            $body .= "Content-Type: application/octet-stream; name=\"{$file_name}\"\n";
+            $body .= "Content-Disposition: attachment; filename=\"{$file_name}\"\n";
+            $body .= "Content-Transfer-Encoding: base64\n";
+            $body .= "\n";
+            $body .= chunk_split( base64_encode( file_get_contents( $file ) ) );
+            $counter++;
+            $body .= $counter == count( $existing_files ) ? "--{$boundary}--\n" : "--{$boundary}\n";
+        }
+        return self::send_mail( $to, $subject, $body, $headers, $error );
+    }
+
+    public static function encode_mimeheader ( &$value ) {
+        $app = Prototype::get_instance();
+        if ( strpos( $value, '<' ) !== false && strpos( $value, '>' ) !== false
+            && preg_match( '/(^.*?)<(.*?)>$/', $value, $matches ) ) {
+            list( $addr, $value ) = [ $matches[2], $matches[1] ]; 
+            if ( $app->mail_encording ) {
+                $value = mb_encode_mimeheader( $value, strtoupper( $app->mail_encording ) );
+            } else {
+                $value = mb_encode_mimeheader( $value );
+            }
+            $value = "{$value}<{$addr}>";
+        } else {
+            if ( $app->mail_encording ) {
+                $value = mb_encode_mimeheader( $value, strtoupper( $app->mail_encording ) );
+            } else {
+                $value = mb_encode_mimeheader( $value );
+            }
+        }
+        return $value;
     }
 
     public static function convert_breaks ( $str = '' ) {
@@ -1876,7 +2049,7 @@ class PTUtil {
     }
 
     public static function upload_check ( $extra, $name = 'files',
-        $json = true, $error = '' ) {
+        $json = true, &$error = '' ) {
         $app = Prototype::get_instance();
         if (! $extra ) {
             if ( $app->upload_size_limit || $app->upload_max_pixel ) {
@@ -2098,6 +2271,7 @@ class PTUtil {
             'pbm'     => 'image/x-portable-bitmap',
             'pgm'     => 'image/x-portable-graymap',
             'ppm'     => 'image/x-portable-pixmap',
+            'svg'     => 'image/svg+xml',
             'rgb'     => 'image/x-rgb',
             'xbm'     => 'image/x-xbitmap',
             'xls'     => 'application/vnd.ms-excel',

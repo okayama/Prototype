@@ -1,7 +1,8 @@
 {
     "label"       : "Website",
     "id"          : "website",
-    "version"     : "1.0",
+    "version"     : "1.1",
+    "thumbnail"   : "theme.png",
     "author"      : "Alfasado Inc.",
     "author_link" : "https://alfasado.net/",
     "description" : "Simple theme based on Bootstrap.",
@@ -136,7 +137,7 @@
                     "mapping": "index.html",
                     "date_based": "",
                     "fiscal_start": "1",
-                    "publish_file": "6",
+                    "publish_file": "1",
                     "container": "",
                     "container_scope": "0",
                     "trigger_scope": "0"
@@ -167,7 +168,7 @@
                     "mapping": "<mt:entrycategories limit=\"1\"><mt:categorypath \/>\/<\/mt:entrycategories><mt:entrybasename>.html",
                     "date_based": "",
                     "fiscal_start": "1",
-                    "publish_file": "6",
+                    "publish_file": "1",
                     "container": "",
                     "container_scope": "0",
                     "trigger_scope": "0"
@@ -192,7 +193,7 @@
                     "mapping": "<mt:pagefoldercontext><mt:folderpath>\/<\/mt:pagefoldercontext><mt:pagebasename>.html",
                     "date_based": "",
                     "fiscal_start": "1",
-                    "publish_file": "6",
+                    "publish_file": "1",
                     "container": "",
                     "container_scope": "0",
                     "trigger_scope": "0"
@@ -229,7 +230,7 @@
                     "mapping": "<mt:categorypath>\/index.html",
                     "date_based": "",
                     "fiscal_start": "1",
-                    "publish_file": "6",
+                    "publish_file": "1",
                     "container": "entry",
                     "container_scope": "0",
                     "trigger_scope": "0"
@@ -254,7 +255,7 @@
                     "mapping": "news\/index.html",
                     "date_based": "",
                     "fiscal_start": "1",
-                    "publish_file": "6",
+                    "publish_file": "1",
                     "container": "entry",
                     "container_scope": "0",
                     "trigger_scope": "0"
@@ -265,7 +266,7 @@
                     "mapping": "<mt:archivedate format=\"Y\">\/index.html",
                     "date_based": "Fiscal-Yearly",
                     "fiscal_start": "4",
-                    "publish_file": "6",
+                    "publish_file": "1",
                     "container": "entry",
                     "container_scope": "0",
                     "trigger_scope": "0"
@@ -290,7 +291,7 @@
                     "mapping": "contact\/<mt:formbasename>.html",
                     "date_based": "",
                     "fiscal_start": "1",
-                    "publish_file": "6",
+                    "publish_file": "1",
                     "container": "",
                     "container_scope": "0",
                     "trigger_scope": "0"
@@ -312,13 +313,13 @@
         "e612813c-5514-4a3f-a10f-30fa4d334739": {
             "name": "(Website) Page Widget",
             "subject": "",
-            "class": "Archive",
+            "class": "Module",
             "basename": "website_page_widget"
         },
         "b3dad0a7-2d36-4a3e-aa09-636c6c998c84": {
             "name": "(Website) Widgets 3 Columns",
             "subject": "",
-            "class": "Archive",
+            "class": "Module",
             "basename": "website_widgets_3_columns"
         },
         "2918660b-b625-4c23-96f3-5e288717dccc": {
@@ -326,6 +327,13 @@
             "subject": "",
             "class": "Module",
             "basename": "website_widgets_2_columns"
+        },
+        "0aab5b58-c031-4ac8-b3c9-762a71637927": {
+            "name": "(Website) Pagination",
+            "subject": "",
+            "status": "2",
+            "class": "Module",
+            "basename": "website_pagination"
         },
         "e2d8d4a4-8fef-4f83-b2b5-ffd2db146629": {
             "name": "(Website) Notification of Inquiry",
@@ -345,9 +353,50 @@
             "class": "Module",
             "basename": "website_mail_footer"
         },
+        "1e68ebf1-2d3a-4a4a-9a6d-a7addfa0255a": {
+            "name": "(Website) .htaccess",
+            "subject": "",
+            "status": "2",
+            "class": "Archive",
+            "basename": "website_htaccess",
+            "urlmappings": [
+                {
+                    "name": "(Website) .htaccess",
+                    "model": "template",
+                    "mapping": ".htaccess",
+                    "date_based": "",
+                    "fiscal_start": "1",
+                    "publish_file": "1",
+                    "container": "",
+                    "container_scope": "0",
+                    "trigger_scope": "0"
+                }
+            ]
+        },
+        "648d2c08-4b33-4960-9496-f250dfc3d08b": {
+            "name": "(Website) Bootstrapper",
+            "subject": "",
+            "status": "2",
+            "class": "Archive",
+            "basename": "website_bootstrapper",
+            "urlmappings": [
+                {
+                    "name": "(Website) Bootstrapper",
+                    "model": "template",
+                    "mapping": "pt-view.php",
+                    "date_based": "",
+                    "fiscal_start": "1",
+                    "publish_file": "1",
+                    "container": "",
+                    "container_scope": "0",
+                    "trigger_scope": "0"
+                }
+            ]
+        },
         "f7eebc34-f389-4814-bcca-172f8655af27": {
             "name": "(Website) Stylesheet",
             "subject": "",
+            "status": "2",
             "class": "Archive",
             "basename": "website_stylesheet",
             "urlmappings": [
@@ -360,7 +409,10 @@
                     "publish_file": "1",
                     "container": "",
                     "container_scope": "0",
-                    "trigger_scope": "0"
+                    "trigger_scope": "1",
+                    "triggers": [
+                        "widget"
+                    ]
                 }
             ]
         }

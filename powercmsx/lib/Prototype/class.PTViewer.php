@@ -8,6 +8,7 @@ class PTViewer {
     function view ( $app, $workspace_id = null ) {
         $app->id = 'Bootstrapper';
         $app->bootstrapper = $this;
+        $app->workspace_id = (int) $workspace_id;
         $app->init();
         if ( $language = $app->param( '_language' ) ) {
             $app->language = $language;
@@ -22,42 +23,57 @@ class PTViewer {
         $file_path = $document_root . $request;
         $existing_data = null;
         $mtime = null;
-        if ( file_exists( $file_path ) && !$app->force_dynamic ) {
-            $data = file_get_contents( $file_path );
-            $mime_type = PTUtil::get_mime_type( $file_path );
-            $mtime = filemtime( $file_path );
-            $regex = '<\${0,1}' . 'mt';
-            if ( strpos( $mime_type, 'text' ) === false
-                || !preg_match( "/$regex/i", $data ) ) {
-                $app->print( $data, $mime_type, $mtime );
-            } else {
-                $existing_data = $data;
-            }
-        }
-        if ( $this->allow_login ) {
-            if ( $app->mode =='logout' && $app->dynamic_view ) {
-                if ( $app->user() ) {
-                    return $this->login_logout( $app );
-                }
-            } else if ( $app->mode =='login' && $app->dynamic_view ) {
-                return $this->login_logout( $app );
-            }
-        }
-        $app->init_tags();
-        $url = $app->db->model( 'urlinfo' )->get_by_key( ['relative_url' => $request ] );
-        if (! $url->id ) {
-            $request = urldecode( $request );
-            $url = $app->db->model( 'urlinfo' )->get_by_key( ['relative_url' => $request ] );
-        }
-        $app->init_callbacks( 'urlinfo', 'post_load_object' );
-        $callback = ['name' => 'post_load_object', 'model' => 'urlinfo' ];
-        $app->run_callbacks( $callback, 'urlinfo', $url );
         $ctx = $app->ctx;
         if (! $theme_static = $app->theme_static ) {
             $theme_static = $app->path . 'theme-static/';
             $app->theme_static = $theme_static;
         }
         $ctx->vars['theme_static'] = $theme_static;
+        $ctx->vars['application_dir'] = __DIR__;
+        $ctx->vars['application_path'] = $app->path;
+        if ( file_exists( $file_path ) && !$app->force_dynamic ) {
+            $extension = PTUtil::get_extension( $file_path );
+            $denied_exts = explode( ',', $app->denied_exts );
+            if ( in_array( $extension, $denied_exts ) ) {
+                $this->page_not_found( $app );
+            }
+            $data = file_get_contents( $file_path );
+            $mime_type = PTUtil::get_mime_type( $file_path );
+            $mtime = filemtime( $file_path );
+            $regex = '<\${0,1}' . 'mt';
+            if ( strpos( $mime_type, 'text' ) === false
+                || !preg_match( "/$regex/i", $data ) ) {
+                header( 'HTTP/1.1 200 OK' );
+                $app->do_conditional = $app->static_conditional;
+                $app->print( $data, $mime_type, $mtime );
+            } else {
+                $existing_data = $data;
+            }
+        }
+        $app->init_tags();
+        $terms = ['relative_url' => $request ];
+        if ( $workspace_id ) {
+            $terms['workspace_id'] = (int) $workspace_id;
+        }
+        $url = $app->db->model( 'urlinfo' )->get_by_key( $terms );
+        if (! $url->id ) {
+            $request = rawurldecode( $request );
+            $terms = ['relative_url' => $request ];
+            $url = $app->db->model( 'urlinfo' )->get_by_key( $terms );
+        }
+        $app->init_callbacks( 'urlinfo', 'post_load_object' );
+        $callback = ['name' => 'post_load_object', 'model' => 'urlinfo' ];
+        $app->run_callbacks( $callback, 'urlinfo', $url );
+        $user = $app->user();
+        if ( $this->allow_login ) {
+            if ( $app->mode =='logout' && $app->dynamic_view ) {
+                if ( $user ) {
+                    return $this->login_logout( $app );
+                }
+            } else if ( $app->mode =='login' && $app->dynamic_view ) {
+                return $this->login_logout( $app );
+            }
+        }
         $ctx->stash( 'current_urlinfo', $url );
         $ctx->vars['current_archive_url'] = $url->url;
         $ctx->stash( 'current_archive_url', $url->url );
@@ -65,14 +81,39 @@ class PTViewer {
         $ctx->vars['app_version'] = $app->app_version;
         unset( $ctx->vars['magic_token'] );
         $ctx->vars['appname'] = $app->appname;
+        $ctx->include_paths[ $app->site_path ] = true;
+        if ( $workspace_id ) {
+            $workspace_id = (int) $workspace_id;
+            $workspace = $app->db->model( 'workspace' )->load( $workspace_id );
+        } else {
+            $request_uri = $app->base . $app->request_uri;
+            $workspace = $this->get_workspace_from_url( $app, $request_uri );
+        }
+        if ( $workspace ) {
+            $app->stash( 'workspace', $workspace );
+            $ctx->stash( 'workspace', $workspace );
+            $ctx->include_paths[ $workspace->site_path ] = true;
+        }
         if (! $url->id ) {
-            if ( $workspace_id ) {
-                $workspace_id = (int) $workspace_id;
-                $workspace = $app->db->model( 'workspace' )->load( $workspace_id );
+            if (! $existing_data && file_exists( $file_path ) && $app->allow_static ) {
+                $data = file_get_contents( $file_path );
+                $mime_type = PTUtil::get_mime_type( $file_path );
+                $mtime = filemtime( $file_path );
+                if ( strpos( $mime_type, 'text' ) === false
+                    || !preg_match( "/$regex/i", $data ) ) {
+                    header( 'HTTP/1.1 200 OK' );
+                    $app->do_conditional = $app->static_conditional;
+                    $app->print( $data, $mime_type, $mtime );
+                } else {
+                    $existing_data = $data;
+                }
             } else {
-                $request_uri = $app->base . $app->request_uri;
-                $workspace = $this->get_workspace_from_url( $app, $request_uri );
+                $this->page_not_found( $app, $workspace );
             }
+        }
+        $workspace = $workspace ? $workspace : $url->workspace;
+        if (! file_exists( $file_path ) && ! $url->is_published &&
+            $url->publish_file == 1 && ! $user ) {
             $this->page_not_found( $app, $workspace );
         }
         if ( $app->do_conditional && $url->filemtime && $url->mime_type ) {
@@ -80,15 +121,19 @@ class PTViewer {
         }
         $workspace_id = (int) $url->workspace_id;
         $workspace = $url->workspace;
-        if (! $app->user() ) {
+        if (! $user ) {
             if (! $app->dynamic_view ) {
                 $this->page_not_found( $app, $workspace );
             }
         }
         if ( $workspace ) {
+            $app->stash( 'workspace', $workspace );
             $ctx->vars['appname'] = $workspace->name;
+            $ctx->vars['app_name'] = $workspace->name; //
+            $ctx->include_paths[ $workspace->site_path ] = true;
         } else {
             $ctx->vars['appname'] = $app->appname;
+            $ctx->vars['app_name'] = $app->appname; //
         }
         $object_id = (int) $url->object_id;
         $model = $url->model;
@@ -104,7 +149,7 @@ class PTViewer {
             $obj_id = (int) $url->object_id;
             $url_obj = $app->db->model( $model )->load( $obj_id );
             if ( $url_obj->status != $publish_status ) {
-                if (! $app->user() ) {
+                if (! $user ) {
                     $login = $this->login_logout( $app );
                     if ( $login === false ) {
                         $this->page_not_found( $app, $workspace );
@@ -142,13 +187,35 @@ class PTViewer {
                 $callback = ['name' => 'pre_view', 'model' => $obj->_model ];
                 $app->run_callbacks( $callback, $obj->_model, $obj, $url );
                 $data = $obj->$key;
+                header( 'HTTP/1.1 200 OK' );
                 $app->print( $data, $mime_type );
             }
         } else if ( $url->class === 'archive' ) {
             $mapping = $url->urlmapping;
+            $ctx->vars['publish_type'] = $mapping ? $mapping->publish_file : 6;
+            $ctx->stash( 'current_context', $url->model );
+            $ctx->stash( $url->model, $obj );
             if ( $mapping && $mapping->container ) {
                 $ctx->stash( 'current_container', $mapping->container );
+                if ( $mapping->skip_empty ) {
+                    $container = $app->get_table( $mapping->container );
+                    $cnt_tag = strtolower( $container->plural ) . 'count';
+                    $count_terms = ['container' => $container->name, 'this_tag' => $cnt_tag ];
+                    if ( $mapping->container_scope ) {
+                        $count_terms['include_workspaces'] = 'all';
+                    }
+                    $count_children = $app->core_tags->hdlr_container_count( $count_terms, $ctx );
+                    if (! $count_children ) {
+                        if ( $user && $app->can_do( $model, 'edit', $obj, $workspace ) ) {
+                        } else {
+                            $this->page_not_found( $app, $workspace );
+                        }
+                    }
+                }
             }
+            $magic_token = $app->param( 'magic_token' )
+                         ? $app->param( 'magic_token' ) : $app->request_id;
+            $ctx->local_vars['magic_token'] = $magic_token;
             if ( $app->param( '_type' ) == 'form' ) {
                 require_once( $pt_path . 'lib' . DS . 'Prototype'
                               . DS . 'class.PTForm.php' );
@@ -160,37 +227,33 @@ class PTViewer {
             }
             require_once( $pt_path . 'lib' . DS . 'Prototype' . DS . 'class.PTPublisher.php' );
             $pub = new PTPublisher;
-            $magic_token = $app->param( 'magic_token' )
-                         ? $app->param( 'magic_token' ) : $app->request_id;
-            $ctx->local_vars['magic_token'] = $magic_token;
             if ( $mtime ) {
                 $mtime = ( $mtime > $url->filemtime ) ? $mtime : $url->filemtime;
             } else {
                 $mtime = $url->filemtime;
             }
-            $data = $pub->publish( $url, $existing_data, $mtime, $obj );
             $update = false;
-            if ( $url->publish_file == 3 ) {
-                $fmgr = $app->fmgr;
-                $fmgr->put( $url->file_path, $data );
-                if (! $url->is_published ) {
-                    $url->is_published( 1 );
+            $data = $pub->publish( $url, $existing_data, $mtime, $obj, $update );
+            if ( $data === false ) {
+                $this->page_not_found( $app, $workspace );
+            }
+            if (! $app->query_string() ) {
+                $page = str_replace( $magic_token, '', $data );
+                $md5 = md5( $page );
+                if ( $md5 != $url->md5 ) {
+                    $url->md5( $md5 );
                     $update = true;
                 }
             }
-            $page = str_replace( $magic_token, '', $data );
-            $md5 = md5( $page );
-            if ( $md5 != $url->md5 ) {
-                $url->md5( $md5 );
-                $update = true;
-            }
             if ( $update ) $url->save();
+            header( 'HTTP/1.1 200 OK' );
             $app->print( $data, $mime_type, $mtime );
         }
     }
 
-    function page_not_found ( $app, $workspace, $error = null, $mime_type = 'text/html' ) {
+    function page_not_found ( $app, $workspace = null, $error = null, $mime_type = 'text/html' ) {
         header( $app->protocol. ' 404 Not Found' );
+        $app->ctx->vars['publish_type'] = 6;
         $tmpl = null;
         if (! $error ) $error = $app->translate( 'Page not found.' );
         if ( $workspace ) {

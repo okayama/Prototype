@@ -1,3 +1,10 @@
+RewriteEngine off
 <Files ~ "\.(log|json)$">
   deny from all
 </Files>
+<Files ~ "^\.ht">
+deny from all
+</Files>
+php_value upload_max_filesize "30M"
+ErrorDocument 403 'Forbidden'
+ErrorDocument 404 'Not Found'

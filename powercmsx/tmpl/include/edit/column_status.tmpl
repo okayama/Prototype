@@ -8,11 +8,11 @@
   </div>
   <div class="col-lg-10 form-inline">
     <mt:if name="status_published" gt="3">
-    <select <mt:if name="readonly">readonly onmousedown="return false;" onkeydown="return false;"</mt:if> id="status-selector" class="form-control short custom-select" name="<mt:var name="__col_name__">">
+    <select <mt:if name="readonly"> readonly onmousedown="return false;"</mt:if> id="status-selector" class="form-control short custom-select" name="<mt:var name="__col_name__">">
     <mt:loop name="_options_loop">
       <mt:if name="__index__" le="$max_status">
       <mt:unless name="request.edit_revision">
-        <option <mt:unless name="object_status"><mt:isset name="object_status"><mt:else><mt:if name="_default_status" eq="$__index__">selected</mt:if></mt:isset></mt:unless><mt:if name="object_status" eq="$__index__">selected</mt:if> value="<mt:var name="__index__">"><mt:trans phrase="$__value__" escape></option>
+        <option <mt:unless name="object_status"><mt:isset name="object_status"><mt:else><mt:if name="_default_status" eq="$__index__">selected<mt:else><mt:if name="readonly"> style="display:none"</mt:if></mt:if></mt:isset></mt:unless><mt:if name="object_status" eq="$__index__">selected<mt:else><mt:if name="readonly"> style="display:none"</mt:if></mt:if> value="<mt:var name="__index__">"><mt:trans phrase="$__value__" escape></option>
       <mt:else>
         <mt:if name="__index__" ne="$status_published">
             <mt:if name="__index__" eq="3">
@@ -20,7 +20,7 @@
             <mt:else>
               <mt:var name="__value__" setvar="__value">
             </mt:if>
-        <option <mt:unless name="object_status"><mt:isset name="object_status"><mt:else><mt:if name="_default_status" eq="$__index__">selected</mt:if></mt:isset></mt:unless><mt:if name="object_status" eq="$__index__">selected</mt:if> value="<mt:var name="__index__">"><mt:trans phrase="$__value" escape></option>
+        <option <mt:unless name="object_status"><mt:isset name="object_status"><mt:else><mt:if name="_default_status" eq="$__index__">selected<mt:else><mt:if name="readonly"> style="display:none"</mt:if></mt:if></mt:isset></mt:unless><mt:if name="object_status" eq="$__index__">selected<mt:else><mt:if name="readonly"> style="display:none"</mt:if></mt:if> value="<mt:var name="__index__">"><mt:trans phrase="$__value" escape></option>
         </mt:if>
       </mt:unless>
       </mt:if>
@@ -34,7 +34,7 @@
     <mt:loop name="_options_loop">
       <mt:if name="__counter__" le="$max_status">
       <mt:unless name="request.edit_revision">
-        <option <mt:unless name="object_status"><mt:if name="_default_status" eq="$__counter__">selected</mt:if></mt:unless><mt:if name="object_status" eq="$__counter__">selected</mt:if> value="<mt:var name="__counter__">"><mt:trans phrase="$__value__" escape></option>
+        <option <mt:unless name="object_status"><mt:if name="_default_status" eq="$__counter__">selected<mt:else><mt:if name="readonly"> style="display:none"</mt:if></mt:if></mt:unless><mt:if name="object_status" eq="$__counter__">selected<mt:else><mt:if name="readonly"> style="display:none"</mt:if></mt:if> value="<mt:var name="__counter__">"><mt:trans phrase="$__value__" escape></option>
       <mt:else>
         <mt:if name="__counter__" ne="$status_published">
             <mt:if name="__counter__" eq="3">
@@ -42,14 +42,14 @@
             <mt:else>
               <mt:var name="__value__" setvar="__value">
             </mt:if>
-        <option <mt:unless name="object_status"><mt:if name="_default_status" eq="$__counter__">selected</mt:if></mt:unless><mt:if name="object_status" eq="$__counter__">selected</mt:if> value="<mt:var name="__counter__">"><mt:trans phrase="$__value" escape></option>
+        <option <mt:unless name="object_status"><mt:if name="_default_status" eq="$__counter__">selected<mt:else><mt:if name="readonly"> style="display:none"</mt:if></mt:if></mt:unless><mt:if name="object_status" eq="$__counter__">selected<mt:else><mt:if name="readonly"> style="display:none"</mt:if></mt:if> value="<mt:var name="__counter__">"><mt:trans phrase="$__value" escape></option>
         </mt:if>
       </mt:unless>
       </mt:if>
     </mt:loop>
     </select>
     </mt:if>
-<mt:tablehascolumn column="published_on">
+<mt:tablehascolumn column="has_deadline">
     <input type="hidden" name="has_deadline" value="0">
     <label class="custom-control custom-checkbox status-has_deadline-cb">
     <input <mt:if name="readonly">disabled</mt:if> id="has_deadline" class="status-has_deadline-cb form-control custom-control-input" type="checkbox" name="has_deadline" value="1" <mt:if name="object_has_deadline">checked</mt:if>>
@@ -108,6 +108,7 @@ $('#status-alert-block').hide();
   __workflow_orig_max_status = __workflow_owner_max_status;
   __workflow_current_status = $('#status-selector').val();
   __workflow_orig_status = __workflow_current_status;
+<mt:if name="object_user_id" ne="$user_id">
 $('#status-selector').change(function(){
     $('#status-alert-block').hide();
     if ( $(this).val() > __workflow_owner_max_status ) {
@@ -127,6 +128,7 @@ $('#status-selector').change(function(){
         }
     }
 });
+</mt:if>
 </script>
 </mt:if>
 <mt:tablehascolumn column="published_on">
@@ -200,6 +202,7 @@ $(function () {
 $('#has_deadline').click(function(){
     if ( $(this).prop('checked') ) {
         $('.unpublished-on-col').show();
+        $('#unpublished_on_date').focus();
     } else {
         $('.unpublished-on-col').hide();
     }

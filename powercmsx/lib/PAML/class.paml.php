@@ -3,10 +3,10 @@
 /**
  * PAML : PHP Alternative Markup Language
  *
- * @version    1.0
+ * @version    1.2
  * @package    PAML
  * @author     Alfasado Inc. <webmaster@alfasado.jp>
- * @copyright  2017 Alfasado Inc. All Rights Reserved.
+ * @copyright  2019 Alfasado Inc. All Rights Reserved.
  */
 if (! defined( 'DS' ) ) {
     define( 'DS', DIRECTORY_SEPARATOR );
@@ -21,10 +21,10 @@ if (! defined( 'EP' ) ) {
 /**
  * PAMLVSN = Compile format version.
  */
-define( 'PAMLVSN', '1.0' );
+define( 'PAMLVSN', '1.2' );
 
 class PAML {
-    private   $version       = 1.0;
+    private   $version       = 1.2;
 
 /**
  * $prefix        : Tag prefix.
@@ -49,7 +49,7 @@ class PAML {
     public    $unify_breaks  = true;
     public    $logging       = false;
     public    $log_path;
-    public    $csv_delimiter = ':';
+    public    $csv_delimiter = ',';
     public    $csv_enclosure = "'";
     public    $plugin_compat = 'smarty_';
     public    $path          = __DIR__;
@@ -119,7 +119,7 @@ class PAML {
  */
     public   $tags = [
       'block'       => ['block', 'loop', 'foreach', 'for','section', 'literal', 'queries'],
-      'block_once'  => ['ignore', 'setvars', 'capture', 'setvarblock',
+      'block_once'  => ['ignore', 'setvars', 'sethashvars', 'capture', 'setvarblock',
                         'assignvars', 'setvartemplate', 'nocache', 'isinchild'],
       'conditional' => ['else', 'elseif', 'if', 'unless', 'ifgetvar', 'elseifgetvar',
                         'ifinarray', 'isarray', 'isset'],
@@ -127,12 +127,12 @@ class PAML {
                         'add_slash', 'strip_linefeeds', 'sprintf', 'encode_js', 'truncate',
                         'wrap', 'encode_url', 'trim_space', 'regex_replace', 'setvartemplate',
                         'replace', 'translate', 'count_chars', 'to_json', 'from_json',
-                        'nocache', 'split', 'join', 'format_size', 'encode_xml', 'instr',
-                        'mb_instr', 'absolute', 'numify', 'merge_linefeeds', 'array_pop',
-                        'decode_html'],
+                        'nocache', 'split', 'join', 'format_size', 'encode_xml', 'encode_php',
+                        'instr', 'mb_instr', 'relative', 'numify', 'merge_linefeeds', 'array_pop',
+                        'decode_html', 'default', 'normarize'],
       'function'    => ['getvar', 'trans', 'setvar', 'property', 'ldelim', 'include', 'math',
                         'rdelim', 'fetch', 'var', 'date', 'assign', 'count', 'vardump',
-                        'query'],
+                        'gethashvar', 'query'],
       'include'     => ['include', 'includeblock', 'extends'] ];
 
 /**
@@ -893,6 +893,33 @@ class PAML {
                     $arr[] = [ $key => $name, $item => $param ];
             }
             if ( isset( $arr ) ) $params = $arr;
+            if ( isset( $args['sort_by'] ) ) {
+                $sort = $args['sort_by'];
+                $sorts = preg_split( "/\s*,\s*/", $sort, 2, PREG_SPLIT_NO_EMPTY );
+                $sort = $sorts[ 0 ];
+                if ( $sort == 'key' || $sort == 'value' ) {
+                    $reverse = false;
+                    $numeric = false;
+                    if ( isset( $sorts[ 1 ] ) ) {
+                        $opt = $sorts[ 1 ];
+                        if ( stripos( $opt, 'reverse' ) !== false ) {
+                            $reverse = true;
+                        }
+                        if ( stripos( $opt, 'numeric' ) !== false ) {
+                            $numeric = true;
+                        }
+                    }
+                    $sort_func = $reverse ? 'krsort' : 'ksort'; // key
+                    if ( $sort == 'value' ) {
+                        $sort_func = $reverse ? 'rsort' : 'sort';
+                    }
+                    if ( $numeric ) {
+                        $sort_func( $params, SORT_NUMERIC );
+                    } else {
+                        $sort_func( $params );
+                    }
+                }
+            }
             $ctx->local_params = $params;
         }
         if (!isset( $params ) ) $params = $ctx->local_params;
@@ -962,14 +989,37 @@ class PAML {
         }
     }
 
+    function block_sethashvars ( $args, &$content, $ctx, &$repeat, $counter ) {
+        if ( isset( $args['name'] ) ) $name = $args['name'];
+        if ( isset( $content ) ) {
+            if ( $name ) {
+                $vars = $ctx->vars;
+                if (!is_array( $vars ) ) {
+                    $vars = [];
+                    $ctx->vars = $vars;
+                }
+                $pairs = preg_split('/\r?\n/', trim( $content ) );
+                foreach ( $pairs as $line ) {
+                    list( $var, $value ) = preg_split( '/\s*=/', $line, 2 );
+                    if ( isset( $var ) && isset( $value ) ) {
+                        $var = trim( $var );
+                        $vars[ $name ][ $var ] = $value;
+                        $vars[ $name ][ strtolower( $var ) ] = $value;
+                        $vars[ strtolower( $name ) ][ $var ] = $value;
+                        $vars[ strtolower( $name ) ][ strtolower( $var ) ] = $value;
+                    }
+                }
+                $ctx->vars = $vars;
+            }
+        }
+        return '';
+    }
+
     function block_literal ( $args, &$content, $ctx, &$repeat, $counter ) {
         if (!$counter ) return;
-        $request_cache = $this->request_cache;
-        $this->request_cache = false;
         if ( isset( $args['nocache'] ) && ! $ctx->caching ) return $content;
         $var = isset( $ctx->literal_vars[ $args['index'] ] )
              ? $ctx->literal_vars[ $args['index'] ] : '';
-        //$this->request_cache = $request_cache;
         return $var;
     }
 
@@ -1057,7 +1107,8 @@ class PAML {
                 $cookie = preg_replace( '/^cookie\./', '', $args['name'] );
                 $v = isset( $_COOKIE[ $cookie ] ) ? $_COOKIE[ $cookie ] : '';
             } else {
-                if ( isset( $vars[ $args['name'] ] ) ) $v = $vars[ $args['name'] ];
+                $v = isset( $vars[ $args['name'] ] )
+                   ? $vars[ $args['name'] ] : $this->function_var( $args, $ctx );
             }
         }
         unset( $args['name'], $args['this_tag'] );
@@ -1158,6 +1209,38 @@ class PAML {
         return $var;
     }
 
+    function function_gethashvar ( $args, &$ctx ) {
+        if ( isset( $args['name'] ) ) $name = $args['name'];
+        if ( isset( $args['key'] ) ) $key = $args['key'];
+        if ( (! $name ) || (! isset( $key )
+                        || $key === '' ) ) return '';
+        $hash = $ctx->vars[ $name ];
+        if (! $hash ) {
+            $hash = $ctx->vars[ strtolower( $name ) ];
+        }
+        if (! $hash ) {
+            return '';
+        }
+        if ( is_array( $hash ) ) {
+            if ( is_array( $key ) ) {
+                $keys = $key;
+                $value = $hash;
+                foreach( $keys as $key ) {
+                    if ( strpos( $key, 'Array.' ) === 0 ) {
+                        $key = str_replace( 'Array.', '', $key );
+                        $key = $ctx->vars[ $key ];
+                    }
+                    $value = $value[ $key ];
+                }
+                return $value;
+            }
+            if ( isset( $hash[ $key ] ) ) {
+                return $hash[ $key ];
+            }
+        }
+        return '';
+    }
+
     function function_include ( $args, $ctx ) {
         $f = isset( $args['file'] ) ? $args['file'] : '';
         if (! $f ) return '';
@@ -1187,7 +1270,9 @@ class PAML {
         $name = isset( $args['name'] ) ? $args['name'] : '';
         if (!$name ) return 0;
         if ( is_array( $name ) ) return count( $name );
-        $v = $ctx->get_any( $name );
+        $v = $ctx->get_any( $name )
+           ? $ctx->get_any( $name )
+           : $this->function_var( ['name' => $name ], $ctx );
         return ( $v ) ? count( $v ) : 0;
     }
 
@@ -1262,6 +1347,11 @@ class PAML {
         if ( $phrase === null || $phrase === '' ) return;
         $component = isset( $args['component'] )
                    ? $ctx->component( $args['component'] ) : $ctx->default_component;
+        if ( isset( $args['component'] ) && ! $component && $ctx->default_component ) {
+            $component = $ctx->default_component->component( $args['component'] )
+                       ? $ctx->default_component->component( $args['component'] )
+                       : $ctx->default_component;
+        }
         if (! $component ) $component = $ctx;
         if ( $lang && $component ) {
             $dict = isset( $component->dictionary ) ? $component->dictionary : null;
@@ -1309,8 +1399,11 @@ class PAML {
 
     function modifier_escape ( $str, $arg, $ctx, $name = null ) {
         $arg = strtolower( $arg );
-        list( $obj, $metod ) = $ctx->component_method( 'modifier_encode_' . $arg );
-        return $obj ? $obj->$metod( $str,1, $ctx, 'modifier_encode_' . $arg ) : $str;
+        $meth = 'modifier_encode_' . $arg;
+        if ( method_exists( $this, $meth ) ) {
+            return $this->$meth( $str, 1, $ctx );
+        }
+        return htmlspecialchars( $str );
     }
 
     function modifier_decode_html ( $str, $arg, $ctx ) {
@@ -1362,8 +1455,15 @@ class PAML {
         return rawurlencode( $str );
     }
 
-    function encode_xml ( $str, $arg ) {
-        return xmlrpc_encode( $str );
+    function modifier_encode_xml ( $str, $arg ) {
+        if ( strtolower( $arg ) == 'cdata' && strpos( $str, ']]>' ) === false ) {
+            return '<![CDATA[' . $str . ']]>';
+        }
+        return htmlentities( $str, ENT_XML1 );
+    }
+
+    function modifier_encode_php ( $str, $arg ) {
+        return addslashes( $str );
     }
 
     function modifier_sprintf ( $str, $arg ) {
@@ -1404,7 +1504,7 @@ class PAML {
         if ( $instr !== false ) return $instr + 1;
     }
 
-    function modifier_absolute ( $str, $arg, $ctx ) {
+    function modifier_relative ( $str, $arg, $ctx ) {
         if ( strpos( $str, 'http' ) === 0 ) {
             $str = preg_replace( "/^https{0,1}:\/\/.*?\//", '/', $str );
         }
@@ -1522,6 +1622,7 @@ class PAML {
     function modifier_replace ( $str, $args, $ctx ) {
         if (!is_array( $args ) ) $args = $ctx->parse_csv( $args );
         if (! isset( $args[1] ) ) return $str;
+        $args = $this->setup_args( $args );
         return str_replace( $args[0], $args[1], $str );
     }
 
@@ -1529,7 +1630,11 @@ class PAML {
         if (!is_array( $args ) ) $args = $ctx->parse_csv( $args );
         if (! isset( $args[1] ) ) return $str;
         $i = 0;
+        $args = $this->setup_args( $args );
         foreach ( $args as $arg ) {
+            if ( strpos( $arg, '\$' ) !== false ) {
+                $arg = str_replace( '\$', '$', $arg );
+            }
             if ( ( $pos = strpos( $arg, "\0" ) ) !== false ) {
                 $arg = substr( $arg, 0, $pos );
                 if ( preg_match( '!([a-zA-Z\s]+)$!s', $arg, $match )
@@ -1541,14 +1646,33 @@ class PAML {
             $args[ $i ] = $arg;
             $i += 1;
         }
-        return preg_replace( $args[0], $args[1], $str );
+        $g = isset( $args[2] ) ? $args[2] + 0 : -1;
+        $pattern = $args[0];
+        if ( preg_match('!([a-zA-Z\s]+)$!s', $pattern, $matches ) && ( preg_match('/[eg]/', $matches[1] ) ) ) {
+            // if ( strpos( $matches[1], 'g' ) !== false ) $g = -1;
+            $pattern = substr( $pattern, 0, - strlen( $matches[1] ) )
+                     . preg_replace( '/[eg\s]+/', '', $matches[1] );
+        }
+        if (! $g ) $g = -1;
+        return preg_replace( $pattern, $args[1], $str, $g );
+    }
+
+    function modifier_default ( $str, $args, $ctx ) {
+        return $str ? $str : $args;
+    }
+
+    function modifier_normarize ( $str, $arg, $ctx ) {
+        if ( function_exists( 'normalizer_normalize' ) ) {
+            $str = normalizer_normalize( $str, Normalizer::NFKC );
+        }
+        return $str;
     }
 
 /**
  * Get from predefined variables $_REQUEST.
  */
     function request_var ( $name, $args ) {
-        $name = preg_replace( "/request\./", '', $name );
+        $name = preg_replace( "/^request\./", '', $name );
         if (!isset( $_REQUEST[ $name ] ) ) return;
         $var = $_REQUEST[ $name ];
         if ( isset( $args['setvar'] ) ) return $var;
@@ -1634,6 +1758,7 @@ class PAML {
         $request_cache = $this->request_cache;
         $this->request_cache = false;
         list( $tag_s, $tag_e, $h_sta, $h_end, $pfx ) = $this->quoted_vars;
+        list( $ldelim, $rdelim ) = [$this->html_ldelim, $this->html_rdelim];
         if (!$kind  ) $tagname = 'literal';
         else $tagname = $kind === 1 ? 'setvartemplate' : 'nocache';
         $regex = "/(($tag_s|<)$pfx:{0,1}{$tagname}.*?($tag_e|>))(.*?)"
@@ -1667,6 +1792,11 @@ class PAML {
             foreach ( $ids as $id => $bool ) {
                 $block = str_replace( '%' . $id, '<', $block );
                 $block = str_replace( $id . '%', '>', $block );
+            }
+            $block = str_replace( $ldelim, '<', $block );
+            $block = str_replace( $rdelim, '>', $block );
+            if ( stripos( $block, 'ignore>' ) !== false ) {
+                $block = preg_replace( '/<mt:{0,1}ignore.*?>.*?<\/mt:{0,1}ignore>/si', '', $block );
             }
             $this->literal_vars[] = $block;
         }
@@ -2070,12 +2200,19 @@ class PAML {
             $out = str_replace( ["<{$id}>", "</{$id}>"], '', $out );
             $out = preg_replace( '/' . $h_sta . '(.*?)' . $h_end . '/si', '<$1>', $out );
             $out = preg_replace( "/<\/{0,1}{$pfx}.*?>/si", '', $out );
-            if ( $compiled ) return $out;
             $_pfx = $this->id . '_';
             $vars = "<?php \${$_pfx}vars=&\$this->vars;\${$_pfx}old_params=&\$this->"
                   . "old_params;\${$_pfx}local_params=&\$this->local_params;\${$_pfx}"
                   . "old_vars=&\$this->old_vars;\${$_pfx}local_vars=&\$this->local_vars;?>";
             $out = $vars . $out;
+            if ( $compiled ) {
+                if (! empty( $this->literal_vars ) ) {
+                    $meta = "\$literal_old_{$_pfx}=\$this->literal_vars;";
+                    $meta .= '$this->literal_vars=' . var_export( $this->literal_vars, true );
+                    $out ="<?php {$meta};?>{$out}<?php \$this->literal_vars=\$literal_old_{$_pfx}?>";
+                }
+                return $out;
+            }
             $require = '';
             if (!$this->in_build && !$this->force_compile && $this->compile_key )
           {

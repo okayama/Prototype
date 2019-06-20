@@ -24,6 +24,14 @@ class SiteMap extends PTPlugin {
         if ( $app->workspace() ) {
             $workspace_id = $app->workspace()->id;
             $terms['workspace_id'] = $workspace_id;
+        } else if (! $app->user()->is_superuser ) {
+            $perms = $app->permissions();
+            if ( empty( $perms ) ) {
+                header( 'Content-type: application/json' );
+                echo '[]';
+                exit();
+            }
+            $terms['workspace_id'] = ['IN' => array_keys( $perms ) ];
         }
         $this->contains_assets = $this->get_config_value( 'sitemap_contains_assets', $workspace_id );
         $this->contains_attachmentfiles = $this->get_config_value( 'sitemap_contains_attachmentfiles', $workspace_id );
@@ -112,12 +120,6 @@ class SiteMap extends PTPlugin {
                 $counter++;
                 if (! $root ) {
                     $text = basename( $text );
-                    //$tree[] = ['text' => $text, 'children' => $sub,
-                    //           'icon' => 'jstree-folder'];
-                } else {
-                    //$tree[] = ['text' => $text, 'children' => $sub,
-                    //           'a_attr' => ['href' => $url, 'target' => '_blank' ],
-                    //           'icon' => 'jstree-folder'];
                 }
             }
             $url = $list[ $i ];

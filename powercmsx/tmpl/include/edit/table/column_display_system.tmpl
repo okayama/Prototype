@@ -10,12 +10,12 @@
     <mt:if name="readonly">onclick="return false;"</mt:if>
      type="checkbox" name="<mt:var name="name" escape>" value="1" <mt:if name="value">checked</mt:if>>
         <span class="custom-control-indicator"></span>
-        <span class="custom-control-description"> 
+        <span class="custom-control-description form-inline-span-cb"> 
         <mt:trans phrase="Display in System"></span>
     </label>
     <label>
     <span class="left-label"><mt:trans phrase="Menu Type"> &nbsp;: </span>
-    <select name="menu_type" id="menu_type" class="form-control">
+    <select name="menu_type" id="menu_type" class="form-control custom-select">
       <option value="1" <mt:if name="object_menu_type" eq="1">selected</mt:if>><mt:trans phrase="Panel"></option>
       <option value="2" <mt:if name="object_menu_type" eq="2">selected</mt:if>><mt:trans phrase="System Object"></option>
       <option value="3" <mt:if name="object_menu_type" eq="3">selected</mt:if>><mt:trans phrase="Read-only Object"></option>
@@ -36,7 +36,6 @@ $("#<mt:var name="name" escape>").click(function(){
 </script>
 </mt:if>
 </mt:if>
-
 <div class="row form-group" style="margin-top:-10px">
   <div class="col-lg-2">
   </div>
@@ -60,7 +59,6 @@ $("#<mt:var name="name" escape>").click(function(){
         <span class="custom-control-description"> 
         <mt:trans phrase="Taggable"></span>
     </label>
-
 <mt:ignore>
     <input type="hidden" name="api" value="0">
     <label class="custom-control custom-checkbox">
@@ -72,7 +70,6 @@ $("#<mt:var name="name" escape>").click(function(){
         <mt:trans phrase="API"></span>
     </label>
 </mt:ignore>
-
     <input type="hidden" name="template_tags" value="0">
     <label class="custom-control custom-checkbox">
     <input id="template_tags" class="form-control custom-control-input watch-changed"
@@ -82,11 +79,9 @@ $("#<mt:var name="name" escape>").click(function(){
         <span class="custom-control-description"> 
         <mt:trans phrase="Template Tags"></span>
     </label>
-
 <mt:var name="default_models" split="," setvar="default_models">
 <!--mt:ifinarray value="$object_name" array="$default_models"-->
 <!--mt:else-->
-
     <input type="hidden" name="has_basename" value="0">
     <label class="custom-control custom-checkbox">
     <input 
@@ -98,6 +93,15 @@ $("#<mt:var name="name" escape>").click(function(){
         <span class="custom-control-description"> 
         <mt:trans phrase="Has Basename"></span>
     </label>
+    <input type="hidden" name="allow_identical" value="0">
+    <label id="allow_identical-wrapper" class="custom-control custom-checkbox <mt:unless name="object_has_basename">hidden</mt:unless>">
+    <input 
+      id="allow_identical" class="form-check-input form-control custom-control-input watch-changed"
+     type="checkbox" name="allow_identical" value="1" <mt:if name="object_allow_identical">checked</mt:if>>
+        <span class="custom-control-indicator"></span>
+        <span class="custom-control-description"> 
+        <mt:trans phrase="Allow Identical Basename"></span>
+    </label>
     <mt:if name="_not_delete"><input type="hidden" name="has_basename" value="<mt:var name="object_has_basename">"></mt:if>
     <input type="hidden" name="assign_user" value="0">
     <label class="custom-control custom-checkbox">
@@ -108,7 +112,6 @@ $("#<mt:var name="name" escape>").click(function(){
         <span class="custom-control-description"> 
         <mt:trans phrase="Assign User"></span>
     </label>
-
     <input type="hidden" name="revisable" value="0">
     <label class="custom-control custom-checkbox">
     <input
@@ -171,7 +174,6 @@ $("#<mt:var name="name" escape>").click(function(){
         <mt:trans phrase="Hierarchy"></span>
     </label>
     <mt:if name="_not_delete"><mt:if name="object_name" eq="category"><input type="hidden" name="hierarchy" value="1"></mt:if></mt:if>
-
 <mt:ignore>
     <input type="hidden" name="logical_delete" value="0">
     <label id="logical_delete-cb" class="custom-control custom-checkbox hidden">
@@ -183,7 +185,6 @@ $("#<mt:var name="name" escape>").click(function(){
         <mt:trans phrase="Logical Deletion"></span>
     </label>
 </mt:ignore>
-
     <input type="hidden" name="has_assets" value="0">
     <label id="has_attachments-cb" class="custom-control custom-checkbox">
     <input id="has_assets" class="form-control custom-control-input watch-changed"
@@ -192,7 +193,6 @@ $("#<mt:var name="name" escape>").click(function(){
         <span class="custom-control-description"> 
         <mt:trans phrase="Has Assets"></span>
     </label>
-
     <input type="hidden" name="has_attachments" value="0">
     <label id="has_attachments-cb" class="custom-control custom-checkbox">
     <input id="has_attachments" class="form-control custom-control-input watch-changed"
@@ -201,8 +201,12 @@ $("#<mt:var name="name" escape>").click(function(){
         <span class="custom-control-description"> 
         <mt:trans phrase="Has Attachments"></span>
     </label>
-
-  <mt:if name="object_auditing">
+  <mt:if name="object_name" eq="contact">
+  <mt:setvar name="_object_auditing" value="1">
+  <mt:elseif name="object_auditing">
+  <mt:setvar name="_object_auditing" value="1">
+  </mt:if>
+  <mt:if name="_object_auditing">
     <input type="hidden" name="show_activity" value="0">
     <label id="show_activity-cb" class="custom-control custom-checkbox">
     <input id="show_activity" class="form-control custom-control-input watch-changed"
@@ -212,7 +216,6 @@ $("#<mt:var name="name" escape>").click(function(){
         <mt:trans phrase="Show Activity"></span>
     </label>
   </mt:if>
-
   </div>
 </div>
 <div class="row form-group" style="margin-top:-10px">
@@ -224,10 +227,9 @@ $("#<mt:var name="name" escape>").click(function(){
     <input id="has_uuid" class="form-control custom-control-input watch-changed"
      type="checkbox" name="has_uuid" value="1" <mt:if name="object_has_uuid">checked</mt:if>>
         <span class="custom-control-indicator"></span>
-        <span class="custom-control-description"> 
+        <span class="custom-control-description form-inline-span-cb"> 
         <mt:trans phrase="UUID"></span>
     </label>
-
     <input type="hidden" name="im_export" value="0">
     <label id="im_export-cb" class="custom-control custom-checkbox">
     <input id="im_export" class="form-control custom-control-input watch-changed"
@@ -252,7 +254,6 @@ $("#<mt:var name="name" escape>").click(function(){
         <span class="custom-control-description"> 
         <mt:trans phrase="Can Duplicate"></span>
     </label>
-
     <input type="hidden" name="has_form" value="0">
     <label id="im_export-cb" class="custom-control custom-checkbox">
     <input id="has_form" class="form-control custom-control-input watch-changed"
@@ -261,10 +262,16 @@ $("#<mt:var name="name" escape>").click(function(){
         <span class="custom-control-description"> 
         <mt:trans phrase="Has Form"></span>
     </label>
-
   </div>
 </div>
 <script>
+$('#has_basename').change(function(){
+    if ( $(this).prop('checked') ) {
+        $('#allow_identical-wrapper').show();
+    } else {
+        $('#allow_identical-wrapper').hide();
+    }
+});
 toggle_status_selecter ();
 $('#has_status').change(function(){
     toggle_status_selecter();
@@ -298,7 +305,6 @@ function toggle_status_selecter () {
 }
 </script>
 <!--/mt:ifinarray-->
-
 <script>
 $('#start_end').change(function(){
     if ( $(this).prop('checked') ) {

@@ -6,6 +6,7 @@ class template extends PADOBaseModel {
         if (! $this->id ) {
             parent::save();
         }
+        $app->init_tags();
         $ctx = $app->ctx;
         $text = $this->text;
         $app->init_tags();
@@ -14,20 +15,13 @@ class template extends PADOBaseModel {
         $local_vars = $ctx->local_vars;
         $vars = $ctx->vars;
         $compiled = $ctx->build( $text, true );
+        $compiled = rtrim( $compiled );
         $this->compiled( $compiled );
+        $this->cache_key( md5( $text ) );
         $ctx->vars = $vars;
         $ctx->local_vars = $local_vars;
         $ctx->__stash = $__stash;
-        $app->set_cache( 'template' . DS . $this->id . DS . 'include_modules__c',
-            array_values( $app->modules ) );
         return parent::save();
-    }
-
-    function remove () {
-        $app = Prototype::get_instance();
-        $cache_key = 'template' . DS . $this->id;
-        $app->clear_cache( $cache_key );
-        return parent::remove();
     }
 
 }

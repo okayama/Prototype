@@ -33,12 +33,23 @@
         <span class="custom-control-indicator"></span>
         <span class="custom-control-description"><mt:trans phrase="MB"></span>
     </label>
-    
+    &nbsp; 
+    <input type="hidden" name="attach_to_email" value="0">
+    <label class="custom-control custom-checkbox unit-label">
+    <input id="required" class="form-control custom-control-input watch-changed"
+    <mt:if name="readonly">onclick="return false;"</mt:if>
+     type="checkbox" name="attach_to_email" value="1" <mt:if name="object_attach_to_email">checked</mt:if>>
+        <span class="custom-control-indicator"></span>
+        <span class="custom-control-description"> 
+        <mt:trans phrase="Attach to Email"></span>
+    </label>
     <mt:var name="_hint">
   </div>
 </div>
+<mt:getobjectlabel id="$object_questiontype_id" column="class" model="questiontype" setvar="questiontype_value">
+<mt:unless name="questiontype_value">
 <mt:getobjectlabel id="$object_questiontype_id" column="basename" model="questiontype" setvar="questiontype_value">
-
+</mt:unless>
 <mt:if name="questiontype_value" like="file">
 <script>
 $('.unit-label').show();

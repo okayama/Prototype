@@ -30,6 +30,7 @@
     "Fore Color"         : "前景色",
     "Background Image"   : "背景画像",
     "Identifier"         : "識別子",
+    "Prioritize"         : "優先",
     "Applied"            : "適用済み",
     "Rebuild Triggers"   : "再構築トリガー",
     "Scope of Triggers"  : "トリガーのスコープ",
@@ -55,6 +56,7 @@
     "Hint"               : "ヒント",
     "Change"             : "変更",
     "Profile"            : "プロフィール",
+    "Activity (%s)"      : "アクティビティ (%s)",
     "Activity Log"       : "アクティビティ・ログ",
     "Select a Widget..." : "ウィジェットを選択...",
     "No %s Found."       : "%sはありません。",
@@ -145,7 +147,7 @@
     "Edit..."            : "編集...",
     "Tool"               : "ツール",
     "Tools"              : "ツール",
-    "Required"           : "必須項目",
+    "Required"           : "必須",
     "Copy to Clipboard"  : "クリップボードにコピー",
     "Apply to Master"    : "マスタに適用",
     "Upgrade"            : "アップグレード",
@@ -295,6 +297,7 @@
     "Name"               : "名前",
     "Data Type"          : "データ型",
     "Size"               : "サイズ",
+    "Specify size"       : "サイズを指定",
     "Default"            : "既定値",
     "Label"              : "ラベル",
     "Labels"             : "ラベル",
@@ -427,6 +430,7 @@
     "items per Page"     : "件 / ページあたり",
     "Display Options"    : "画面オプション",
     "Last Login"         : "最終ログイン",
+    "Last Login IP"      : "最終ログインIP",
     "Search"             : "検索",
     "Save"               : "保存",
     "Save Changes"       : "変更を保存",
@@ -502,8 +506,11 @@
     "File Name"          : "ファイル名",
     "File Path"          : "ファイル・パス",
     "Upload Path"        : "アップロード・パス",
+    "Show Path of Entry" : "記事のパスを表示",
+    "Show Path of Page"  : "ページのパスを表示",
     "Output the File"    : "ファイルを出力",
     "Output Path"        : "ファイルを出力先",
+    "Show Path Field"    : "パス欄を表示",
     "Path"               : "パス",
     "Extension"          : "拡張子",
     "Bytes"              : "バイト",
@@ -562,14 +569,20 @@
     "Rows"               : "行の高さ",
     "Connector"          : "コネクタ",
     "%s is invalid."     : "%sが正しくありません。",
+    "%s is invalid date.": "%sが正しくない日付です。",
     "Date & Time"        : "日付と時刻",
     "(Year)"             : "年",
     "(Month)"            : "月",
     "(Day)"              : "日",
+    "Attach to Email"    : "メールに添付",
     "Send Email"         : "メールを送信する",
     "Mail From"          : "メールのFrom",
     "Notify To"          : "通知送信先",
     "Notification"       : "通知",
+    "Thanks Cc"          : "メールのCc",
+    "Thanks Bcc"         : "メールのBcc",
+    "Notify Cc"          : "メールのCc",
+    "Notify Bcc"         : "メールのBcc",
     "Requires Token"     : "トークンを要求する",
     "Token Expires"      : "トークン有効期限",
     "Anti-spam Measures" : "スパム対策",
@@ -682,6 +695,12 @@
     "Publish Again"      : "再構築しなおす",
     "Publish Again"      : "再構築しなおす",
     "Preview URL"        : "プレビューURL",
+    "Setting Name"       : "設定名",
+    "Result"             : "結果",
+    "Recommendation"     : "推奨",
+    "Modules"            : "モジュール",
+    "Enabled"            : "有効",
+    "Disabled"           : "無効",
     "Enabled %s"         : "有効な%s",
     "Disabled %s"        : "無効な%s",
     "Import Objects"     : "インポート",
@@ -692,6 +711,7 @@
     "File Out Path"      : "ファイル出力パス",
     "Do Import"          : "インポート開始",
     "Do Action"          : "アクションを実行",
+    "Skip Empty"         : "スキップ",
     "Publish time: %s"   : "処理時間 : %s",
     "Y-m-d H:i"          : "Y年m月d日 H時i分",
     "Y-m-d"              : "Y年m月d日",
@@ -707,14 +727,16 @@
     "Disable this plugin": "プラグインを無効化",
     "Document"           : "ドキュメント",
     "\\F\\i\\s\\c\\a\\l Y": "Y年度",
-    "\\Y"                : "Y年",
-    "\\F, \\Y"           : "Y年m月",
+    "Y"                  : "Y年",
+    "F, Y"               : "Y年m月",
+    "F d, Y"             : "Y年m月d日",
     "Latest News"        : "ニュース",
     "List News"          : "ニュース一覧",
     "Your Location"      : "現在地",
     "Press Release"      : "プレスリリース",
     "About Us"           : "私たちについて",
     "Contact Us"         : "お問い合わせ",
+    "Translate Labels"   : "ラベルの翻訳",
     "To"                 : "〜",
     "Authentication"     : "認証",
     "User Lock Out"      : "ユーザーロックアウト",
@@ -722,15 +744,25 @@
     "Lock Out Limit"     : "認証ロック回数",
     "Password Reset"     : "パスワードを再設定",
     "Input Text (Multiple)" : "テキスト (可変長)",
+    "Multiple Fields"    : "複数のフィールド",
+    "Variable Length"    : "可変長",
     "Column's Permissions" : "カラムの権限",
+    "Start Install..."   : "インストールを開始します。...",
+    "Create %s tables."  : "%s個のテーブルを作成しました。",
+    "[%s] Your Confirmation Code" : "【%s】ログイン確認用コード",
+    "Creating TABLE \\'%s\\'..."
+        : "テーブル「%s」を作成しています。...",
     "The theme '%s' has been applied."
         : "テーマ「%s」を適用しました。",
     "The theme '%1$s' has been applied by %2$s."
         : "ユーザー %2$s がテーマ「%1$s」を適用しました。",
     "%s object(s) has been skipped because it already existed."
         : "%sのオブジェクトについては重複があったためスキップされました。",
+    "%s '%s' (ID:%s) logged in successfully."
+        : "%s「%s」(ID:%s)がログインしました。",
     "To see the details, go to the list of Logs."
         : "詳細を確認するには、ログの一覧を表示してください。",
+    "Allow Identical Basename" : "ベースネームの重複を許可",
     "I have read and agree to the Privacy Policy." : "プライバシーポリシーを確認して同意します。",
     "The %s '%s' has been skipped because it already existed."
         : "%s「%s」は既に存在するためインポートはスキップされました。",
@@ -740,11 +772,13 @@
     "Current theme is '%s'." : "現在のテーマは「%s」です。",
     "Are you sure you want to apply this theme?" : "このテーマを適用してもよろしいですか?",
     "Please complete the form below and click Confirm button."
-        : "以下のフォームに入力して「確認」ボタンをクリックしてください。",
+        : "以下のフォームに入力して「確認する」ボタンをクリックしてください。",
     "Confirm the following and click Submit button."
-        : "内容を確認の上、よろしければ「送信」をクリックして投稿してください。",
+        : "内容を確認の上、よろしければ「送信する」をクリックして投稿してください。",
     "Thank you for your inquiry." : "お問い合わせありがとうございました。",
     "Please check your entries." : "入力内容を確認してください。",
+    "The contact posted for %s has been received."
+        : "「%s」へのコンタクトの投稿を受け付けました。",
     "Cleanup %s removed file(s)." : "削除済みの%sのファイルをクリーンアップしました。",
     "There were no %s for action." : "対象の%sは見つかりませんでした。",
     "You applied an action to %s %s." : "%s件の%sにアクションを適用しました。",
@@ -753,6 +787,12 @@
         : "max_input_vars の推奨値は %s 以上です( 現在の設定 : %s )。",
     "The Email address to notification is not specified."
         : "通知送信先が指定されていません。",
+    "There is no plugin that can be use."
+        : "プラグインはありません。",
+    "There is no plugin that can be setting."
+        : "設定可能なプラグインはありません。",
+    "You can change the display order of fields with drag &amp; drop."
+        : "ドラッグ&amp;ドロップでフィールドの表示順を変更できます。",
     "%s Waiting for Approval" : "承認待ちの%s",
     "Saving %s ( %s )...": "%s (%s)を保存しています...",
     "(Class not specified)" : "(クラス指定なし)",
@@ -777,11 +817,18 @@
     "Unpublished %s %s." : "%s件の%sを非公開にしました。",
     "Publish queue" : "予約キュー",
     "Removed %s %s.": "%s件の%sを削除しました。",
+    "Clean up urlinfo" : "URLの整理",
+    "Clean up %s URLInfo." : "%sのURLを整理しました。",
+    "Can not specify an index for '%s'." : "「%s」にはインデックスを指定できません。",
+    "Can not specify an index for this type." : "インデックスを指定できないタイプです。",
+    "Contains only the same scope." : "同一スコープのオブジェクトのみを対象とする",
     "Trigger(s) only the same scope." : "同一スコープのオブジェクトのみを対象とする",
     "Target only object(s) with the same WorkSpace."
         : "ワークスペースのオブジェクト更新のみを対象にします。",
     "Target only system scope's object(s)."
         : "システムスコープのオブジェクト更新のみを対象にします。",
+    "Output only if contains target object."
+        : "オブジェクトがない時アーカイブを出力しない",
     "Compress the database"
         : "データベースの圧縮",
     "Scheduled replacement from revision(%s)"
@@ -794,6 +841,7 @@
         : "アクティビティのモデルを「%s」に変更しました。",
     "Fix WorkSpace Menu to the Top"
         : "スペースのメニューを上部に固定する",
+    "Does not save the data into the database" : "投稿をデータベースに保存しない",
     "Are you sure you want to duplicate this %s?"
         : "この%sを複製しますか?",
     "Are you sure you want to save this %s and duplicate?"
@@ -805,9 +853,9 @@
     "The upload that 0 byte size file is not allowed."
         : "空のファイルはアップロードできません。",
     "Create %s (%s / ID : %s)."
-        : "新規 : %s (%s / ID : %s).",
+        : "新規 : %s (%s / ID : %s)",
     "Update %s (%s / ID : %s)."
-        : "更新 : %s (%s / ID : %s).",
+        : "更新 : %s (%s / ID : %s)",
     "The %sth %s tag is not closed ( at line %s )."
         : "%s番目の%sタグが閉じられていません(%s行目)。",
     "The tag %s is not found ( at line %s )."
@@ -865,6 +913,10 @@
         : "確認用コードが一致しません。",
     "The confirmation code has been expired."
         : "確認用コードの有効期限が切れました。",
+    "Your Confirmation Code is '%s'. Please enter the code to authentication screen."
+        : "確認用コードは「%s」です。認証画面にコードを入力してログインしてください。",
+    "* Please be aware that it will be invalidated after a certain amount of time has passed."
+        : "※ 一定時間が経過すると無効となりますのでご注意ください。",
     "The status at replacement will be status of the master."
         : "予約差し替え時のステータスは、マスタのステータスになります。",
     "The status at apply will be status of the master."
@@ -1031,8 +1083,12 @@
         : "モデル(カラム)名は%s文字以内でなければなりません。",
     "Even if you do not specify it, you can add it in the edit screen."
         : "指定のない場合でも、編集画面で追加することができます。",
-    "If the field is not display, the item is not checked."
-        : "フィールドが非表示の場合はチェックされません。",
+    "Required field can not be hidden."
+        : "必須項目を非表示にすることはできません。",
+    "The input field can be increased or decreased dynamically."
+        : "入力フィールドを動的に増減できるようになります。",
+    "Allows you to dynamically copy fields and continue entering values."
+        : "動的にフィールドをコピーして値を続けて入力できるタイプのフィールドです。",
     "Comma separated values. The value is stored in the variable 'field_option' in the loop of the template variable 'field_options'."
         : "カンマ区切りで値を入力すると、テンプレート変数 'field_options'のループの中で 'field_option'変数に値を格納します。",
     "Comma separated values. The value is stored in the variable 'field_label' in the loop of the template variable 'field_options'."
@@ -1099,6 +1155,8 @@
         : "%sの表示順の変更を保存しました。",
     "A %1$s with the same %2$s already exists."
         : "同じ値の%2$s「%1$s」が既に存在します。",
+    "A %1$s with the same %2$s '%3$s' already exists."
+        : "同じ%2$sの%1$s「%3$s」が既に存在します。",
     "Both passwords must match."
         : "パスワードが一致しません。",
     "Username, Password and Email are required."
@@ -1173,6 +1231,8 @@
         : "ファイルを編集しました。編集されたファイルは、このページを保存するまで反映されません。",
     "It has been reduced as it exceeds the maximum size of the image."
         : "画像の最大サイズを超えていたため、画像は縮小されました。",
+    "It has been reduced as it exceeds the maximum size of the image file '%s'."
+        : "画像'%s'は最大サイズを超えていたため、画像は縮小されました。",
     "It has been reduced as it exceeds the maximum size of the image. The uploaded file will not be reflected until you save this page."
         : "画像の最大サイズを超えていたため、画像は縮小されました。アップロードしたファイルは、このページを保存するまで反映されません。",
     "This view could not be deleted because it is being used for a URL map. To delete a view, delete the URL map first."
@@ -1234,6 +1294,8 @@
         : "オプションに入力した値と異なる値を受け取る場合は、別のカンマ区切りリストを入力してください。",
     "You are trying to specify a status that can not be set by the current user. Changing the status will change the user to you. Are you sure you want to change the status?"
         : "現在のユーザーが設定できないステータスを指定しようとしています。ステータスを変更すると、ユーザーがあなたに変更されます。ステータスを変更しますか?",
+    "Changing the model will remove archives. Are you sure you want to change the model?"
+        : "モデルを変更すると出力済みのアーカイブが削除されます。モデルを変更してよろしいですか?",
     "Please enter the width (number) of the fields(Comma separated list)."
         : "フィールドの幅(数字)をカンマ区切りで入力してください。",
     "Failed to save a contact for %s."
@@ -1270,8 +1332,12 @@
         : "この%sをマスタでなくリビジョンとして保存しますか?",
     "'%s' is not allowed to upload by system settings."
         : "'%s'のアップロードはシステム設定にて許可されていません。",
+    "Are you sure you want to continue Install?"
+        : "インストールを続行しますか?",
     "Model and View are required."
         : "モデルとビューを選択してください。",
+    "Please check the file size and data."
+        : "ファイルのサイズまたデータを確認してください。",
     "[[The line was skipped because CSV conversion failed!]]"
         : "[[CSV変換に失敗したため行がスキップされました!]]",
     "This Page is WorkSpace %s's Dashboard!"
@@ -1285,5 +1351,19 @@
     "You are about to edit the revision."
         : "リビジョンを編集しようとしています。",
     "You are about to edit the revision. To apply this revision to the master click the \\'Apply to Master\\' button."
-        : "リビジョンを編集しようとしています。このリビジョンをマスタに適用するには「マスタに適用」ボタンをクリックしてください。"
+        : "リビジョンを編集しようとしています。このリビジョンをマスタに適用するには「マスタに適用」ボタンをクリックしてください。",
+    "PowerCMS X System Check" : "PowerCMS X システムチェック",
+    "PowerCMS X already Installed." : "PowerCMS X は既にインストール済みです。",
+    "The connection to MySQL was successful." : "MySQLへの接続に成功しました。",
+    "Recommended value is %s or more" : "推奨値は%s以上です",
+    "( %s ) '%s' recommended value is %s or more." : "( %s ) '%s'の推奨値は%s以上です。",
+    "MySQL connection failed( %s )." : "MySQLへの接続に失敗しました( %s )。",
+    "MySQL connection check was skipped because db-config.php does not exist."
+        : "db-config.phpが存在しないため、MySQLへの接続は確認できませんでした。",
+    "%s is not enabled." : "%s が有効ではありません。",
+    "The version of PHP installed on your server (%s) is lower than the minimum supported version %s."
+        : "インストールされている PHP %s は、PowerCMS X でサポートされている最低限のバージョン%sを満たしていません。",
+    "You can install PowerCMS X( although some recommended settings are not sufficient )."
+        : "いくつかの推奨設定を満たしていませんが、PowerCMS Xをインストールできます。",
+    "You can install PowerCMS X." : "PowerCMS Xをインストールできます。"
 }

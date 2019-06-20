@@ -29,7 +29,7 @@ class DisplayOptions extends PTPlugin {
         }
     }
 
-    function pre_load_objects ( &$cb, $app, $terms, $args, $cols, &$extra = '' ) {
+    function pre_load_objects ( &$cb, $app, &$terms, $args, $cols, &$extra = '' ) {
         if (! $app->stash( 'model_displayoption' ) ) return;
         $tag_args = $cb['args'];
         if (! isset( $tag_args['this_tag'] ) || $tag_args['this_tag'] != 'tables' ) {
@@ -40,21 +40,30 @@ class DisplayOptions extends PTPlugin {
             && $terms['display_system'] && $workspace_id ) {
             $workspace_id = 0;
         }
-        $displayoptions = $app->stash( 'current_displayoptions' )
-                        ? $app->stash( 'current_displayoptions' )
+        $displayoptions = $app->stash( 'current_displayoptions_' . $workspace_id )
+                        ? $app->stash( 'current_displayoptions_' . $workspace_id )
                         : $app->db->model( 'displayoption' )->load(
                                         ['workspace_id' => $workspace_id] );
-        $app->stash( 'current_displayoptions', $displayoptions );
-        if (empty( $displayoptions ) ) return;
+        $app->stash( 'current_displayoptions_' . $workspace_id , $displayoptions );
+        if ( empty( $displayoptions ) ) return;
+        $target_names = [];
+        if ( isset( $terms['name'] ) && isset( $terms['name']['IN'] ) ) {
+            $target_names = $terms['name']['IN'];
+        }
         if ( isset( $terms['menu_type'] ) ) {
             $type = $terms['menu_type'];
             $exclude_models = [];
             $include_models = [];
             foreach ( $displayoptions as $displayoption ) {
+                $pos = array_search( $displayoption->model , $target_names );
                 if ( $displayoption->menu_type != $type ) {
                     $exclude_models[] = $displayoption->model;
+                    if ( $pos ) {
+                        unset( $target_names[ $pos ] );
+                    }
                 } else {
                     $include_models[] = $displayoption->model;
+                    if (! $pos ) $target_names[] = $displayoption->model;
                 }
             }
             $_extra = '';
@@ -63,16 +72,26 @@ class DisplayOptions extends PTPlugin {
                 foreach ( $exclude_models as $model ) {
                     $expressions[] = " table_name!='{$model}' ";
                 }
-                $_extra .= ' AND (' . implode( ' AND ', $expressions ) . ') ';
+                if (! empty( $expressions ) ) {
+                    $_extra .= ' AND (' . implode( ' AND ', $expressions ) . ') ';
+                }
             }
             if (! empty( $include_models ) ) {
                 $expressions = [];
                 foreach ( $include_models as $model ) {
+                    if (! $app->can_do( $model, 'list' ) ) {
+                        continue;
+                    }
                     $expressions[] = " table_name='{$model}' ";
                 }
-                $_extra .= ' OR (' . implode( ' OR ', $expressions ) . ') ';
+                if (! empty( $expressions ) ) {
+                    $_extra .= ' OR (' . implode( ' OR ', $expressions ) . ') ';
+                }
             }
-            $extra .= "$_extra";
+            $extra .= $_extra;
+            if ( isset( $terms['name'] ) && isset( $terms['name']['IN'] ) ) {
+                $terms['name']['IN'] = $target_names;
+            }
         }
     }
 
@@ -171,6 +190,49 @@ class DisplayOptions extends PTPlugin {
             $obj->list_columns( json_encode( $list_data ) );
         }
         return true;
+    }
+
+    function hdlr_get_menu_position ( $args, $ctx ) {
+        $app = $ctx->app;
+        $workspace_id = $app->workspace() ? (int)$app->workspace()->id : 0;
+        $table = $app->get_table( $ctx->local_vars['name'] );
+        $display_option =
+          $app->db->model( 'displayoption' )->get_by_key(
+            ['model' => $table->name, 'workspace_id' => $workspace_id ] );
+        return $display_option->id ? $display_option->menu_type : $table->menu_type;
+    }
+
+    function customize_menus ( $app ) {
+        $workspace_id = $app->workspace() ? (int)$app->workspace()->id : 0;
+        if ( $app->request_method === 'POST' ) {
+            $update = 0;
+            $app->validate_magic();
+            $params = $app->param();
+            foreach ( $params as $key => $param ) {
+                if ( strpos( $key, 'menu_type_' ) !== 0 ) {
+                    continue;
+                }
+                $param = (int) $param;
+                $key = preg_replace( '/^menu_type_/', '', $key );
+                $table = $app->get_table( $key );
+                if (! $table ) return;
+                $display_option =
+                  $app->db->model( 'displayoption' )->get_by_key(
+                    ['model' => $table->name, 'workspace_id' => $workspace_id ] );
+                $menu_type = $display_option->id ? $display_option->menu_type : $table->menu_type;
+                if ( $menu_type != $param ) {
+                    $display_option->menu_type( $param );
+                    $app->set_default( $display_option );
+                    $display_option->save();
+                    $update++;
+                }
+            }
+            $redirect_url = $app->admin_url . '?__mode=customize_menus';
+            $redirect_url .= $workspace_id ? '&workspace_id=' . $workspace_id : '';
+            $redirect_url .= '&saved=1&update=' . (int) $update;
+            $app->redirect( $redirect_url );
+        }
+        return $app->__mode( 'customize_menus' );
     }
 
     function template_source_list ( $cb, $app, $param, $src ) {

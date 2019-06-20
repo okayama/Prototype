@@ -36,12 +36,11 @@ $('#drop-zone-<mt:var name="__col_name__">').css('margin','1px');
 $('#drop-zone-<mt:var name="__col_name__">').css('padding','8px');
 $(function () {
     'use strict';
-    var url = '<mt:var name="script_uri">?__mode=upload_multi&magic_token=<mt:var name="magic_token">&workspace_id=<mt:var name="workspace_id">&file_attachment=1&_screen_id=<mt:var name="screen_id">&name=<mt:var name="__col_name__">&model=attachmentfile&column=file&permission=<mt:var name="model">';
+    var url = '<mt:var name="script_uri">?__mode=upload_multi&magic_token=<mt:var name="magic_token">&workspace_id=<mt:var name="workspace_id">&file_attachment=1&_screen_id=<mt:var name="screen_id">&name=<mt:var name="__col_name__">&model=attachmentfile&name=file&permission=<mt:var name="model">';
     $('#fileupload-<mt:var name="__col_name__">').fileupload({
         url: url,
         dataType: 'json',
         dropZone: $("#drop-zone-<mt:var name="__col_name__">"),
-        // formData: {extra_path: $('#extra_path').val()},
         add: function (e, data) {
             data.submit();
             upload_count++;
@@ -60,7 +59,6 @@ $(function () {
                 return;
             }
             $.each(data.result.files, function (index, file) {
-                // $('<p/>').text(file.name).appendTo('#files');
                 var file_name = escape_html( decodeURI(file.name) );
                 var file_class = escape_html( file.class );
                 var tmpl_li = $('#<mt:var name="__col_name__">-tmpl');
@@ -77,13 +75,11 @@ $(function () {
                 add_li.children('.assets-child-thumb-attachment').css('background-image','url(\'data:'+file.type+';base64,'+file.thumbnail_square+ '\')');
                 add_li.children('.assets-child-thumb-attachment').attr('data-image', file.thumbnail);
                 add_li.children('.assets-child-thumb-attachment').attr('data-type', file.type);
-                // add_li.children('a').attr('href', 'https://alfasado.net/');
                 add_li.children('button').attr('data-session', file.session_id);
                 add_li.children('.assets-child-thumb-attachment').show();
                 var download_url = '<mt:var name="script_uri">?__mode=view&_type=edit&_model=<mt:var name="_model" escape>&_screen_id=<mt:var name="screen_id">&workspace_id=<mt:var name="workspace_id">';
                 download_url += '&view=attachmentfiles&session_id=' + file.session_id;
                 var fInfo = file_name.split('.');
-
                 var fileExtension = fInfo[fInfo.length-1].toLowerCase();
                 var extensionsInline = ['csv', 'xls', 'xlsx', 'doc', 'docx', 'ppt', 'pptx'];
                 if (extensionsInline.indexOf(fileExtension) < 0){
@@ -124,12 +120,14 @@ $(function () {
         .parent().addClass($.support.fileInput ? undefined : 'disabled');
 });
 function finish_<mt:var name="__col_name__"> () {
-    $('#progress-<mt:var name="__col_name__"> .progress-bar').css(
-        'width', 0
-    );
-    $('#<mt:var name="__col_name__">-alert-message').html('<mt:trans phrase="The file has successfully uploaded. The uploaded file will not be reflected until you save this page.">');
-    $('#<mt:var name="__col_name__">-alert').show();
-    $('#<mt:var name="__col_name__">-alert').focus();
+    if ( upload_count ) {
+        $('#progress-<mt:var name="__col_name__"> .progress-bar').css(
+            'width', 0
+        );
+        $('#<mt:var name="__col_name__">-alert-message').html('<mt:trans phrase="The file has successfully uploaded. The uploaded file will not be reflected until you save this page.">');
+        $('#<mt:var name="__col_name__">-alert').show();
+        $('#<mt:var name="__col_name__">-alert').focus();
+    }
 }
 ;(function(){
     var event_type = 'mouseenter mousemove mouseleave';
@@ -222,12 +220,16 @@ function finish_<mt:var name="__col_name__"> () {
       <mt:loop name="$__rel_name__">
         <li class="<mt:var name="__col_name__">-child badge badge-default badge-relation badge-draggable">
         <mt:if name="has_thumbnail">
-        <div <mt:ifusercan model="attachmentfile" action="list">class="assets-child-thumb"</mt:ifusercan> data-model="<mt:var name="rel_model" escape>" data-id="<mt:var name="__value__" escape>" style="background-image:url('<mt:var name="script_uri">?__mode=get_thumbnail&amp;square=1&amp;_model=<mt:var name="rel_model" escape>&amp;id=<mt:var name="__value__" escape>')"></div>
+        <div class="assets-child-thumb" data-model="<mt:var name="rel_model" escape>" data-id="<mt:var name="__value__" escape>" style="background-image:url('<mt:var name="script_uri">?__mode=get_thumbnail&amp;square=1&amp;_model=<mt:var name="rel_model" escape>&amp;id=<mt:var name="__value__" escape>')"></div>
         </mt:if>
         <span>
           <mt:var name="__value__" mb_instr="session-" setvar="instr_session">
           <mt:if name="instr_session" eq="1">
             <mt:setvarblock name="foward_name">request._<mt:var name="__col_name__">_foward_<mt:var name="__value__"></mt:setvarblock>
+            <mt:if name="forward_params">
+            <mt:setvarblock name="foward_name">request._attachmentfiles_label_<mt:var name="__value__" escape></mt:setvarblock>
+            <mt:var name="$foward_name" escape setvar="_related_object">
+            </mt:if>
             <mt:var name="$foward_name" escape>
           <mt:else>
           <mt:getobjectname id="$__value__" type="$edit" escape setvar="_related_object">
@@ -260,7 +262,7 @@ function finish_<mt:var name="__col_name__"> () {
           <i class="fa fa-download"></i>
         </a>
         </mt:if>
-        <input type="hidden" value="" name="_<mt:var name="__col_name__">_label_<mt:var name="__value__" escape>" id="_<mt:var name="__col_name__">_label_<mt:var name="__value__" escape>">
+        <input type="hidden" value="<mt:if name="forward_params"><mt:var name="$foward_name" escape></mt:if>" name="_<mt:var name="__col_name__">_label_<mt:var name="__value__" escape>" id="_<mt:var name="__col_name__">_label_<mt:var name="__value__" escape>">
         <button type="button" class="_<mt:var name="__col_name__">-edit btn btn-info btn-sm" aria-label="<mt:trans phrase="Edit">" data-name="_<mt:var name="__col_name__">_label_<mt:var name="__value__" escape>"
           data-label="<mt:var name="_related_object">">
           <i class="fa fa-pencil"></i>

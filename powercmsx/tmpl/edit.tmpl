@@ -1,8 +1,10 @@
 <mt:setvar name="extensions_inline" value="csv" function="push">
 <mt:setvar name="extensions_inline" value="xls" function="push">
+<mt:setvar name="extensions_inline" value="xlsx" function="push">
 <mt:setvar name="extensions_inline" value="doc" function="push">
 <mt:setvar name="extensions_inline" value="docx" function="push">
-<mt:setvar name="extensions_inline" value="ppt" function="pptx">
+<mt:setvar name="extensions_inline" value="ppt" function="push">
+<mt:setvar name="extensions_inline" value="pptx" function="push">
 <mt:if name="request.cloned">
 <mt:setvarblock name="header_alert_message"><mt:trans phrase="The %s duplicated." params="$label"></mt:setvarblock>
 </mt:if>
@@ -40,7 +42,7 @@ $('#alert-saved').focus();
   <div id="alert-saved" class="alert alert-success" tabindex="0">
     <mt:var name="alert_close">
     <mt:trans phrase="Your changes have been saved.">
-    <mt:if name="request.rebuild_this_template">
+    <mt:if name="request.need_rebuild">
     <a href="<mt:var name="script_uri">?__mode=rebuild_phase&amp;_type=start_rebuild<mt:if name="workspace_id">&amp;workspace_id=<mt:var name="workspace_id">"</mt:if>" class="popup">
     <mt:trans phrase="Publish your site to see these changes take effect.">
     </a>
@@ -202,7 +204,7 @@ $('#__view-permalink').click(function(){
   <div class="col-lg-2">
     <mt:loop name="languages">
     <mt:if name="__first__">
-    <select class="form-control short custom-select" id="<mt:var name="__col_name__">" name="<mt:var name="__col_name__">" <mt:if name="readonly">readonly onmousedown="return false;" onkeydown="return false;"</mt:if>>
+    <select class="form-control short custom-select" id="<mt:var name="__col_name__">" name="<mt:var name="__col_name__">" <mt:if name="readonly">tabindex="-1" readonly onmousedown="return false;" onkeydown="return false;"</mt:if>>
     </mt:if>
       <option value="<mt:var name="__value__">" <mt:if name="value" eq="$__value__">selected</mt:if>><mt:var name="__value__" translate="1"></option>
     <mt:if name="__last__">
@@ -289,11 +291,11 @@ $('#__view-permalink').click(function(){
       </button>
       <span id="<mt:var name="__col_name__">-alert-message"><mt:trans phrase="The file has successfully uploaded. The uploaded file will not be reflected until you save this page."></span>
     </div>
-
 <mt:assetproperty name="$name" model="$model" property="image_width" thumbnail_height="$preview_width" setvar="thumbnail_height">
+<mt:assetproperty name="$name" model="$model" property="extension" setvar="fule_extension">
 <div id="drop-<mt:var name="__col_name__">">
-<i id="icon-<mt:var name="__col_name__">" class="btn fa <mt:if name="class" eq="image">fa-file-image-o<mt:elseif name="class" eq="pdf">fa-file-pdf-o<mt:elseif name="class" eq="video">fa-file-video-o<mt:elseif name="class" eq="audio">fa-file-audio-o<mt:else>fa-file-o</mt:if> fa-3x" aria-hidden="true"></i>
-  <img class="<mt:unless name="class" eq="image">hidden</mt:unless>
+<i id="icon-<mt:var name="__col_name__">" class="btn fa <mt:if name="class" eq="image">fa-file-image-o<mt:elseif name="fule_extension" eq="svg">fa-file-image-o<mt:elseif name="class" eq="pdf">fa-file-pdf-o<mt:elseif name="class" eq="video">fa-file-video-o<mt:elseif name="class" eq="audio">fa-file-audio-o<mt:else>fa-file-o</mt:if> fa-3x" aria-hidden="true"></i>
+  <img class="<mt:unless name="class" eq="image"><mt:unless name="fule_extension" eq="svg">hidden</mt:unless></mt:unless>
     <mt:unless name="file_name"> hidden</mt:unless> preview-file-field lazy"
     id="image_preview-<mt:var name="__col_name__">"
     src="<mt:var name="prototype_path">assets/img/spacer.gif"
@@ -444,16 +446,20 @@ $(function () {
             $.each(data.result.files, function (index, file) {
                 $('#files-<mt:var name="__col_name__">').html('');
                 $('#download-<mt:var name="__col_name__">').show();
+                $('#download-<mt:var name="__col_name__">').css('display', 'inline');
                 $('#file-<mt:var name="__col_name__">-label').show();
+                $('#file-<mt:var name="__col_name__">-label').css('display', 'inline');
                 $('#<mt:var name="__col_name__">-magic').val(file.magic);
                 var file_name = escape_html( decodeURI(file.name) );
                 var file_class = escape_html( file.class );
                 if (file_class == 'image') {
                     $('#edit-<mt:var name="__col_name__">').show();
+                    $('#edit-<mt:var name="__col_name__">').css('display', 'inline');
                 } else {
                     $('#edit-<mt:var name="__col_name__">').hide();
                 }
                 $('#inline-<mt:var name="__col_name__">').show();
+                $('#inline-<mt:var name="__col_name__">').css('display', 'inline');
                 $('<p/>').text(file_name).appendTo('#files-<mt:var name="__col_name__">');
                 file_<mt:var name="__col_name__">_class = file_class;
                 if (file_class == 'image') {
@@ -464,14 +470,15 @@ $(function () {
                 if (! $('#files-<mt:var name="__col_name__">-label').val() ) {
                     $('#files-<mt:var name="__col_name__">-label').val( file_name );
                 }
-                if (file_class == 'image') {
+                if (file_class == 'image' || file.extension == 'svg' ) {
                     $('#image_preview-<mt:var name="__col_name__">').show();
-                    $('#image_preview-<mt:var name="__col_name__">').prop('src','data:'+file.type+';base64,'+file.thumbnail);
+                    $('#image_preview-<mt:var name="__col_name__">').css('display', 'inline');
+                    $('#image_preview-<mt:var name="__col_name__">').prop('src','data:' + file.type + ';base64,' + file.thumbnail);
                     if(file.width < <mt:var name="preview_width"> ){
-                        $('#image_preview-<mt:var name="__col_name__">').prop('width',file.width);
-                        $('#image_preview-<mt:var name="__col_name__">').prop('height',file.height);
+                        $('#image_preview-<mt:var name="__col_name__">').prop('width', file.width);
+                        $('#image_preview-<mt:var name="__col_name__">').prop('height', file.height);
                     } else {
-                        $('#image_preview-<mt:var name="__col_name__">').prop('width',<mt:var name="preview_width">);
+                        $('#image_preview-<mt:var name="__col_name__">').prop('width', <mt:var name="preview_width">);
                         $('#image_preview-<mt:var name="__col_name__">').removeAttr('height');
                     }
                     $('#icon-<mt:var name="__col_name__">').removeClass('fa-file-pdf-o');
@@ -487,7 +494,7 @@ $(function () {
                     $('#icon-<mt:var name="__col_name__">').removeClass('fa-file-image-o');
                     $('#icon-<mt:var name="__col_name__">').addClass('fa-file-o');
                 }
-                if (file_class != 'image') {
+                if (file_class != 'image' && file.extension != 'svg' ) {
                     $('#image_preview-<mt:var name="__col_name__">').hide();
                 }
                 var file_size = file.size;
@@ -640,6 +647,7 @@ $(function () {
               <mt:setvarblock name="__rel_name__">object_<mt:var name="__col_name__"></mt:setvarblock>
               <mt:objectloop model="$rel_model" sort_by="order" include_draft="1" workspace_id="$workspace_id">
               <mt:if name="__first__">
+                <mt:unless name="not_null">
               <label class="custom-control custom-radio">
                 <input class="custom-control-input" type="radio"
                   <mt:if name="type" eq="int">
@@ -650,6 +658,7 @@ $(function () {
                 <span class="custom-control-indicator"></span>
                 <span class="custom-control-description"><mt:trans phrase="Unspecified"></span>
               </label>
+                </mt:unless>
               </mt:if>
               <label class="custom-control custom-radio">
                 <input class="custom-control-input watch-changed" type="radio"
@@ -710,7 +719,6 @@ $(function () {
                   </li>
                   </mt:unless>
                 </mt:if>
-                
                   <li <mt:unless name="__index__">class="nestable-first"</mt:unless>>
                     <label class="custom-control custom-radio">
                       <input class="custom-control-input watch-changed" type="radio" <mt:if name="__col_value__" eq="$id">checked</mt:if> name="<mt:var name="__col_name__">" value="<mt:var name="id">">
@@ -803,7 +811,7 @@ $(function () {
           <mt:elseif name="edit" like="select">
             <mt:setvarblock name="__rel_name__">object_<mt:var name="__col_name__"></mt:setvarblock>
             <mt:setvar name="__options_out" value="">
-            <select id="<mt:var name="__col_name__">" class="form-control short watch-changed" name="<mt:var name="__col_name__">">
+            <select id="<mt:var name="__col_name__">" class="form-control custom-select short watch-changed" name="<mt:var name="__col_name__">">
               <mt:objectloop model="$rel_model" sort_by="order" include_draft="1" workspace_id="$workspace_id">
               <mt:if name="readonly">
               <mt:if name="type" eq="int">
@@ -817,7 +825,9 @@ $(function () {
               </mt:if>
               <mt:else>
                 <mt:if name="__first__">
-                  <option value=""><mt:trans phrase="Unspecified"></option>
+                  <mt:unless name="not_null">
+                    <option value=""><mt:trans phrase="Unspecified"></option>
+                  </mt:unless>
                 </mt:if>
                 <option <mt:if name="type" eq="int">
                   <mt:if name="__col_value__" eq="$id">selected</mt:if><mt:else>
@@ -911,7 +921,7 @@ $(function () {
               </mt:if>
               </span>
               <mt:unless name="readonly">
-              <button id="<mt:var name="__col_name__">-close" type="button" class="btn btn-secondary btn-sm close-sm detach-relation <mt:unless name="__col_value__"> hidden</mt:unless>" aria-label="<mt:trans phrase="Detach">" data-name="<mt:var name="__col_name__">">
+              <button style="display:inline" id="<mt:var name="__col_name__">-close" type="button" class="btn btn-secondary btn-sm close-sm detach-relation <mt:unless name="__col_value__"> hidden</mt:unless>" aria-label="<mt:trans phrase="Detach">" data-name="<mt:var name="__col_name__">">
                 <span aria-hidden="true">&times;</span>
               </button>
               </mt:unless>
@@ -1080,6 +1090,27 @@ $(function () {
   </div>
 </div>
 
+<mt:elseif name="edit" eq="date">
+
+<div class="row form-group">
+  <div class="col-lg-2">
+    <label for="<mt:var name="__col_name__">">
+      <mt:var name="label" escape>
+      <mt:if name="not_null"><mt:var name="field_required"></mt:if>
+    </label>
+  </div>
+  <div class="col-lg-10 form-inline">
+    <mt:setvarblock name="date_col_name"><mt:var name="__col_name__">_date</mt:setvarblock>
+    <mt:setvarblock name="time_col_name"><mt:var name="__col_name__">_time</mt:setvarblock>
+    <input id="<mt:var name="__col_name__">" type="date" class="form-control date watch-changed" name="<mt:var name="__col_name__">_date" value="<mt:if name="value"><mt:var name="value" format_ts="Y-m-d"><mt:else><mt:var name="$date_col_name" escape></mt:if>"
+      <mt:if name="readonly">readonly</mt:if>>
+    &nbsp;
+    <span class="time-input"><input id="<mt:var name="__col_name__">_time" type="hidden" step="1" class="form-control time watch-changed" name="<mt:var name="__col_name__">_time" value="<mt:if name="value"><mt:var name="value" format_ts="H:i:s"><mt:else><mt:var name="$time_col_name" escape></mt:if>"
+      <mt:if name="readonly">readonly</mt:if>></span>
+    <mt:var name="_hint">
+  </div>
+</div>
+
 <mt:elseif name="edit" like="selection">
 
 <mt:var name="options" split="," setvar="_options_loop">
@@ -1124,7 +1155,7 @@ $(function () {
     </mt:loop>
     <mt:elseif name="disp_edit" eq="select">
       <mt:unless name="request.id"><mt:unless name="forward_params"><mt:var name="default" escape setvar="__col_value__"></mt:unless></mt:unless>
-    <select id="<mt:var name="__col_name__">" class="form-control short watch-changed" name="<mt:var name="__col_name__">">
+    <select id="<mt:var name="__col_name__">" class="form-control custom-select short watch-changed" name="<mt:var name="__col_name__">">
     <mt:loop name="_options_loop">
       <mt:if name="__first__">
       <mt:unless name="not_null">
@@ -1372,6 +1403,11 @@ $('#_field_chooser').click(function(){
 var editContentChanged = false;
 <mt:if name="forward_params">
 editContentChanged = true;
+<mt:else>
+setTimeout(setEditContentChanged, 500);
+function setEditContentChanged () {
+    editContentChanged = false;
+}
 </mt:if>
 $('.watch-changed').change(function(){
     editContentChanged = true;
@@ -1427,14 +1463,6 @@ $('#__save_and_publish').click(function(){
     $('#_preview').val('');
     $('#__save_and_publish_flg').val(1);
     $('#edit-form-main').removeAttr('target');
-    $(window).off('beforeunload');
-    $('#edit-form-main').submit();
-    return false;
-});
-$('#__delete').click(function(){
-    $('#_preview').val('');
-    $('#edit-form-main').removeAttr('target');
-    $('#__mode').val('delete');
     $(window).off('beforeunload');
     $('#edit-form-main').submit();
     return false;
@@ -1579,10 +1607,15 @@ $('#__delete').click(function(){
     if(! confirm('<mt:trans phrase="Are you sure you want to remove %s?" params="$label">')){
         return false;
     }
-    $('#__mode').prop('value', 'delete');
+    $('#_preview').val('');
+    $('#edit-form-main').removeAttr('target');
+    $('#__mode').val('delete');
+    $(window).off('beforeunload');
     $('#edit-form-main').submit();
     return false;
 });
+<mt:if name="request.id">
+  <mt:if name="model" eq="table">
 $('#__export').click(function(){
     if(! confirm('<mt:trans phrase="Are you sure you want to export %s?" params="$label">')){
         return false;
@@ -1591,6 +1624,8 @@ $('#__export').click(function(){
     $('#edit-form-main').submit();
     return false;
 });
+  </mt:if>
+</mt:if>
 $('#modal').on('shown.bs.modal', function(event) {
     $('#modal-iframe').focus();
 });

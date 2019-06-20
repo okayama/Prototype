@@ -13,7 +13,7 @@
       <div class="modal-content">
         <div class="modal-header">
           <h5 class="modal-title" id="dispOptionsTitle"><mt:trans phrase="Display Options"></h5>
-          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <button type="button" class="close" data-dismiss="modal" aria-label="<mt:trans phrase="Close">">
             <span aria-hidden="true">&times;</span>
           </button>
         </div>
@@ -117,7 +117,7 @@
                 </mt:loop>
               </div>
               <div class="col-md-3">
-                <select name="_user_sort_order" class="form-control">
+                <select name="_user_sort_order" class="form-control custom-select">
                   <mt:loop name="order_options">
                   <mt:var name="__value__[1]" setvar="_checked">
                   <option value="<mt:var name="__counter__">"<mt:if name="_checked"> selected</mt:if>><mt:var name="__value__[0]"></option>

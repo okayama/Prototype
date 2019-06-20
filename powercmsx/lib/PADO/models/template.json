@@ -1,7 +1,7 @@
 {
     "label"    : "View",
     "plural"   : "Views",
-    "version"  : "1.6",
+    "version"  : "1.9",
     "auditing" : 1,
     "display_system": 1,
     "order"    : 130,
@@ -177,7 +177,7 @@
         "rev_changed": "text"
     },
     "options": {
-        "class": "Archive,Module,Form,Search,Mail,Backup",
+        "class": "Archive,Module,Form,Search,Member,Mail,Backup",
         "status": "Disable,Enable"
     },
     "column_labels": {

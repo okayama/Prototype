@@ -22,7 +22,7 @@ window.location.href = '<mt:var name="script_uri">?__mode=loading';
 <input type="hidden" name="edit_settings" value="1">
 <input type="hidden" id="reset_config" name="reset_config" value="">
 <mt:var name="cfg_tmpl">
-<div class="plugin-action-buttons">
+<div class="plugin-action-buttons" <mt:if name="debug_mode">style="margin-bottom: 100px;"</mt:if>>
   <button id="dialog-cancel-btn" class="btn btn-secondary" type="submit"><mt:trans phrase="Cancel"></button>
   <button id="dialog-save-btn" class="btn btn-primary" type="submit"><mt:trans phrase="Save"></button>
   <button id="dialog-reset-btn" class="btn btn-secondary btn-sm" type="submit"><mt:trans phrase="Reset"></button>
@@ -48,6 +48,5 @@ function evnt_keydown(e) {
     }
 }
 </script>
-
 <mt:include file="include/dialog_footer.tmpl">
 </mt:if>

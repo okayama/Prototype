@@ -76,6 +76,14 @@ $('#alert-upgrade').focus();
       <span class="custom-control-indicator"></span>
       <span class="custom-control-description"></span>
     </label>
+  <mt:else>
+    <mt:unless name="scheme_version">
+    <label class="custom-control custom-checkbox">
+      <input id="box_<mt:var name="model" escape>" type="checkbox" class="custom-control-input" name="model[]" value="<mt:var name="model" escape>">
+      <span class="custom-control-indicator"></span>
+      <span class="custom-control-description"></span>
+    </label>
+    </mt:unless>
   </mt:if>
   </th>
   </mt:if>

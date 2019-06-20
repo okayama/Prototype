@@ -85,13 +85,19 @@ class PTListActions {
                                'hint' => $app->translate( 'Input label of the Theme.' ),
                                'label' => $app->translate( 'Export Theme' ),
                                'component' => $this,
-                               'columns' => ['id', 'name', 'text', 'subject',
+                               'columns' => ['id', 'name', 'text', 'subject', 'status',
                                              'class', 'basename', 'form_id', 'uuid'],
                                'method' => 'export_theme'];
             $list_actions[] = ['name' => 'recompile_cache', 'input' => 0,
                                'label' => $app->translate( 'Re-Compile Cache' ),
                                'component' => $this,
                                'columns' => ['id', 'text', 'compiled', 'cache_key'],
+                               'method' => 'recompile_cache'];
+        } else if ( $table->name === 'urlmapping' ) {
+            $list_actions[] = ['name' => 'recompile_cache', 'input' => 0,
+                               'label' => $app->translate( 'Re-Compile Cache' ),
+                               'component' => $this,
+                               'columns' => ['id', 'mapping', 'compiled', 'cache_key'],
                                'method' => 'recompile_cache'];
         } else if ( $table->name === 'fieldtype' ) {
             $list_actions[] = ['name' => 'export_fieldtypes', 'input' => 0,
@@ -578,6 +584,16 @@ class PTListActions {
                         $app->fmgr->mkpath( dirname( $outpath ) );
                         file_put_contents( $outpath, $value );
                     }
+                    $mata = $app->db->model( 'meta' )->get_by_key(
+                        ['kind' => 'metadata', 'object_id' => $obj->id, 'model' => $obj->_model ] );
+                    $metadata = $mata->text;
+                    if ( $metadata && preg_match( '/^{.*}$/s', $metadata ) ) {
+                        $metadata = json_decode( $mata->text, true );
+                        if ( is_array( $metadata ) && isset( $metadata['label'] ) ) {
+                            $label = $metadata['label'];
+                            $relative_path .= ';' . $label;
+                        }
+                    }
                     $value = $relative_path;
                 } else if ( $column_defs[ $key ]['type'] == 'datetime' ) {
                     $value = $obj->db2ts( $value );
@@ -604,6 +620,16 @@ class PTListActions {
                                     }
                                     // $relative_path = $rel_obj->workspace_id ?
                                     //     "%w/{$relative_path}" : "%s/{$relative_path}";
+                                    $mata = $app->db->model( 'meta' )->get_by_key(
+                                        ['kind' => 'metadata', 'object_id' => $rel_obj->id, 'model' => $rel_obj->_model ] );
+                                    $metadata = $mata->text;
+                                    if ( $metadata && preg_match( '/^{.*}$/s', $metadata ) ) {
+                                        $metadata = json_decode( $mata->text, true );
+                                        if ( is_array( $metadata ) && isset( $metadata['label'] ) ) {
+                                            $label = $metadata['label'];
+                                            $relative_path .= ';' . $label;
+                                        }
+                                    }
                                     $value = $relative_path;
                                 }
                             }
@@ -652,6 +678,20 @@ class PTListActions {
                                         }
                                         // $relative_path = $rel_obj->workspace_id ?
                                         //     "%w/{$relative_path}" : "%s/{$relative_path}";
+                                        if ( $rel_obj->_model != 'attachmentfile' ) {
+                                            $mata = $app->db->model( 'meta' )->get_by_key(
+                                                ['kind' => 'metadata', 'object_id' => $rel_obj->id, 'model' => $rel_obj->_model ] );
+                                            $metadata = $mata->text;
+                                            if ( $metadata && preg_match( '/^{.*}$/s', $metadata ) ) {
+                                                $metadata = json_decode( $mata->text, true );
+                                                if ( is_array( $metadata ) && isset( $metadata['label'] ) ) {
+                                                    $label = $metadata['label'];
+                                                    $relative_path .= ';' . $label;
+                                                }
+                                            }
+                                        } else {
+                                            $relative_path .= ';' . $rel_obj->name;
+                                        }
                                         $labels[] = $relative_path;
                                     }
                                 }
@@ -707,6 +747,7 @@ class PTListActions {
         if (! $obj->has_column( 'state' ) ) {
             return $app->error( 'Invalid request.' );
         }
+        $table = $app->get_table( $model );
         $column = $app->db->model( 'column' )->get_by_key(
             ['table_id' => $table->id, 'name' => 'state'] );
         $status_text = '';
@@ -896,7 +937,7 @@ class PTListActions {
             $status_text = $status;
             if ( $options ) {
                 $options = explode( ',', $options );
-                $status_text = $app->translate( $options[ $status - 1 ] );
+                $status_text = $app->translate( $options[ $status ] );
             }
             $action = $action['label'] . " ({$status_text})";
             $this->log( $action, $model, $counter );
@@ -959,7 +1000,7 @@ class PTListActions {
             foreach ( $add_tags as $tag ) {
                 $normalize = preg_replace( '/\s+/', '', trim( strtolower( $tag ) ) );
                 if (! $tag ) continue;
-                $terms = ['normalize' => $normalize ];
+                $terms = ['normalize' => $normalize, 'class' => $model ];
                 $tags = $app->db->model( 'tag' )->load( $terms );
                 if (! empty( $tags ) ) {
                     $tag_objs = array_merge( $tag_objs, $tags );
@@ -1137,11 +1178,11 @@ class PTListActions {
                            ? $workspaces[ $obj->workspace_id ] : $obj->workspace;
                 $workspaces[ $obj->workspace_id ] = $workspace;
             }
-            $url = $workspace ? $workspace->site_url : $site_url;
+            $url = $workspace ? $workspace->site_url : $site_url->value;
             if ( mb_substr( $url, -1 ) == '/' ) {
                 $url = rtrim( $url, '/' );
             }
-            $path = $workspace ? $workspace->site_path : $site_path;
+            $path = $workspace ? $workspace->site_path : $site_path->value;
             if ( mb_substr( $path, -1 ) == '/' ) {
                 $url = rtrim( $path, '/' );
             }
@@ -1341,8 +1382,8 @@ class PTListActions {
             $db->commit();
             $app->txn_active = false;
         }
-        $return_args = "does_act=1&__mode=view&_type=list&_model=template&"
-                     ."apply_actions={$counter}" . $app->workspace_param;
+        $return_args = "does_act=1&__mode=view&_type=list&_model=" . $action['model']
+                     ."&apply_actions={$counter}" . $app->workspace_param;
         if ( $add_params = $this->add_return_params( $app ) ) {
             $return_args .= "&{$add_params}";
         }
@@ -1400,7 +1441,7 @@ class PTListActions {
             foreach ( $add_tags as $tag ) {
                 $normalize = preg_replace( '/\s+/', '', trim( strtolower( $tag ) ) );
                 if (! $tag ) continue;
-                $terms = ['normalize' => $normalize ];
+                $terms = ['normalize' => $normalize, 'class' => $obj->_model ];
                 if ( $workspace_id )
                     $terms['workspace_id'] = $workspace_id;
                 $tag_obj = $db->model( 'tag' )->get_by_key( $terms );

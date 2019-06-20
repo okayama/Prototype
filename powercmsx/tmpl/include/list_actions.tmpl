@@ -1,5 +1,7 @@
+<mt:setvar name="actions_count" value="0">
 <mt:setvarblock name="list_actions_options-dd">
 <mt:loop name="list_actions">
+<mt:setvar name="actions_count" value="$__counter__">
 <mt:if name="input_options">
 <mt:loop name="input_options">
 <mt:if name="__first__"><select id="_action_input-options-<mt:var name="name">" name="" class="form-control form-control-sm very-short list-actions-options"></mt:if>
@@ -10,10 +12,9 @@
 <mt:setvar name="input_options" value="">
 </mt:loop>
 </mt:setvarblock>
-
 <mt:loop name="list_actions">
 <mt:if name="__first__">
-<select name="action_name" class="select-action form-control form-control-sm very-short">
+<select name="action_name" class="select-action form-control custom-select form-control-sm very-short">
   <option value=""><mt:trans phrase="Action..."></option>
 </mt:if>
   <option value="<mt:var name="name">" data-hint="<mt:var name="hint" translate>" data-modal="<mt:var name="modal" escape>" class="<mt:if name="input">with-input</mt:if>"><mt:var name="label" escape></option>

@@ -160,6 +160,7 @@
     "created_on"    : "Date Created",
     "modified_on"   : "Date Modified",
     "last_login_on" : "Last Login",
+    "last_login_ip" : "Last Login IP",
     "created_by"    : "Created By",
     "modified_by"   : "Modified By",
     "lang"          : "Language",
@@ -225,6 +226,9 @@
     "notify_to"     : "Notify To",
     "notify_subject": "Subject",
     "form_id"       : "Form",
+    "thanks_cc"     : "Cc(Thanks email)",
+    "thanks_bcc"    : "Bcc(Thanks email)",
+    "notify_from"   : "Mail From(Notify)",
     "notify_template": "View(Notify)",
     "thanks_template": "View(Thanks)",
     "questiontype_id": "Question Type",
@@ -233,5 +237,6 @@
     "display_dashboard": "Display in Dashboard",
     "can_livepreview": "Live Preview",
     "do_not_output"  : "Do not output file(s)",
-    "translate_labels" : "Translate"
+    "show_path_entry": "Show Path of Entry",
+    "show_path_page" : "Show Path of Page"
 }

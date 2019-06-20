@@ -1,7 +1,7 @@
 {
     "label"    : "URL Map",
     "plural"   : "URL Maps",
-    "version"  : "1.6",
+    "version"  : "2.2",
     "auditing" : 1,
     "display_system" : 1,
     "sortable" : 1,
@@ -38,6 +38,10 @@
             "type": "tinyint",
             "size": 4
         },
+        "skip_empty": {
+            "type": "tinyint",
+            "size": 4
+        },
         "triggers": {
             "type": "relation"
         },
@@ -63,6 +67,11 @@
         "publish_file": {
             "type": "int",
             "size": 11
+        },
+        "is_preferred": {
+            "type": "tinyint",
+            "size": 4,
+            "default": 0
         },
         "link_status": {
             "type": "tinyint",
@@ -91,6 +100,13 @@
         "order": {
             "type": "int",
             "size": 11
+        },
+        "compiled": {
+            "type": "text"
+        },
+        "cache_key": {
+            "type": "string",
+            "size": 255
         }
     },
     "indexes": {
@@ -101,6 +117,7 @@
         "fiscal_start": "fiscal_start",
         "model": "model",
         "publish_file": "publish_file",
+        "is_preferred": "is_preferred",
         "created_on": "created_on",
         "modified_on": "modified_on",
         "created_by": "created_by",
@@ -146,6 +163,7 @@
         "template_id": "relation:template:name:dialog",
         "date_based": "selection",
         "publish_file": "selection",
+        "is_preferred": "checkbox",
         "link_status": "hidden",
         "order": "number"
     },
@@ -160,14 +178,17 @@
         "template_id": "reference:template:name",
         "date_based": "text",
         "publish_file": "text",
+        "is_preferred": "checkbox",
         "modified_on": "datetime",
         "modified_by": "reference:user:name",
         "workspace_id": "reference:workspace:name",
         "order": "number"
     },
     "column_labels": {
+        "model": "Archive Type",
         "container_scope": "Scope of Container",
         "triggers": "Rebuild Triggers",
+        "is_preferred" : "Prioritize",
         "trigger_scope": "Scope of Triggers"
     }
 }

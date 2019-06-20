@@ -7,6 +7,10 @@
     "Mobile"        : "モバイル",
     "Content CSS"   : "エディタCSS",
     "Relative URLs" : "相対パス変換",
+    "Advanced Settings"
+                    : "高度な設定",
+    "Be sure to add a comma at the end."
+                    : "指定する時は最後に必ずコンマ(,)を追加してください。",
     "Use Mobile mode"
                     : "モバイルモードを有効にする",
     "Label of Boilerplate Snippet here."

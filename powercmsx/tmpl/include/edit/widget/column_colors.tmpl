@@ -39,5 +39,11 @@ $('#fore_color').change(function(){
     .css({
       'color': $(this).val()
     });
+  $('iframe#text_ifr')
+    .contents()
+    .find('a')
+    .css({
+      'color': $(this).val()
+    });
 });
 </script>

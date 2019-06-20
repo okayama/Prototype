@@ -85,6 +85,7 @@ class PTPlugin {
         $plugin_switch = $app->plugin_switch;
         $cfg_settings = $app->cfg_settings;
         $counter = 0;
+        $errors = [];
         if ( $_type = $app->param( '_type' ) ) {
             $app->validate_magic();
             if ( $_type === 'enable' || $_type === 'disable' || $_type === 'upgrade' ) {
@@ -98,11 +99,12 @@ class PTPlugin {
                     if (! isset( $plugin_switch[ $plugin_id ] ) ) {
                         return $app->error( 'Invalid request.' );
                     }
+                    $upgrade = true;
                     $component = $app->component( $plugin_id );
                     $version = 0;
                     $version = $component ? $component->version() : 0;
                     $obj = $plugin_switch[ $plugin_id ];
-                    if ( $obj->number != $status || $obj->value != $version 
+                    if ( $obj->number != $status || $obj->value != $version
                         || $_type === 'upgrade' ) {
                         if ( $status && $component ) {
                             $locale = $component->path() . DS . 'locale';
@@ -126,7 +128,7 @@ class PTPlugin {
                                             $valus = str_getcsv( $line );
                                             list ( $phrase, $trans ) = $valus;
                                             $phrase = $db->model( 'phrase' )->get_by_key
-                                            ( ['phrase' => $phrase,
+                                            ( ['phrase' => ['BINARY' => $phrase ],
                                                'component' => $name, 'lang' => $lang ] );
                                             $phrase->trans( $trans );
                                             $app->set_default( $phrase );
@@ -134,20 +136,44 @@ class PTPlugin {
                                         }
                                     }
                                 }
+                                if ( property_exists( $component, 'upgrade_functions' ) ) {
+                                    $upgrade_functions = $component->upgrade_functions;
+                                    foreach ( $upgrade_functions as $upgrade_function ) {
+                                        $version_limit = isset( $upgrade_function['version_limit'] )
+                                                       ? $upgrade_function['version_limit'] : 0;
+                                        if ( $obj->value < $version_limit ) {
+                                            $meth = $upgrade_function['method'];
+                                            if ( method_exists( $component, $meth ) && $upgrade ) {
+                                                $upgrade = $component->$meth( $app, $this, $obj->value, $errors );
+                                            }
+                                        }
+                                    }
+                                }
                             }
                         }
-                        $obj->number( $status );
-                        if (! $obj->value || $_type === 'upgrade' ) {
-                            $obj->value( $version );
+                        if ( is_object( $component ) && $upgrade ) {
+                            if ( $status == 1 && method_exists( $component, 'activate' ) ) {
+                                $upgrade = $component->activate( $app, $this, $obj->value, $errors );
+                            } else if ( $status == 0 && method_exists( $component, 'deactivate' ) ) {
+                                $upgrade = $component->deactivate( $app, $this, $obj->value, $errors );
+                            }
                         }
-                        $obj->save();
-                        $counter++;
+                        if ( $upgrade ) {
+                            $obj->number( $status );
+                            if (! $obj->value || $_type === 'upgrade' ) {
+                                $obj->value( $version );
+                            }
+                            $obj->save();
+                            $counter++;
+                        }
                     }
                 }
             }
-            $app->redirect( $app->admin_url .
-            "?__mode=manage_plugins&action_type={$_type}&saved=1&count={$counter}" );
-            exit();
+            if ( empty( $errors ) ) {
+                $app->redirect( $app->admin_url .
+                "?__mode=manage_plugins&action_type={$_type}&saved=1&count={$counter}" );
+                exit();
+            }
         }
         $ctx = $app->ctx;
         if ( $app->param( 'edit_settings' ) ) {
@@ -254,6 +280,7 @@ class PTPlugin {
             }
             if ( $cfg['status'] && $app->user()->is_superuser ) {
                 $component = $app->component( $key );
+                if (! $component ) continue;
                 $models_dir = $component->path() . DS . 'models';
                 if ( is_dir( $models_dir ) ) {
                     if ( $handle = opendir( $models_dir ) ) {
@@ -277,16 +304,30 @@ class PTPlugin {
             $plugins_loop[ $key ] = $cfg;
         }
         $ctx->local_vars['upgrade_count'] = $upgrade_count;
-        $ctx->local_vars['scheme_upgrade_count'] = $scheme_upgrade_count;
+        $ctx->local_vars['plugin_scheme_upgrade_count'] = $scheme_upgrade_count;
+        if ( $scheme_upgrade_count ) {
+            $ctx->local_vars['scheme_upgrade_count'] = $scheme_upgrade_count;
+            $cfg = $app->db->model( 'option' )->get_by_key(
+                ['kind' => 'config', 'key' => 'upgrade_count'] );
+            $cfg->value( $scheme_upgrade_count );
+            $cfg->data( time() );
+            $cfg->save();
+        }
+        $ctx->local_vars['error'] = implode( "\n", $errors );
         $ctx->local_vars['plugins_loop'] = $plugins_loop;
         return $app->__mode( 'manage_plugins' );
     }
 
-    function get_config_value ( $name, $ws_id = 0 ) {
+    function get_config_value ( $name, $ws_id = 0, $inheritance = false ) {
         $app = Prototype::get_instance();
         $plugin_id = strtolower( get_class( $this ) );
-        $terms = ['extra' => $plugin_id, 'key' => $name, 'workspace_id' => $ws_id ];
+        $terms = ['extra' => $plugin_id, 'key' => $name, 'workspace_id' => $ws_id,
+                  'kind' => 'plugin_setting'];
         $setting_obj = $app->db->model( 'option' )->get_by_key( $terms );
+        if ( $ws_id && $inheritance && !$setting_obj->id ) {
+            $terms['workspace_id'] = 0;
+            $setting_obj = $app->db->model( 'option' )->get_by_key( $terms );
+        }
         if ( $setting_obj->id ) {
             return $setting_obj->value;
         }
@@ -299,5 +340,15 @@ class PTPlugin {
                 }
             }
         }
+    }
+
+    function set_config_value ( $name, $value, $ws_id = 0 ) {
+        $app = Prototype::get_instance();
+        $plugin_id = strtolower( get_class( $this ) );
+        $terms = ['extra' => $plugin_id, 'key' => $name,
+                  'workspace_id' => $ws_id, 'kind' => 'plugin_setting'];
+        $setting_obj = $app->db->model( 'option' )->get_by_key( $terms );
+        $setting_obj->value( $value );
+        $setting_obj->save();
     }
 }

@@ -17,17 +17,37 @@ class PTUpgrader {
                            'attachmentfiles', 'previous_owner', 'show_activity', 'has_assets'];
 
     private $reserved_models = ['queue'];
+    private $print_state = false;
 
     protected function core_upgrade_functions ( $version ) {
+        if (! $version ) return [];
         $functions = [
             'upgrade_status' => ['component' => 'PTUpgrader',
                                  'method'    => 'upgrade_status',
-                                 'version_limit' => 0.1 ],
+                                 'version_limit' => '0.1' ],
+            'set_preferred'  => ['component' => 'PTUpgrader',
+                                 'method'    => 'set_preferred',
+                                 'version_limit' => '1.001' ],
+            'set_workspace'  => ['component' => 'PTUpgrader',
+                                 'method'    => 'set_workspace',
+                                 'version_limit' => '1.003' ],
+            'update1006'     => ['component' => 'PTUpgrader',
+                                 'method'    => 'update1006',
+                                 'version_limit' => '1.006' ],
+            'update_perm'    => ['component' => 'PTUpgrader',
+                                 'method'    => 'update_perm',
+                                 'version_limit' => '1.015' ],
+            'set_hierarchy'  => ['component' => 'PTUpgrader',
+                                 'method'    => 'set_hierarchy',
+                                 'version_limit' => '1.016' ],
+            'set_session_key'=> ['component' => 'PTUpgrader',
+                                 'method'    => 'set_session_key',
+                                 'version_limit' => '1.017' ],
         ];
         $upgrade_functions = [];
         foreach ( $functions as $func ) {
             $version_limit = $func['version_limit'];
-            if ( $version_limit >= $version ) {
+            if ( $version_limit > $version ) {
                 $upgrade_functions[] = $func;
             }
         }
@@ -82,6 +102,8 @@ class PTUpgrader {
                 $ip_lockout_limit = $app->param( 'ip_lockout_limit' );
                 $ip_lockout_interval = $app->param( 'ip_lockout_interval' );
                 $tmpl_markup = $app->param( 'tmpl_markup' );
+                $barcolor = $app->param( 'barcolor' );
+                $bartextcolor = $app->param( 'bartextcolor' );
                 $errors = [];
                 if (!$appname || !$site_url || !$system_email || !$site_path ) {
                     $errors[] = $app->translate(
@@ -118,6 +140,14 @@ class PTUpgrader {
                     echo $ctx->build_page( $tmpl );
                     exit();
                 }
+                $tmpl = TMPL_DIR . 'install.tmpl';
+                echo $ctx->build_page( $tmpl );
+                $msg = $app->translate( 'Start Install...', $item );
+                echo str_pad( ' ', 4096 ) . "<br />\n";
+                echo "<script>$('#print').html( $('#print').html() + '{$msg}' + '<hr>' );</script>";
+                ob_end_flush();
+                ob_start( 'mb_output_handler' );
+                $this->print_state = true;
                 $default_widget = TMPL_DIR . 'import' . DS . 'default_widget.tmpl';
                 $default_widget = file_get_contents( $default_widget );
                 $db = $app->db;
@@ -135,13 +165,15 @@ class PTUpgrader {
                          'ip_lockout_interval' => $ip_lockout_interval,
                          'ip_lockout_limit' => $ip_lockout_limit,
                          'default_widget' => $default_widget,
-                         'tmpl_markup' => $tmpl_markup ];
+                         'tmpl_markup' => $tmpl_markup,
+                         'barcolor' => $barcolor,
+                         'bartextcolor' => $bartextcolor ];
                 $password = $app->param( 'password' );
                 $language = $app->param( 'language' );
                 $nickname = $app->param( 'nickname' );
                 $password = password_hash( $password, PASSWORD_BCRYPT );
                 $db->upgrader = true;
-                $this->setup_db( true );
+                $tbl_count = $this->setup_db( true );
                 $app->set_config( $cfgs );
                 $plugin_models = $this->plugin_models( true );
                 if (! empty( $plugin_models ) ) {
@@ -183,12 +215,25 @@ class PTUpgrader {
                             'model'    => 'user',
                             'object_id'=> $user->id,
                             'level'    => 'info'] );
+                $msg = $app->translate( "Create %s tables.", $tbl_count );
+                echo "<script>$('#print').html( $('#print').html() + '<hr>' + '{$msg}' + '<br>' );</script>";
+                echo "<script>$('#print').html( $('#print').html() + '<hr>' + '{$message}' + '<br>' );</script>";
+                echo '<script>var $target = $(\'#print\');';
+                echo '$target.scrollTop($target[0].scrollHeight);</script>';
+                echo "<script>$('#move_login').show();</script>";
+                ob_flush();
+                flush();
                 $app->redirect( $app->admin_url );
             }
         } else {
-            $search = preg_quote( $app->document_root, '/' );
-            $path = $app->path();
-            $path = preg_replace( "/^$search/", '', $path );
+            $path = $app->path;
+            if (! $path ) {
+                $path = $app->path();
+                $search = preg_quote( $app->document_root, '/' );
+                $path = preg_replace( "/^$search/", '', $path );
+            }
+            $path = rtrim( $path, '/' );
+            $path = str_replace( '/', DS, $path );
             $_path = str_replace( DS, '/', $path );
             $ctx->vars['site_url'] = $app->base . $_path . '/site/';
             $ctx->vars['site_path'] = $app->document_root . $path . DS . 'site';
@@ -262,6 +307,7 @@ class PTUpgrader {
         $model_names = [];
         $components = [];
         $cfg_settings = $app->cfg_settings;
+        $json_basenames = [];
         foreach ( $schemes as $item ) {
             $model = $item->key;
             $model_names[] = $model;
@@ -276,13 +322,15 @@ class PTUpgrader {
                     $models_dir = $plugin->path() . DS . 'models';
                 }
             } else {
-                $models_dir = LIB_DIR . 'PADO' . DS . 'models';
+                $models_dir = $this->get_models_dir( $app, $model );
+                $component = 'core';
             }
             if ( $models_dir ) {
                 $file = $models_dir . DS . $model . '.json';
                 if ( is_readable( $file ) ) {
                     $model_files[ $model ] = $file;
                     $scheme = json_decode( file_get_contents( $file ), true );
+                    $json_basenames[] = basename( $file, '.json' );
                     $scheme_version = isset( $scheme['version'] ) ? $scheme['version'] : '';
                     $db_version = $item->value;
                     if ( $db_version < $scheme_version ) {
@@ -302,8 +350,7 @@ class PTUpgrader {
             }
         }
         $json_dirs = array_keys( $this->plugin_models( true ) );
-        array_unshift( $json_dirs, LIB_DIR . 'PADO' . DS . 'models' );
-        $i = 0;
+        $json_dirs = array_merge( $app->model_paths, $json_dirs );
         foreach ( $json_dirs as $dir ) {
             $files = scandir( $dir, $app->plugin_order );
             foreach ( $files as $json ) {
@@ -312,10 +359,10 @@ class PTUpgrader {
                 $extension = pathinfo( $json )['extension'];
                 if ( $extension !== 'json' ) continue;
                 $model = pathinfo( $json )['filename'];
-                if (! in_array( $model, $model_names ) ) {
-                    $component = $i
-                               ? strtolower( basename( dirname( dirname( $file ) ) ) )
-                               : 'core';
+                if (! in_array( $model, $model_names ) || ! in_array( $model, $json_basenames ) ) {
+                    $component = in_array( $dir, $app->model_paths )
+                               ? 'Prototype'
+                               : strtolower( basename( dirname( dirname( $file ) ) ) );
                     $data = json_decode( file_get_contents( $file ), true );
                     if ( isset( $data['component'] ) ) $component = $data['component'];
                     $version = isset( $data['version'] ) ? $data['version'] : 0;
@@ -327,7 +374,6 @@ class PTUpgrader {
                     $components[ $model ] = $component;
                 }
             }
-            $i++;
         }
         if ( $app->request_method === 'POST' &&
             $app->param( '_type' ) && $app->param( '_type' ) === 'upgrade' ) {
@@ -447,6 +493,15 @@ class PTUpgrader {
         return $app->__mode( 'manage_scheme' );
     }
 
+    function get_models_dir ( $app, $model ) {
+        foreach ( $app->model_paths as $model_path ) {
+            $json_path = $model_path . DS . $model . '.json';
+            if ( file_exists( $json_path ) ) {
+                return dirname( $json_path );
+            }
+        }
+    }
+
     function install_field_types ( $app ) {
         $fields_dir = $app->path() . DS . 'tmpl' . DS . 'field' . DS . 'field_types';
         $json = $fields_dir . DS . 'fields.json';
@@ -562,6 +617,7 @@ class PTUpgrader {
         $items = array_flip( $items );
         $items = array_keys( $items );
         $default_models = [];
+        $tbl_count = 0;
         foreach ( $items as $item ) {
             if ( strpos( $item, '.' ) === 0 ) continue;
             $file = $m_dir . DS . $item;
@@ -582,6 +638,15 @@ class PTUpgrader {
             if ( $item === 'column' || $item === 'option' || $item === 'relation'
                 || $item === 'meta' || $item === 'session' ) continue;
             $table = $db->model( 'table' )->get_by_key( ['name' => $item ] );
+            $tbl_count++;
+            if ( $this->print_state ) {
+                $msg = $app->translate( "Creating TABLE \'%s\'...", $item );
+                echo "<script>$('#print').html( $('#print').html() + '{$msg}' + '<br>' );</script>";
+                echo '<script>var $target = $(\'#print\');';
+                echo '$target.scrollTop($target[0].scrollHeight);</script>';
+                ob_flush();
+                flush();
+            }
             if ( isset( $scheme['locale'] ) ) {
                 $locale = $scheme['locale'];
                 foreach ( $locale as $lang => $dict ) {
@@ -663,8 +728,7 @@ class PTUpgrader {
                 $scheme['list_properties'] : [];
             $edit_props = isset( $scheme['edit_properties'] ) ?
                 $scheme['edit_properties'] : [];
-            $unique = isset( $scheme['unique'] ) ?
-                $scheme['unique'] : [];
+            $unique = isset( $scheme['unique'] ) ? $scheme['unique'] : [];
             $unchangeable = isset( $scheme['unchangeable'] ) ?
                 $scheme['unchangeable'] : [];
             $autoset = isset( $scheme['autoset'] ) ? $scheme['autoset'] : [];
@@ -673,7 +737,6 @@ class PTUpgrader {
             $translates = isset( $scheme['translate'] ) ? $scheme['translate'] : [];
             $hints = isset( $scheme['hint'] ) ? $scheme['hint'] : [];
             $disp_edit = isset( $scheme['disp_edit'] ) ? $scheme['disp_edit'] : [];
-            $col_unique = isset( $scheme['unique'] ) ? $scheme['unique'] : [];
             $i = 1;
             $locale = $app->dictionary['default'];
             foreach ( $column_defs as $name => $defs ) {
@@ -684,6 +747,12 @@ class PTUpgrader {
                 $record->type( $defs['type'] );
                 if ( isset( $defs['size'] ) ) $record->size( $defs['size'] );
                 if ( isset( $defs['default'] ) ) $record->default( $defs['default'] );
+                $record->not_null( 0 );
+                $record->index( 0 );
+                $record->autoset( 0 );
+                $record->unique( 0 );
+                $record->unchangeable( 0 );
+                $record->not_delete( 0 );
                 if ( isset( $defs['not_null'] ) ) $record->not_null( 1 );
                 if ( isset( $indexes[ $name ] ) ) $record->index( 1 );
                 if ( in_array( $name, $autoset ) ) $record->autoset( 1 );
@@ -710,7 +779,11 @@ class PTUpgrader {
                 } else {
                     $record->list();
                 }
-                if ( in_array( $name, $unique ) ) $record->unique( 1 );
+                if ( in_array( $name, $unique ) ) {
+                    $record->unique( 1 );
+                } else {
+                    $record->unique( 0 );
+                }
                 if ( in_array( $name, $unchangeable ) ) $record->unchangeable( 1 );
                 $record->not_delete( 1 );
                 $record->order( $i );
@@ -729,11 +802,6 @@ class PTUpgrader {
                     $record->disp_edit( $disp_edit[ $name ] );
                 if ( in_array( $name, $translates ) ) 
                     $record->translate( 1 );
-                if ( $record->unique ) {
-                    if ( empty( $col_unique ) || ! isset( $col_unique[ $name ] ) ) {
-                        $record->unique( 0 );
-                    }
-                }
                 $app->set_default( $record );
                 $record->save();
                 if ( $name === 'workspace_id' ) {
@@ -770,6 +838,7 @@ class PTUpgrader {
             $workspace->save();
         }
         $app->set_config( ['default_models' => join( ',', $default_models ) ] );
+        return $tbl_count;
     }
 
     function save_filter_table ( &$cb, $app, &$obj ) {
@@ -820,7 +889,8 @@ class PTUpgrader {
                         'text_short', 'password', 'datetime', 'date'];
         $edit_types  = ['hidden', 'checkbox', 'number', 'primary', 'text', 'file',
                         'text_short', 'textarea', 'password', 'password(hash)',
-                        'datetime', 'languages', 'richtext', 'selection', 'color'];
+                        'datetime', 'date', 'languages', 'richtext', 'selection', 'color'];
+        $can_index   = ['tinyint', 'int', 'string', 'datetime'];
         $db = $app->db;
         $db->can_drop = true;
         $columns = $db->model( 'column' )->load( ['table_id' => $obj->id ] );
@@ -840,7 +910,7 @@ class PTUpgrader {
             }
             if (! in_array( $id, $ids ) ) {
                 if ( $col_name !== $obj->primary && ( !$column->not_delete ||
-                    $app->developer_mode ) ) {
+                    $app->develop ) ) {
                     if (! $validation ) {
                         // Cleanup relation
                         if ( $column->type == 'relation' ) {
@@ -876,6 +946,10 @@ class PTUpgrader {
             $default = $app->param( '_default_' . $id );
             $not_null = $app->param( '_not_null_' . $id ) ? 1 : 0;
             $index = $app->param( '_index_' . $id ) ? 1 : 0;
+            if ( $index && ! in_array( $type, $can_index ) ) {
+                $errors[] = $app->translate( 'Can not specify an index for \'%s\'.', $type );
+                $index = 0;
+            }
             $unique = $app->param( '_unique_' . $id ) ? 1 : 0;
             $unchangeable = $app->param( '_unchangeable_' . $id ) ? 1 : 0;
             $list = $app->param( '_list_' . $id );
@@ -970,6 +1044,10 @@ class PTUpgrader {
             $default = $app->param( '_new_default_' . $id );
             $not_null = $app->param( '_new_not_null_' . $id ) ? 1 : 0;
             $index = $app->param( '_new_index_' . $id ) ? 1 : 0;
+            if ( $index && ! in_array( $type, $can_index ) ) {
+                $errors[] = $app->translate( 'Can not specify an index for \'%s\'.', $type );
+                $index = 0;
+            }
             $unique = $app->param( '_new_unique_' . $id ) ? 1 : 0;
             $unchangeable = $app->param( '_new_unchangeable_' . $id ) ? 1 : 0;
             $list = $app->param( '_new_list_' . $id );
@@ -1111,7 +1189,6 @@ class PTUpgrader {
                     $upgrade = true;
                 }
             }
-
             if ( $obj->has_assets ) {
                 $edit = "relation:asset:label:dialog";
                 $values = ['type' => 'relation',
@@ -1218,7 +1295,7 @@ class PTUpgrader {
                            'label'=> 'Status', 'list' => 'number',
                            'edit' => 'selection', 'disp_edit' => 'select',
                            'options' => $status_opt, 'index' => 1, 'order' => $last ];
-                if ( $this->make_column( $obj, 'status', $values, $force ) ) {
+                if ( $this->make_column( $obj, 'status', $values, true ) ) {
                     $last++;
                     $upgrade = true;
                 }
@@ -1339,6 +1416,15 @@ class PTUpgrader {
         if (! $cb['is_new'] )
             $this->upgrade_scheme( $obj->name );
         $model = $obj->name;
+        $version_opt =
+          $app->db->model( 'option' )->get_by_key(
+          ['kind' => 'scheme_version', 'key' => $model ] );
+        $scheme_v = (int) $version_opt->value;
+        $new_ver = (int) $obj->version;
+        if ( $obj->version && $new_ver > $scheme_v ) {
+            $version_opt->value( $new_ver );
+            $version_opt->save();
+        }
         if ( $original->id && ! $original->has_uuid && $obj->has_uuid ) {
             $app->get_scheme_from_db( $obj->name, true );
             $_model = $db->model( $obj->name )->new();
@@ -1347,9 +1433,9 @@ class PTUpgrader {
                 $_model->_colprefix . 'uuid=\'\'' );
             if (! empty( $objects ) ) {
                 $new_objects = [];
-                foreach ( $objects as $obj ) {
-                    $obj->uuid( $app->generate_uuid() );
-                    $new_objects[] = $obj;
+                foreach ( $objects as $uu_obj ) {
+                    $uu_obj->uuid( $app->generate_uuid() );
+                    $new_objects[] = $uu_obj;
                 }
                 $_model->update_multi( $new_objects );
             }
@@ -1454,9 +1540,113 @@ class PTUpgrader {
         }
     }
 
+    function set_preferred ( $app ) {
+        unset( $app->db->scheme['urlmapping'] );
+        $app->logging = false;
+        $dir = LIB_DIR . 'PADO' . DS . 'models';
+        $this->setup_db( true, 'core', [ 'urlmapping' ], $dir );
+        $app->get_scheme_from_db( 'urlmapping' );
+        $db = $app->db;
+        $workspaces = $db->model( 'workspace' )->load( [], null, 'id' );
+        $ws_ids = [0];
+        foreach ( $workspaces as $workspace ) {
+            $ws_ids[] = (int) $workspace->id;
+        }
+        foreach ( $ws_ids as $ws_id ) {
+            $urlmappings = $db->model( 'urlmapping' )->load(
+              ['workspace_id' => $ws_id ], ['sort' => 'id', 'direction' => 'ascend'] );
+            $models = [];
+            foreach ( $urlmappings as $urlmapping ) {
+                if ( $urlmapping->model == 'template' ) continue;
+                if ( isset( $models[ $urlmapping->model ] ) ) continue;
+                $models[ $urlmapping->model ] = true;
+                $urlmapping->is_preferred( 1 );
+                $urlmapping->save();
+            }
+        }
+    }
+
+    function update_perm ( $app ) {
+        $sessions = $app->db->model( 'session' )->load(
+                                                ['name' => 'user_permissions',
+                                                 'kind' => 'PM'] );
+        if ( is_array( $sessions ) && !empty( $sessions ) ) {
+            $app->db->model( 'session' )->remove_multi( $sessions );
+        }
+    }
+
+    function set_hierarchy ( $app ) {
+        $tables = $app->db->model( 'table' )->load();
+        foreach ( $tables as $table ) {
+            if (! $table->hierarchy ) {
+                $table->hierarchy( 0 );
+                $table->save();
+            }
+        }
+    }
+
+    function set_session_key ( $app ) {
+        $sessions = $app->db->model( 'session' )->load( ['kind' => 'US'] );
+        foreach ( $sessions as $session ) {
+            $session->key( 'user' );
+            $session->save();
+        }
+    }
+
+    function update1006 ( $app ) {
+        $cf = $app->get_table( 'field' );
+        $column = $app->db->model( 'column' )->get_by_key( ['table_id' => $cf->id,
+                                                            'name' => 'required'] );
+        if ( $column->id && $column->hint ) {
+            $column->hint( '' );
+            $column->save();
+        }
+        $column = $app->db->model( 'column' )->get_by_key( ['table_id' => $cf->id,
+                                                            'name' => 'translate_labels'] );
+        if ( $column->id && $column->label == 'Translate' ) {
+            $column->label( 'Translate Labels' );
+            $column->save();
+        }
+        $tables = $app->db->model( 'table' )->load();
+        foreach ( $tables as $table ) {
+            if ( $table->hierarchy != 1 ) {
+                $table->hierarchy( 0 );
+                $table->save();
+            }
+        }
+    }
+
+    function set_workspace ( $app ) {
+        $tables = $app->db->show_tables();
+        $pfx = DB_PREFIX;
+        $db = $app->db;
+        $db->begin_work();
+        $app->txn_active = true;
+        foreach ( $tables as $table ) {
+            $t = $table[0];
+            $t = preg_replace( "/^$pfx/", '', $t );
+            $app->get_scheme_from_db( $t );
+            if ( $db->model( $t )->has_column( 'workspace_id' ) ) {
+                $sql = "SELECT {$t}_id FROM {$pfx}{$t} WHERE {$t}_workspace_id IS NULL";
+                $objects = $db->model( $t )->load( $sql );
+                $update_objs = [];
+                foreach ( $objects as $obj ) {
+                    $obj->workspace_id( 0 );
+                    $update_objs[] = $obj;
+                }
+                if ( count( $update_objs ) ) {
+                    $db->model( $t )->update_multi( $update_objs );
+                }
+            }
+        }
+        $db->commit();
+        $app->txn_active = false;
+    }
+
     function upgrade_scheme_check ( $app ) {
         $upgrade_count = 0;
         $schemes = $app->db->model( 'option' )->load( ['kind' => 'scheme_version'] );
+        $model_names = [];
         foreach ( $schemes as $item ) {
             $model = $item->key;
             $model_names[] = $model;
@@ -1471,7 +1661,7 @@ class PTUpgrader {
                     $models_dir = $plugin->path() . DS . 'models';
                 }
             } else {
-                $models_dir = LIB_DIR . 'PADO' . DS . 'models';
+                $models_dir = $this->get_models_dir( $app, $model );
             }
             if ( $models_dir ) {
                 $file = $models_dir . DS . $model . '.json';
@@ -1487,8 +1677,7 @@ class PTUpgrader {
             }
         }
         $json_dirs = array_keys( $this->plugin_models( true ) );
-        array_unshift( $json_dirs, LIB_DIR . 'PADO' . DS . 'models' );
-        $i = 0;
+        $json_dirs = array_merge( $app->model_paths, $json_dirs );
         foreach ( $json_dirs as $dir ) {
             $files = scandir( $dir, $app->plugin_order );
             foreach ( $files as $json ) {
@@ -1498,22 +1687,16 @@ class PTUpgrader {
                 if ( $extension !== 'json' ) continue;
                 $model = pathinfo( $json )['filename'];
                 if (! in_array( $model, $model_names ) ) {
-                    $component = $i
-                               ? strtolower( basename( dirname( dirname( $file ) ) ) )
-                               : 'core';
+                    $component = in_array( $dir, $app->model_paths )
+                               ? 'Prototype'
+                               : strtolower( basename( dirname( dirname( $file ) ) ) );
                     $data = json_decode( file_get_contents( $file ), true );
                     if ( isset( $data['component'] ) ) $component = $data['component'];
                     $version = isset( $data['version'] ) ? $data['version'] : 0;
                     $upgrade_count++;
                 }
             }
-            $i++;
         }
-        $cfg = $app->db->model( 'option' )->get_by_key(
-            ['kind' => 'config', 'key' => 'upgrade_count'] );
-        $cfg->value( $upgrade_count );
-        $cfg->number( time() + $app->scheme_expires );
-        $cfg->save();
         return $upgrade_count;
     }
 

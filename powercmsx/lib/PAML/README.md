@@ -131,15 +131,15 @@ The tag arguments specification is made by either value, array with key, variabl
     request variable 
              : <paml:var name="request.name">
                             (From HTTP Request variables '$_REQUEST'.)
-    csv      : <paml:var name="name" replace="'value1':'value\'2'">
-          or : <paml:var name="name" replace="value1:value2">
+    csv      : <paml:var name="name" replace="'value1','value\'2'">
+          or : <paml:var name="name" replace="value1,value2">
                             (<=Depending on the tag implementation.)
 
     CSV enclosure and CSV delimiter are properties of the class(they can be changed).
 
         Initial value
              : $csv_enclosure = "'" (enclosure)
-               $csv_delimiter = ':' (delimiter)
+               $csv_delimiter = ',' (delimiter)
 
 ## Template Tags
 

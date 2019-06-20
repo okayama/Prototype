@@ -1,7 +1,7 @@
 {
     "label"    : "Entry",
     "plural"   : "Entries",
-    "version"  : "2.0",
+    "version"  : "2.1",
     "primary"  : "title",
     "display_system": 1,
     "auditing" : 1,
@@ -19,7 +19,6 @@
     "display_dashboard": 1,
     "allow_comment": 1,
     "default_status": 2,
-    "can_duplicate" : 1,
     "has_uuid": 1,
     "show_activity": 1,
     "column_defs": {
@@ -60,6 +59,10 @@
         },
         "tags": {
             "type": "relation"
+        },
+        "extra_path": {
+            "type": "string",
+            "size": 255
         },
         "basename": {
             "type": "string",
@@ -146,6 +149,7 @@
         "PRIMARY": "id",
         "title": "title",
         "keywords": "keywords",
+        "extra_path" : "extra_path",
         "basename": "basename",
         "status": "status",
         "has_deadline": "has_deadline",
@@ -218,6 +222,7 @@
         "categories": "reference:category:label",
         "tags": "reference:tag:name",
         "status": "number",
+        "extra_path": "text_short",
         "basename": "text_short",
         "has_deadline": "checkbox",
         "published_on": "date",
@@ -245,5 +250,8 @@
         "text": 20,
         "text_more": 3,
         "status": "Draft,Review,Approval Pending,Reserved,Publish,Ended"
+    },
+    "column_labels": {
+        "extra_path": "Path"
     }
 }

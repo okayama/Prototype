@@ -63,11 +63,11 @@
 <a class="btn btn-sm btn-secondary editor-btn" data-toggle="modal" data-target="#modal"
 data-href="" href="<mt:var name="script_uri">?__mode=view&amp;_type=list&amp;_model=asset&amp;workspace_id=<mt:var name="request.workspace_id" escape>&amp;dialog_view=1&amp;insert_editor=1&amp;insert=text"><i class="fa fa-file-o"></i><span class="sr-only">FILE</span></a>
 <a class="btn btn-sm btn-secondary editor-btn" data-toggle="modal" data-target="#modal"
-data-href="" href="<mt:var name="script_uri">?__mode=view&amp;_type=list&amp;_model=asset&amp;workspace_id=<mt:var name="request.workspace_id" escape>&amp;dialog_view=1&amp;select_system_filters=filter_class_image&amp;_system_filters_option=image&amp;_filter=1&amp;insert_editor=1&amp;insert=text"><i class="fa fa-image"></i><span class="sr-only">IMAGE</span></a>
+data-href="" href="<mt:var name="script_uri">?__mode=view&amp;_type=list&amp;_model=asset&amp;workspace_id=<mt:var name="request.workspace_id" escape>&amp;dialog_view=1&amp;select_system_filters=filter_class_image&amp;_system_filters_option=image&amp;_filter=asset&amp;insert_editor=1&amp;insert=text"><i class="fa fa-image"></i><span class="sr-only">IMAGE</span></a>
     </div>
 <mt:unless name="request.id"><mt:var name="default" escape setvar="value"></mt:unless>
-    <textarea id="<mt:var name="__col_name__">" rows="<mt:if name="options"><mt:var name="options" escape><mt:else>20</mt:if>"
-    class="form-control richtext" name="<mt:var name="__col_name__">"><mt:var name="value"></textarea>
+    <textarea area-label="<mt:var name="label" escape>" placeholder="<mt:var name="label" escape>" id="<mt:var name="__col_name__">" rows="<mt:if name="options"><mt:var name="options" escape><mt:else>20</mt:if>"
+    class="form-control richtext watch-changed" name="<mt:var name="__col_name__">"><mt:if name="forward_params"><mt:var name="request.text" escape><mt:else><mt:var name="value"></mt:if></textarea>
   </div>
 </div>
 <script>

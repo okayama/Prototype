@@ -45,18 +45,19 @@
               <mt:loop name="$__rel_name__">
                 <li class="<mt:var name="__col_name__">-child badge badge-default badge-relation">
                 <mt:if name="has_thumbnail">
-                <div <mt:ifusercan model="attachmentfile" action="list">class="assets-child-thumb"</mt:ifusercan> data-model="<mt:var name="rel_model" escape>" data-id="<mt:var name="__value__" escape>" style="background-image:url('<mt:var name="script_uri">?__mode=get_thumbnail&amp;square=1&amp;_model=<mt:var name="rel_model" escape>&amp;id=<mt:var name="__value__" escape>')"></div>
+                <div class="<mt:ifusercan model="attachmentfile" action="list">assets-child-thumb</mt:ifusercan>" data-model="<mt:var name="rel_model" escape>" data-id="<mt:var name="__value__" escape>" style="background-image:url('<mt:var name="script_uri">?__mode=get_thumbnail&amp;square=1&amp;_model=<mt:var name="rel_model" escape>&amp;id=<mt:var name="__value__" escape>')"></div>
                 </mt:if>
                 <span>
                   <mt:getobjectname id="$__value__" type="$edit" escape setvar="_related_object">
                   <mt:var name="_related_object" trans="$translate">
+                </span>
                 <mt:ifusercan model="attachmentfile" action="list" workspace_id="$workspace_id">
                 <a href="<mt:var name="script_uri">?__mode=view&amp;_type=edit&amp;_model=attachmentfile&amp;id=<mt:var name="__value__" escape>&amp;view=file&amp;download=1" class="btn btn-secondary btn-sm" aria-label="<mt:trans phrase="Download">">
-                    <i class="fa fa-download"></i>
+                  <i class="fa fa-download"></i>
                 </a>
                 </mt:ifusercan>
-                </span>
-                <input type="hidden" name="<mt:var name="__col_name__">[]" value="<mt:var name="__value__" escape>"></li>
+                <input type="hidden" name="<mt:var name="__col_name__">[]" value="<mt:var name="__value__" escape>">
+                </li>
               </mt:loop>
               </ul>
             <mt:else>

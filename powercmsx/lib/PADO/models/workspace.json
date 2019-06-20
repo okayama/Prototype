@@ -1,7 +1,7 @@
 {
     "label"    : "WorkSpace",
     "plural"   : "WorkSpaces",
-    "version"  : "1.4",
+    "version"  : "1.5",
     "primary"  : "name",
     "display_system": 1,
     "sortable" : true,
@@ -48,6 +48,14 @@
             "type": "tinyint",
             "size": "4",
             "default": null
+        },
+        "show_path_entry": {
+            "type": "tinyint",
+            "size": 4
+        },
+        "show_path_page": {
+            "type": "tinyint",
+            "size": 4
         },
         "preview_url": {
             "type": "string",

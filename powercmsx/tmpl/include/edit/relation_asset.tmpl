@@ -12,7 +12,7 @@
       <mt:setvarblock name="__rel_name__">object_<mt:var name="__col_name__"></mt:setvarblock>
       <ul id="<mt:var name="__col_name__">" class="relation-list">
         <li <mt:if name="$__rel_name__">style="display:none" </mt:if>class="badge badge-default badge-relation" id="<mt:var name="__col_name__">-none">
-        <span><mt:trans phrase="(None selected)">&nbsp;<span>
+        <span><mt:trans phrase="(None selected)">&nbsp;</span>
         </li>
         <li style="margin-right: 4px" class="hidden badge badge-default badge-relation badge-draggable" id="<mt:var name="__col_name__">-tmpl">
         <mt:if name="has_thumbnail">
@@ -41,6 +41,12 @@
         </mt:if>
         <span id="_<mt:var name="__col_name__">_name_<mt:var name="__value__" escape>">
           <mt:getobjectname id="$__value__" type="$edit" escape setvar="_related_object">
+          <mt:if name="forward_params">
+          <mt:setvarblock name="asset_request_name">request._assets_label_<mt:var name="__value__" escape></mt:setvarblock>
+          <mt:if name="$asset_request_name">
+            <mt:var name="$asset_request_name" escape setvar="_related_object">
+          </mt:if>
+          </mt:if>
           <mt:var name="_related_object">
         </span>
         <mt:assetproperty name="file" model="asset" id="$__value__" property="class" setvar="_asset_class">
@@ -63,7 +69,7 @@
         </a>
         </mt:if>
         <mt:unless name="readonly">
-        <input type="hidden" value="" name="_<mt:var name="__col_name__">_label_<mt:var name="__value__" escape>" id="_<mt:var name="__col_name__">_label_<mt:var name="__value__" escape>">
+        <input type="hidden" value="<mt:if name="forward_params"><mt:var name="_related_object"></mt:if>" name="_<mt:var name="__col_name__">_label_<mt:var name="__value__" escape>" id="_<mt:var name="__col_name__">_label_<mt:var name="__value__" escape>">
         <mt:ifusercan action="edit" model="$this_model" id="$__value__" workspace_id="$workspace_id">
         <button type="button" class="_<mt:var name="__col_name__">-edit btn btn-info btn-sm" aria-label="<mt:trans phrase="Edit">" data-name="_<mt:var name="__col_name__">_label_<mt:var name="__value__" escape>"
           data-label="<mt:var name="_related_object">">

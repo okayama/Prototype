@@ -3,10 +3,10 @@
 /**
  * PADO : PHP Alternative Database Object
  *
- * @version    1.2
+ * @version    1.4
  * @package    PADO
  * @author     Alfasado Inc. <webmaster@alfasado.jp>
- * @copyright  2017 Alfasado Inc. All Rights Reserved.
+ * @copyright  2019 Alfasado Inc. All Rights Reserved.
  */
 if (! defined( 'DS' ) ) {
     define( 'DS', DIRECTORY_SEPARATOR );
@@ -17,7 +17,7 @@ if (! defined( 'PADODIR' ) ) {
 
 class PADO {
 
-    private $version     = 1.2;
+    private $version     = 1.4;
 
     public  static $pado = null;
     public  $driver      = 'mysql';
@@ -25,7 +25,8 @@ class PADO {
     private $dbhost      = '';
     private $dbuser      = '';
     private $dbpasswd    = '';
-    private $dbport      =  3306;
+    private $dbport      = ''; // 3306
+    private $mysql_attr_ssl_ca;
     public  $dbcharset   = 'utf8mb4';
     public  $set_names   = false;
     public  $dbcompress  = false;
@@ -161,9 +162,9 @@ class PADO {
             $this->driver = $driver;
         }
         $blob2file = defined( 'PADO_DB_BLOB2FILE' ) ? PADO_DB_BLOB2FILE : $this->blob2file;
-        $blob_path = defined( 'PADO_DB_BLOBPATH' ) ? PADO_DB_BLOBPATH : $this->blob_path;
         if (! $driver ) return;
         if ( $blob2file ) {
+            $blob_path = defined( 'PADO_DB_BLOBPATH' ) ? PADO_DB_BLOBPATH : $this->blob_path;
             if (! $blob_path ) {
                 $this->blob2file = false;
             } else {
@@ -186,6 +187,11 @@ class PADO {
             unset( $this->db );
             $options = $this->persistent ? [ PDO::ATTR_PERSISTENT => true ] : [];
             $options[ PDO::ATTR_TIMEOUT ] = $this->timeout;
+            $mysql_attr_ssl_ca = defined( 'PADO_MYSQL_ATTR_SSL_CA' )
+                ? PADO_MYSQL_ATTR_SSL_CA : $this->mysql_attr_ssl_ca;
+            if ( $mysql_attr_ssl_ca ) {
+                $options[ PDO::MYSQL_ATTR_SSL_CA ] = $mysql_attr_ssl_ca;
+            }
             $pdo = new PDO( $dsn, $dbuser, $dbpasswd, $options );
             $pdo->setAttribute( PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION );
             $this->db = $pdo;
@@ -724,7 +730,9 @@ class PADOBaseModel {
                        '_model'     => true, '_table'     => true,
                        '_pado'      => true, '_id_column' => true,
                        '_colprefix' => true, '_scheme'    => true,
-                       '_driver'    => true, '_engine'    => true
+                       '_driver'    => true, '_engine'    => true,
+                       '_original'  => true, '_relations' => true,
+                       '_meta'      => true, '_insert' => true
                      ];
 
 /**
@@ -783,6 +791,10 @@ class PADOBaseModel {
         }
         if ( $pado->blob2file )
             $this->_original = $this->get_values();
+    }
+
+    public function __debugInfo() {
+        return $this->get_values();
     }
 
     public function model ( $_model = null ) {
@@ -898,7 +910,13 @@ class PADOBaseModel {
         if ( $params === null ) {
             return $model;
         }
+        if (! is_array( $params ) ) {
+            return $model;
+        }
         foreach ( $params as $key => $value ) {
+            if ( is_array( $value ) && isset( $value['BINARY'] ) ) {
+                $value = $value['BINARY'];
+            }
             if ( $colprefix && strpos( $key, $colprefix ) !== 0 )
                 $key = $colprefix . $key;
             if ( $model->$key !== $value ) {
@@ -923,8 +941,8 @@ class PADOBaseModel {
     function load ( $terms = [], $args = [], $cols = '', $extra = '' ) {
         if (! $terms ) $terms = [];
         $pado = $this->pado();
-        if ( isset( $pado->methods['load'] ) )
-            return $this->_driver->load( $terms, $args, $cols );
+        // if ( isset( $pado->methods['load'] ) )
+        //     return $this->_driver->load( $terms, $args, $cols );
         $model = $this->_model;
         if ( $pado->caching ) {
             if (! isset( $pado->cache[ $model ] ) ) $pado->cache[ $model ] = [];
@@ -1118,20 +1136,28 @@ class PADOBaseModel {
                 }
                 if ( $scheme && !isset( $scheme[ $orig_key ] ) )
                     continue;
-                $regex = '/(=|>=|<=|<|>|BETWEEN|NOT\sBETWEEN|LIKE|IN|NOT\sLIKE|'
+                // TODO
+                // $regex = '/^(=|>=|<=|<|>|BETWEEN|NOT\sBETWEEN|BINARY|LIKE|IN|NOT\sLIKE|'
+                //        . 'AND|OR|IS\sNULL|IS\sNOT\sNULL|\!=)$/i';
+                $regex = '/(=|>=|<=|<|>|BETWEEN|NOT\sBETWEEN|BINARY|LIKE|IN|NOT\sLIKE|'
                        . 'AND|OR|IS\sNULL|IS\sNOT\sNULL|\!=)/i';
                 list( $op, $v ) = ['=', $cond ];
                 if ( is_array( $cond ) ) {
                     $op = key( $cond );
                     $v  = $cond[ $op ];
+                    $op = strtoupper( $op );
                 }
                 if ( $cond === null ) $cond = [];
                 if ( ( ( is_string( $cond ) || is_numeric( $cond ) )
                     || ( is_array( $cond ) && count( $cond ) === 1 ) )
                     || ( stripos( $op, 'BETWEEN' ) !== false || $op === 'IN' ) ) {
                     if ( preg_match( $regex, $op, $matchs ) ) {
+                        $orig_op = $op;
                         $op = strtoupper( $matchs[1] );
-                        if ( stripos( $op, 'NULL' ) !== false ) {
+                        if ( $orig_op == 'BINARY' ) {
+                            $stms[] = " BINARY {$key}=?";
+                            $vals[] = $v;
+                        } else if ( stripos( $op, 'NULL' ) !== false ) {
                             $stms[] = " {$key} {$op} ";
                         } elseif ( is_array( $v ) &&
                             stripos( $op, 'BETWEEN' ) !== false ) {
@@ -1296,6 +1322,7 @@ class PADOBaseModel {
                     elseif ( $key === 'limit' ) $limit = (int) $arg;
                     elseif ( $key === 'offset' ) $offset = (int) $arg;
                     elseif ( $key === 'direction' ) $direction = strtoupper( $arg );
+                    if ( $key === 'sort' && !$this->has_column( $opt ) ) $opt = null;
                 }
                 if ( $opt ) {
                     $opt = str_replace( $illegals, '', $opt );
@@ -2015,6 +2042,7 @@ class PADOBaseModel {
             }
             return $arr;
         }
+        $default_ts = $pado->default_ts;
         foreach ( $scheme as $col => $props ) {
             if ( $col === $pado->id_column ) continue;
             if ( $update && !isset( $values[ $col ] ) ) continue;
@@ -2027,13 +2055,12 @@ class PADOBaseModel {
                         if ( strpos( $type, 'int' ) !== false ) {
                             $values[ $col ] = 0;
                         } else if ( strpos( $type, 'time' ) !== false ) {
-                            $default = $pado->default_ts;
-                            if ( $default === 'CURRENT_TIMESTAMP') {
+                            if ( $default_ts === 'CURRENT_TIMESTAMP') {
                                 $values[ $col ] = date( 'YmdHis' );
                             } else {
-                                $values[ $col ] = $default;
+                                $values[ $col ] = $default_ts;
                             }
-                        } else {
+                        } else if ( $type == 'string' || $type == 'text' ) {
                             $values[ $col ] = '';
                         }
                     }
@@ -2057,7 +2084,15 @@ class PADOBaseModel {
                     $val = intval( $val );
                     break;
                 case ( $type === 'datetime' ):
-                    if ( $this->db2ts( $val ) ) {
+                    if ( $val = $this->db2ts( $val ) ) {
+                        if ( $default_ts &&
+                          ( ( $val < 10000101000000 ) || ( $val > 99991231235959 ) ) ) {
+                            if ( $default_ts === 'CURRENT_TIMESTAMP') {
+                                $val = date( 'YmdHis' );
+                            } else {
+                                $val = $default_ts;
+                            }
+                        }
                         $val = $this->ts2db( $val );
                     } else {
                         $val = null;
@@ -2198,7 +2233,7 @@ class PADOBaseModel {
         if ( isset( $pado->methods['db2ts'] ) )
             return $this->_driver->db2ts( $ts );
         $ts = preg_replace( '/[^0-9]/', '', $ts );
-        $ts = (int) $ts;
+        if ( $ts == 0 ) $ts = (int) $ts;
         return $ts;
     }
 }
@@ -2547,6 +2582,14 @@ class PADOMySQL extends PADOBaseModel {
             }
             $update = array_merge( $indexes['new'], $indexes['changed'] );
             if (! empty( $update ) ) {
+                $sql = "SHOW INDEX FROM {$table}";
+                $sth = $pdo->prepare( $sql );
+                $existing_idx = $pdo->query( $sql )->fetchAll();
+                $pado->queries[] = $sql;
+                $existing_idxs = [];
+                foreach ( $existing_idx as $idx ) {
+                    $existing_idxs[ $idx['Key_name'] ] = true;
+                }
                 foreach ( $update as $name => $props ) {
                     if (! is_array( $props ) ) $props = explode( ',', $props );
                     if ( $colprefix ) {
@@ -2561,6 +2604,9 @@ class PADOMySQL extends PADOBaseModel {
                         continue;
                     } else {
                         $name = $table . '_' . $name;
+                        if ( isset( $existing_idxs[ $name ] ) ) {
+                            continue;
+                        }
                         $sql = "CREATE INDEX {$name} ON {$table}({$props})";
                         if ( $pado->stash( $sql ) ) continue;
                         if ( $pado->debug === 3 ) $pado->debugPrint( $sql );

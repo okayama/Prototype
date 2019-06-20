@@ -87,7 +87,7 @@ window.onload = function(){
     </label>
   </div>
   <div class="col-lg-3">
-    <select class="form-control" id="tmpl_markup" name="tmpl_markup">
+    <select class="form-control custom-select" id="tmpl_markup" name="tmpl_markup">
       <option value="mt" <mt:if name="tmpl_markup" eq="mt">selected</mt:if>><mt:trans phrase="PowerCMS Compatible"></option>
       <mt:ignore><option value="smarty" <mt:if name="tmpl_markup" eq="smarty">selected</mt:if>><mt:trans phrase="Smarty Compatible"></option></mt:ignore>
     </select>
@@ -147,13 +147,35 @@ window.onload = function(){
   <div class="col-lg-10 col-2">
     <mt:loop name="languages">
     <mt:if name="__first__">
-    <select class="form-control short" id="sys_language" name="sys_language">
+    <select class="form-control short custom-select" id="sys_language" name="sys_language">
     </mt:if>
       <option value="<mt:var name="__value__">" <mt:if name="sys_language" eq="$__value__">selected</mt:if>><mt:var name="__value__"></option>
     <mt:if name="__last__">
     </select>
     </mt:if>
     </mt:loop>
+  </div>
+</div>
+
+<div class="row form-group">
+  <div class="col-lg-2">
+    <label for="barcolor">
+      <mt:trans phrase="Bar Color">
+    </label>
+  </div>
+  <div class="col-lg-10">
+    <input type="color" id="barcolor" name="barcolor" class="watch-changed form-control color-picker" value="#000000">
+  </div>
+</div>
+
+<div class="row form-group">
+  <div class="col-lg-2">
+    <label for="bartextcolor">
+      <mt:trans phrase="Bar TextColor">
+    </label>
+  </div>
+  <div class="col-lg-10">
+    <input type="color" id="bartextcolor" name="bartextcolor" class="watch-changed form-control color-picker" value="#ffffff">
   </div>
 </div>
 
@@ -230,7 +252,7 @@ window.onload = function(){
   <div class="col-lg-10 col-2">
     <mt:loop name="languages">
     <mt:if name="__first__">
-    <select class="form-control short" id="language" name="language">
+    <select class="form-control short custom-select" id="language" name="language">
     </mt:if>
       <option value="<mt:var name="__value__">" <mt:if name="language" eq="$__value__">selected</mt:if>><mt:var name="__value__"></option>
     <mt:if name="__last__">
@@ -249,6 +271,9 @@ window.onload = function(){
 
 <script>
 $('#__upgrade').click(function(){
+    if (! confirm( '<mt:trans phrase="Are you sure you want to continue Install?">' ) ) {
+        return;
+    }
     $(this).attr('disabled', true);
     $('#__loader-bg').show();
     $('#upgrade-form-main').submit();

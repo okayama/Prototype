@@ -1,0 +1,288 @@
+<mt:trans phrase="Data Migration" component="DataMigrator" setvar="page_title">
+<mt:include file="include/header.tmpl">
+
+<mt:unless name="request.do_import">
+
+<form action="<mt:var name="script_uri">" method="POST" id="import-form">
+<input type="hidden" name="__mode" value="data_migration">
+<input type="hidden" name="magic_token" value="<mt:var name="magic_token">">
+<input type="hidden" name="workspace_id" value="<mt:var name="workspace_id">">
+<input type="hidden" name="magic" value="" id="magic">
+<input type="hidden" name="do_import" value="1">
+<mt:setvar name="can_import" value="">
+<mt:loop name="import_models">
+  <mt:ifusercan action="create" model="$__value__" workspace_id="$workspace_id">
+    <mt:setvar name="can_import" value="1">
+  </mt:ifusercan>
+</mt:loop>
+<mt:if name="can_import">
+<div class="row form-group">
+  <div class="col-lg-2">
+    <label for="import_format">
+    <mt:trans phrase="Model">
+    </label>
+  </div>
+  <div class="col-lg-9 form-inline left-margin">
+    <mt:loop name="import_models">
+      <mt:ifusercan action="create" model="$__value__" workspace_id="$workspace_id">
+        <label class="custom-control custom-radio" id="rb-<mt:var name="__value__">">
+          <input class="custom-control-input" type="radio" name="import_model" value="<mt:var name="__value__">" <mt:if name="__first__">checked</mt:if>>
+          <span class="custom-control-indicator"></span>
+          <span class="custom-control-description">
+          <mt:var name="import_labels" index="$__index__" translate escape>
+          </span>
+        </label>
+      </mt:ifusercan>
+    </mt:loop>
+  </div>
+</div>
+<div class="row form-group">
+  <div class="col-lg-2">
+    <label for="import_format">
+    <mt:trans phrase="Format">
+    </label>
+  </div>
+  <div class="col-lg-3 form-inline">
+    <mt:loop name="importer_loop">
+    <mt:if name="__first__">
+    <select class="form-control custom-select" id="import_format" name="import_format">
+      <option value=""><mt:trans phrase="(None selected)"></option>
+    </mt:if>
+      <option value="<mt:var name="key">"><mt:var name="label" translate></option>
+    <mt:if name="__last__">
+    </select>
+    </mt:if>
+    </mt:loop>
+  </div>
+</div>
+<script>
+var current_select = '';
+var previous_select = '';
+var cancel_select = false;
+</script>
+<div class="row form-group" id="fileupload-wrapper">
+  <div class="col-lg-2">
+    <label for="fileupload">
+    <mt:trans phrase="File">
+    </label>
+  </div>
+  <div class="col-lg-10 container-fluid">
+    <div id="drop-zone">
+    <span id="file-chooser" class="btn btn-success fileinput-button">
+        <span><mt:trans phrase="Select File..."></span>
+        <!-- The file input field used as target for the file upload widget -->
+        <input id="fileupload" type="file" name="files"
+            onfocus="$('#file-chooser').css('border','2px solid green');"
+            onblur="$('#file-chooser').css('border','none');">
+    </span>
+    <!-- The global progress bar -->
+    <div id="progress" class="progress">
+        <div class="progress-bar progress-bar-success"></div>
+    </div>
+    <!-- The container for the uploaded files -->
+    <div id="files" class="files"></div>
+    </div>
+  </div>
+</div>
+
+<div class="row form-group">
+  <div class="col-lg-2 option-content hidden" id="option-content-label">
+    <mt:trans phrase="Options">
+  </div>
+  <div class="col-lg-10 option-content hidden">
+  <mt:loop name="importer_loop">
+  <mt:setvarblock name="option_path">options/<mt:var name="key">.tmpl</mt:setvarblock>
+<mt:include file="$option_path" setvar="option_tmpl">
+<mt:if name="option_tmpl">
+  <div id="<mt:var name="key">-option" class="hidden">
+    <mt:var name="option_tmpl">
+  </div>
+</mt:if>
+  </mt:loop>
+  </div>
+</div>
+<hr>
+<button type="submit" id="save" class="btn btn-primary disabled mb-5" disabled><mt:trans phrase="Do Import"></button>
+</form>
+<!-- The jQuery UI widget factory, can be omitted if jQuery UI is already included -->
+<script src="assets/js/vendor/jquery.ui.widget.js"></script>
+<!-- The Iframe Transport is required for browsers without support for XHR file uploads -->
+<script src="assets/js/jquery.iframe-transport.js"></script>
+<!-- The basic File Upload plugin -->
+<script src="assets/js/jquery.fileupload.js"></script>
+<script>
+var editContentChanged = false;
+$('.watch-changed').change(function(){
+    editContentChanged = true;
+});
+$(function(){
+    $(window).on('beforeunload', function() {
+        if (! editContentChanged ) {
+            $(window).off('beforeunload');
+            return;
+        }
+        return '<mt:trans phrase="Are you sure you want to move from this page? The settings you entered will be lost." component="DataMigrator">';
+    });
+});
+$('#import_format').change(function(){
+    if ( cancel_select ) {
+        cancel_select = false;
+        return;
+    }
+    if ( current_select ) {
+        $('.option-content').hide();
+        if ($('#' + current_select + '-option').length) {
+            $('#' + current_select + '-option').hide();
+        }
+    }
+    if ( $(this).val() ) {
+        if ( $('#magic').val() ) {
+            $('#save').removeClass('disabled');
+            $("#save").prop("disabled", false);
+        }
+        if ($('#' + $(this).val() + '-option').length) {
+            $('#' + $(this).val() + '-option').show();
+            $('.option-content').show();
+        }
+        var models = importer_map[$(this).val()];
+        var rb_hide = false;
+        $('input[name="import_model"]').each(function(){
+            var srb = '#' + 'rb-' + $(this).val();
+            if ( models.indexOf($(this).val()) == -1 ) {
+                if ( $(this).prop('checked') ) {
+                    $(this).prop('checked', false);
+                    rb_hide = true;
+                }
+                $(srb).hide();
+            } else {
+                $(srb).show();
+            }
+        });
+        var cnt = 0;
+        if ( rb_hide ) {
+            $('input[name="import_model"]:first-of-type').prop('checked', true);
+        }
+    }
+    previous_select = current_select;
+    current_select = $(this).val();
+    if ( current_select ) {
+        <mt:loop name="importer_loop">
+        if ( current_select == '<mt:var name="key">' ) {
+            if( typeof select_format_<mt:var name="key"> == 'function') {
+                select_format_<mt:var name="key">();
+            }
+        }
+        </mt:loop>
+    }
+});
+var DropZone = document.getElementById('drop-zone');
+DropZone.addEventListener('dragover', function (event) {
+    $('#drop-zone').css('background-color','#ddf');
+});
+DropZone.addEventListener('dragleave', function (event) {
+    $('#drop-zone').css('background-color','#fff');
+});
+$('#drop-zone').css('border','3px dashed #ccc');
+$('#drop-zone').css('padding','12px');
+$('.fileinput-button').css('margin','12px 0px');
+$(function () {
+    'use strict';
+    var url = '<mt:var name="script_uri">?__mode=upload_migration_file&magic_token=<mt:var name="magic_token">&workspace_id=<mt:var name="workspace_id">';
+    $('#fileupload').fileupload({
+        url: url,
+        dataType: 'json',
+        dropZone: $("#drop-zone"),
+        formData: {},
+        done: function (e, data) {
+            if (!data.result.files) {
+                var error = data.result.message;
+                $('#progress .progress-bar').css(
+                    'width', 0
+                );
+                alert("<mt:trans phrase="An error occurred while uploading.">"+' (' + error + ')');
+                return;
+            }
+            $.each(data.result.files, function (index, file) {
+                // alert(JSON.stringify(file));
+                $('#files').html('');
+                $('<p/>').text(file.name).appendTo('#files');
+                $('#magic').val(file.magic);
+                if ( $('#import_format').val() && $('input[name="import_model"]:checked').val() ) {
+                    $('#save').removeClass('disabled');
+                    $("#save").prop("disabled", false);
+                    editContentChanged = true;
+                    $('#progress .progress-bar').css(
+                        'width','0%'
+                    );
+                }
+            });
+        },
+        progressall: function (e, data) {
+            var progress = parseInt(data.loaded / data.total * 100, 10);
+            $('#progress .progress-bar').css(
+                'width',
+                progress + '%'
+            );
+        }
+    }).prop('disabled', !$.support.fileInput)
+        .parent().addClass($.support.fileInput ? undefined : 'disabled');
+});
+<mt:loop name="importer_loop" glue=","><mt:if name="__first__">
+var json = '{</mt:if>"<mt:var name="key">":<mt:var name="models" to_json><mt:if name="__last__">}';
+importer_map = JSON.parse(json);
+</mt:if></mt:loop>
+$('input[name="import_model"]').change(function(){
+    select_model = $(this).val();
+    $("#import_format option").each(function(i){
+        if ( $(this).val() ) {
+            var models = importer_map[ $(this).val() ];
+            if ( models.indexOf(select_model) == -1 ) {
+                $(this).prop('selected', false);
+                $(this).hide();
+            } else {
+                $(this).show();
+            }
+        }
+    });
+});
+$('#save').click(function(){
+    if(!confirm('<mt:trans phrase="Are you sure you want to import objects?" component="DataMigrator">')){
+        return false;
+    }
+    editContentChanged = false;
+    $(this).attr('disabled', true);
+    $('#import-form').submit();
+});
+</script>
+
+<mt:else>
+  <div id="header-error-message" class="alert alert-danger" role="alert" tabindex="0">
+    <mt:trans phrase="Permission denied for import object(s)." component="DataMigrator">
+  </div>
+  <script>
+  $('#header-error-message').focus();
+  </script>
+</mt:if>
+<mt:else>
+<div id="print-area">
+<div class="print-area-content">
+<iframe id="print-area-iframe" src="<mt:var name="script_uri">?__mode=data_migration&amp;workspace_id=<mt:var name="workspace_id">&amp;magic_token=<mt:var name="magic_token">&amp;magic=<mt:var name="magic" escape>&amp;import_format=<mt:var name="import_format"><mt:if name="import_options">&amp;<mt:var name="import_options" escape></mt:if>&amp;import_model=<mt:var name="request.import_model" escape>">
+</iframe>
+</div>
+</div>
+<script>
+endImport = false;
+importDone = false;
+setInterval(function(){
+    if (! endImport ) {
+        var iframe_ele = document.getElementById('print-area-iframe').contentWindow.document.documentElement;
+        document.getElementById('print-area-iframe').contentWindow.scrollTo( 0, iframe_ele.scrollHeight );
+        if ( importDone ) {
+            endImport = true;
+        }
+    }
+},100);
+</script>
+</mt:unless>
+
+<mt:include file="include/footer.tmpl">

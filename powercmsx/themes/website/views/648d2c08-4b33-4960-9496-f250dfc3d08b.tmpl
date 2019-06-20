@@ -1,0 +1,27 @@
+<mt:phpstart>
+// =====================================================
+// Specify the application's path according to the server environment.
+
+// If the domain of the CMS is different from the domain of the site,
+// Please specify the URL of parent directory of the 'assets/'.
+
+// $asset_parent = '/powercmsx/';
+// =====================================================
+
+$allow_login  = false; // Specify true to display unpublish URLs to login users.
+
+$workspace_id = <mt:websiteid>;
+require_once( '<mt:var name="application_dir">/class.Prototype.php' );
+$app = new Prototype( ['id' => 'Bootstrapper'] );
+if ( $app->request_method != 'GET' || $app->query_string ) {
+    $app->force_dynamic = true;
+}
+require_once( LIB_DIR . 'Prototype' . DS . 'class.PTViewer.php' );
+$bootstrapper = new PTViewer;
+if ( isset( $asset_parent ) ) {
+    $bootstrapper->prototype_path = $asset_parent;
+}
+if ( isset( $allow_login ) ) {
+    $bootstrapper->allow_login = $allow_login;
+}
+$bootstrapper->view( $app, $workspace_id );

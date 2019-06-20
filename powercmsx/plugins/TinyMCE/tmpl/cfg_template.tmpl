@@ -40,12 +40,27 @@
 </div>
 <div class="row form-group">
   <div class="col-lg-2">
+    <label for="setting_tinymce_advanced_settings">
+      <mt:trans phrase="Advanced Settings" component="TinyMCE">
+    </label>
+  </div>
+  <div class="col-lg-10">
+    <textarea rows="2" id="setting_tinymce_advanced_settings" name="setting_tinymce_advanced_settings" class="form-control"><mt:var name="setting_tinymce_advanced_settings" escape></textarea>
+  <p class="text-muted hint-block">
+    <i class="fa fa-question-circle-o" aria-hidden="true"></i>
+    <span class="sr-only"><mt:trans phrase="Hint"></span>
+    <mt:trans phrase="Be sure to add a comma at the end." component="TinyMCE">
+  </p>
+  </div>
+</div>
+<div class="row form-group">
+  <div class="col-lg-2">
     <label for="setting_tinymce_relative_urls">
       <mt:trans phrase="Relative URLs" component="TinyMCE">
     </label>
   </div>
   <div class="col-lg-10">
-    <select class="form-control short" id="setting_tinymce_relative_urls" name="setting_tinymce_relative_urls">
+    <select class="form-control custom-select short" id="setting_tinymce_relative_urls" name="setting_tinymce_relative_urls">
       <option value="none" <mt:if name="setting_tinymce_relative_urls" eq="true">selected</mt:if>>none</option>
       <option value="true" <mt:if name="setting_tinymce_relative_urls" eq="true">selected</mt:if>>true</option>
       <option value="false" <mt:if name="setting_tinymce_relative_urls" eq="false">selected</mt:if>>false</option>

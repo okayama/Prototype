@@ -1,0 +1,79 @@
+{
+    "label"       : "DataMigrator",
+    "id"          : "datamigrator",
+    "component"   : "DataMigrator",
+    "version"     : "1.0",
+    "author"      : "Alfasado Inc.",
+    "author_link" : "https://alfasado.net/",
+    "description" : "It provides data migration functions.",
+    "menus": {
+        "start_import": {
+            "display_system" : 1,
+            "display_space" : 1,
+            "component"  : "DataMigrator",
+            "permission" : "import_objects",
+            "mode"       : "start_migration",
+            "label"      : "Data Migration",
+            "order"      : 51
+        }
+    },
+    "methods": {
+        "start_migration": {
+            "component"  : "DataMigrator",
+            "permission" : "import_objects",
+            "method"     : "start_migration"
+        },
+        "data_migration": {
+            "component"  : "DataMigrator",
+            "permission" : "import_objects",
+            "method"     : "data_migration"
+        },
+        "upload_migration_file": {
+            "component"  : "DataMigrator",
+            "permission" : "import_objects",
+            "method"     : "upload_migration_file"
+        }
+    },
+    "import_format": {
+        "wordpress": {
+            "component"  : "DataMigrator",
+            "label"      : "WordPress",
+            "method"     : "import_wordpress",
+            "models"     : ["entry", "page"],
+            "order"      : 10,
+            "options"    : ["author_setting", "new_author_password", "text_format",
+                            "comment_status", "set_folder", "field_settings"]
+        },        
+        "movabletype": {
+            "component"  : "DataMigrator",
+            "label"      : "Movable Type",
+            "method"     : "import_movabletype",
+            "models"     : ["entry", "page"],
+            "order"      : 20,
+            "options"    : ["author_setting", "new_author_password",
+                            "comment_status", "set_folder", "field_settings"]
+        }
+    },
+    "export_format": {
+        "movabletype": {
+            "component"  : "DataMigrator",
+            "label"      : "Movable Type",
+            "method"     : "export_movabletype"
+        }
+    },
+    "list_actions": {
+        "export_entry" : {
+            "entry" : {
+                "export_entry": {
+                    "name" : "export_entry",
+                    "label" : "Export Entries",
+                    "component" : "DataMigrator",
+                    "method"    : "export_entry",
+                    "input"     : 1,
+                    "scope"     : ["system", "workspace"],
+                    "input_options": "list_options"
+                }
+            }
+        }
+    }
+}

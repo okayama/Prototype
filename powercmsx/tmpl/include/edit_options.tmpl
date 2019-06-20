@@ -66,6 +66,15 @@
                   <mt:var name="field__name" trans="1" escape></span>
                 </label>
                 </mt:fieldloop>
+              <mt:if name="_can_sort_edit_col">
+                <div>
+                  <p class="text-muted hint-block">
+                    <i class="fa fa-question-circle-o" aria-hidden="true"></i>
+                    <span class="sr-only"><mt:trans phrase="Hint"></span>
+                    <mt:trans phrase="You can change the display order of fields with drag &amp; drop.">
+                  </p>
+                </div>
+              </mt:if>
               </div>
             </div>
           </div>
@@ -126,6 +135,7 @@ function reorder_fields(){
     });
     $('#_field_sort_order').val(field_names.join(','));
     $('#_start_fields').after(field_objects);
+    $(document).trigger('pcmsx.reorder_fields_done');
 }
 $("#disp_options_save").click(function(){
     var str = $("#disp_options_form").serialize();

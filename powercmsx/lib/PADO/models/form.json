@@ -1,7 +1,7 @@
 {
     "label": "Form",
     "plural": "Forms",
-    "version": "1.5",
+    "version": "2.0",
     "primary": "name",
     "auditing": 1,
     "order": 380,
@@ -23,6 +23,13 @@
         "name": {
             "type": "string",
             "size": 255
+        },
+        "text_format": {
+            "type": "string",
+            "size": 255
+        },
+        "text": {
+            "type": "text"
         },
         "questions": {
             "type": "relation"
@@ -62,6 +69,10 @@
             "type": "tinyint",
             "size": 4
         },
+        "not_save": {
+            "type": "tinyint",
+            "size": 4
+        },
         "email_from": {
             "type": "string",
             "size": 255
@@ -69,6 +80,12 @@
         "send_thanks": {
             "type": "tinyint",
             "size": 4
+        },
+        "thanks_cc": {
+            "type": "text"
+        },
+        "thanks_bcc": {
+            "type": "text"
         },
         "thanks_template": {
             "type": "int",
@@ -78,7 +95,16 @@
             "type": "tinyint",
             "size": 4
         },
+        "notify_from": {
+            "type": "text"
+        },
         "notify_to": {
+            "type": "text"
+        },
+        "notify_cc": {
+            "type": "text"
+        },
+        "notify_bcc": {
             "type": "text"
         },
         "notify_template": {
@@ -155,6 +181,7 @@
         "questions": "question"
     },
     "options": {
+        "text": "8",
         "status": "Draft,Review,Approval Pending,Reserved,Publish,Ended"
     },
     "sort_by": {
@@ -181,6 +208,7 @@
     "edit_properties": {
         "id": "hidden",
         "name": "primary",
+        "text": "richtext",
         "questions": "relation:question:label:dialog",
         "requires_token": "checkbox",
         "redirect_url": "text_short",
@@ -199,11 +227,21 @@
         "has_deadline": "checkbox",
         "status": "number",
         "send_email": "checkbox",
+        "not_save": "checkbox",
         "workspace_id": "reference:workspace:name",
         "rev_note": "text",
         "rev_diff": "popover",
         "rev_type": "text_short",
         "modified_on": "datetime",
         "modified_by": "reference:user:name"
+    },
+    "hide_edit_options": [
+        "status",
+        "published_on",
+        "unpublished_on"
+    ],
+    "column_labels": {
+        "text": "Description",
+        "not_save": "Save"
     }
 }

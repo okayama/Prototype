@@ -1,4 +1,7 @@
+<mt:getobjectlabel id="$object_questiontype_id" column="class" model="questiontype" setvar="questiontype_value">
+<mt:unless name="questiontype_value">
 <mt:getobjectlabel id="$object_questiontype_id" column="basename" model="questiontype" setvar="questiontype_value">
+</mt:unless>
 <div class="row form-group">
   <div class="col-lg-2">
     <label for="<mt:var name="__col_name__">">

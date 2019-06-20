@@ -1,4 +1,4 @@
-<mt:setvar name="no_disp" value="Role,Permission,Question Type">
+<mt:setvar name="no_disp" value="Model,Attachment File,Field,Field Type,IP Address,Contact,URL Map,Phrase,Role,Permission,Question Type,Question,Log,Workflow,Comment,URL">
 <mt:var name="no_disp" split="," setvar="no_disp">
 
 <div class="row form-group">
@@ -9,7 +9,7 @@
     </label>
   </div>
   <div class="col-lg-3">
-    <select class="form-control short" name="<mt:var name="__col_name__">">
+    <select class="form-control custom-select short" id="__model_selector" name="<mt:var name="__col_name__">">
     <mt:if name="workspace_id">
       <mt:setvarblock name="table_option">'display_space','1'</mt:setvarblock>
     <mt:else>
@@ -20,15 +20,33 @@
       <option value="">
         <mt:trans phrase="Unspecified">
       </option>
+      <option value="template" <mt:if name="__col_value__" eq="template">selected</mt:if>>
+        <mt:trans phrase="Index">
+      </option>
     </mt:if>
-      <mt:if name="menu_type" ne="2">
-        <mt:ifinarray array="no_disp" value="$label">
-        <mt:else>
-        <option <mt:if name="__col_value__" eq="$name">selected</mt:if> value="<mt:var name="name">">
-        <mt:trans phrase="$label" escape></option>
-        </mt:ifinarray>
-      </mt:if>
+      <mt:ifinarray array="no_disp" value="$label">
+      <mt:else>
+      <mt:unless name="name" eq="template">
+      <option <mt:if name="__col_value__" eq="$name">selected</mt:if> value="<mt:var name="name">">
+      <mt:trans phrase="$label" escape>
+      </option>
+      </mt:unless>
+      </mt:ifinarray>
     </mt:objectloop>
     </select>
   </div>
 </div>
+<script>
+$('#__model_selector').change(function(){
+<mt:if name="request.id">
+    if (! window.confirm('<mt:trans phrase="Changing the model will remove archives. Are you sure you want to change the model?">') ) {
+        return false;
+    }
+</mt:if>
+    if ( $(this).val() == '' || $(this).val() == 'template' ) {
+        $('#is_preferred-wrapper').hide();
+    } else {
+        $('#is_preferred-wrapper').show();
+    }
+});
+</script>

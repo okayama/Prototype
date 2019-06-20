@@ -36,7 +36,7 @@
 <input id="_name_<mt:var name="id">" name="_name_<mt:var name="id">" type="text" class="form-control" value="<mt:var name="name" escape>" readonly></td>
 <td><input id="_label_<mt:var name="id">" name="_label_<mt:var name="id">" type="text" class="form-control" value="<mt:var name="label" escape>"<mt:if name="is_primary"> readonly</mt:if>></td>
 <td>
-<mt:if name="developer_mode">
+<mt:if name="develop">
   <mt:setvar name="_not_delete" value="0">
 <mt:else>
   <mt:var name="not_delete" setvar="_not_delete">
@@ -56,14 +56,14 @@
 <mt:elseif name="type" eq="relation">
 <mt:setvar name="column_type" value="relation">
 </mt:if>
-<select id="_type_<mt:var name="id">" name="_type_<mt:var name="id">" class="form-control col_types<mt:if name="_not_delete"> readonly</mt:if>"<mt:if name="is_primary"> disabled</mt:if><mt:if name="_not_delete"> onmousedown="return false;" onkeydown="return false;"</mt:if>>
-  <option value="integer"<mt:if name="column_type" eq="integer"> selected</mt:if>><mt:trans phrase="Integer"></option>
-  <option value="boolean"<mt:if name="column_type" eq="boolean"> selected</mt:if>><mt:trans phrase="Boolean"></option>
-  <option value="string"<mt:if name="column_type" eq="string"> selected</mt:if>><mt:trans phrase="String"></option>
-  <option value="text"<mt:if name="column_type" eq="text"> selected</mt:if>><mt:trans phrase="Large Text"></option>
-  <option value="datetime"<mt:if name="column_type" eq="datetime"> selected</mt:if>><mt:trans phrase="DateTime"></option>
-  <option value="blob"<mt:if name="column_type" eq="blob"> selected</mt:if>><mt:trans phrase="Blob"></option>
-  <option value="relation"<mt:if name="column_type" eq="relation"> selected</mt:if>><mt:trans phrase="Relation"></option>
+<select id="_type_<mt:var name="id">" name="_type_<mt:var name="id">" class="form-control custom-select col_types<mt:if name="_not_delete"> readonly</mt:if>"<mt:if name="is_primary"> disabled</mt:if><mt:if name="_not_delete"> onmousedown="return false;"</mt:if>>
+  <option value="integer"<mt:if name="column_type" eq="integer"> selected<mt:else><mt:if name="_not_delete"> style="display:none"</mt:if></mt:if>><mt:trans phrase="Integer"></option>
+  <option value="boolean"<mt:if name="column_type" eq="boolean"> selected<mt:else><mt:if name="_not_delete"> style="display:none"</mt:if></mt:if>><mt:trans phrase="Boolean"></option>
+  <option value="string"<mt:if name="column_type" eq="string"> selected<mt:else><mt:if name="_not_delete"> style="display:none"</mt:if></mt:if>><mt:trans phrase="String"></option>
+  <option value="text"<mt:if name="column_type" eq="text"> selected<mt:else><mt:if name="_not_delete"> style="display:none"</mt:if></mt:if>><mt:trans phrase="Large Text"></option>
+  <option value="datetime"<mt:if name="column_type" eq="datetime"> selected<mt:else><mt:if name="_not_delete"> style="display:none"</mt:if></mt:if>><mt:trans phrase="DateTime"></option>
+  <option value="blob"<mt:if name="column_type" eq="blob"> selected<mt:else><mt:if name="_not_delete"> style="display:none"</mt:if></mt:if>><mt:trans phrase="Blob"></option>
+  <option value="relation"<mt:if name="column_type" eq="relation"> selected<mt:else><mt:if name="_not_delete"> style="display:none"</mt:if></mt:if>><mt:trans phrase="Relation"></option>
 </select>
 </td>
 <mt:ignore><td><input id="_size_<mt:var name="id">" name="_size_<mt:var name="id">" type="number" class="form-control num" value="<mt:var name="size" escape>"<mt:if name="_not_delete"> readonly</mt:if><mt:if name="is_primary"> disabled</mt:if>></td></mt:ignore>
@@ -75,26 +75,26 @@
 <input id="_disp_edit_<mt:var name="id">" name="_disp_edit_<mt:var name="id">" type="hidden" value="<mt:var name="disp_edit" escape>">
 <input id="_autoset_<mt:var name="id">" name="_autoset_<mt:var name="id">" type="hidden" value="<mt:var name="autoset" escape>">
 <input id="_default_<mt:var name="id">" name="_default_<mt:var name="id">" type="hidden" value="<mt:var name="default" escape>">
-<mt:unless name="is_primary"><input id="_not_null_<mt:var name="id">" name="_not_null_<mt:var name="id">" type="checkbox" class="form-control" value="1"<mt:if name="not_null"> checked</mt:if><mt:if name="_not_delete"> onclick="return false;" onkeydown="return false;"</mt:if>><mt:else><input type="checkbox" checked disabled></mt:unless></td>
-<td><mt:unless name="is_primary"><input id="_index_<mt:var name="id">" name="_index_<mt:var name="id">" type="checkbox" class="form-control" value="1"<mt:if name="index"> checked</mt:if><mt:if name="_not_delete"> onclick="return false;" onkeydown="return false;"</mt:if>><mt:else><input type="checkbox" checked disabled><input name="index_<mt:var name="id">" type="hidden" value="PRIMARY"></mt:unless></td>
-<td><mt:unless name="is_primary"><input id="_unique_<mt:var name="id">" name="_unique_<mt:var name="id">" type="checkbox" class="form-control" value="1"<mt:if name="unique"> checked</mt:if><mt:if name="_not_delete"> onclick="return false;" onkeydown="return false;"</mt:if>><mt:else><input type="checkbox" checked disabled></mt:unless></td>
-<td><mt:unless name="is_primary"><input id="_unchangeable_<mt:var name="id">" name="_unchangeable_<mt:var name="id">" type="checkbox" class="form-control" value="1"<mt:if name="unchangeable"> checked</mt:if><mt:if name="_not_delete"> onclick="return false;" onkeydown="return false;"</mt:if>><mt:else><input type="checkbox" checked disabled></mt:unless></td>
+<mt:unless name="is_primary"><input id="_not_null_<mt:var name="id">" name="_not_null_<mt:var name="id">" type="checkbox" class="form-control" value="1"<mt:if name="not_null"> checked</mt:if><mt:if name="_not_delete"> tabindex="-1" onclick="return false;" onkeydown="return false;"</mt:if>><mt:else><input type="checkbox" checked disabled></mt:unless></td>
+<td><mt:unless name="is_primary"><input id="_index_<mt:var name="id">" name="_index_<mt:var name="id">" type="checkbox" class="form-control specify_idx" value="1"<mt:if name="index"> checked</mt:if><mt:if name="_not_delete"> tabindex="-1" onclick="return false;" onkeydown="return false;"</mt:if>><mt:else><input type="checkbox" checked disabled><input name="index_<mt:var name="id">" type="hidden" value="PRIMARY"></mt:unless></td>
+<td><mt:unless name="is_primary"><input id="_unique_<mt:var name="id">" name="_unique_<mt:var name="id">" type="checkbox" class="form-control" value="1"<mt:if name="unique"> checked</mt:if><mt:if name="_not_delete"> tabindex="-1" onclick="return false;" onkeydown="return false;"</mt:if>><mt:else><input type="checkbox" checked disabled></mt:unless></td>
+<td><mt:unless name="is_primary"><input id="_unchangeable_<mt:var name="id">" name="_unchangeable_<mt:var name="id">" type="checkbox" class="form-control" value="1"<mt:if name="unchangeable"> checked</mt:if><mt:if name="_not_delete"> tabindex="-1" onclick="return false;" onkeydown="return false;"</mt:if>><mt:else><input type="checkbox" checked disabled></mt:unless></td>
 <td><mt:unless name="is_primary">
-<select id="_list_<mt:var name="id">" name="_list_<mt:var name="id">" class="form-control<mt:if name="_not_delete"> readonly</mt:if>"<mt:if name="_not_delete"> onmousedown="return false;" onkeydown="return false;"</mt:if>>
-  <option value=""<mt:unless name="list"> selected</mt:unless>><mt:trans phrase="None"></option>
-  <option value="checkbox"<mt:if name="list" eq="checkbox"> selected</mt:if>><mt:trans phrase="Checkbox"></option>
-  <option value="number"<mt:if name="list" eq="number"> selected</mt:if>><mt:trans phrase="Number"></option>
-  <option id="_list_primary_<mt:var name="id">" value="primary"<mt:if name="list" eq="primary"> selected</mt:if>><mt:trans phrase="Primary"></option>
-  <option value="text"<mt:if name="list" eq="text"> selected</mt:if>><mt:trans phrase="Text Box"></option>
-  <option value="text_short"<mt:if name="list" eq="text_short"> selected</mt:if>><mt:trans phrase="Short Text"></option>
-  <option value="password"<mt:if name="list" eq="password"> selected</mt:if>><mt:trans phrase="Password"></option>
-  <option id="_list_datetime_<mt:var name="id">" value="datetime"<mt:if name="list" eq="datetime"> selected</mt:if>><mt:trans phrase="DateTime"></option>
-  <option id="_list_date_<mt:var name="id">" value="date"<mt:if name="list" eq="date"> selected</mt:if>><mt:trans phrase="Date"></option>
-  <option id="_list_popover_<mt:var name="id">" value="popover"<mt:if name="list" eq="popover"> selected</mt:if>><mt:trans phrase="Popover"></option>
+<select id="_list_<mt:var name="id">" name="_list_<mt:var name="id">" class="form-control custom-select<mt:if name="_not_delete"> readonly</mt:if>"<mt:if name="_not_delete"> onmousedown="return false;"</mt:if>>
+  <option value=""<mt:unless name="list"> selected<mt:else><mt:if name="_not_delete"> style="display:none"</mt:if></mt:unless>><mt:trans phrase="None"></option>
+  <option value="checkbox"<mt:if name="list" eq="checkbox"> selected<mt:else><mt:if name="_not_delete"> style="display:none"</mt:if></mt:if>><mt:trans phrase="Checkbox"></option>
+  <option value="number"<mt:if name="list" eq="number"> selected<mt:else><mt:if name="_not_delete"> style="display:none"</mt:if></mt:if>><mt:trans phrase="Number"></option>
+  <option id="_list_primary_<mt:var name="id">" value="primary"<mt:if name="list" eq="primary"> selected<mt:else><mt:if name="_not_delete"> style="display:none"</mt:if></mt:if>><mt:trans phrase="Primary"></option>
+  <option value="text"<mt:if name="list" eq="text"> selected<mt:else><mt:if name="_not_delete"> style="display:none"</mt:if></mt:if>><mt:trans phrase="Text Box"></option>
+  <option value="text_short"<mt:if name="list" eq="text_short"> selected<mt:else><mt:if name="_not_delete"> style="display:none"</mt:if></mt:if>><mt:trans phrase="Short Text"></option>
+  <option value="password"<mt:if name="list" eq="password"> selected<mt:else><mt:if name="_not_delete"> style="display:none"</mt:if></mt:if>><mt:trans phrase="Password"></option>
+  <option id="_list_datetime_<mt:var name="id">" value="datetime"<mt:if name="list" eq="datetime"> selected<mt:else><mt:if name="_not_delete"> style="display:none"</mt:if></mt:if>><mt:trans phrase="DateTime"></option>
+  <option id="_list_date_<mt:var name="id">" value="date"<mt:if name="list" eq="date"> selected<mt:else><mt:if name="_not_delete"> style="display:none"</mt:if></mt:if>><mt:trans phrase="Date"></option>
+  <option id="_list_popover_<mt:var name="id">" value="popover"<mt:if name="list" eq="popover"> selected<mt:else><mt:if name="_not_delete"> style="display:none"</mt:if></mt:if>><mt:trans phrase="Popover"></option>
 <mt:if name="list" like=":">
   <option value="<mt:var name="list" escape>" class="custom" selected><mt:trans phrase="Custom"></option>
 <mt:else>
-  <option value="custom" class="custom"><mt:trans phrase="Custom"></option>
+  <option value="custom" class="custom"<mt:if name="_not_delete"> style="display:none"</mt:if>><mt:trans phrase="Custom"></option>
 </mt:if>
 </select>
 
@@ -104,27 +104,28 @@
 <mt:else><input type="checkbox" name="_list_<mt:var name="id">" value="1" <mt:if name="list">checked</mt:if>></mt:unless></td>
 
 <td><mt:unless name="is_primary">
-<select id="_edit_<mt:var name="id">" name="_edit_<mt:var name="id">" class="list_edit_prop form-control<mt:if name="_not_delete"> readonly</mt:if>"<mt:if name="_not_delete"> onmousedown="return false;" onkeydown="return false;"</mt:if>>
-  <option value=""<mt:unless name="edit"> selected</mt:unless>><mt:trans phrase="None"></option>
-  <option value="hidden"<mt:if name="edit" eq="hidden"> selected</mt:if>><mt:trans phrase="Hidden"></option>
-  <option value="checkbox"<mt:if name="edit" eq="checkbox"> selected</mt:if>><mt:trans phrase="Checkbox"></option>
-  <option value="number"<mt:if name="edit" eq="number"> selected</mt:if>><mt:trans phrase="Number"></option>
-  <option id="_edit_primary_<mt:var name="id">" value="primary"<mt:if name="edit" eq="primary"> selected</mt:if>><mt:trans phrase="Primary"></option>
-  <option value="text"<mt:if name="edit" eq="text"> selected</mt:if>><mt:trans phrase="Text Box"></option>
-  <option value="text_short"<mt:if name="edit" eq="text_short"> selected</mt:if>><mt:trans phrase="Short Text"></option>
-  <option id="_edit_selection_<mt:var name="id">" value="selection"<mt:if name="edit" eq="selection"> selected</mt:if>><mt:trans phrase="Selection"></option>
-  <option value="password"<mt:if name="edit" eq="password"> selected</mt:if>><mt:trans phrase="Password"></option>
-  <option value="password(hash)"<mt:if name="edit" eq="password(hash)"> selected</mt:if>><mt:trans phrase="Password(Hashed)"></option>
+<select id="_edit_<mt:var name="id">" name="_edit_<mt:var name="id">" class="list_edit_prop form-control custom-select<mt:if name="_not_delete"> readonly</mt:if>"<mt:if name="_not_delete"> onmousedown="return false;"</mt:if>>
+  <option value=""<mt:unless name="edit"> selected<mt:else><mt:if name="_not_delete"> style="display:none"</mt:if></mt:unless>><mt:trans phrase="None"></option>
+  <option value="hidden"<mt:if name="edit" eq="hidden"> selected<mt:else><mt:if name="_not_delete"> style="display:none"</mt:if></mt:if>><mt:trans phrase="Hidden"></option>
+  <option value="checkbox"<mt:if name="edit" eq="checkbox"> selected<mt:else><mt:if name="_not_delete"> style="display:none"</mt:if></mt:if>><mt:trans phrase="Checkbox"></option>
+  <option value="number"<mt:if name="edit" eq="number"> selected<mt:else><mt:if name="_not_delete"> style="display:none"</mt:if></mt:if>><mt:trans phrase="Number"></option>
+  <option id="_edit_primary_<mt:var name="id">" value="primary"<mt:if name="edit" eq="primary"> selected<mt:else><mt:if name="_not_delete"> style="display:none"</mt:if></mt:if>><mt:trans phrase="Primary"></option>
+  <option value="text"<mt:if name="edit" eq="text"> selected<mt:else><mt:if name="_not_delete"> style="display:none"</mt:if></mt:if>><mt:trans phrase="Text Box"></option>
+  <option value="text_short"<mt:if name="edit" eq="text_short"> selected<mt:else><mt:if name="_not_delete"> style="display:none"</mt:if></mt:if>><mt:trans phrase="Short Text"></option>
+  <option id="_edit_selection_<mt:var name="id">" value="selection"<mt:if name="edit" eq="selection"> selected<mt:else><mt:if name="_not_delete"> style="display:none"</mt:if></mt:if>><mt:trans phrase="Selection"></option>
+  <option value="password"<mt:if name="edit" eq="password"> selected<mt:else><mt:if name="_not_delete"> style="display:none"</mt:if></mt:if>><mt:trans phrase="Password"></option>
+  <option value="password(hash)"<mt:if name="edit" eq="password(hash)"> selected<mt:else><mt:if name="_not_delete"> style="display:none"</mt:if></mt:if>><mt:trans phrase="Password(Hashed)"></option>
   <option value="textarea"<mt:if name="edit" eq="textarea"> selected</mt:if>><mt:trans phrase="Textarea"></option>
-  <option id="_edit_richtext_<mt:var name="id">" value="richtext"<mt:if name="edit" eq="richtext"> selected</mt:if>><mt:trans phrase="RichText"></option>
-  <option id="_edit_datetime_<mt:var name="id">" value="datetime"<mt:if name="edit" eq="datetime"> selected</mt:if>><mt:trans phrase="DateTime"></option>
-  <option id="_edit_color_<mt:var name="id">" value="color"<mt:if name="edit" eq="color"> selected</mt:if>><mt:trans phrase="Color"></option>
-  <option value="languages"<mt:if name="edit" eq="languages"> selected</mt:if>><mt:trans phrase="Languages"></option>
-  <option id="_edit_file_<mt:var name="id">" value="file"<mt:if name="edit" eq="file"> selected</mt:if>><mt:trans phrase="File"></option>
+  <option id="_edit_richtext_<mt:var name="id">" value="richtext"<mt:if name="edit" eq="richtext"> selected<mt:else><mt:if name="_not_delete"> style="display:none"</mt:if></mt:if>><mt:trans phrase="RichText"></option>
+  <option id="_edit_datetime_<mt:var name="id">" value="datetime"<mt:if name="edit" eq="datetime"> selected<mt:else><mt:if name="_not_delete"> style="display:none"</mt:if></mt:if>><mt:trans phrase="DateTime"></option>
+  <option id="_edit_date_<mt:var name="id">" value="date"<mt:if name="edit" eq="date"> selected<mt:else><mt:if name="_not_delete"> style="display:none"</mt:if></mt:if>><mt:trans phrase="Date"></option>
+  <option id="_edit_color_<mt:var name="id">" value="color"<mt:if name="edit" eq="color"> selected<mt:else><mt:if name="_not_delete"> style="display:none"</mt:if></mt:if>><mt:trans phrase="Color"></option>
+  <option value="languages"<mt:if name="edit" eq="languages"> selected<mt:else><mt:if name="_not_delete"> style="display:none"</mt:if></mt:if>><mt:trans phrase="Languages"></option>
+  <option id="_edit_file_<mt:var name="id">" value="file"<mt:if name="edit" eq="file"> selected<mt:else><mt:if name="_not_delete"> style="display:none"</mt:if></mt:if>><mt:trans phrase="File"></option>
 <mt:if name="edit" like=":">
   <option value="<mt:var name="edit" escape>" class="custom" selected><mt:trans phrase="Custom"></option>
 <mt:else>
-  <option value="custom" class="custom"><mt:trans phrase="Custom"></option>
+  <option value="custom" class="custom"<mt:if name="_not_delete"> style="display:none"</mt:if>><mt:trans phrase="Custom"></option>
 </mt:if>
 </select>
 <mt:else><input type="checkbox" checked disabled></mt:unless></td>
@@ -170,7 +171,7 @@
 <input id="_new_hint_" name="_new_hint_" type="hidden" value="">
 <input id="_new_default_" name="_new_default_" type="hidden" value="">
 <input name="_new_not_null_" type="checkbox" class="form-control" value="1"></td>
-<td><input name="_new_index_" type="checkbox" class="form-control" value="1"></td>
+<td><input name="_new_index_" type="checkbox" class="form-control specify_idx" value="1"></td>
 <td><input name="_new_unique_" type="checkbox" class="form-control" value="1"></td>
 <td><input name="_new_unchangeable_" type="checkbox" class="form-control" value="1"></td>
 <td>
@@ -203,6 +204,7 @@
   <option value="textarea"><mt:trans phrase="Textarea"></option>
   <option id="_new_edit_richtext_" value="richtext"><mt:trans phrase="RichText"></option>
   <option id="_new_edit_datetime_" value="datetime"><mt:trans phrase="DateTime"></option>
+  <option id="_new_edit_date_" value="date"><mt:trans phrase="Date"></option>
   <option id="_new_edit_color_" value="color"><mt:trans phrase="Color"></option>
   <option value="languages"><mt:trans phrase="Languages"></option>
   <option id="_new_edit_file_" value="file"><mt:trans phrase="File"></option>
@@ -373,6 +375,7 @@
               <option value="textarea"><mt:trans phrase="Textarea"></option>
               <option id="_detail_edit_richtext" value="richtext"><mt:trans phrase="RichText"></option>
               <option value="datetime"><mt:trans phrase="DateTime"></option>
+              <option value="date"><mt:trans phrase="Date"></option>
               <option value="color"><mt:trans phrase="Color"></option>
               <option value="languages"><mt:trans phrase="Languages"></option>
               <option id="_detail_edit_file" value="file"><mt:trans phrase="File"></option>
@@ -483,6 +486,28 @@
 </div>
 </div>
 <script>
+$('.specify_idx').change( function() {
+    if ( $(this).prop('checked') ) {
+        var name = $(this).prop('id');
+        var term = name.split('_');
+        var number;
+        var select;
+        if ( term[1]=='new') {
+            number = term[3];
+            select = '_new_type_' + number;
+        } else {
+            number = term[2];
+            select = '_type_' + number;
+        }
+        var type = $('#' + select ).val();
+        //'boolean', 'integer', 'string', 'datetime'
+        if ( type != 'boolean' && type != 'integer' && type != 'string' && type != 'datetime' ) {
+            var label = $('#' + select + ' option:selected').text();
+            alert( '<mt:trans phrase="Can not specify an index for this type.">' + '(' + label + ')' );
+            $(this).prop('checked', false);
+        }
+    }
+});
 $('#_detail_type').change( function(){
     toggle_detail_custom( $(this).val() );
     var _col_type = $('#_detail_type' ).val();
@@ -555,7 +580,7 @@ function toggle_detail_custom( type ) {
     } else {
         $('._detail_edit_type_relation').show();
     }
-    if ( type == 'string' || type == 'integer' ) {
+    if ( type == 'string' || type == 'integer' || type == 'text' ) {
         $('#_detail_edit_selection').show();
     } else {
         if ( $('#_detail_edit_selection').prop('selected') ) {
@@ -786,7 +811,7 @@ $('#_save_detail_button').click( function(){
         var detail_e = $('#_detail_edit').val();
         var detail_l = $('#_detail_list').val();
         if ( detail_e != 'relation' && detail_l != 'relation' ) {
-            alert('<mt:trans phrase="Model, column and type are required for the relation.">');
+            alert('<mt:trans phrase="Model, Column and Type are required for the relation.">');
             return false;
         }
         var model;
@@ -796,7 +821,7 @@ $('#_save_detail_button').click( function(){
             model = detail_l;
         }
         if (! model ) {
-            alert('<mt:trans phrase="Model, column and type are required for the relation.">');
+            alert('<mt:trans phrase="Model, Column and Type are required for the relation.">');
             return false;
         }
         $('#' + prefix + 'options' + postfix + number ).val( model );
@@ -937,6 +962,8 @@ $('.detail-btn').click( function(){
             $('input[name=_detail_image_option]:checked').prop('checked', false);
             $('#_detail_file_type').val('');
         }
+    } else {
+        $('._detail_file_wrapper').hide();
     }
     if ( $('#_detail_type').val() == 'integer' ) {
         $('._detail_edit_type_relation').hide();

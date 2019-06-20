@@ -2,7 +2,7 @@
 <mt:include module="(Website) HTML Header">
 <div class="container-fluid">
 <mt:setcontext context="tag" name="@main_page" container="page">
-<mt:pages limit="1" include_draft="1">
+<mt:pages limit="1" include_draft="1" cols="id" include_workspaces="this">
 <mt:pagewidgets class="jumbotron">
 <mt:include module="(Website) Main Page Widget" widget_class="jumbotron">
 </mt:pagewidgets>
@@ -26,8 +26,8 @@
         </div>
       </div>
     </li>
-  </ul>
 <mt:if name="__last__">
+  </ul>
   </div>
   <div class="card-footer text-right">
 <a href="<mt:var name="website_url">news/index.html" class="btn btn-secondary"><mt:trans phrase="List News"  language="$language"></a>
@@ -36,12 +36,13 @@
 </mt:if>
 </mt:entries>
 <mt:setcontext context="tag" name="@main_page" container="page">
-<mt:pages limit="1" include_draft="1">
+<mt:pages limit="1" include_draft="1" cols="id" include_workspaces="this">
 <mt:pagewidgets class="full-band-dark">
 <mt:if name="__first__"></div></mt:if>
 <mt:include module="(Website) Main Page Widget" widget_class="full-band-dark">
 <mt:if name="__last__"><div class="container-fluid"></mt:if>
 </mt:pagewidgets>
+<mt:include module="(Website) Widgets 2 Columns">
 <mt:include module="(Website) Widgets 3 Columns">
 </mt:pages>
 </mt:setcontext>

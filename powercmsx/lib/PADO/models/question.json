@@ -1,7 +1,7 @@
 {
     "label": "Question",
     "plural": "Questions",
-    "version": "1.4",
+    "version": "1.5",
     "primary": "label",
     "auditing": 1,
     "order": 360,
@@ -108,6 +108,10 @@
         },
         "placeholder": {
             "type": "text"
+        },
+        "attach_to_email": {
+            "type": "tinyint",
+            "size": 4
         },
         "basename": {
             "type": "string",
@@ -258,5 +262,8 @@
         "rev_type": "text_short",
         "modified_on": "datetime",
         "modified_by": "reference:user:name"
+    },
+    "column_labels": {
+        "attach_to_email": "Attach to Email"
     }
 }

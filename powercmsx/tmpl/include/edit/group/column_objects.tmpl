@@ -22,9 +22,9 @@
     <mt:else>
       <mt:setvar name="table_type" value="display_system">
     </mt:if>
-      <mt:tables menu_type="1" type="$table_type">
+      <mt:tables template_tags="1" type="$table_type">
       <mt:if name="__first__">
-      <select <mt:if name="model_readonly">readonly onmousedown="return false;" onkeydown="return false;"</mt:if> class="form-control short watch-changed short" name="_<mt:var name="__col_name__">_model" id="<mt:var name="__col_name__">-selector">
+      <select <mt:if name="model_readonly">readonly onmousedown="return false;" onkeydown="return false;"</mt:if> class="form-control custom-select short watch-changed short" name="_<mt:var name="__col_name__">_model" id="<mt:var name="__col_name__">-selector">
         <mt:unless name="object_model">
         <option value="" <mt:unless name="request.id">selected</mt:unless>>
           <mt:trans phrase="Unspecified">
@@ -32,23 +32,21 @@
         </mt:unless>
       </mt:if>
       <mt:if name="primary">
-        <mt:if name="menu_type" eq="1">
-          <mt:if name="model_readonly">
-            <mt:if name="name" eq="$object_model">
-            <option data-model="<mt:var name="name">" selected value="<mt:var name="name">"><mt:trans phrase="$label" escape></option>
-            </mt:if>
-          <mt:else>
-            <option <mt:if name="name" eq="$object_model">selected</mt:if> data-model="<mt:var name="name">" value="<mt:var name="name">"><mt:trans phrase="$label" escape></option>
+        <mt:if name="model_readonly">
+          <mt:if name="name" eq="$object_model">
+          <option data-model="<mt:var name="name">" selected value="<mt:var name="name">"><mt:trans phrase="$label" escape></option>
           </mt:if>
-          <mt:setvars name="model_primary">
-            <mt:var name="name">=<mt:var name="primary" escape>
-          </mt:setvars>
-          <mt:if name="name" eq="$selected_model">
-            <mt:setvar name="model_primary_col" value="$primary">
-            <mt:setvar name="model_model" value="$name">
-          </mt:if>
-          <mt:var name="model_primary" to_json="1" setvar="model_primary_json">
+        <mt:else>
+          <option <mt:if name="name" eq="$object_model">selected</mt:if> data-model="<mt:var name="name">" value="<mt:var name="name">"><mt:trans phrase="$label" escape></option>
         </mt:if>
+        <mt:setvars name="model_primary">
+          <mt:var name="name">=<mt:var name="primary" escape>
+        </mt:setvars>
+        <mt:if name="name" eq="$selected_model">
+          <mt:setvar name="model_primary_col" value="$primary">
+          <mt:setvar name="model_model" value="$name">
+        </mt:if>
+        <mt:var name="model_primary" to_json="1" setvar="model_primary_json">
       </mt:if>
       <mt:if name="__last__">
         </select>
@@ -128,7 +126,6 @@ $('#<mt:var name="__col_name__">-selector').change(function(){
 });
 $('#<mt:var name="__col_name__">-selector').trigger('change');
 $('#<mt:var name="__col_name__">').sortable ( {
-// TODO keyboard oparation
     stop: function( evt, ui ) {
         editContentChanged = true;
     }

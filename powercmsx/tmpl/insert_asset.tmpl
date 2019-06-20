@@ -11,8 +11,8 @@
  style="text-align: center; display: block; margin: 0 auto 20px;"
 </mt:if>
  src="<mt:var name="url" escape>"
- width="<mt:var name="width" escape>"
- height="<mt:var name="height" escape>">
+ <mt:if name="width">width="<mt:var name="width" escape>"</mt:if>
+<mt:if name="height"> height="<mt:var name="height" escape>"</mt:if>>
 <mt:else>
 <a href="<mt:var name="url" escape>"><mt:var name="label" escape> (<mt:var name="file_size" escape format_size="1">)</a>
 </mt:if>
@@ -66,7 +66,7 @@
             newli.children('span').html( col_value );
             newli.removeAttr('id');
             newli.addClass( target_control+'-child');
-            newli.children('.assets-child-thumb').attr('data-id','<mt:var name="id">').css('background-image','url(\'<mt:var name="script_uri">?__mode=get_thumbnail&square=1&_model=<mt:var name="this_model" escape>&id=<mt:var name="id">\')');
+            newli.children('.assets-child-thumb').attr('data-id','<mt:var name="id">').css('background-image','url(\'<mt:var name="script_uri">?__mode=get_thumbnail&square=1&_model=asset&id=<mt:var name="id">\')');
             newli.children('.assets-child-thumb').show();
             newli.show();
         }
@@ -78,37 +78,48 @@
 <mt:else>
 <mt:setvar name="body_class" value="insert-asset">
 <mt:include file="include/dialog_header.tmpl">
-
-<form action="<mt:var name="script_uri">" method="POST" class="form-inline">
-
+<form action="<mt:var name="script_uri">" method="POST" class="form-inline" id="insert-asset-form">
 <input type="hidden" name="__mode" value="insert_asset">
 <input type="hidden" name="insert" value="<mt:var name="request.insert" escape>">
 <input type="hidden" name="magic_token" value="<mt:var name="magic_token">">
 <input type="hidden" name="_system_filters_option" value="<mt:var name="request._system_filters_option" escape>">
 <input type="hidden" name="insert_editor" value="1">
 <input type="hidden" name="do_insert" value="1">
+<mt:setvar name="asset_count" value="0">
 <mt:objectloop model="asset">
+<mt:var name="__counter__" setvar="asset_count">
+</mt:objectloop>
+<mt:objectloop model="asset">
+<mt:var name="class" setvar="curr_class">
+<mt:if name="file_ext" eq="svg"><mt:setvar name="curr_class" value="image"></mt:if>
 <mt:if name="__first__"><table class="table">
 <thead>
 <tr><th class="insert-asset-selector-th"><mt:trans phrase="Insert"></th><th class="insert-asset-preview-th"><mt:trans phrase="Preview"></th><th colspan="2"><mt:trans phrase="Metadata"></th></tr>
 </thead>
 <tbody id="list_body">
 </mt:if>
-<tr>
-  <td class="insert-asset-selector">
-    <label class="custom-control custom-checkbox">
+<tr <mt:if name="asset_count" gt="1">tabindex="0"</mt:if>>
+  <td class="insert-asset-selector" style="vertical-align:top !important">
+  <mt:if name="asset_count" gt="1">
+    <span style="color:gray;" class="dragHandle"><i class="fa fa-bars" aria-hidden="true"></i>
+    <span class="sr-only"><mt:trans phrase="Sort"></span>
+    </span>
+  </mt:if>
+    <label class="custom-control custom-checkbox" style="margin-top: 15px">
       <input class="custom-control-input" type="checkbox" checked name="id[]" value="<mt:var name="id">">
       <span class="custom-control-indicator"></span>
       <span class="custom-control-description"></span>
     </label>
   </td>
   <td class="insert-asset-preview-wrapper">
-    <mt:if name="class" eq="image">
-      <img src="<mt:assetthumbnail name="file" data_uri="1" type="default" square="1">" alt="<mt:trans phrase="Preview">" width="100" height="100" class="insert-asset-preview">
+    <mt:if name="curr_class" eq="image">
+      <img id="image-preview-<mt:var name="id">" src="<mt:if name="file_ext" eq="svg">data:image/svg+xml;base64,<mt:var name="file" base64_encode="1"><mt:else><mt:assetthumbnail name="file" data_uri="1" type="default" square="1"></mt:if>" alt="<mt:trans phrase="Preview">" width="100" class="insert-asset-preview">
+      <mt:if name="class" eq="image">
       <div class="center-block" style="text-align:center">
       <small class="text-muted"><mt:trans phrase="Width"> : <mt:var name="image_width">
       <br><mt:trans phrase="Height"> : <mt:var name="image_height"></small>
       </div>
+      </mt:if>
     <mt:else>
       <i class="fa-3x fa <mt:if name="class" eq="pdf">fa-file-pdf-o<mt:elseif name="class" eq="video">fa-file-video-o<mt:elseif name="class" eq="audio">fa-file-audio-o<mt:else>fa-file-o</mt:unless></mt:if>" aria-hidden="true"></i>
       <span class="sr-only"><mt:trans phrase="$obj_class"></span>
@@ -118,7 +129,7 @@
   <table class="table-inner insert-asset-innner">
 <tr>
   <th class="form-inline insert-asset-label">
-  <mt:if name="class" eq="image"><mt:trans phrase="Text Alternative"><mt:else><mt:trans phrase="Label"></mt:if>
+  <mt:if name="curr_class" eq="image"><mt:trans phrase="Text Alternative"><mt:else><mt:trans phrase="Label"></mt:if>
   &nbsp;
     <label class="custom-control custom-checkbox" style="font-weight:normal;">
       <input class="custom-control-input" type="checkbox" value="1" name="save-label-<mt:var name="id">">
@@ -134,7 +145,7 @@
     <input type="text" class="form-control form-control-sm insert-asset-content" value="<mt:var name="label" escape>" name="asset-label-<mt:var name="id">">
   </td>
 </tr>
-<mt:if name="class" eq="image">
+<mt:if name="curr_class" eq="image">
 <tr>
   <th class="form-inline insert-asset-label insert-image-top-margin">
   <mt:trans phrase="Size">
@@ -143,10 +154,15 @@
       <input class="custom-control-input specify-thumb-width" id="thumb-width-<mt:var name="id">" type="checkbox" value="1" name="use-thumb-<mt:var name="id">">
       <span class="custom-control-indicator"></span>
       <span class="custom-control-description">
-        <mt:trans phrase="Use Thumbnail">
+        <mt:if name="file_ext" eq="svg"><mt:trans phrase="Specify size"><mt:else><mt:trans phrase="Use Thumbnail"></mt:if>
       </span>
     </label>
+    <input id="thumb-height-<mt:var name="id">" name="thumb-height-<mt:var name="id">" type="hidden" value="">
   </th>
+<script>
+  var imgHeight = $('#image-preview-<mt:var name="id">').height();
+  $('#thumb-height-<mt:var name="id">').val( imgHeight );
+</script>
 </tr>
 <tr class="thumb-width-<mt:var name="id"> hidden">
   <td class="form-inline insert-image-size">
@@ -189,10 +205,8 @@
 <table>
 </mt:if>
 </mt:objectloop>
-
   <button id="dialog-cancel-btn" class="btn btn-secondary" type="button"><mt:trans phrase="Cancel"></button>
-  <button id="dialog-selector-btn" class="btn btn-primary" type="submit"><mt:trans phrase="Insert"></button>
-
+  <button id="dialog-selector-btn" class="btn btn-primary" type="button"><mt:trans phrase="Insert"></button>
 </form>
 <script>
 $('.specify-thumb-width').change(function() {
@@ -203,15 +217,15 @@ $('.specify-thumb-width').change(function() {
         $( '.' + cell_class ).hide();
     }
 });
-$('#list_body tr').mouseover(function() {
-    $(this).css('cursor','move');
-});
 $(document).keydown(evnt_keydown);
 function evnt_keydown(e) {
     if ( e.keyCode == 27 ) {
         close_dialog();
     }
 }
+$('#dialog-selector-btn').click(function() {
+    $('#insert-asset-form').submit();
+});
 $('#dialog-cancel-btn').click(function() {
     close_dialog();
     return false;
@@ -220,8 +234,72 @@ function close_dialog () {
     window.parent.$('#modal').modal('hide');
     window.location.href = '<mt:var name="script_uri">?__mode=loading';
 }
-$('#list_body').sortable();
+<mt:if name="asset_count" gt="1">
+$('#list_body tr .dragHandle').mouseover(function() {
+    $(this).css('cursor','move');
+});
+$('#list_body').sortable(
+{handle:'.dragHandle'}
+);
+jQuery.fn.extend({
+  ksortable: function(options) {
+    this.sortable(options);
+    $(this).children().attr('tabindex', 0).bind('keydown', function(event) {
+    // $('li', this).attr('tabindex', 0).bind('keydown', function(event) {
+        if(event.which == 37 || event.which == 38) { // left or up
+          $(this).insertBefore($(this).prev());
+        } 
+        if(event.which == 39 || event.which == 40) { // right or down
+          $(this).insertAfter($(this).next()); 
+        }     
+        if (event.which == 84 || event.which == 33) { // "t" or page-up
+          $(this).parent().prepend($(this));
+        } 
+        if (event.which == 66 || event.which == 34) { // "b" or page-down
+          $(this).parent().append($(this));
+        } 
+        if(event.which == 82) { // "r"
+          var p = $(this).parent();
+          p.children().each(function(){p.prepend($(this))})
+        } 
+        if(event.which == 83) { // "s"
+          var p = $(this).parent();
+          p.children().each(function(){
+            if(Math.random()<.5)
+              p.prepend($(this));
+            else
+              p.append($(this));
+          })
+        }
+        var keyNums = [33, 34, 37, 38, 39, 40, 66, 82, 83, 84];
+        var keyNum = event.which + 0;
+        if (keyNums.indexOf(keyNum) >= 0){
+          $(this).focus();
+        }
+    });
+  }
+});
+$("#list_body").ksortable();
+</mt:if>
+$(":checkbox").keypress(function(e) {
+    if ( e.keyCode == 13 ) {
+        if ( $(this).prop('checked') ) {
+            $(this).prop('checked', false);
+        } else {
+            $(this).prop('checked', true);
+        }
+        if ( $(this).hasClass('cb-all-select') ) {
+            checked = $(this).prop('checked');
+            $("input[name='model[]']").each(function(){
+                $(this).prop('checked', checked);
+            });
+            $('.selector').prop('checked', checked);
+        } else {
+            set_all_select();
+        }
+    }
+    return false;
+});
 </script>
-
 <mt:include file="include/dialog_footer.tmpl">
 </mt:if>

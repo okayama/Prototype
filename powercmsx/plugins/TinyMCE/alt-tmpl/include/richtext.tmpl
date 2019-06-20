@@ -25,9 +25,8 @@ function editorInit () {
       language : '<mt:var name="user_language">',
       branding : false,
       selector : 'textarea.richtext',
-      <mt:if name="relative_urls" ne="none">
-      relative_urls : <mt:pluginsetting component="TinyMCE" name="tinymce_relative_urls" workspace_id="$workspace_id" _eval="1">,
-      </mt:if>
+<mt:pluginsetting component="TinyMCE" name="tinymce_advanced_settings" workspace_id="$workspace_id" _eval="1" setvar="editor_advanced_settings"><mt:if name="editor_advanced_settings"><mt:var name="editor_advanced_settings"></mt:if>
+      <mt:if name="relative_urls" ne="none">relative_urls : <mt:pluginsetting component="TinyMCE" name="tinymce_relative_urls" workspace_id="$workspace_id" _eval="1">,</mt:if>
       image_advtab: true,
     <mt:if name="tinymce_use_mobile">
       theme: 'mobile',
@@ -40,11 +39,14 @@ function editorInit () {
       content_css: "<mt:pluginsetting component="TinyMCE" name="tinymce_content_css" workspace_id="$workspace_id" _eval="1">",
       onchange_callback : "editHtmlEditor",
       plugins  : '<mt:pluginsetting component="TinyMCE" name="tinymce_plugins" workspace_id="$workspace_id" _eval="1">',
+    <mt:gettableid name="boilerplate" setvar="boilerplate_table_id">
+    <mt:if name="boilerplate_table_id">
     <mt:objectloop model="boilerplate" prefix="boilerplate" workspace_id="$workspace_id" glue=",">
       <mt:if name="__first__"><mt:setvar name="_boilerplate_exists" value="1">templates: [</mt:if>
         {title: '<mt:var name="boilerplate_label" translate encode_js>', description: '<mt:var name="boilerplate_description" translate encode_js>', url: '<mt:var name="script_uri">?__mode=tinymce_insert_boilerplate&id=<mt:var name="boilerplate_id"><mt:if name="workspace_id">&workspace_id=<mt:var name="workspace_id"></mt:if><mt:if name="request.id">&object_id=<mt:var name="request.id" escape></mt:if>&_model=<mt:var name="request._model" escape>'}
       <mt:if name="__last__">],</mt:if>
     </mt:objectloop>
+    </mt:if>
       <mt:unless name="_boilerplate_exists">
       templates: [
         {title: '<mt:trans phrase="Label of Boilerplate Snippet here." component="TinyMCE">', description: '<mt:trans phrase="Description of Boilerplate Snippet here." component="TinyMCE">', content: '<mt:trans phrase="Snippet of Boilerplate Snippet here(No Boilerplate Snippet found)." component="TinyMCE">'}
@@ -59,7 +61,7 @@ function editorInit () {
             tooltip: '<mt:trans phrase="Insert Image">',
             icon: false,
             onclick: function () {
-                url = '<mt:var name="script_uri">?__mode=view&_type=list&_model=asset<mt:if name="workspace_id">&workspace_id=<mt:var name="workspace_id"></mt:if>&dialog_view=1&select_system_filters=filter_class_image&_system_filters_option=image&_filter=1&insert_editor=1&insert=' + ed.id;
+                url = '<mt:var name="script_uri">?__mode=view&_type=list&_model=asset<mt:if name="workspace_id">&workspace_id=<mt:var name="workspace_id"></mt:if>&dialog_view=1&select_system_filters=filter_class_image&_system_filters_option=image&_filter=asset&insert_editor=1&insert=' + ed.id;
                 $('#modal').modal().find('iframe').attr( 'src', url );
             }
         });
@@ -75,21 +77,20 @@ function editorInit () {
         <mt:if name="model" eq="widget">
         if(ed.id && ed.id == 'text'){
           var clipboard_image = $('#clipboard-image');
+          var inline_image = $('#inline-image');
+          var bg_image_url = clipboard_image.val();
+          if ( inline_image.length ) {
+              bg_image_url = inline_image.attr('href');
+          }
           if ( clipboard_image.length ) {
-            // var rgba = getConversionRgba('<mt:var name="__object_back_color">');
-            var editorStyle = 'body {margin: 40px; font-size: 110%;color:<mt:var name="__object_fore_color">; background-color:<mt:var name="__object_back_color">;'
+            var rgba = getConversionRgba('<mt:var name="__object_back_color">');
+            ed.settings['content_style'] = 'body {margin: 40px; font-size: 110%;color:<mt:var name="__object_fore_color">; background-color:<mt:var name="__object_back_color">;'
               + 'background-size: cover; background-position: center;'
-              + 'background-image:url("' + clipboard_image.val() + '?rnd=' + Math.random() + '")}';
-              <mt:if name="__widget_background_image">
-              /*
-              editorStyle += 'text-shadow: 2px 2px 2px <mt:var name="__object_back_color">,'
+              + 'text-shadow: 2px 2px 2px <mt:var name="__object_back_color">,'
               + '-2px 2px 2px <mt:var name="__object_back_color">,'
               + '2px -2px 2px <mt:var name="__object_back_color">,'
               + '-2px -2px 2px <mt:var name="__object_back_color">;'
-              + 'background-image:url("' + clipboard_image.val() + '?rnd=' + Math.random() + '")} body *{background-color: rgba(' + rgba + ')}';
-              */
-              </mt:if>
-              ed.settings['content_style'] = editorStyle;
+              + 'background-image:url("' + bg_image_url + '?rnd=' + Math.random() + '")} body *{background-color: rgba(' + rgba + ')}';
           } else {
             ed.settings['content_style'] = 'body {margin: 40px; font-size: 110%;color:<mt:var name="__object_fore_color">; background:<mt:var name="__object_back_color">;}';
           }

@@ -1,7 +1,7 @@
 {
     "label"    : "URL",
     "plural"   : "URLs",
-    "version"  : "1.8",
+    "version"  : "1.9",
     "display_system": 1,
     "order"    : 110,
     "primary"  : "relative_path",
@@ -44,6 +44,12 @@
             "type": "string",
             "size": "255"
         },
+        "delete_flag": {
+            "type": "tinyint",
+            "size": 4,
+            "not_null": 1,
+            "default": 0
+        },
         "object_id": {
             "type": "int",
             "size": "11"
@@ -83,12 +89,6 @@
         "is_published": {
             "type": "tinyint",
             "size": "4",
-            "default": 0
-        },
-        "delete_flag": {
-            "type": "tinyint",
-            "size": 4,
-            "not_null": 1,
             "default": 0
         },
         "publish_file": {

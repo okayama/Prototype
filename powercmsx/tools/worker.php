@@ -1,6 +1,9 @@
 <?php
+if ( isset( $_SERVER['REMOTE_ADDR'] ) ) {
+    exit();
+}
 require_once( 'class.Prototype.php' );
-$app = new Prototype();
+$app = new Prototype( ['id' => 'Worker' ] );
 $app->logging  = true;
 $app->init();
 $pid = $app->temp_dir . DS . md5( __FILE__ ) . '.pid';

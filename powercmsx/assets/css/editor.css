@@ -59,3 +59,20 @@ blockquote:before{
 .text-center {
   text-align: center !important;
 }
+.table {
+  width: 100%;
+  border: 1px solid gray;
+  border-collapse: collapse;
+}
+.table td {
+  border: 1px solid #aaa;
+  padding: 10px;
+}
+.table th {
+  border: 1px solid #aaa;
+  padding: 10px;
+}
+.thead-dark th {
+  background-color: #212428;
+  color: white;
+}

@@ -1,7 +1,7 @@
 {
     "label"    : "Model",
     "plural"   : "Models",
-    "version"  : "2.2",
+    "version"  : "2.4",
     "primary"  : "name",
     "display_system": 1,
     "sortable" : true,
@@ -137,6 +137,10 @@
             "type": "tinyint",
             "size": 4
         },
+        "allow_identical": {
+            "type": "tinyint",
+            "size": 4
+        },
         "has_form": {
             "type": "tinyint",
             "size": 4
@@ -148,7 +152,7 @@
         "hierarchy": {
             "type": "tinyint",
             "size": 4,
-            "default": null
+            "default": "0"
         },
         "dialog_view": {
             "type": "tinyint",
@@ -303,6 +307,7 @@
         "text_format": "selection"
     },
     "column_labels": {
+        "allow_identical": "Allow Identical Basename",
         "text_format": "Format"
     }
 }

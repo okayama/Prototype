@@ -1,0 +1,20 @@
+Options -Indexes
+DirectoryIndex index.html
+
+RewriteEngine On
+RewriteCond %{REQUEST_FILENAME} !(\.php|/)$ [NC]
+RewriteCond %{QUERY_STRING} . [OR]
+RewriteCond %{HTTP_COOKIE} pt-user [OR]
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteRule ^ <mt:websitepath>/pt-view.php
+
+RewriteCond %{REQUEST_METHOD} !=GET
+RewriteCond %{REQUEST_FILENAME} !\.php$ [NC]
+RewriteRule ^ <mt:websitepath>/pt-view.php
+
+ErrorDocument 404 <mt:websiteurl relative="1">pt-view.php
+ErrorDocument 403 <mt:websiteurl relative="1">pt-view.php
+
+<Files ~ "^\.ht">
+deny from all
+</Files>

@@ -75,7 +75,7 @@
         return escape[match];
       });
     }
-    var ts = $.cookie('pt-live-preview-ts');
+    var ts = $.cookie('pt-live-preview-ts<mt:if name="workspace_id">-<mt:var name="workspace_id" escape></mt:if>');
     if ( ts ) {
         ts = htmlEscape(ts);
         var y = ts.substr( 0, 4 );
@@ -139,7 +139,7 @@
 <script>
 $('#_date').val(_date);
 $('#_time').val(_time);
-var in_pending = $.cookie('pt-live-preview-pending');
+var in_pending = $.cookie('pt-live-preview-pending<mt:if name="workspace_id">-<mt:var name="workspace_id" escape></mt:if>');
 if ( in_pending ) {
     $('input[name=_pending]').val(['1']);
 } else {
@@ -190,14 +190,14 @@ $('#__save').click(function(){
         alert('<mt:trans phrase="The past date can not be specified." component="LivePreview">');
         return false;
     }
-    $.cookie('pt-live-preview-ts', _ts, { path: '/' });
-    $.cookie('pt-live-preview-date', _d, { path: '/' });
-    $.cookie('pt-live-preview-time', _t, { path: '/' });
+    $.cookie('pt-live-preview-ts<mt:if name="workspace_id">-<mt:var name="workspace_id" escape></mt:if>', _ts, { path: '/' });
+    $.cookie('pt-live-preview-date<mt:if name="workspace_id">-<mt:var name="workspace_id" escape>"></mt:if>', _d, { path: '/' });
+    $.cookie('pt-live-preview-time<mt:if name="workspace_id">-<mt:var name="workspace_id" escape>"></mt:if>', _t, { path: '/' });
     var __pending = $('input[name=_pending]:checked').val();
     if ( __pending ) {
-        $.cookie('pt-live-preview-pending', 1, { path: '/' });
+        $.cookie('pt-live-preview-pending<mt:if name="workspace_id">-<mt:var name="workspace_id" escape></mt:if>', 1, { path: '/' });
     } else {
-        $.cookie('pt-live-preview-pending', '', { path: '/', expires: -1 });
+        $.cookie('pt-live-preview-pending<mt:if name="workspace_id">-<mt:var name="workspace_id" escape></mt:if>', '', { path: '/', expires: -1 });
     }
     //         var message = '<mt:trans phrase="Live preview is set on __." component="LivePreview">';
         // message = message.replace( '__', date_time );
@@ -216,10 +216,10 @@ $('#__delete').click(function(){
     if(!confirm('<mt:trans phrase="Are you sure you want to clear preview date and time?" component="LivePreview">')){
         return false;
     }
-    $.cookie('pt-live-preview-ts', '', { path: '/', expires: -1 });
-    $.cookie('pt-live-preview-date', '', { path: '/', expires: -1 });
-    $.cookie('pt-live-preview-time', '', { path: '/', expires: -1 });
-    $.cookie('pt-live-preview-pending', '', { path: '/', expires: -1 });
+    $.cookie('pt-live-preview-ts<mt:if name="workspace_id">-<mt:var name="workspace_id" escape></mt:if>', '', { path: '/', expires: -1 });
+    $.cookie('pt-live-preview-date<mt:if name="workspace_id">-<mt:var name="workspace_id" escape></mt:if>', '', { path: '/', expires: -1 });
+    $.cookie('pt-live-preview-time<mt:if name="workspace_id">-<mt:var name="workspace_id" escape></mt:if>', '', { path: '/', expires: -1 });
+    $.cookie('pt-live-preview-pending<mt:if name="workspace_id">-<mt:var name="workspace_id" escape></mt:if>', '', { path: '/', expires: -1 });
     $('#header-alert-message').html('<span><mt:trans phrase="Live preview is not set." component="LivePreview"></span>');
     $('#header-alert').focus();
     return false;

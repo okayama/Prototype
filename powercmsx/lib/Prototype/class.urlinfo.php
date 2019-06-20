@@ -1,16 +1,16 @@
 <?php
 class urlinfo extends PADOBaseModel {
 
-    public $fmgr = null;
+    public $_fmgr = null;
 
     function remove ( $force = false ) {
         if ( $this->file_path ) {
             $file_path = $this->file_path;
             $file_path = str_replace( '/', DS, $file_path );
-            if (! $fmgr = $this->fmgr ) {
+            if (! $fmgr = $this->_fmgr ) {
                 $app = Prototype::get_instance();
                 $fmgr = $app->fmgr;
-                $this->fmgr = $fmgr;
+                $this->_fmgr = $fmgr;
             }
             if ( $fmgr->exists( $file_path ) && !$fmgr->is_dir( $file_path ) ) {
                 $fmgr->unlink( $file_path );
@@ -35,6 +35,13 @@ class urlinfo extends PADOBaseModel {
             $this->publish_file(0);
         }
         $this->delete_flag(0);
+        unset( $this->_fmgr );
+        /*
+        unset( $this->_original );
+        unset( $this->_relations );
+        unset( $this->_meta );
+        unset( $this->_insert );
+        */
         return parent::save();
     }
 
@@ -53,12 +60,18 @@ class urlinfo extends PADOBaseModel {
 
     function count ( $terms = [], $args = [], $cols = '*', $extra = '',
         $include_deleted = false ) {
+        if ( is_numeric( $terms ) ) {
+            $include_deleted = true;
+        }
         $this->pre_load( $terms, $args, $cols, $extra, $include_deleted );
         return parent::count( $terms, $args, $cols, $extra );
     }
 
     function load ( $terms = [], $args = [], $cols = '*', $extra = '',
         $include_deleted = false ) {
+        if ( is_numeric( $terms ) ) {
+            $include_deleted = true;
+        }
         $this->pre_load( $terms, $args, $cols, $extra, $include_deleted );
         return parent::load( $terms, $args, $cols, $extra );
     }

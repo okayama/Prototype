@@ -2,26 +2,28 @@
     "label"       : "LivePreview",
     "id"          : "livepreview",
     "component"   : "LivePreview",
-    "version"     : "1.0",
+    "version"     : "2.0",
     "author"      : "Alfasado Inc.",
     "author_link" : "https://alfasado.net/",
     "description" : "It provides site preview in future.",
     "cfg_template": "cfg_template.tmpl",
     "cfg_system"  : 1,
+    "cfg_space"  : 1,
     "settings"    : {
         "livepreview_page_url"      : "",
         "livepreview_date_based"    : "entry",
         "livepreview_insert_html"   : "",
-        "livepreview_status_pending" : ""
+        "livepreview_status_pending" : 1
     },
     "menus": {
         "live_preview": {
             "display_system" : 1,
+            "display_space" : 1,
             "component"  : "LivePreview",
             "mode"       : "live_preview",
             "label"      : "Live Preview",
             "permission" : "can_livepreview",
-            "order"      : 10
+            "order"      : 200
         }
     },
     "hooks": {
@@ -60,7 +62,6 @@
     },
     "methods": {
         "live_preview": {
-            "display_system" : 1,
             "component"  : "LivePreview",
             "permission" : "can_livepreview",
             "method"     : "live_preview"

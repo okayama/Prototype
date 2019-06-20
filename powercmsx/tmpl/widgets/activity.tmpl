@@ -8,8 +8,9 @@
       <span aria-hidden="true">&times;</span>
     </button>
   </h2>
+  <mt:var name="activity_label" translate setvar="activity_label">
   <div class="card-block">
-    <div style="height:160px" id="_activity_log-wrapper">
+    <div style="height:160px;max-height:160px;" id="_activity_log-wrapper">
     <canvas id="_activity_log" width="100%" height="160px"
         style="margin-bottom:-10px;display:none;height:160px;max-height:160px"></canvas>
     </div>
@@ -21,7 +22,7 @@
       data: {
         labels: [<mt:getactivity model="$activity_model" column="$activity_column" workspace_id="$workspace_id" limit="$activity_limit">],
         datasets: [{
-          label: '<mt:trans phrase="Activity Log">',
+          label: '<mt:trans phrase="Activity (%s)" params="$activity_label">',
           data: [<mt:getactivity model="$activity_model" column="$activity_column" data="1" workspace_id="$workspace_id" limit="$activity_limit">],
           backgroundColor: "rgba(35,180,51,0.4)"
         }]
@@ -35,27 +36,18 @@
         animation: false
       }
     });
-    $(window).on('resize load', function(){
-      var windowWidth = $(window).width();
-      if ( windowWidth < 700 ) {
-        $('#_activity_log-wrapper').css('margin-bottom', '-25px');
-      } else {
-        $('#_activity_log-wrapper').css('margin-bottom', '3px');
-      }
-    });
     $('#_activity_log').show(90);
     </script>
-    <mt:isusercan action="list" model="$activity_model" workspace_id="$workspace_id">
     <table class="activity_footer-table" role="presentation">
     <tr>
     <td>
-    <mt:tables show_activity="1">
+    <mt:tables show_activity="1" permission="1">
       <mt:if name="__first__">
       <form action="<mt:var name="script_uri">" method="POST">
       <input type="hidden" name="__mode" value="change_activity">
       <input type="hidden" name="magic_token" value="<mt:var name="magic_token">">
       <input type="hidden" name="workspace_id" value="<mt:var name="workspace_id">">
-      <select name="_model" class="form-control form-control-sm control-inline form-control-very-sm">
+      <select name="_model" class="form-control custom-select form-control-sm control-inline form-control-very-sm" style="min-width:85px;">
       <option <mt:if name="name" eq="log">selected</mt:if> value="log"><mt:trans phrase="Logs"></option>
       </mt:if>
       <option <mt:if name="name" eq="$activity_model">selected</mt:if> value="<mt:var name="name" escape>"><mt:var name="plural" escape translate></option>
@@ -66,12 +58,14 @@
     </mt:tables>
     </td>
     <td>
+    <mt:ifusercan action="list" model="$activity_model" workspace_id="$workspace_id">
       <mt:var name="activity_label" translate setvar="activity_label">
-      <div class="text-right"><a href="<mt:var name="script_uri">?__mode=view&_type=list&_model=<mt:var name="activity_model"><mt:if name="workspace_id">&amp;workspace_id=<mt:var name="workspace_id"></mt:if>"
+      <div class="text-right" style="margin-top:-5px"><a href="<mt:var name="script_uri">?__mode=view&_type=list&_model=<mt:var name="activity_model"><mt:if name="workspace_id">&amp;workspace_id=<mt:var name="workspace_id"></mt:if>"
         class="btn btn-info btn-sm"><mt:trans phrase="View all %s" params="$activity_label"></a>
-    </div></td></tr>
+      </div>
+    </mt:ifusercan>
+    </td></tr>
     </table>
-    </mt:isusercan>
   </div>
 </div>
 </mt:if>

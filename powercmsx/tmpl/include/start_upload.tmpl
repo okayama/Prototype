@@ -67,7 +67,7 @@ $('#drop-zone').css('margin','1px');
 $('#drop-zone').css('padding','8px');
 $(function () {
     'use strict';
-    var url = '<mt:var name="script_uri">?__mode=upload_multi&magic_token=<mt:var name="magic_token">&workspace_id=<mt:var name="workspace_id">&model=asset&column=file';
+    var url = '<mt:var name="script_uri">?__mode=upload_multi&magic_token=<mt:var name="magic_token">&workspace_id=<mt:var name="workspace_id">&model=asset&name=file';
     $('#fileupload').fileupload({
         url: url,
         dataType: 'json',
@@ -116,6 +116,8 @@ $(function () {
                 'width',
                 progress + '%'
             );
+            $('#drop-zone').css('background-color','#fff');
+            $("#drop-zone").show( 'slow' );
         }
     }).prop('disabled', !$.support.fileInput)
         .parent().addClass($.support.fileInput ? undefined : 'disabled');

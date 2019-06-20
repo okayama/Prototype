@@ -7,11 +7,35 @@
     <label class="custom-control custom-checkbox">
     <input id="<mt:var name="__col_name__">" class="custom-control-input watch-changed"
     <mt:if name="readonly">onclick="return false;"</mt:if>
-     type="checkbox" name="<mt:var name="__col_name__">" value="1" <mt:unless name="request.id">checked</mt:unless><mt:if name="value">checked</mt:if>>
+     type="checkbox" name="<mt:var name="__col_name__">" value="1" <mt:unless name="request.id"><mt:if name="request_method" eq="GET">checked</mt:if></mt:unless> <mt:if name="value">checked</mt:if>>
         <span class="custom-control-indicator<mt:if name="readonly"> disabled-cb</mt:if>"></span>
         <span class="custom-control-description"> 
         <mt:var name="label" escape></span>
     </label>
     <mt:var name="_hint">
+  </div>
+</div>
+
+<div class="row form-group">
+  <div class="col-lg-2">
+    <label for="show_path">
+      <mt:trans phrase="Show Path Field">
+    </label>
+  </div>
+  <div class="col-lg-10">
+    <label class="custom-control custom-checkbox">
+    <input id="show_path" class="custom-control-input"
+     type="checkbox" name="show_path_entry" value="1" <mt:if name="object_show_path_entry">checked</mt:if>>
+        <span class="custom-control-indicator"></span>
+        <span class="custom-control-description"> 
+        <mt:trans phrase="Entry"></span>
+    </label>
+    <label class="custom-control custom-checkbox">
+    <input class="custom-control-input"
+     type="checkbox" name="show_path_page" value="1" <mt:if name="object_show_path_page">checked</mt:if>>
+        <span class="custom-control-indicator"></span>
+        <span class="custom-control-description"> 
+        <mt:trans phrase="Page"></span>
+    </label>
   </div>
 </div>

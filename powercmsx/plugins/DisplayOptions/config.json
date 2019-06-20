@@ -2,7 +2,7 @@
     "label"       : "DisplayOptions",
     "id"          : "displayoptions",
     "component"   : "DisplayOptions",
-    "version"     : "1.0",
+    "version"     : "1.1",
     "author"      : "Alfasado Inc.",
     "author_link" : "https://alfasado.net/",
     "description" : "Make custom display options configurable for each workspace or system.",
@@ -12,6 +12,32 @@
                 "component" : "DisplayOptions",
                 "priority"  : 1,
                 "method" : "post_init"
+            }
+        }
+    },
+    "methods": {
+        "customize_menus": {
+            "component"  : "DisplayOptions",
+            "permission" : "create_displayoption",
+            "method"     : "customize_menus"
+        }
+    },
+    "menus": {
+        "customize_menus": {
+            "display_system" : 1,
+            "display_space" : 1,
+            "component"  : "DisplayOptions",
+            "mode"       : "customize_menus",
+            "label"      : "Customize Menus",
+            "permission" : "create_displayoption",
+            "order"      : 300
+        }
+    },
+    "tags": {
+        "function": {
+            "getmenuposition" : {
+                "component" : "DisplayOptions",
+                "method" : "hdlr_get_menu_position"
             }
         }
     },

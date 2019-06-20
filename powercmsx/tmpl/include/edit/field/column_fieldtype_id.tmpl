@@ -37,7 +37,7 @@ $('#_apply_field_type').click(function(){
                 }
                 $('#label').val( data.label );
                 $('#content').val( data.content );
-                if ( data.hide_label ) {
+                if ( data.hide_label != 0 ) {
                     $('#hide_label').prop( 'checked', true );
                     $('#label-wrapper').hide(200);
                 }

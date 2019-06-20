@@ -4,14 +4,19 @@
 <script>
 var values_<mt:var name="field_uniqueid"> = {};
 $('#edit-form-main').submit(function(){
+    var field_values = [];
+    var multi_values = false;
+    var name_raw;
     $('#field-wrapper-<mt:var name="field_uniqueid">').find(':input').each(function () {
         if ($(this).prop('name')) {
-            var input_key = $(this).prop('name');
+            name_raw = $(this).prop('name');
+            if ( name_raw.match(/\[\]$/)) {
+                multi_values = true;
+                name_raw = name_raw.replace( '[]', '' );
+            }
+            var input_key = $(this).prop('name').replace(/([\[\]])/g,'\\$1');
             var type = $(this).attr('type');
             var input = $('#field-wrapper-<mt:var name="field_uniqueid"> [name=' + input_key + ']');
-            if (type && (type == 'radio' || type == 'checkbox')) {
-                input = $('#field-wrapper-<mt:var name="field_uniqueid"> [name=' + input_key + ']:checked');
-            }
             if ( input_key.match( /_multi$/ ) ) {
                 var current_value = [];
                 if ( input_key in values_<mt:var name="field_uniqueid"> ) {
@@ -20,19 +25,44 @@ $('#edit-form-main').submit(function(){
                 current_value.push( input.val() );
                 values_<mt:var name="field_uniqueid">[ input_key ] = current_value;
             } else {
-                values_<mt:var name="field_uniqueid">[ input_key ] = input.val();
+                if (! multi_values ) {
+                    if (type && (type == 'radio')) {
+                        if ( $(this).prop('checked') ) {
+                            values_<mt:var name="field_uniqueid">[ input_key ] = input.val();
+                        }
+                    } else {
+                        values_<mt:var name="field_uniqueid">[ input_key ] = input.val();
+                    }
+                } else {
+                    if (type && (type == 'checkbox') ) {
+                        if ( $(this).prop('checked') ) {
+                            field_values.push( input.val() );
+                        }
+                    } else {
+                        field_values.push( input.val() );
+                    }
+                }
             }
             $(this).removeAttr('name');
         }
     });
+    if ( multi_values ) {
+        values_<mt:var name="field_uniqueid">[ name_raw ] = field_values;
+    }
     json = JSON.stringify( values_<mt:var name="field_uniqueid"> );
     $('#values_<mt:var name="field_uniqueid">').val(json);
     return true;
 });
 </script>
-<span class="<mt:if name="field__not_delete">hidden</mt:if> detach-button-wrapper">
-<button type="button" class="close close-sm btn btn-sm btn-secondary detach-field cf-detach-btn" data-basename="<mt:var name="field_basename">" aria-label="<mt:trans phrase="Delete">">
-<i class="fa fa-times" aria-hidden="true"></i>
+<mt:setvar name="_field__not_delete" value="">
+<mt:if name="field_required">
+  <mt:unless name="field__out">
+    <mt:setvar name="_field__not_delete" value="1">
+  </mt:unless>
+</mt:if>
+<span class="<mt:if name="field__not_delete">hidden<mt:elseif name="_field__not_delete">hidden</mt:if> detach-button-wrapper">
+<button style="border:none !important;" type="button" class="close close-sm btn btn-sm btn-secondary detach-field cf-detach-btn" data-basename="<mt:var name="field_basename">" aria-label="<mt:trans phrase="Delete">">
+<i class="fa fa-times-circle" aria-hidden="true"></i>
 <span class="sr-only">&times;</span>
 </button>
 </span>

@@ -11,7 +11,10 @@
     <mt:var name="_hint">
   </div>
 </div>
+<mt:getobjectlabel id="$object_questiontype_id" column="class" model="questiontype" setvar="questiontype_value">
+<mt:unless name="questiontype_value">
 <mt:getobjectlabel id="$object_questiontype_id" column="basename" model="questiontype" setvar="questiontype_value">
+</mt:unless>
 <mt:unless name="questiontype_value" like="text">
 <mt:unless name="questiontype_value" like="file">
 <mt:unless name="questiontype_value" like="attachment">

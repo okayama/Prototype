@@ -129,13 +129,13 @@
             request variable :
                        <paml:var name="request.name">
                                     (HTTPリクエスト変数'$_REQUEST'から値を取得します。)
-            csv      : <paml:var name="name" replace="'value1':'value\'2'">
-                  or : <paml:var name="name" replace="value1:value2">
+            csv      : <paml:var name="name" replace="'value1','value\'2'">
+                  or : <paml:var name="name" replace="value1,value2">
                                     (<=タグの実装により)
 
             CSVのフィールドの囲み文字、フィールドの区切り文字はクラスのプロパティです(変更可能です)。
                 規定値 : $csv_enclosure = "'" (囲み文字)
-                        $csv_delimiter = ':' (区切り文字)
+                        $csv_delimiter = ',' (区切り文字)
 
 ## テンプレート・タグ
 
