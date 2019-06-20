@@ -85,6 +85,7 @@ class PTPlugin {
         $plugin_switch = $app->plugin_switch;
         $cfg_settings = $app->cfg_settings;
         $counter = 0;
+        $errors = [];
         if ( $_type = $app->param( '_type' ) ) {
             $app->validate_magic();
             if ( $_type === 'enable' || $_type === 'disable' || $_type === 'upgrade' ) {
@@ -98,6 +99,7 @@ class PTPlugin {
                     if (! isset( $plugin_switch[ $plugin_id ] ) ) {
                         return $app->error( 'Invalid request.' );
                     }
+                    $upgrade = true;
                     $component = $app->component( $plugin_id );
                     $version = 0;
                     $version = $component ? $component->version() : 0;
@@ -141,33 +143,37 @@ class PTPlugin {
                                                        ? $upgrade_function['version_limit'] : 0;
                                         if ( $obj->value < $version_limit ) {
                                             $meth = $upgrade_function['method'];
-                                            if ( method_exists( $component, $meth ) ) {
-                                                $component->$meth( $app, $this, $obj->value );
+                                            if ( method_exists( $component, $meth ) && $upgrade ) {
+                                                $upgrade = $component->$meth( $app, $this, $obj->value, $errors );
                                             }
                                         }
                                     }
                                 }
                             }
                         }
-                        $obj->number( $status );
-                        if (! $obj->value || $_type === 'upgrade' ) {
-                            $obj->value( $version );
-                        }
-                        if ( is_object( $component ) ) {
+                        if ( is_object( $component ) && $upgrade ) {
                             if ( $status == 1 && method_exists( $component, 'activate' ) ) {
-                                $component->activate( $app, $this, $obj->value );
+                                $upgrade = $component->activate( $app, $this, $obj->value, $errors );
                             } else if ( $status == 0 && method_exists( $component, 'deactivate' ) ) {
-                                $component->deactivate( $app, $this, $obj->value );
+                                $upgrade = $component->deactivate( $app, $this, $obj->value, $errors );
                             }
                         }
-                        $obj->save();
-                        $counter++;
+                        if ( $upgrade ) {
+                            $obj->number( $status );
+                            if (! $obj->value || $_type === 'upgrade' ) {
+                                $obj->value( $version );
+                            }
+                            $obj->save();
+                            $counter++;
+                        }
                     }
                 }
             }
-            $app->redirect( $app->admin_url .
-            "?__mode=manage_plugins&action_type={$_type}&saved=1&count={$counter}" );
-            exit();
+            if ( empty( $errors ) ) {
+                $app->redirect( $app->admin_url .
+                "?__mode=manage_plugins&action_type={$_type}&saved=1&count={$counter}" );
+                exit();
+            }
         }
         $ctx = $app->ctx;
         if ( $app->param( 'edit_settings' ) ) {
@@ -274,6 +280,7 @@ class PTPlugin {
             }
             if ( $cfg['status'] && $app->user()->is_superuser ) {
                 $component = $app->component( $key );
+                if (! $component ) continue;
                 $models_dir = $component->path() . DS . 'models';
                 if ( is_dir( $models_dir ) ) {
                     if ( $handle = opendir( $models_dir ) ) {
@@ -306,6 +313,7 @@ class PTPlugin {
             $cfg->data( time() );
             $cfg->save();
         }
+        $ctx->local_vars['error'] = implode( "\n", $errors );
         $ctx->local_vars['plugins_loop'] = $plugins_loop;
         return $app->__mode( 'manage_plugins' );
     }
