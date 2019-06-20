@@ -1,0 +1,26 @@
+{
+    "label"       : "BannedWords",
+    "id"          : "bannedwords",
+    "component"   : "BannedWords",
+    "version"     : "1.0",
+    "author"      : "Alfasado Inc.",
+    "author_link" : "https://alfasado.net/",
+    "description" : "It provides check words which should not be used.",
+    "cfg_template": "cfg_template.tmpl",
+    "cfg_system"  : 1,
+    "cfg_space"   : 1,
+    "settings"    : {
+        "bannedwords_models" : "entry,page,tag",
+        "bannedwords_inheritance" : 0,
+        "bannedwords_rules" : ""
+    },
+    "hooks": {
+        "bannedwords_post_init": {
+            "post_init" : {
+                "component" : "BannedWords",
+                "priority"  : 1,
+                "method" : "post_init"
+            }
+        }
+    }
+}

@@ -1,0 +1,104 @@
+<div class="row form-group">
+  <div class="col-lg-2">
+    <label for="setting_bannedwords_models">
+      <mt:trans phrase="Target Models" component="BannedWords">
+    </label>
+  </div>
+  <mt:setvar name="count_target" value="0">
+  <div class="col-lg-10">
+    <mt:var name="setting_bannedwords_models" escape split="," setvar="bannedwords_target">
+    <mt:setvar name="menu_type" value="display_system">
+    <mt:if name="workspace_id">
+      <mt:setvar name="menu_type" value="display_space">
+    </mt:if>
+  <mt:setvarblock name="exclude_models">table,workflow,boilerplate,template,urlmapping,workspace,permission,field,fieldtype,remote_ip,role,comment,question,questiontype,contact,form,phrase,group,menu,displayoption,user,member</mt:setvarblock>
+  <mt:var name="exclude_models" split="," setvar="_exclude_models">
+    <mt:tables type="$menu_type">
+      <mt:ifinarray array="_exclude_models" value="$name">
+      <mt:else>
+      <mt:if name="menu_type" ne="3">
+        <mt:setvar name="count_target" value="1">
+        <label class="custom-control custom-checkbox">
+        <input class="custom-control-input watch-changed bannedwords_target_model"
+          <mt:ifinarray array="bannedwords_target" value="$name">checked</mt:ifinarray>
+          type="checkbox" name="bannedwords_target_model" value="<mt:var name="name">">
+          <span class="custom-control-indicator"></span>
+          <span class="custom-control-description"> 
+          <mt:var name="label" translate></span>
+        </label>
+      </mt:if>
+      </mt:ifinarray>
+    </mt:tables>
+    <mt:unless name="count_target">
+    <div class="alert alert-success" id="header-alert" role="alert" tabindex="0">
+      <span><mt:trans phrase="There is no target model." component="BannedWords"></span>
+    </div>
+    </mt:unless>
+    <input type="hidden" id="setting_bannedwords_models" name="setting_bannedwords_models" class="form-control" value="<mt:var name="setting_bannedwords_models" escape>">
+<script>
+$('.bannedwords_target_model').change(function(){
+    var all_models = $('#setting_bannedwords_models').val();
+    var this_model = $(this).val();
+    all_models = all_models.split(',');
+    var result = $.inArray( this_model, all_models );
+    if ( $(this).prop('checked') ) {
+        if ( result == -1 ) {
+            all_models.push( this_model );
+            $('#setting_bannedwords_models').val(all_models.join(','));
+        }
+    } else {
+        if ( result != -1 ) {
+            all_models.splice(result, 1); 
+            $('#setting_bannedwords_models').val(all_models.join(','));
+        }
+    }
+});
+</script>
+  </div>
+</div>
+<div class="row form-group">
+  <div class="col-lg-2">
+    <label for="setting_bannedwords_rules">
+      <mt:trans phrase="Rules" component="BannedWords">
+    </label>
+  </div>
+  <div class="col-lg-10<mt:if name="request.workspace_id"> mt-2</mt:if>">
+    <mt:if name="request.workspace_id">
+    <label class="custom-control custom-radio">
+      <input class="custom-control-input" type="radio"
+         name="setting_bannedwords_inheritance" value="0" <mt:unless name="setting_bannedwords_inheritance">checked</mt:unless>>
+      <span class="custom-control-indicator"></span>
+      <span class="custom-control-description"><mt:trans phrase="Do not inherit system rules"component="BannedWords"></span>
+    </label>
+    <label class="custom-control custom-radio">
+      <input class="custom-control-input" type="radio"
+         name="setting_bannedwords_inheritance" value="1" <mt:if name="setting_bannedwords_inheritance">checked</mt:if>>
+      <span class="custom-control-indicator"></span>
+      <span class="custom-control-description"><mt:trans phrase="Inherit system rules" component="BannedWords"></span>
+    </label>
+    </mt:if>
+    <textarea class="form-control" rows="6" id="setting_bannedwords_rules" name="setting_bannedwords_rules"><mt:var name="setting_bannedwords_rules" escape></textarea>
+    <p class="text-muted hint-block" id="bannedwords_hint">
+      <i class="fa fa-question-circle-o" aria-hidden="true"></i>
+      <span class="sr-only"><mt:trans phrase="Hint"></span>
+      <mt:trans phrase="One word per line." component="BannedWords">
+    </p>
+  </div>
+</div>
+<mt:if name="request.workspace_id">
+<script>
+<mt:if name="setting_bannedwords_inheritance">
+$('#setting_bannedwords_rules').hide();
+$('#bannedwords_hint').hide();
+</mt:if>
+$('input[name=setting_bannedwords_inheritance]').change(function(){
+    if ( $(this).val() == 1 ) {
+        $('#setting_bannedwords_rules').hide();
+        $('#bannedwords_hint').hide();
+    } else {
+        $('#setting_bannedwords_rules').show();
+        $('#bannedwords_hint').show();
+    }
+});
+</script>
+</mt:if>

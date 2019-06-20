@@ -12,7 +12,7 @@
       <mt:if name="not_null"><mt:var name="field_required"></mt:if>
     </label>
   </div>
-  <mt:setvarblock name="_exclude_models">table,workflow,boilerplate,urlmapping,permission,field,fieldtype,remote_ip,role,comment,questiontype,contact</mt:setvarblock>
+  <mt:setvarblock name="_exclude_models">table,workflow,boilerplate,urlmapping,permission,field,fieldtype,remote_ip,role,comment,questiontype,contact,displayoption</mt:setvarblock>
   <mt:var name="_exclude_models" split="," setvar="_exclude_models">
   <div class="col-lg-<mt:if name="edit" like="select">3<mt:else>10</mt:if>">
     <mt:var name="edit" split=":" setvar="edit_props">

@@ -1,5 +1,6 @@
 <?php
 require_once( LIB_DIR . 'Prototype' . DS . 'class.PTPlugin.php' );
+
 class LivePreview extends PTPlugin {
 
     protected $preview    = false;

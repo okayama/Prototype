@@ -1,0 +1,11 @@
+{
+    "It provides check words which should not be used." : "禁止用語のチェック機能を提供します。",
+    "Target Models" : "対象モデル",
+    "There is no target model." : "対象のモデルがありません。",
+    "Rules" : "ルール",
+    "Do not inherit system rules" : "システムのルールを継承しない",
+    "Inherit system rules" : "システムのルールを継承する",
+    "One word per line." : "1行に1単語を入力してください。",
+    "The %s contains %s banned word( %s )." : "「%s」に禁止用語が%s箇所含まれています( %s )。",
+    "The %s contains %s banned words( %s )." : "「%s」に禁止用語が%s箇所含まれています( %s )。"
+}

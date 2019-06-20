@@ -8,7 +8,7 @@
     "description" : "It provides site preview in future.",
     "cfg_template": "cfg_template.tmpl",
     "cfg_system"  : 1,
-    "cfg_space"  : 1,
+    "cfg_space"   : 1,
     "settings"    : {
         "livepreview_page_url"      : "",
         "livepreview_date_based"    : "entry",
