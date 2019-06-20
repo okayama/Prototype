@@ -8304,6 +8304,12 @@ class Prototype {
                             if ( $fmgr->put( $file_path, $data )!== false ) {
                                 $ui->md5( $hash );
                                 $ui->is_published( 1 );
+                                if ( $app->publish_callbacks ) {
+                                    $app->init_callbacks( 'template', 'post_publish' );
+                                    $callback['name'] = 'post_publish';
+                                    $callback['urlinfo'] = $ui;
+                                    $app->run_callbacks( $callback, 'template', $tmpl, $data );
+                                }
                             } else {
                                 $ui->is_published( 0 );
                                 $ui->publish_file( 0 );

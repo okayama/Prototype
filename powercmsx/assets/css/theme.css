@@ -1983,3 +1983,8 @@ input[type="radio"]:disabled ~ .custom-control-indicator {
 #widget-selecter {
   width: 166px;
 }
+
+.dark-block {
+  background-color: #000;
+  color: #fff;
+}

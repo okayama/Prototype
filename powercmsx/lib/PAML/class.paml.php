@@ -46,7 +46,7 @@ class PAML {
     public    $advanced_mode = true;
     public    $cache_dir;
     public    $compile_dir;
-    public    $unify_breaks  = true;
+    public    $unify_breaks  = false;
     public    $logging       = false;
     public    $log_path;
     public    $csv_delimiter = ',';

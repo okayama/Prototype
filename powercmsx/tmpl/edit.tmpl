@@ -73,6 +73,7 @@ $('#alert-saved').focus();
 
 <script src="<mt:var name="prototype_path">assets/js/prototype/inputHTML.js?ts=<mt:date>"></script>
 <form action="<mt:var name="script_uri">" method="POST" id="edit-form-main">
+<mt:var name="form_header">
 <mt:setvarblock name="include_path">include/edit/<mt:var name="model">/form_header.tmpl</mt:setvarblock>
 <mt:include file="$include_path">
 <input type="hidden" name="__mode" value="save" id="__mode">
@@ -977,9 +978,9 @@ $(function () {
   </div>
   <div class="col-lg-10">
   <mt:unless name="request.id"><mt:unless name="forward_params"><mt:var name="default" escape setvar="value"></mt:unless></mt:unless>
-<textarea id="<mt:var name="__col_name__">" rows="<mt:if name="options"><mt:var name="options" escape><mt:else>10</mt:if>"
+<div id="editor-<mt:var name="__col_name__">-wrapper"><textarea id="<mt:var name="__col_name__">" rows="<mt:if name="options"><mt:var name="options" escape><mt:else>10</mt:if>"
   class="form-control richtext" name="<mt:var name="__col_name__">"
-  <mt:if name="readonly">readonly</mt:if>><mt:var name="value"></textarea>
+  <mt:if name="readonly">readonly</mt:if>><mt:var name="value"></textarea></div>
     <mt:var name="_hint">
   </div>
 </div>
@@ -1339,9 +1340,9 @@ $('#_field_chooser').click(function(){
 </mt:objectcontext>
 
 <hr>
-
 <mt:setvarblock name="include_path">include/edit/<mt:var name="model">/form_footer.tmpl</mt:setvarblock>
 <mt:include file="$include_path">
+<mt:var name="form_footer">
 
 <div class="row form-group edit-action-bar">
   <div class="col-lg-12">

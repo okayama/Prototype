@@ -2800,12 +2800,12 @@ class PTTags {
                 }
                 $ctx->local_vars['field_uniqueid'] = $uniqueid;
                 if (! $field->hide_label ) {
-                $field_label = $app->tmpl_markup === 'mt' ? $ctx->build( $field_label )
-                                                          : $app->build( $field_label, $ctx );
-                $ctx->local_vars['field_label_html'] = $field_label;
-                $src = file_get_contents( TMPL_DIR . 'field' . DS . 'label.tmpl' );
-                $field_label = $ctx->build( $src );
-                $ctx->local_vars['field_label_html'] = $field_label;
+                    $field_label = $app->tmpl_markup === 'mt' ? $ctx->build( $field_label )
+                                                              : $app->build( $field_label, $ctx );
+                    $ctx->local_vars['field_label_html'] = $field_label;
+                    $src = file_get_contents( TMPL_DIR . 'field' . DS . 'label.tmpl' );
+                    $field_label = $ctx->build( $src );
+                    $ctx->local_vars['field_label_html'] = $field_label;
                 }
                 $_fld_content = $app->tmpl_markup === 'mt' ? $ctx->build( $field_content )
                                                            : $app->build( $field_content, $ctx );

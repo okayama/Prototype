@@ -6,6 +6,14 @@
     "Do not inherit system rules" : "システムのルールを継承しない",
     "Inherit system rules" : "システムのルールを継承する",
     "One word per line." : "1行に1単語を入力してください。",
+    "To replace, enter a replacement string separated by comma." : "置換する場合はカンマで区切って置換文字列を入力してください。",
     "The %s contains %s banned word( %s )." : "「%s」に禁止用語が%s箇所含まれています( %s )。",
-    "The %s contains %s banned words( %s )." : "「%s」に禁止用語が%s箇所含まれています( %s )。"
+    "The %s contains %s banned words( %s )." : "「%s」に禁止用語が%s箇所含まれています( %s )。",
+    "Replace '%1$s' in the %2$s with '%3$s'" : "%2$s中の「%1$s」を「%3$s」に置換する",
+    "Actions for banned words" : "禁止用語に対する処理",
+    "Are you sure you want to apply text(s) replace?" : "テキストの置換処理を適用してもよろしいですか?",
+    "The target field is not selected." : "対象のフィールドが選択されていません。",
+    "Ignore the unchecked ones and save the object" : "チェックのないものは無視してオブジェクトを保存する",
+    "Ignore banned words and save the object" : "禁止用語を無視してオブジェクトを保存する",
+    "Are you sure you want to ignore banned words and save this object?" : "禁止用語を無視してオブジェクトを保存しますか?"
 }

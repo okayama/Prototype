@@ -174,11 +174,30 @@ class PTPublisher {
                 }
                 if ( $mapping->publish_file == 3 && !$app->user() ) {
                     $fmgr = $app->fmgr;
-                    $fmgr->put( $url->file_path, $data );
+                    $md5 = $url->md5;
+                    $file_path = $url->file_path;
+                    if ( !$md5 && file_exists( $file_path ) ) {
+                        $md5 = md5( $fmgr->get( $file_path ) );
+                    }
+                    $hash = md5( $data );
+                    if ( $md5 != $hash ) {
+                        $fmgr->put( $url->file_path, $data );
+                        $url->md5( $hash );
+                        $update = true;
+                    }
                     if (! $url->is_published ) {
                         $url->is_published( 1 );
                         $update = true;
                     }
+                    if ( ( $md5 != $hash ) && $app->publish_callbacks ) {
+                        $app->init_callbacks( 'template', 'post_publish' );
+                        $callback['name'] = 'post_publish';
+                        $callback['urlinfo'] = $url;
+                        $app->run_callbacks( $callback, 'template', $tmpl, $data );
+                    }
+                }
+                if ( $update ) {
+                    $url->save();
                 }
             }
             return $data;

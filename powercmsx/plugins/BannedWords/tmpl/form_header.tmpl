@@ -1,0 +1,93 @@
+<mt:loop name="banned_words_hilight_ids"><mt:if name="__first__"><style></mt:if><mt:var name="__value__"> { border: 2px solid #B72C23; }
+<mt:if name="__last__"></style></mt:if>
+</mt:loop>
+<mt:loop name="banned_words_replace_map">
+<mt:if name="__first__">
+<table class="table mb-4">
+<thead class="dark-block">
+<tr>
+<th class="text-center"><mt:trans phrase="Actions for banned words" component="BannedWords"></th>
+</thead>
+</tr>
+<tr>
+  <td style="padding-top:9px !important;padding-bottom:0px !important">
+  <label class="custom-control custom-checkbox">
+    <input type="checkbox" class="custom-control-input watch-changed" id="banned_words_replace_all" name="banned_words_replace_all" value="">
+    <span class="custom-control-indicator"></span>
+    <span class="custom-control-description">
+      <mt:trans phrase="Select all">
+    </span>
+  </label>
+  </td>
+</tr>
+</mt:if>
+  <mt:var name="__value__" setvar="column_replace_vars">
+  <mt:loop name="column_replace_vars">
+  <tr>
+  <td style="padding-top:9px !important;padding-bottom:0px !important">
+  <label class="custom-control custom-checkbox">
+    <input type="checkbox" class="custom-control-input watch-changed" name="banned_words_replace_columns[]" value="<mt:var name="__key__">,<mt:var name="banned_words_replace_rule" escape>,<mt:var name="banned_words_replace_replace" escape>">
+    <span class="custom-control-indicator"></span>
+    <span class="custom-control-description">
+      <mt:var name="__value__" setvar="banned_words_replace_props">
+      <mt:trans phrase="Replace '%1$s' in the %2$s with '%3$s'" component="BannedWords" params="'$banned_words_replace_rule','$banned_words_replace_field_name','$banned_words_replace_replace'" escape>
+    </span>
+  </label>
+  </td>
+  </tr>
+  </mt:loop>
+<mt:if name="__last__">
+<tr>
+  <td style="padding-top:9px !important;padding-bottom:0px !important">
+  <label class="custom-control custom-checkbox">
+    <input type="checkbox" class="custom-control-input watch-changed" id="banned_words_ignore_uncheck" name="banned_words_ignore_uncheck" value="1">
+    <span class="custom-control-indicator"></span>
+    <span class="custom-control-description">
+      <mt:trans phrase="Ignore the unchecked ones and save the object" component="BannedWords">
+    </span>
+  </label>
+  </td>
+</tr>
+<tr>
+  <td style="padding-top:9px !important;padding-bottom:0px !important;padding-left:0px !important;padding-right:7px !important">
+  <button type="button" id="apply_banned_words" disabled class="apply_banned_words disabled btn btn-primary full"><mt:trans phrase="Apply"></button>
+  </td>
+</tr>
+</table>
+<script>
+$('#banned_words_replace_all').change(function(){
+    var is_checked = $(this).prop('checked');
+    $("input[name='banned_words_replace_columns[]']").each(function(){
+        if ( is_checked ) {
+            $(this).prop('checked', true);
+            $('#banned_words_ignore_uncheck').prop('checked', true);
+        } else {
+            $(this).prop('checked', false);
+            $('#banned_words_ignore_uncheck').prop('checked', false);
+        }
+    });
+    __banned_words_button();
+});
+</script>
+</mt:if>
+</mt:loop>
+<mt:unless name="banned_words_replace_map">
+<table class="table mb-4">
+<tr>
+  <td style="padding-top:9px !important;padding-bottom:0px !important">
+  <label class="custom-control custom-checkbox">
+    <input type="checkbox" class="custom-control-input watch-changed" id="banned_words_ignore_uncheck" name="banned_words_ignore_uncheck" value="1">
+    <span class="custom-control-indicator"></span>
+    <span class="custom-control-description">
+      <mt:trans phrase="Ignore banned words and save the object" component="BannedWords">
+    </span>
+  </label>
+  </td>
+</tr>
+<tr>
+  <td style="padding-top:9px !important;padding-bottom:0px !important;padding-left:0px !important;padding-right:7px !important">
+  <button type="button" id="save_ignore_banned_words" class="disabled apply_banned_words btn btn-primary full"><mt:trans phrase="Save"></button>
+  </td>
+</tr>
+</table>
+</mt:unless>
