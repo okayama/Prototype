@@ -49,7 +49,7 @@ $('#alert-scheme-upgrade').focus();
 </mt:if>
 
 <div class="table-screen">
-<form action="<mt:var name="script_uri">" method="POST">
+<form action="<mt:var name="script_uri">" method="POST" id="update_plugin">
 <input type="hidden" name="__mode" value="manage_plugins">
 <input type="hidden" name="magic_token" value="<mt:var name="magic_token" escape>">
 <input type="hidden" name="_type" value="" id="this_type">
@@ -124,9 +124,9 @@ $('#alert-scheme-upgrade').focus();
     </div>
     <mt:unless name="workspace_id">
     <div class="plugin-switch"><mt:if name="plugin_status">
-      <a class="disable-link" href="<mt:var name="script_uri">?__mode=manage_plugins&amp;_type=disable&amp;plugin_id[]=<mt:var name="plugin_id" escape>&amp;magic_token=<mt:var name="magic_token">"><mt:trans phrase="Disable this plugin"></a>
+      <a id="inline-btn-<mt:var name="plugin_id" escape>" class="disable-link" href="javascript:void(0);"><mt:trans phrase="Disable this plugin"></a>
     <mt:else>
-      <a class="enable-link" href="<mt:var name="script_uri">?__mode=manage_plugins&amp;_type=enable&amp;plugin_id[]=<mt:var name="plugin_id" escape>&amp;magic_token=<mt:var name="magic_token">"><mt:trans phrase="Enable this plugin"></a>
+      <a id="inline-btn-<mt:var name="plugin_id" escape>" class="enable-link" href="javascript:void(0);"><mt:trans phrase="Enable this plugin"></a>
     </mt:if>
     </div>
     </mt:unless>
@@ -280,11 +280,29 @@ $('.enable-link').click(function(){
     if(! confirm('<mt:trans phrase="Are you sure you want to enable this plugin?">') ) {
         return false;
     }
+    var plugin_name = $(this).prop('id');
+    plugin_name = plugin_name.replace( 'inline-btn-', '' );
+    $("input[name='plugin_id[]']").each(function(){
+        $(this).prop('checked', false );
+    });
+    $('#box_' + plugin_name ).prop('checked', true );
+    $('#this_type').val('enable');
+    $('#update_plugin').submit();
+    return false;
 });
 $('.disable-link').click(function(){
     if(! confirm('<mt:trans phrase="Are you sure you want to disable this plugin?">') ) {
         return false;
     }
+    var plugin_name = $(this).prop('id');
+    plugin_name = plugin_name.replace( 'inline-btn-', '' );
+    $("input[name='plugin_id[]']").each(function(){
+        $(this).prop('checked', false );
+    });
+    $('#box_' + plugin_name ).prop('checked', true );
+    $('#this_type').val('disable');
+    $('#update_plugin').submit();
+    return false;
 });
 $('.enable-btn').click(function(){
     if ( item_checked( true ) == 0 ) {
@@ -294,7 +312,7 @@ $('.enable-btn').click(function(){
     if(! confirm('<mt:trans phrase="Are you sure you want to enable plugin(s)?">') ) {
         return false;
     }
-    $('#this_type').val( 'enable' );
+    $('#this_type').val('enable');
 });
 $('.disable-btn').click(function(){
     if ( item_checked( true ) == 0 ) {
@@ -304,7 +322,7 @@ $('.disable-btn').click(function(){
     if(! confirm('<mt:trans phrase="Are you sure you want to disable plugin(s)?">') ) {
         return false;
     }
-    $('#this_type').val( 'disable' );
+    $('#this_type').val('disable');
 });
 $('.upgrade-btn').click(function(){
     if ( item_checked( true ) == 0 ) {
@@ -314,7 +332,7 @@ $('.upgrade-btn').click(function(){
     if(! confirm('<mt:trans phrase="Are you sure you want to upgrade plugin(s)?">') ) {
         return false;
     }
-    $('#this_type').val( 'upgrade' );
+    $('#this_type').val('upgrade');
 });
 $(":checkbox").keypress(function(e) {
     if ( e.keyCode == 13 ) {
