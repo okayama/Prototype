@@ -556,6 +556,7 @@ class PTTags {
                     $terms['status'] = $status_published;
                 }
                 $extra = '';
+                $ex_vals = [];
                 if (! isset( $collback_models[ $url->model ] ) ) {
                     $scheme = $app->get_scheme_from_db( $url->model );
                     $app->init_callbacks( $url->model, 'pre_listing' );
@@ -566,8 +567,8 @@ class PTTags {
                              'scheme' => $scheme, 'table' => $table,
                              'args' => $orig_args ];
                 $extra = '';
-                $app->run_callbacks( $callback, $url->model, $terms, $args, $extra );
-                $objects = $_model->load( $terms, $args, $cols, $extra );
+                $app->run_callbacks( $callback, $url->model, $terms, $args, $extra, $ex_vals );
+                $objects = $_model->load( $terms, $args, $cols, $extra, $ex_vals );
                 $callback = ['name' => 'post_load_objects', 'model' => $url->model,
                              'table' => $table ];
                 $count_obj = count( $objects );
@@ -3107,7 +3108,7 @@ class PTTags {
                                                    $params, $terms, $select_cols );
                 $app->init_callbacks( $to_obj, 'post_load_objects' );
                 $callback = ['name' => 'post_load_objects', 'model' => $to_obj ];
-                $count_obj = count( $objects );
+                $count_obj = $objects === false ? 0 : count( $objects );
                 $app->run_callbacks( $callback, $model, $objects, $count_obj );
             }
             if ( isset( $orig_args['__object_count'] ) ) {
@@ -3396,8 +3397,9 @@ class PTTags {
                         $date_based_col = $app->get_date_col( $_model );
                         $terms[ $date_based_col ] = ['BETWEEN' => [ $start, $end ] ];
                     }
-                    $app->run_callbacks( $callback, $model, $terms, $args, $extra );
-                    return $_model->count( $terms, [], '', $extra );
+                    $ex_vals = [];
+                    $app->run_callbacks( $callback, $model, $terms, $args, $extra, $ex_vals );
+                    return $_model->count( $terms, [], '', $extra, $ex_vals );
                 }
             }
             $obj = $ctx->stash( $context );
@@ -3421,9 +3423,10 @@ class PTTags {
             $terms['name'] = ['not like' => '@%'];
         }
         $args = [];
+        $ex_vals = [];
         $app->init_callbacks( $model, 'pre_archive_count' );
-        $app->run_callbacks( $callback, $model, $terms, $args, $extra );
-        return $app->db->model( $model )->count( $terms, $args, '', $extra );
+        $app->run_callbacks( $callback, $model, $terms, $args, $extra, $ex_vals );
+        return $app->db->model( $model )->count( $terms, $args, '', $extra, $ex_vals );
     }
 
     function hdlr_archivelist ( $args, &$content, $ctx, &$repeat, $counter ) {
@@ -3716,11 +3719,12 @@ class PTTags {
                          'scheme' => $scheme, 'table' => $table,
                          'args' => $orig_args ];
             $extra = '';
+            $ex_vals = [];
             $app->init_callbacks( $model, 'pre_archive_list' );
-            $app->run_callbacks( $callback, $model, $terms, $args, $extra );
+            $app->run_callbacks( $callback, $model, $terms, $args, $extra, $ex_vals );
             $objects = $ctx->stash( 'children_object_' . $model . '_' . $parent_id )
                 ? $ctx->stash( 'children_object_' . $model . '_' . $parent_id )
-                : $obj->load( $terms, $args, $cols, $extra );
+                : $obj->load( $terms, $args, $cols, $extra, $ex_vals );
             if (! is_array( $objects ) || empty( $objects ) ) {
                 $repeat = $ctx->false();
                 return;
@@ -3934,12 +3938,13 @@ class PTTags {
             $args = ['sort' => 'order'];
             $cache_args['extra'] = $extra;
             $app->init_callbacks( 'table', 'pre_load_objects' );
+            $ex_vals = [];
             $callback =
                 ['name' => 'pre_load_objects', 'model' => 'table', 'args' => $orig_args ];
-            $app->run_callbacks( $callback, 'table', $terms, $args, $select_cols, $extra );
+            $app->run_callbacks( $callback, 'table', $terms, $args, $select_cols, $extra, $ex_vals );
             $cache_key = $app->make_cache_key( $terms, $cache_args, 'table' );
             $tables = $app->stash( $cache_key ) ? $app->stash( $cache_key )
-                    : $table_model->load( $terms, $args, $select_cols, $extra );
+                    : $table_model->load( $terms, $args, $select_cols, $extra, $ex_vals );
             $app->stash( $cache_key, $tables );
             if (! is_array( $tables ) || empty( $tables ) ) {
                 $app->stash( $cache_key, 1 );
@@ -4218,13 +4223,14 @@ class PTTags {
                     }
                 }
                 $_filter = $app->param( '_filter' );
+                $ex_vals = [];
                 if ( ( $_filter && $_filter == $model ) || $app->force_filter ) {
                     $app->register_callback( $model, 'pre_listing', 'pre_listing', 1, $app );
                     $app->init_callbacks( $model, 'pre_listing' );
                     $callback = ['name' => 'pre_listing', 'model' => $model,
                                  'scheme' => $scheme, 'table' => $table,
                                  'args' => $orig_args ];
-                    $app->run_callbacks( $callback, $model, $terms, $args, $extra );
+                    $app->run_callbacks( $callback, $model, $terms, $args, $extra, $ex_vals );
                 }
                 $count_args = $args;
                 unset( $count_args['limit'] );
@@ -4253,11 +4259,11 @@ class PTTags {
                         $load_only_ids = true;
                     }
                 }
-                $count_obj = $obj->count( $terms, $count_args, $cols, $extra );
+                $count_obj = $obj->count( $terms, $count_args, $cols, $extra, $ex_vals );
                 if ( isset( $args['limit'] ) && $args['limit'] && $args['limit'] > $count_obj ) {
                     $args['limit'] = $count_obj;
                 }
-                $loop_objects = $obj->load( $terms, $args, $cols, $extra );
+                $loop_objects = $obj->load( $terms, $args, $cols, $extra, $ex_vals );
                 $app->init_callbacks( $model, 'post_load_objects' );
                 $callback = ['name' => 'post_load_objects', 'model' => $model,
                              'table' => $table ];

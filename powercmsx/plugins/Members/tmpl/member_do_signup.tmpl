@@ -1,0 +1,17 @@
+<mt:setvar name="page_title" value="Member registration completed">
+<mt:var name="page_title" language="$language" setvar="page_title">
+<mt:include file="include/header.tmpl">
+<mt:if name="request.signup">
+  <div id="header-success-message" class="alert alert-success" tabindex="0">
+    <mt:trans phrase="A new user has successfully registered on '%s'." params="$appname">
+    <mt:if name="sign_up_status" eq="2">
+      <a href="<mt:var name="script_uri">?__mode=login<mt:if name="workspace_id">&amp;workspace_id=<mt:var name="workspace_id"></mt:if>"><mt:trans phrase="You can login."></a>
+    <mt:else>
+      <mt:trans phrase="Please wait for a while until it is approved by the administrator.">
+    </mt:if>
+  </div>
+  <script>
+    $('#header-success-message').focus();
+  </script>
+</mt:if>
+<mt:include file="include/footer.tmpl">

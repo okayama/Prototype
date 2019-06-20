@@ -1,0 +1,545 @@
+<div class="row form-group">
+  <div class="col-lg-12 form-inline form-inline-left-margin">
+    <label class="custom-control custom-radio">
+      <input class="custom-control-input" type="radio" name="html_import_type" value="zip" checked>
+      <span class="custom-control-indicator"></span>
+      <span class="custom-control-description"><mt:trans phrase="Zip Archive" component="HTMLImporter"></span>
+    </label>
+    <label class="custom-control custom-radio">
+      <input class="custom-control-input" type="radio" name="html_import_type" value="url">
+      <span class="custom-control-indicator"></span>
+      <span class="custom-control-description"><mt:trans phrase="URLs" component="HTMLImporter"></span>
+    </label>
+  </div>
+</div>
+<div class="html_url-wrapper">
+<hr>
+<div class="alert alert-success hidden" id="upload-urls" role="alert" tabindex="0">
+  <span id="urls-alert-message"></span>
+</div>
+<label for="html_importer_send_urls"><mt:trans phrase="URLs" component="HTMLImporter"></label>
+<textarea id="html_importer_send_urls" name="html_importer_send_urls" rows="6" class="form-control watch-changed" placeholder="<mt:trans phrase="Write 1 line 1 URL." component="HTMLImporter">"></textarea>
+<div class="mt-2" style="margin-left:-6px;margin-right:4px;">
+<button class="btn btn-primary full" type="button" id="html_importer_send_urls-button"><mt:trans phrase="Send" component="HTMLImporter"></button>
+</div>
+</div>
+<div class="html_url-wrapper">
+<hr>
+<div class="row form-group mt-4">
+  <div class="col-lg-2 mt-1">
+    <mt:trans phrase="Basic Authentication" component="HTMLImporter">
+  </div>
+  <div class="col-lg-10 form-inline form-inline-left-margin">
+    <label><mt:trans phrase="Username"> : &nbsp;<input type="text" class="form-control watch-changed very-short" name="html_auth_user" id="html_auth_user"></label>
+    <label><mt:trans phrase="Password"> : &nbsp;<input type="password" class="form-control watch-changed very-short" name="html_auth_pwd" id="html_auth_pwd"></label>
+  </div>
+</div>
+</div>
+<hr>
+<div class="row form-group mt-4">
+  <div class="col-lg-2 mt-1" id="html_title-label">
+    <mt:trans phrase="Title">
+  </div>
+  <style>
+  #html_title_perttern-wrapper .custom-radio{ margin-right: -5px }
+  </style>
+  <div class="col-lg-10 form-inline form-inline-left-margin" id="html_title_perttern-wrapper">
+    <label class="custom-control custom-radio">
+      <input class="custom-control-input" type="radio" name="html_title_perttern" value="heading" checked>
+      <span class="custom-control-indicator"></span>
+      <span class="custom-control-description"><mt:trans phrase="First heading" component="HTMLImporter"></span>
+    </label>
+    <label class="custom-control custom-radio">
+      <input class="custom-control-input" type="radio" name="html_title_perttern" value="title">
+      <span class="custom-control-indicator"></span>
+      <span class="custom-control-description"><mt:trans phrase="Title element" component="HTMLImporter"></span>
+    </label>
+    <label class="custom-control custom-radio">
+      <input class="custom-control-input" type="radio" name="html_title_perttern" value="start_end">
+      <span class="custom-control-indicator"></span>
+      <span class="custom-control-description"><mt:trans phrase="Specify start and end" component="HTMLImporter"></span>
+    </label>
+    <label class="custom-control custom-radio">
+      <input class="custom-control-input" type="radio" name="html_title_perttern" value="regex">
+      <span class="custom-control-indicator"></span>
+      <span class="custom-control-description"><mt:trans phrase="Regular expression" component="HTMLImporter"></span>
+    </label>
+    <label class="custom-control custom-radio">
+      <input class="custom-control-input" type="radio" name="html_title_perttern" value="xpath">
+      <span class="custom-control-indicator"></span>
+      <span class="custom-control-description"><mt:trans phrase="XPath" component="HTMLImporter"></span>
+    </label>
+  </div>
+</div>
+<div class="row form-group mt-2" id="html_title_option-wrapper">
+  <div class="col-lg-2 mt-2" id="html_title_option-label">
+    <label for="html_title_option"><mt:trans phrase="Separator" component="HTMLImporter"></label>
+  </div>
+  <div class="col-lg-10">
+    <input type="text" class="form-control short watch-changed" name="html_title_option" id="html_title_option">
+  <p class="text-muted hint-block">
+    <i class="fa fa-question-circle-o" aria-hidden="true"></i>
+    <span class="sr-only"><mt:trans phrase="Hint"></span>
+    <span id="html_title_option-hint">
+      <mt:trans phrase="Enter the start and end points separated by comma." component="HTMLImporter">
+    </span>
+  </p>
+  </div>
+</div>
+<div class="row form-group mt-4" id="html_meta-wrapper">
+  <div class="col-lg-2">
+    <mt:trans phrase="Meta Tags" component="HTMLImporter">
+  </div>
+  <div class="col-lg-10">
+    <label class="custom-control custom-checkbox" id="html_meta_description-label">
+    <input class="custom-control-input watch-changed"
+     type="checkbox" name="html_meta_description" id="html_meta_description" value="1" >
+        <span class="custom-control-indicator"></span>
+        <span class="custom-control-description"> 
+        <span id="html_meta_description-text">
+          <mt:trans phrase="'description' to excerpt" component="HTMLImporter"></span>
+        </span>
+    </label>
+    <label class="custom-control custom-checkbox" id="html_meta_keywords-label">
+    <input class="custom-control-input watch-changed"
+     type="checkbox" name="html_meta_keywords" id="html_meta_keywords" value="1" >
+        <span class="custom-control-indicator"></span>
+        <span class="custom-control-description"> 
+        <mt:trans phrase="'keywords' to keywords" component="HTMLImporter"></span>
+    </label>
+    <label class="custom-control custom-checkbox" id="html_meta_tags-label">
+    <input class="custom-control-input watch-changed"
+     type="checkbox" name="html_meta_tags" id="html_meta_tags" value="1" >
+        <span class="custom-control-indicator"></span>
+        <span class="custom-control-description"> 
+        <mt:trans phrase="'keywords' to tags" component="HTMLImporter"></span>
+    </label>
+    <mt:if name="html_can_asset">
+    <label class="custom-control custom-checkbox" id="html_meta_ogimage-label">
+    <input class="custom-control-input watch-changed"
+     type="checkbox" name="html_meta_ogimage" id="html_meta_ogimage" value="1" >
+        <span class="custom-control-indicator"></span>
+        <span class="custom-control-description"> 
+        <mt:trans phrase="'og:image' to asset" component="HTMLImporter"></span>
+    </label>
+    </mt:if>
+  </div>
+</div>
+<div class="row form-group html_body-wrapper">
+  <div class="col-lg-2" id="html_body-label">
+    <mt:trans phrase="Body">
+  </div>
+  <div class="col-lg-10 form-inline form-inline-left-margin">
+    <label class="custom-control custom-radio">
+      <input class="custom-control-input watch-changed" type="radio" name="html_body_perttern" value="auto" checked>
+      <span class="custom-control-indicator"></span>
+      <span class="custom-control-description"><mt:trans phrase="Automatic extraction" component="HTMLImporter"></span>
+    </label>
+    <label class="custom-control custom-radio">
+      <input class="custom-control-input watch-changed" type="radio" name="html_body_perttern" value="start_end" checked>
+      <span class="custom-control-indicator"></span>
+      <span class="custom-control-description"><mt:trans phrase="Specify start and end" component="HTMLImporter"></span>
+    </label>
+    <label class="custom-control custom-radio">
+      <input class="custom-control-input watch-changed" type="radio" name="html_body_perttern" value="regex">
+      <span class="custom-control-indicator"></span>
+      <span class="custom-control-description"><mt:trans phrase="Regular expression" component="HTMLImporter"></span>
+    </label>
+    <label class="custom-control custom-radio">
+      <input class="custom-control-input watch-changed" type="radio" name="html_body_perttern" value="xpath">
+      <span class="custom-control-indicator"></span>
+      <span class="custom-control-description"><mt:trans phrase="XPath" component="HTMLImporter"></span>
+    </label>
+  </div>
+</div>
+<div class="row form-group mt-2 html_body-wrapper" id="html_body_option-wrapper">
+  <div class="col-lg-2 mt-2" id="html_body_option-label">
+    <label for="body_option"><mt:trans phrase="Start and End" component="HTMLImporter"></label>
+  </div>
+  <div class="col-lg-10">
+    <input type="text" class="form-control short watch-changed" name="html_body_option" id="html_body_option">
+  <p class="text-muted hint-block">
+    <i class="fa fa-question-circle-o" aria-hidden="true"></i>
+    <span class="sr-only"><mt:trans phrase="Hint"></span>
+    <span id="html_body_option-hint">
+      <mt:trans phrase="Enter the start and end points separated by comma." component="HTMLImporter">
+    </span>
+  </p>
+  </div>
+</div>
+<div class="row form-group">
+  <div class="col-lg-12">
+  <label for="html_field_settings"><mt:trans phrase="Other Columns" component="HTMLImporter"></label>
+  <textarea id="html_field_settings" name="html_field_settings" rows="3" class="form-control watch-changed" placeholder="<mt:trans phrase="column_name=Start,End or column_name=Regular expression or column_name=XPath" component="HTMLImporter">"><mt:var name="cookie.pt-movabletype_field_settings" escape></textarea>
+    <div class="alert alert-warning mt-2" role="alert">
+      <mt:trans phrase="Use '!' As a regular expression delimiter to distinguish regular expressions from XPath." component="HTMLImporter">
+    </div>
+    <p class="text-muted hint-block">
+      <i class="fa fa-question-circle-o" aria-hidden="true"></i>
+      <span class="sr-only"><mt:trans phrase="Hint"></span>
+      <mt:trans phrase="Write 1 line 1 setting. PowerCMS X's column name=Start,End or column name=Regular expression or column name=XPath(When specified multiple times, the values are merged)." component="HTMLImporter">
+    </p>
+  </div>
+</div>
+<hr>
+<div class="row form-group" id="html_text_format-wrapper">
+  <div class="col-lg-2 mt-1">
+    <mt:trans phrase="Text Format">
+  </div>
+  <div class="col-lg-10">
+  <select id="html_text_format" name="html_text_format" class="form-control custom-select short watch-changed">
+    <option value=""><mt:trans phrase="None"></option>
+    <option value="convert_breaks"><mt:trans phrase="Convert Line Breaks"></option>
+    <option value="markdown"><mt:trans phrase="Markdown"></option>
+    <mt:ignore><option value="markdown_with_smartypants">Markdown + SmartyPants</option></mt:ignore>
+    <option value="richtext"><mt:trans phrase="RichText"></option>
+    <mt:ignore><option value="textile_2" <mt:if name="object_text_format" eq="textile_2">selected</mt:if>><mt:trans phrase="Textile 2"></option></mt:ignore>
+  </select>
+  </div>
+</div>
+<div class="row form-group">
+  <div class="col-lg-2">
+    <mt:trans phrase="Other" component="HTMLImporter">
+  </div>
+  <div class="col-lg-10">
+    <label class="custom-control custom-checkbox" id="html_create_categories-label">
+    <input class="custom-control-input watch-changed"
+     type="checkbox" name="html_create_categories" id="html_create_categories" value="1">
+        <span class="custom-control-indicator"></span>
+        <span class="custom-control-description"> 
+        <mt:trans phrase="Create Categories or Folders from path" component="HTMLImporter"></span>
+    </label>
+    <label class="custom-control custom-checkbox">
+    <input class="custom-control-input watch-changed"
+     type="checkbox" name="html_overwrite_same" id="html_overwrite_same" value="1">
+        <span class="custom-control-indicator"></span>
+        <span class="custom-control-description"> 
+        <mt:trans phrase="Overwrite the same URL" component="HTMLImporter"></span>
+    </label>
+    <label class="custom-control custom-checkbox">
+    <input class="custom-control-input watch-changed"
+     type="checkbox" name="html_minifying_html" id="html_minifying_html" value="1">
+        <span class="custom-control-indicator"></span>
+        <span class="custom-control-description"> 
+        <mt:trans phrase="Minifying the HTML" component="HTMLImporter"></span>
+    </label>
+    <mt:if name="html_can_asset">
+    <label class="custom-control custom-checkbox">
+    <input class="custom-control-input watch-changed"
+     type="checkbox" name="html_import_assets" id="html_import_assets" value="1">
+        <span class="custom-control-indicator"></span>
+        <span class="custom-control-description"> 
+        <mt:trans phrase="Import Assets" component="HTMLImporter"></span>
+    </label>
+    </mt:if>
+    <label class="custom-control custom-checkbox">
+    <input class="custom-control-input watch-changed"
+     type="checkbox" name="html_remember_me" value="1" id="html_remember_me">
+        <span class="custom-control-indicator"></span>
+        <span class="custom-control-description"> 
+        <mt:trans phrase="Remember this Settings" component="HTMLImporter"></span>
+    </label>
+    <div id="html_asset_exts-wrapper" class="hidden">
+      <label for="html_asset_exts">
+      <span style="color:gray; font-size:70%"><i class="fa fa-asterisk" aria-hidden="true"></i></span>
+      <mt:trans phrase="File extensions to import other than images" component="HTMLImporter"></label>
+      <input type="text" class="form-control watch-changed" name="html_asset_exts" id="html_asset_exts">
+      <p class="text-muted hint-block">
+        <i class="fa fa-question-circle-o" aria-hidden="true"></i>
+        <span class="sr-only"><mt:trans phrase="Hint"></span>
+          <mt:trans phrase="Enter the extensions separated by comma." component="HTMLImporter">
+      </p>
+    </div>
+  </div>
+</div>
+<hr>
+<script>
+var html_models_mapping = <mt:var name="html_models_mapping">
+$('input[name="html_import_type"]').change(function(){
+    if ( $(this).val() == 'url' ) {
+        $('#fileupload-wrapper').hide();
+        $('.html_url-wrapper').show();
+        $('#html_importer_send_urls').focus();
+    } else {
+        $('#fileupload-wrapper').show();
+        $('.html_url-wrapper').hide();
+    }
+});
+html_change_model();
+$('input[name="import_model"]').change(function(){
+    html_change_model();
+    return true;
+});
+function html_change_model () {
+    var selectedModel = $('input[name="import_model"]:checked').val();
+    var show_meta = false;
+    var settings = html_models_mapping[selectedModel];
+    $('#html_title-label').html( '<span>' + settings.primary + '</span>' );
+    if (! settings.body ) {
+        $('.html_body-wrapper').hide();
+    } else {
+        $('.html_body-wrapper').show();
+        $('#html_body-label').html( '<span>' + settings.body + '</span>' );
+    }
+    if ( settings.taggable == true ) {
+        $('#html_meta_tags-label').show();
+        show_meta = true;
+    } else {
+        $('#html_meta_tags-label').hide();
+    }
+    if ( settings.excerpt == false ) {
+        $('#html_meta_description-label').hide();
+    } else {
+        show_meta = true;
+        $('#html_meta_description-label').show();
+        if ( settings.excerpt == 'description' ) {
+            $('#html_meta_description-text').html( "<span><mt:trans phrase="'description' to description" component="HTMLImporter"></span>" );
+        } else {
+            $('#html_meta_description-text').html( "<span><mt:trans phrase="'description' to excerpt" component="HTMLImporter"></span>" );
+        }
+    }
+    if ( settings.keywords == true ) {
+        $('#html_meta_keywords-label').show();
+        show_meta = true;
+    } else {
+        $('#html_meta_keywords-label').hide();
+    }
+    if ( show_meta == false ) {
+        $('#html_meta-wrapper').hide();
+    } else {
+        $('#html_meta-wrapper').show();
+    }
+    if ( settings.text_format == true ) {
+        $('#html_text_format-wrapper').show();
+    } else {
+        $('#html_text_format-wrapper').hide();
+    }
+    if ( selectedModel == 'entry' || selectedModel == 'page' ) {
+        $('#html_create_categories-label').show();
+    } else {
+        $('#html_create_categories-label').hide();
+    }
+    if ( settings.has_assets ) {
+        $('#html_meta_ogimage-label').show();
+    } else {
+        $('#html_meta_ogimage-label').hide();
+    }
+}
+$('#html_title_option-wrapper').hide();
+$('#html_import_assets').change(function(){
+    if ( $(this).prop('checked') ) {
+        $('#html_asset_exts-wrapper').show();
+        $('#html_asset_exts').focus();
+    } else {
+        $('#html_asset_exts-wrapper').hide();
+    }
+});
+$('input[name=html_title_perttern]').change(function(){
+    if ( $(this).val() == 'heading' ) {
+        $('#html_title_option-wrapper').hide();
+    } else {
+        $('#html_title_option-wrapper').show();
+        if ( $(this).val() == 'regex' ) {
+            $('#html_title_option-label').html( '<span><mt:trans phrase="Pattern" component="HTMLImporter"></span>' );
+            $('#html_title_option-hint').html( '<span><mt:trans phrase="Specify the range to be extracted with ()." component="HTMLImporter"></span>' );
+        } else if ( $(this).val() == 'start_end' ) {
+            $('#html_title_option-label').html( '<span><mt:trans phrase="Start and End" component="HTMLImporter"></span>' );
+            $('#html_title_option-hint').html( '<span><mt:trans phrase="Enter the start and end points separated by comma." component="HTMLImporter"></span>' );
+        } else if ( $(this).val() == 'title' ) {
+            $('#html_title_option-label').html( '<span><mt:trans phrase="Separator" component="HTMLImporter"></span>' );
+            $('#html_title_option-hint').html( '<span><mt:trans phrase="If you enter it, the text before this character will be the title." component="HTMLImporter"></span>' );
+        } else if ( $(this).val() == 'xpath' ) {
+            $('#html_title_option-label').html( '<span><mt:trans phrase="XPath" component="HTMLImporter"></span>' );
+            $('#html_title_option-hint').html( '<span><mt:trans phrase="Specify the XPath. ex. /html/body/h1" component="HTMLImporter"></span>' );
+        }
+    }
+});
+$('input[name=html_body_perttern]').change(function(){
+    if ( $(this).val() == 'regex' ) {
+        $('#html_body_option-wrapper').show();
+        $('#html_body_option').focus();
+        $('#html_body_option-label').html( '<span><mt:trans phrase="Pattern" component="HTMLImporter"></span>' );
+        $('#html_body_option-hint').html( '<span><mt:trans phrase="Specify the range to be extracted with ()." component="HTMLImporter"></span>' );
+    } else if ( $(this).val() == 'start_end' ) {
+        $('#html_body_option').focus();
+        $('#html_body_option-wrapper').show();
+        $('#html_body_option-label').html( '<span><mt:trans phrase="Start and End" component="HTMLImporter"></span>' );
+        $('#html_body_option-hint').html( '<span><mt:trans phrase="Enter the start and end points separated by comma." component="HTMLImporter"></span>' );
+    } else if ( $(this).val() == 'xpath' ) {
+        $('#html_body_option').focus();
+        $('#html_body_option-wrapper').show();
+        $('#html_body_option-label').html( '<span><mt:trans phrase="XPath" component="HTMLImporter"></span>' );
+        $('#html_body_option-hint').html( '<span><mt:trans phrase="Specify the XPath. ex. /html/body/main" component="HTMLImporter"></span>' );
+    } else if ( $(this).val() == 'auto' ) {
+        $('#html_body_option-wrapper').hide();
+    }
+});
+$('#html_importer_send_urls-button').click(function(){
+    var urls = $('#html_importer_send_urls').val();
+    var workspace_id = '<mt:var name="workspace_id">';
+    if (! workspace_id ) {
+        workspace_id = 0;
+    }
+    var model = $('input[name=import_model]:checked').val();
+    $.ajax({
+        url: '<mt:var name="script_uri">',
+        contentType: 'application/json',
+        dataType: "json",
+        data: {
+            __mode: 'html_importer_send_urls',
+            magic_token: '<mt:var name="magic_token">',
+            workspace_id : workspace_id,
+            import_model : model,
+            urls: urls
+        },
+        success: function(data){
+            if ( data ) {
+                var message = data.message;
+                if ( data.status !== 200 ) {
+                    if (! message ) {
+                        message = '<mt:trans phrase="An error occurred while sending the URLs." component="HTMLImporter">';
+                    }
+                    alert( message );
+                    return;
+                }
+                $('#magic').val( data.session_id );
+                $('#save').removeClass( 'disabled' );
+                $('#save').prop( 'disabled', false );
+                $('#urls-alert-message').html( '<span>' + message + '</span>' );
+                $('#upload-urls').show();
+                $('#upload-urls').focus();
+                $('#html_importer_send_urls-button').attr('disabled', true);
+            }
+        },
+        error: function(){
+            alert( '<mt:trans phrase="An error occurred while sending the URLs." component="HTMLImporter">' );
+        }
+    });
+});
+$('#import_format').change(function(){
+    if ( $(this).val() == 'html' ) {
+        if ( current_select != 'html' && $("#save").prop("disabled") == false ) {
+            if (! window.confirm( '<mt:trans phrase="Files already uploaded will be discarded." component="HTMLImporter"> <mt:trans phrase="Are you sure you want to change the settings?" component="HTMLImporter">' ) ) {
+                $(this).val( current_select );
+                cancel_select = true;
+                return;
+            }
+        }
+        if ( $('input[name="html_import_type"]:checked').val() == 'url' ) {
+            $('#fileupload-wrapper').hide();
+            $('.html_url-wrapper').show();
+        } else {
+            $('#fileupload-wrapper').show();
+            $('.html_url-wrapper').hide();
+        }
+    } else {
+        if ( current_select == 'html' && $("#save").prop("disabled") == false ) {
+            if (! window.confirm( '<mt:trans phrase="URLs already sent will be discarded." component="HTMLImporter"> <mt:trans phrase="Are you sure you want to change the settings?" component="HTMLImporter">' ) ) {
+                $(this).val( current_select );
+                cancel_select = true;
+                return;
+            }
+        }
+        $('#fileupload-wrapper').show();
+        if ( current_select == 'html' ) {
+            $('#magic').val('');
+            $('#save').addClass('disabled');
+            $("#save").prop("disabled", true);
+        }
+    }
+});
+var html_remember_ids = ['html_auth_user', 'html_auth_pwd', 'html_title_option','html_body_option', 'html_field_settings', 'html_text_format', 'html_asset_exts'];
+var html_remember_checkboxes = ['html_meta_description', 'html_meta_keywords', 'html_meta_tags', 'html_meta_ogimage', 'html_create_categories', 'html_overwrite_same', 'html_import_assets', 'html_remember_me', 'html_minifying_html'];
+var html_remember_radios = ['html_title_perttern', 'html_body_perttern', 'html_import_type'];
+html_remember_ids.forEach(function( objId ) {
+    var cookie_name = 'pt-html-import_' + objId;
+    var value = $.cookie( cookie_name );
+    if ( value ) {
+        $('#' + objId ).val( value );
+    }
+});
+html_remember_checkboxes.forEach(function( objId ) {
+    var cookie_name = 'pt-html-import_' + objId;
+    var value = $.cookie( cookie_name );
+    if ( value ) {
+        $('#' + objId ).prop( 'checked', true );
+    }
+    if ( objId == 'html_import_assets' && value ) {
+        $('#html_asset_exts-wrapper').show();
+    }
+});
+html_remember_radios.forEach(function( objName ) {
+    var cookie_name = 'pt-html-import_' + objName;
+    var value = $.cookie( cookie_name );
+    if ( value ) {
+        $('input[name='+ objName +']').val( [value] );
+        if ( objName == 'html_title_perttern' ) {
+            if ( value != 'heading' ) {
+                $('#html_title_option-wrapper').show();
+                if ( value == 'regex' ) {
+                    $('#html_title_option-label').html( '<span><mt:trans phrase="Pattern" component="HTMLImporter"></span>' );
+                    $('#html_title_option-hint').html( '<span><mt:trans phrase="Specify the range to be extracted with ()." component="HTMLImporter"></span>' );
+                } else if ( value == 'start_end' ) {
+                    $('#html_title_option-label').html( '<span><mt:trans phrase="Start and End" component="HTMLImporter"></span>' );
+                    $('#html_title_option-hint').html( '<span><mt:trans phrase="Enter the start and end points separated by comma." component="HTMLImporter"></span>' );
+                } else if ( value == 'title' ) {
+                    $('#html_title_option-label').html( '<span><mt:trans phrase="Separator" component="HTMLImporter"></span>' );
+                    $('#html_title_option-hint').html( '<span><mt:trans phrase="If you enter it, the text before this character will be the title." component="HTMLImporter"></span>' );
+                } else if ( value == 'xpath' ) {
+                    $('#html_title_option-label').html( '<span><mt:trans phrase="XPath" component="HTMLImporter"></span>' );
+                    $('#html_title_option-hint').html( '<span><mt:trans phrase="Specify the XPath. ex. /html/body/h1" component="HTMLImporter"></span>' );
+                }
+            }
+        } else if ( objName == 'html_body_perttern' ) {
+            if ( value == 'regex' ) {
+                $('#html_body_option-label').html( '<span><mt:trans phrase="Pattern" component="HTMLImporter"></span>' );
+                $('#html_body_option-hint').html( '<span><mt:trans phrase="Specify the range to be extracted with ()." component="HTMLImporter"></span>' );
+            } else if ( value == 'start_end' ) {
+                $('#html_body_option-label').html( '<span><mt:trans phrase="Start and End" component="HTMLImporter"></span>' );
+                $('#html_body_option-hint').html( '<span><mt:trans phrase="Enter the start and end points separated by comma." component="HTMLImporter"></span>' );
+            } else if ( value == 'xpath' ) {
+                $('#html_body_option-label').html( '<span><mt:trans phrase="XPath" component="HTMLImporter"></span>' );
+                $('#html_body_option-hint').html( '<span><mt:trans phrase="Specify the XPath. ex. /html/body/main" component="HTMLImporter"></span>' );
+            } else if ( value == 'auto' ) { 
+                $('#html_body_option-wrapper').hide();
+            }
+        }
+        if ( objName == 'html_import_type' ) {
+            if ( value == 'url' ) {
+                $('#fileupload-wrapper').hide();
+                $('.html_url-wrapper').show();
+            } else {
+                $('#fileupload-wrapper').show();
+                $('.html_url-wrapper').hide();
+            }
+        }
+    }
+});
+if ( $('input[name="html_import_type"]:checked').val() == 'url' ) {
+    $('#fileupload-wrapper').hide();
+    $('.html_url-wrapper').show();
+} else {
+    $('#fileupload-wrapper').show();
+    $('.html_url-wrapper').hide();
+}
+$('#import-form').submit(function(){
+    if ( $('#html_remember_me').prop('checked') ) {
+        html_remember_ids.forEach(function( objId ) {
+            var value = $('#' + objId ).val();
+            $.cookie( 'pt-html-import_' + objId , value, { expires: 365 });
+        });
+        html_remember_checkboxes.forEach(function( objId ) {
+            if ( $('#' + objId ).prop('checked') ) {
+                $.cookie( 'pt-html-import_' + objId , 1, { expires: 365 });
+            } else {
+                $.removeCookie( 'pt-html-import_' + objId );
+            }
+        });
+        html_remember_radios.forEach(function( objName ) {
+            var value = $('input[name='+ objName +']:checked').val();
+            $.cookie( 'pt-html-import_' + objName , value, { expires: 365 });
+        });
+    }
+    return true;
+});
+</script>

@@ -1,0 +1,8 @@
+<mt:for merge_linefeeds="1">
+<mt:trans phrase="This email is to notify you that activated your account of '%s' by administrator." params="$app_name">
+
+<mt:trans phrase="To login, click on or cut and paste the following URL into a web browser">:
+<mt:var name="admin_url">?__mode=login<mt:if name="workspace_id">&workspace_id=<mt:var name="workspace_id"></mt:if>
+
+<mt:include file="email/mail_footer.tmpl">
+</mt:for>

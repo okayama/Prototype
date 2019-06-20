@@ -364,7 +364,7 @@ class LivePreview extends PTPlugin {
         $objects = $loop_objects;
     }
 
-    function pre_listing( &$cb, $app, &$terms, &$args, &$extra ) {
+    function pre_listing ( &$cb, $app, &$terms, &$args, &$extra ) {
         if (! $this->preview ) return;
         if (! $this->preview_ts ) return;
         $model = $cb['model'];

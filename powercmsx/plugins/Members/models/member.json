@@ -1,0 +1,183 @@
+{
+    "label": "Member",
+    "plural": "Members",
+    "version": "0.9",
+    "primary": "name",
+    "display_system": 1,
+    "order": 120,
+    "auditing": 1,
+    "menu_type": 5,
+    "has_status": 1,
+    "default_status": 2,
+    "template_tags": 1,
+    "column_defs": {
+        "id": {
+            "type": "int",
+            "size": 11,
+            "not_null": 1
+        },
+        "name": {
+            "type": "string",
+            "size": 255,
+            "not_null": 1
+        },
+        "password": {
+            "type": "string",
+            "size": 255,
+            "not_null": 1
+        },
+        "email": {
+            "type": "string",
+            "size": 255,
+            "not_null": 1
+        },
+        "nickname": {
+            "type": "string",
+            "size": 255,
+            "not_null": 1
+        },
+        "photo": {
+            "type": "blob",
+            "default": null
+        },
+        "language": {
+            "type": "string",
+            "size": 255,
+            "default": null
+        },
+        "status": {
+            "type": "int",
+            "size": 11,
+            "default": "2"
+        },
+        "notification": {
+            "type": "tinyint",
+            "size": 4
+        },
+        "delete_flag": {
+            "type": "tinyint",
+            "size": 4
+        },
+        "created_by": {
+            "type": "int",
+            "size": 11,
+            "default": null
+        },
+        "lock_out": {
+            "type": "tinyint",
+            "size": 4,
+            "default": null
+        },
+        "modified_by": {
+            "type": "int",
+            "size": 11,
+            "default": null
+        },
+        "lock_out_on": {
+            "type": "datetime",
+            "default": null
+        },
+        "created_on": {
+            "type": "datetime",
+            "default": null
+        },
+        "modified_on": {
+            "type": "datetime",
+            "default": null
+        },
+        "last_login_on": {
+            "type": "datetime",
+            "default": null
+        },
+        "last_login_ip": {
+            "type": "string",
+            "size": 255
+        },
+        "reg_workspace_id": {
+            "type": "int",
+            "size": 11
+        }
+    },
+    "indexes": {
+        "PRIMARY": "id",
+        "name": "name",
+        "email": "email",
+        "nickname": "nickname",
+        "status": "status",
+        "delete_flag": "delete_flag",
+        "created_by": "created_by",
+        "lock_out": "lock_out",
+        "modified_by": "modified_by",
+        "lock_out_on": "lock_out_on",
+        "created_on": "created_on",
+        "modified_on": "modified_on",
+        "last_login_on": "last_login_on",
+        "reg_workspace_id": "reg_workspace_id"
+    },
+    "unique": [
+        "name",
+        "email"
+    ],
+    "unchangeable": [
+        "last_login_on",
+        "last_login_ip"
+    ],
+    "autoset": [
+        "created_by",
+        "modified_by",
+        "lock_out_on",
+        "created_on",
+        "modified_on",
+        "last_login_on",
+        "last_login_ip"
+    ],
+    "options": {
+        "photo": "image",
+        "status": "Disable,Enable"
+    },
+    "sort_by": {
+        "id": "descend"
+    },
+    "list_properties": {
+        "id": "number",
+        "name": "primary",
+        "email": "text",
+        "nickname": "text",
+        "status": "number",
+        "notification": "checkbox",
+        "delete_flag": "checkbox",
+        "lock_out": "checkbox",
+        "modified_by": "reference:user:name",
+        "created_on": "date",
+        "last_login_on": "datetime",
+        "reg_workspace_id": "text_short"
+    },
+    "edit_properties": {
+        "id": "hidden",
+        "name": "primary",
+        "password": "password(hash)",
+        "email": "text",
+        "nickname": "text",
+        "photo": "file",
+        "language": "languages",
+        "status": "selection",
+        "notification": "checkbox",
+        "delete_flag": "checkbox",
+        "lock_out": "checkbox",
+        "lock_out_on": "datetime",
+        "created_on": "datetime",
+        "last_login_on": "datetime",
+        "last_login_ip": "text_short",
+        "reg_workspace_id": "relation:workspace:name:dialog"
+    },
+    "column_labels": {
+        "nickname": "Display Name",
+        "photo": "Photo",
+        "lock_out_on": "Lock Out Date",
+        "last_login_on": "Last Login",
+        "reg_workspace_id": "WorkSpace"
+    },
+    "hide_edit_options": [
+        "status"
+    ]
+}

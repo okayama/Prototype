@@ -46,7 +46,7 @@ class urlinfo extends PADOBaseModel {
     }
 
     function pre_load ( &$terms = [], &$args = [], &$cols = '*',
-        &$extra = '', $include_deleted = false ) {
+        &$extra = '', $ex_vals = [], $include_deleted = false ) {
         if ( ( is_array( $terms ) && isset( $terms['delete_flag'] ) ) 
             || strpos( $extra, 'delete_flag' ) !== false ) {
             return;
@@ -58,21 +58,21 @@ class urlinfo extends PADOBaseModel {
         }
     }
 
-    function count ( $terms = [], $args = [], $cols = '*', $extra = '',
+    function count ( $terms = [], $args = [], $cols = '*', $extra = '', $ex_vals = [],
         $include_deleted = false ) {
         if ( is_numeric( $terms ) ) {
             $include_deleted = true;
         }
-        $this->pre_load( $terms, $args, $cols, $extra, $include_deleted );
-        return parent::count( $terms, $args, $cols, $extra );
+        $this->pre_load( $terms, $args, $cols, $extra, $ex_vals, $include_deleted );
+        return parent::count( $terms, $args, $cols, $extra, $ex_vals );
     }
 
-    function load ( $terms = [], $args = [], $cols = '*', $extra = '',
+    function load ( $terms = [], $args = [], $cols = '*', $extra = '', $ex_vals = [],
         $include_deleted = false ) {
         if ( is_numeric( $terms ) ) {
             $include_deleted = true;
         }
-        $this->pre_load( $terms, $args, $cols, $extra, $include_deleted );
-        return parent::load( $terms, $args, $cols, $extra );
+        $this->pre_load( $terms, $args, $cols, $extra, $ex_vals, $include_deleted );
+        return parent::load( $terms, $args, $cols, $extra, $ex_vals );
     }
 }

@@ -1,0 +1,49 @@
+{
+    "label"       : "HTMLImporter",
+    "id"          : "htmlimporter",
+    "component"   : "HTMLImporter",
+    "version"     : "1.0",
+    "author"      : "Alfasado Inc.",
+    "author_link" : "https://alfasado.net/",
+    "description" : "Provide data migration function from HTML by specifying URLs or upload ZipArchive.",
+    "methods" : {
+        "html_importer_send_urls": {
+            "component"  : "HTMLImporter",
+            "method"     : "html_importer_send_urls"
+        }
+    },
+    "hooks": {
+        "htmlimporter_post_init": {
+            "post_init" : {
+                "component" : "HTMLImporter",
+                "priority"  : 1,
+                "method" : "htmlimporter_post_init"
+            }
+        }
+    },
+    "callbacks": {
+        "htmlimporter_pre_url_get": {
+            "htmlimporter" : {
+                "pre_url_get" : {
+                    "component" : "HTMLImporter",
+                    "priority"  : 1,
+                    "method" : "pre_url_get"
+                }
+            }
+        }
+    },
+    "import_format": {
+        "html": {
+            "component"  : "HTMLImporter",
+            "label"      : "HTML",
+            "method"     : "import_html",
+            "models"     : ["entry", "page"],
+            "order"      : 50,
+            "options"    : ["import_type", "auth_user", "auth_pwd", "text_format", "title_perttern",
+                            "title_option", "meta_description", "meta_keywords", "meta_tags",
+                            "meta_ogimage", "body_perttern", "body_option", "field_settings",
+                            "overwrite_same", "import_assets", "create_categories", "asset_exts",
+                            "minifying_html"]
+        }
+    }
+}

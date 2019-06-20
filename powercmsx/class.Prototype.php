@@ -29,7 +29,7 @@ spl_autoload_register( '\prototype_auto_loader' );
 class Prototype {
 
     public static $app = null;
-    public    $app_version   = '1.022';
+    public    $app_version   = '1.100';
     public    $id            = 'Prototype';
     public    $name          = 'Prototype';
     public    $db            = null;
@@ -378,7 +378,6 @@ class Prototype {
         if ( $this->timezone ) date_default_timezone_set( $this->timezone );
         require_once( LIB_DIR . 'PADO' . DS . 'class.pado.php' );
         require_once( LIB_DIR . 'PAML' . DS .'class.paml.php' );
-        // $this->configure_from_json( __DIR__ . DS . 'config.json' );
         $core_menus = ['manage_plugins' => [
                        'display_system' => 1, 'display_space' => 1, 'component' => 'Core',
                        'permission' => 'manage_plugins', 'mode' => 'manage_plugins',
@@ -456,7 +455,6 @@ class Prototype {
         if ( $driver = $ctx->cachedriver ) {
             $driver->_prefix = $db->dbname . '__';
         }
-        // $ctx->esc_trans = true;
         require_once( 'class.PTUtil.php' );
         require_once( 'class.PTTags.php' );
         $core_tags = new PTTags;
@@ -777,7 +775,6 @@ class Prototype {
                 $plugin_hooks[ $event ] = $event_hooks;
             }
             $this->hooks = $plugin_hooks;
-            // unset( $plugin_hooks );
         }
         if ( isset( $registry['tags'] ) ) {
             $tags = $registry['tags'];
@@ -1054,7 +1051,6 @@ class Prototype {
     }
 
     function register_callback ( $model, $kind, $meth, $priority, $obj = null ) {
-        // unset( $this->registered_callbacks[ $model ][ $kind ] );
         if (!$priority ) $priority = 5;
         $this->callbacks[ $kind ][ $model ][ $priority ][] = [ $meth, $obj ];
     }
@@ -1887,6 +1883,7 @@ class Prototype {
             }
             $list_max_status = $max_status;
             $count_extra = $extra;
+            $ex_vals = [];
             if ( $user->is_superuser ) {
                 $ctx->vars['can_create'] = 1;
             } else {
@@ -2069,7 +2066,7 @@ class Prototype {
             $app->init_callbacks( $model, 'pre_listing' );
             $callback = ['name' => 'pre_listing', 'model' => $model,
                          'scheme' => $scheme, 'table' => $table ];
-            $app->run_callbacks( $callback, $model, $terms, $args, $extra );
+            $app->run_callbacks( $callback, $model, $terms, $args, $extra, $ex_vals );
             if ( $table->revisable ) {
                 if (!$app->param( 'rev_object_id' ) && !$app->param( 'manage_revision' ) ) {
                     if ( $extra ) {
@@ -2137,7 +2134,7 @@ class Prototype {
                 $args['direction'] = 'descend';
             }
             if ( $q = $app->param( 'query' ) ) {
-                $pre_load_objects = $obj->load( $terms, [], 'id', $extra );
+                $pre_load_objects = $obj->load( $terms, [], 'id', $extra, $ex_vals );
                 if (! empty( $pre_load_objects ) ) {
                     $match_ids = [];
                     foreach ( $pre_load_objects as $match_obj ) {
@@ -2189,7 +2186,7 @@ class Prototype {
             if ( $model == 'urlinfo' && $app->param( '_menu_item' ) ) {
                 $terms['delete_flag'] = 0;
             }
-            $objects = $obj->load( $terms, $args, $select_cols, $extra );
+            $objects = $obj->load( $terms, $args, $select_cols, $extra, $ex_vals );
             unset( $args['limit'], $args['offset'] );
             $count = $app->param( 'totalResult' )
                    ? $app->param( 'totalResult' )
@@ -2197,8 +2194,8 @@ class Prototype {
             $permitted_count = $count;
             if ( $count_extra != $extra ) {
                 $permitted_count =
-                    $obj->count( $terms, $args, $select_cols, $count_extra, true );
-                    // 5th argument for urlinfo
+                    $obj->count( $terms, $args, $select_cols, $count_extra, $ex_vals, true );
+                    // 6th argument for urlinfo
             }
             $items = [];
             foreach ( $objects as $_obj ) {
@@ -2850,7 +2847,6 @@ class Prototype {
                 $name = "can_{$action}_{$model}";
                 return in_array( $name, $perms );
             }
-            // if (!$obj || !$obj->id || !$table->assign_user ) {
             $range = null;
             if (!$obj || !$obj->id ) {
                 $name = $action == 'delete' ? 'can_delete_' . $model
@@ -3744,7 +3740,6 @@ class Prototype {
     function rebuild_phase ( $app, $start = false, $counter = 0, $dependencies = false ) {
         $ctx = $app->ctx;
         $per_rebuild = $app->per_rebuild;
-        // $app->get_scheme_from_db( 'urlinfo' );
         $db = $app->db;
         $tmpl = 'rebuild_phase.tmpl';
         $model = $app->param( '_model' );
@@ -3807,7 +3802,6 @@ class Prototype {
                     return $app->build_page( $tmpl );
                 }
                 $objects = $app->db->model( $model )->load( $terms, [], 'id', $extra );
-                // $apply_actions = $objects->rowCount();
                 $apply_actions = count( $objects );
                 if (!$apply_actions ) {
                     if ( isset( $models[ $counter + 1] ) ) {
@@ -3857,7 +3851,6 @@ class Prototype {
         $plural = $app->translate( $table->plural );
         $ids = explode( ',', $app->param( 'ids' ) );
         $apply_actions = (int) $app->param( 'apply_actions' );
-        // array_walk( $ids, function( &$id ) { $id = (int) $id; } );
         $rebuild_ids = array_slice( $ids , 0, $per_rebuild );
         $next_ids = array_slice( $ids , $per_rebuild );
         $rebuilt = $apply_actions - ( count( $ids ) - count( $rebuild_ids ) );
@@ -5176,7 +5169,6 @@ class Prototype {
                 }
                 if ( $file_remove && $attachment->id ) {
                     $remove_attachments[] = $attachment;
-                    // $app->remove_object( $attachment );
                     $obj->$key( null );
                     $changed_cols[ $key ] = true;
                     $has_file = true;
@@ -5204,7 +5196,6 @@ class Prototype {
                             if ( $as_revision ) {
                                 if ( $attachment->id )
                                     $remove_attachments[] = $attachment;
-                                    // $attachment->remove();
                                 $attachment = $db->model( 'attachmentfile' )->new();
                             }
                             $attachment->name( $upload_name );
@@ -6274,7 +6265,6 @@ class Prototype {
                                     $url->remove();
                                 }
                                 $remove_attachments[] = $attachmentfile;
-                                // $app->remove_object( $attachmentfile );
                             }
                         }
                     }
@@ -6300,7 +6290,6 @@ class Prototype {
             if (!$rel->id || $rel->order != $i ) {
                 $rel->order( $i );
                 if (! $rel->id ) $rel->relation_id = '';
-                // $rel->save();
                 $relations[] = $rel;
                 $is_changed = true;
             }
@@ -7091,7 +7080,7 @@ class Prototype {
         return null;
     }
 
-    function pre_listing ( &$cb, $app, &$terms, &$args, &$extra ) {
+    function pre_listing ( &$cb, $app, &$terms, &$args, &$extra, &$ex_vals = [] ) {
         if ( $app->mode == 'rebuild_phase' || $app->mode == 'save' ) return true;
         $model = isset( $cb['model'] )
                ? $cb['model'] : $app->param( '_model' );
@@ -7125,7 +7114,7 @@ class Prototype {
         }
         if ( $model == 'user'
             && $app->param( 'workflow_model' ) && $app->param( 'workflow_type' ) ) {
-            $app->pre_listing_workflow( $cb, $app, $terms, $args, $extra );
+            $app->pre_listing_workflow( $cb, $app, $terms, $args, $extra, $ex_vals );
         } else if ( $model == 'urlinfo' ) {
             $cols = '*';
             $app->db->model( 'urlinfo' )->pre_load( $terms, $args, $cols, $extra, true );
@@ -7395,7 +7384,6 @@ class Prototype {
                                         }
                                         $from_ids = array_unique( $from_ids );
                                         $filtered_ids[] = $from_ids;
-                                        // $terms['id'] = ['AND' => ['IN' => $from_ids ] ];
                                     } else {
                                         $terms['id'] = 0; // No object found.
                                     }
@@ -8784,7 +8772,6 @@ class Prototype {
             $option->value( $value );
             $option->save();
         }
-        // $app->clear_cache( 'configs__c' );
     }
 
     function get_config ( $key = null, $workspace_id = 0 ) {
@@ -8967,6 +8954,176 @@ class Prototype {
         return $relations;
     }
 
+    function load_related_objs ( $obj, $related_obj, $terms = [],
+        $args = [], $cols = '*', $extra = '', $ex_vals = [] ) {
+        $app = $this;
+        $scheme = $app->get_scheme_from_db( $obj->_model );
+        if (! $scheme ) return [];
+        $relations = $scheme['relations'];
+        $reration_type = 'relation';
+        $int_col = '';
+        $tag_args = [];
+        if ( isset( $args['tag_args'] ) ) {
+            $tag_args = $args['tag_args'];
+            unset( $args['relation_name'] );
+        }
+        if ( isset( $terms['relation_name'] ) ) {
+            if (! isset( $relations[ $terms['relation_name'] ] ) ) {
+                $reration_type = 'int';
+                $int_col = $terms['relation_name'];
+                unset( $terms['relation_name'] );
+            }
+        } else {
+            $rel_exists = false;
+            foreach ( $relations as $rel_model ) {
+                if ( $rel_model == $related_obj ) {
+                    $rel_exists = true;
+                    break;
+                }
+            }
+            if (! $rel_exists ) {
+                $column_defs = $scheme['column_defs'];
+                $edit_properties = $scheme['edit_properties'];
+                foreach ( $edit_properties as $col => $prop ) {
+                    if ( strpos( $prop, ':' ) !== false && isset( $column_defs[ $col ] )
+                        && $column_defs[ $col ]['type'] == 'int' ) {
+                        $props = explode( ':', $prop );
+                        if ( $props[1] == $related_obj ) {
+                            $int_col = $col;
+                            $reration_type = 'int';
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+        $_related_obj = $app->db->model( $related_obj );
+        if ( $_related_obj->has_column( 'status' ) ) {
+            if (! isset( $terms['status'] ) ) {
+                $terms['status'] = $app->status_published( $related_obj );
+            }
+        }
+        if ( $_related_obj->has_column( 'rev_type' ) ) {
+            if (! isset( $terms['rev_type'] ) ) {
+                $terms['rev_type'] = 0;
+            }
+        }
+        $table = $app->get_table( $related_obj );
+        $app->register_callback( $related_obj, 'pre_listing', 'pre_listing', 1, $app );
+        $app->init_callbacks( $related_obj, 'pre_listing' );
+        $callback = ['name' => 'pre_listing', 'model' => $related_obj,
+                     'scheme' => $scheme, 'table' => $table,
+                     'args' => $tag_args ];
+        if ( $reration_type == 'int' && $int_col ) {
+            $terms[ $int_col ] = $obj->id;
+            $app->run_callbacks( $callback, $related_obj, $terms, $args, $extra, $ex_vals );
+            $objects = $_related_obj->load( $terms, $args, $cols, $extra, $ex_vals );
+        } else {
+            $join_stmt = ['from_obj' => $obj->_model,
+                          'to_obj' => $related_obj, 'from_id' => $obj->id ];
+            if ( isset( $terms['relation_name'] ) ) {
+                $join_stmt['name'] = $terms['relation_name'];
+                unset( $terms['relation_name'] );
+            }
+            if (! isset( $args['sort'] ) ) {
+                $extra .= ' ORDER BY relation_order ASC';
+            }
+            $args['join'] = ['relation', ["{$related_obj}_id", 'to_id'], $join_stmt, 'id,order'];
+            $args['distinct'] = 1;
+            $app->run_callbacks( $callback, $related_obj, $terms, $args, $extra, $ex_vals );
+            $objects = $_related_obj->load( $terms, $args, $cols, $extra, $ex_vals );
+        }
+        $app->init_callbacks( $related_obj, 'post_load_objects' );
+        $callback = ['name' => 'post_load_objects', 'model' => $related_obj,
+                     'table' => $table ];
+        $count_obj = count( $objects );
+        $app->run_callbacks( $callback, $related_obj, $objects, $count_obj );
+        return $objects;
+    }
+
+    function load_context_objs ( $obj, $ctx_obj, $terms = [],
+        $args = [], $cols = '*', $extra = '', $ex_vals = [] ) {
+        $app = $this;
+        $scheme = $app->get_scheme_from_db( $ctx_obj );
+        if (! $scheme ) return [];
+        $relations = $scheme['relations'];
+        $reration_type = 'relation';
+        $int_col = '';
+        $tag_args = [];
+        if ( isset( $args['tag_args'] ) ) {
+            $tag_args = $args['tag_args'];
+            unset( $args['relation_name'] );
+        }
+        if ( isset( $terms['relation_name'] ) ) {
+            if (! isset( $relations[ $terms['relation_name'] ] ) ) {
+                $reration_type = 'int';
+                $int_col = $terms['relation_name'];
+                unset( $terms['relation_name'] );
+            }
+        } else {
+            $rel_exists = false;
+            foreach ( $relations as $rel_model ) {
+                if ( $rel_model == $obj->_model ) {
+                    $rel_exists = true;
+                    break;
+                }
+            }
+            if (! $rel_exists ) {
+                $column_defs = $scheme['column_defs'];
+                $edit_properties = $scheme['edit_properties'];
+                foreach ( $edit_properties as $col => $prop ) {
+                    if ( strpos( $prop, ':' ) !== false && isset( $column_defs[ $col ] )
+                        && $column_defs[ $col ]['type'] == 'int' ) {
+                        $props = explode( ':', $prop );
+                        if ( $props[1] == $obj->_model ) {
+                            $int_col = $col;
+                            $reration_type = 'int';
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+        $_ctx_obj = $app->db->model( $ctx_obj );
+        if ( $_ctx_obj->has_column( 'status' ) ) {
+            if (! isset( $terms['status'] ) ) {
+                $terms['status'] = $app->status_published( $ctx_obj );
+            }
+        }
+        if ( $_ctx_obj->has_column( 'rev_type' ) ) {
+            if (! isset( $terms['rev_type'] ) ) {
+                $terms['rev_type'] = 0;
+            }
+        }
+        $table = $app->get_table( $ctx_obj );
+        $app->register_callback( $ctx_obj, 'pre_listing', 'pre_listing', 1, $app );
+        $app->init_callbacks( $ctx_obj, 'pre_listing' );
+        $callback = ['name' => 'pre_listing', 'model' => $ctx_obj,
+                     'scheme' => $scheme, 'table' => $table,
+                     'args' => $tag_args ];
+        if ( $reration_type == 'int' && $int_col ) {
+            $terms[ $int_col ] = $obj->id;
+            $app->run_callbacks( $callback, $ctx_obj, $terms, $args, $extra, $ex_vals );
+            $objects = $_ctx_obj->load( $terms, $args, $cols, $extra, $ex_vals );
+        } else {
+            $join_stmt = ['from_obj' => $ctx_obj,
+                          'to_obj' => $obj->_model, 'to_id' => $obj->id ];
+            if ( isset( $terms['relation_name'] ) ) {
+                $join_stmt['name'] = $terms['relation_name'];
+                unset( $terms['relation_name'] );
+            }
+            $args['join'] = ['relation', ["{$ctx_obj}_id", 'from_id'], $join_stmt, 'id'];
+            $args['distinct'] = 1;
+            $objects = $_ctx_obj->load( $terms, $args, $cols, $extra, $ex_vals );
+        }
+        $app->init_callbacks( $ctx_obj, 'post_load_objects' );
+        $callback = ['name' => 'post_load_objects', 'model' => $ctx_obj,
+                     'table' => $table ];
+        $count_obj = count( $objects );
+        $app->run_callbacks( $callback, $ctx_obj, $objects, $count_obj );
+        return $objects;
+    }
+
     function get_related_objs ( $obj, $to_obj, $name = null,
                                 $get_args = [], $terms = [], $select_cols = '*' ) {
         $app = $this;
@@ -8985,8 +9142,7 @@ class Prototype {
             $published_only = isset( $get_args['published_only'] ) ?
                 $get_args['published_only'] : false;
             if ( $published_only ) {
-                $status_published = $app->status_published( $to_obj );
-                $terms['status'] = $status_published;
+                $terms['status'] = $app->status_published( $to_obj );
             }
             unset( $get_args['published_only'] );
         }
@@ -8995,8 +9151,9 @@ class Prototype {
                 $args[ $arg ] = $v;
             }
         }
+        $scheme = $app->get_scheme_from_db( $to_obj );
+        if (! $scheme ) return [];
         $to_obj = $app->db->model( $to_obj );
-        $scheme = $app->get_scheme_from_db( $to_obj->_model );
         if ( $select_cols != '*' ) {
             $column_defs = $scheme['column_defs'];
             $select_cols = explode( ',', strtolower( $select_cols ) );

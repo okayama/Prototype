@@ -1,0 +1,53 @@
+<div class="row form-group">
+  <div class="col-lg-2">
+    <mt:var name="label" escape>
+    <mt:if name="not_null"><mt:var name="field_required"></mt:if>
+  </div>
+  <div class="col-lg-10">
+    <span id="notification-sent">
+    <mt:if name="value">
+      <i class="fa fa-check-square-o" aria-hidden="true"></i>
+      <mt:trans phrase="Notification has been sent" component="Members">
+    <mt:else>
+      <mt:trans phrase="Notifications can be send when activated" component="Members">
+    </mt:if>
+    </span>
+    <mt:unless name="request.id"><mt:unless name="forward_params"><mt:var name="default" escape setvar="value"></mt:unless></mt:unless>
+    <label class="custom-control custom-checkbox<mt:if name="object_status" eq="1"> hidden</mt:if>" id="row-notification">
+    <input id="<mt:var name="__col_name__">" class="custom-control-input watch-changed"
+    <mt:if name="readonly">onclick="return false;"</mt:if>
+     type="checkbox" name="member_send_notification" value="1">
+        <span class="custom-control-indicator<mt:if name="readonly"> disabled-cb</mt:if>"></span>
+        <span class="custom-control-description"> 
+        <mt:trans phrase="Notify to member that they have been activated" component="Members"></span>
+    </label>
+    <mt:var name="_hint">
+  </div>
+</div>
+<script>
+<mt:unless name="request.id">
+  $('#notification-wrapper').hide();
+</mt:unless>
+<mt:if name="value">
+  $('#row-notification').hide();
+<mt:else>
+<mt:if name="object_status" eq="2">
+  $('#notification-sent').hide();
+</mt:if>
+</mt:if>
+$('#status-selector').change(function(){
+  if ( $(this).val() == 2 ) {
+    $('#row-notification').show();
+    <mt:if name="value">
+    $('#notification-sent').hide();
+    </mt:if>
+    $('#notification-sent').hide();
+  } else {
+    $('#row-notification').hide();
+    <mt:if name="value">
+    $('#notification-sent').show();
+    </mt:if>
+    $('#notification-sent').show();
+  }
+});
+</script>

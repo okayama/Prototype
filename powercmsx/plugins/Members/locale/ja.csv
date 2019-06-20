@@ -1,0 +1,36 @@
+member,メンバー
+Member,メンバー
+Members,メンバー
+Sign Up,サインアップ
+Confirm the following and click Sign Up button.,内容を確認の上、よろしければ「送信する」をクリックしてサインアップしてください。
+Your account confirmation on '%s'.,「%s」へのサインアップの確認
+This email is to notify you that a new signup on '%s'.,このメールはあなたの「%s」へのサインアップ確認のためのメールです。
+Please click to regist '%s'.,「%s」へのサインアップを完了するには、以下のURLをクリックしてください。
+Invalid image file format.,画像ファイルフォーマットが不正です。
+"For your security and to prevent fraud, we ask you to confirm your account and email address before continuing. Once your account is confirmed, you will allowed to login on '%s'.",あなたのセキュリティとスパム防止のため、続行する前にあなたのアカウントとEメールアドレスを確認するようにお願いします。アカウントが確認されると、「%s」へのログインを許可されます。
+Your confirmation has expired. Please register again.,有効期限が過ぎています。再度登録してください。
+A new user has successfully registered on '%s'.,新しいユーザーの登録が完了しました。
+Member registration completed,メンバー登録の完了
+You can login.,こちらからログインできます。
+Your session has expired. Please register again.,セッション有効期限が過ぎています。再度登録してください。
+A new member '%s' registered on '%s',新しいメンバー(%s)が「%s」にサインアップしました
+A member '%s' unsubscribe on '%s',メンバー(%s)が「%s」から登録解除しました
+This email is to notify you that a new user has successfully registered on '%s'.,このメールは新しいメンバーが「%s」へサインアップしたことを通知するメールです。
+This email is to notify you that a user has unsubscribe on '%s'.,このメールはメンバーが「%s」への登録を解除したことを通知するメールです。
+"To view or edit this member, please click on or cut and paste the following URL into a web browser",このメンバーの情報を見たり編集する場合には、下記のURLをクリックするか、URLをコピーしてブラウザのアドレス欄に貼り付けてください
+"To view or delete this member, please click on or cut and paste the following URL into a web browser",このメンバーの情報を見たり削除する場合には、下記のURLをクリックするか、URLをコピーしてブラウザのアドレス欄に貼り付けてください
+Member Information,メンバーの情報
+New Member Information,新しいメンバーの情報
+Unregister Member,会員登録の解除
+You are about to unsubscribe. This operation can not be undone. Are you sure you want to cancel your membership registration?,会員登録を解除しようとしています。この操作は取り消せません。会員登録を解除してもよろしいですか?
+Unregister,登録解除する
+Your session has expired. Please unregister again.,セッション有効期限が過ぎています。再度登録解除してください。
+Create an account,アカウントの作成
+Edit Profile,プロフィールの編集
+Please wait for a while until it is approved by the administrator.,システム管理者によって承認されるまでしばらくお待ちください。
+"To login, click on or cut and paste the following URL into a web browser",ログインするには、下記のURLをクリックするか、URLをコピーしてブラウザのアドレス欄に貼り付けてください
+This email is to notify you that activated your account of '%s' by administrator.,このメールはあなたの「%s」のアカウントが管理者によって有効化されたことをお知らせするメールです。
+Your account of '%s' was activated by administrator.,あなたの '%s'のアカウントは管理者によって有効化されました。
+App URL has not been set.,アプリのURLが設定されていません。
+Move to Manage Plugins,プラグインの管理画面に移動する
+Login is not allowed.,ログインは許可されていません。

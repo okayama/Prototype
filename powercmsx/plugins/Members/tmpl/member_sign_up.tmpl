@@ -1,0 +1,398 @@
+<mt:setvarblock name="html_head" append="1">
+<style>
+.input-group-append .btn{margin-left: -2px;}
+.input-group input{border-right:none;}
+.alert-danger ul{margin-bottom:0px;}
+.alert-info ul{margin-bottom:0px;}
+<mt:if name="confirm_ok">
+#header-info-message{margin-top:-10px}
+<mt:elseif name="errors">
+#header-info-message{margin-top:-10px}
+</mt:if>
+<mt:unless name="confirm_ok">.form-inline{margin-left:-1px;}</mt:unless>
+.attachment-image{width:200px; height: 200px;object-fit: cover;border:2px solid gray;};
+</style>
+</mt:setvarblock>
+
+<mt:include file="include/header.tmpl">
+<mt:if name="confirm_ok">
+  <div id="header-success-message" class="alert alert-success" tabindex="0">
+    <mt:trans phrase="Confirm the following and click Sign Up button." language="$language">
+  </div>
+  <script>
+    $('#header-success-message').focus();
+  </script>
+<mt:elseif name="errors">
+  <div id="header-alert-message" class="alert alert-danger" tabindex="0">
+  <mt:loop name="errors">
+    <mt:if name="__first__"><ul></mt:if>
+      <li><mt:var name="__value__" escape></li>
+    <mt:if name="__last__"></ul></mt:if>
+  </mt:loop>
+  </div>
+  <script>
+    $('#header-alert-message').focus();
+  </script>
+</mt:if>
+<mt:if name="messages">
+  <div id="header-info-message" class="alert alert-info" tabindex="0">
+  <mt:loop name="messages">
+    <mt:if name="__first__"><ul></mt:if>
+      <li><mt:var name="__value__" escape></li>
+    <mt:if name="__last__"></ul></mt:if>
+  </mt:loop>
+  </div>
+  <mt:unless name="errors">
+  <script>
+    $('#header-info-message').focus();
+  </script>
+  </mt:unless>
+</mt:if>
+
+<mt:if name="request.submit">
+  <div id="header-success-message" class="alert alert-success" tabindex="0">
+    <mt:trans phrase="For your security and to prevent fraud, we ask you to confirm your account and email address before continuing. Once your account is confirmed, you will allowed to login on '%s'." params="$appname">
+  </div>
+  <script>
+    $('#header-success-message').focus();
+  </script>
+</mt:if>
+
+<mt:unless name="request.submit">
+<div class="col-md-12 form-group">
+<form action="<mt:var name="script_uri">" method="POST" enctype="multipart/form-data">
+  <input type="hidden" name="__mode" value="sign_up">
+  <input type="hidden" name="_type" value="<mt:if name="confirm_ok">sign_up<mt:else>confirm</mt:if>">
+  <input type="hidden" name="workspace_id" value="<mt:var name="workspace_id">">
+  <input type="hidden" name="magic_token" value="<mt:var name="magic_token" escape>">
+
+<mt:setvarblock name="hidden_cols">id,notification,status,delete_flag,created_by,lock_out,modified_by,lock_out_on,created_on,modified_on,last_login_on,last_login_ip,reg_workspace_id</mt:setvarblock>
+<mt:var name="hidden_cols" split="," setvar="hidden_cols">
+
+<mt:setvarblock name="field_required">
+  <i class="fa fa-asterisk required" aria-hidden="true"></i>
+  <span class="sr-only"><mt:trans phrase="Required"></span>
+</mt:setvarblock>
+<mt:objectcols model="member">
+<mt:ifinarray value="$name" array="$hidden_cols">
+<mt:else>
+<mt:ifinarray value="$name" array="$non_editable_columns">
+<mt:else>
+<mt:if name="edit">
+  <mt:setvarblock name="request">request.<mt:var name="name" escape></mt:setvarblock>
+  <mt:setvarblock name="request_time">request.<mt:var name="name" escape>_time</mt:setvarblock>
+  <mt:setvarblock name="file_data"><mt:var name="name" escape>_base64</mt:setvarblock>
+  <mt:setvarblock name="_hint">
+    <mt:if name="hint">
+    <<mt:if name="edit" like="checkbox">span<mt:else>p</mt:if> class="text-muted <mt:unless name="edit" like="checkbox">hint-block</mt:unless>">
+      <i class="fa fa-question-circle-o" aria-hidden="true"></i>
+      <span class="sr-only"><mt:trans phrase="Hint"></span>
+      <mt:var name="hint" trans="1">
+    </<mt:if name="edit" like="checkbox">span<mt:else>p</mt:if>>
+    </mt:if>
+  </mt:setvarblock>
+  <mt:if name="edit" eq="password">
+  <div class="row form-group">
+    <div class="col-lg-2">
+      <label for="<mt:var name="name" escape>">
+        <mt:var name="label" escape>
+        <mt:if name="not_null"><mt:var name="field_required"></mt:if>
+      </label>
+    </div>
+    <div class="col-lg-10">
+      <mt:if name="confirm_ok"><mt:var name="$request" escape regex_replace="'/./','*'"></mt:if>
+      <input id="<mt:var name="name" escape>" type="<mt:if name="confirm_ok">hidden<mt:else>password</mt:if>" class="form-control watch-changed" name="<mt:var name="name" escape>" value="<mt:if name="confirm_ok"><mt:var name="$request" escape></mt:if>">
+    </div>
+  </div>
+  <mt:unless name="confirm_ok">
+  <div class="row form-group">
+    <div class="col-lg-2">
+      <label for="<mt:var name="name" escape>-verify">
+        <mt:trans phrase="%s (Confirm)" params="$label" escape>
+        <mt:if name="not_null"><mt:var name="field_required"></mt:if>
+      </label>
+    </div>
+    <div class="col-lg-10">
+      <input id="<mt:var name="name" escape>-verify" type="password" class="form-control watch-changed" name="<mt:var name="name" escape>-verify" value="">
+      <mt:var name="_hint">
+    </div>
+  </div>
+  </mt:unless>
+  <mt:else>
+  <div class="row form-group">
+    <div class="col-lg-2">
+      <mt:unless name="edit" eq="checkbox">
+        <label for="<mt:var name="name" escape>">
+          <mt:var name="label" escape>
+          <mt:if name="not_null"><mt:var name="field_required"></mt:if>
+        </label>
+      <mt:else>
+      <mt:if name="confirm_ok">
+        <label for="<mt:var name="name" escape>">
+          <mt:var name="label" escape>
+          <mt:if name="not_null"><mt:var name="field_required"></mt:if>
+        </label>
+      </mt:if>
+      </mt:unless>
+    </div>
+    <div class="col-lg-10<mt:unless name="confirm_ok"><mt:if name="edit" like="date"> form-inline</mt:if></mt:unless>">
+      <mt:if name="edit" eq="primary">
+        <mt:if name="confirm_ok"><mt:var name="$request" escape></mt:if>
+        <input type="<mt:if name="confirm_ok">hidden<mt:else>text</mt:if>" class="form-control watch-changed" value="<mt:var name="$request" escape>" name="<mt:var name="name" escape>" id="<mt:var name="name" escape>">
+      <mt:elseif name="edit" like="text">
+        <mt:if name="confirm_ok"><mt:var name="$request" escape></mt:if>
+        <input type="<mt:if name="confirm_ok">hidden<mt:else>text</mt:if>" class="form-control watch-changed<mt:if name="edit" eq="text_short"> short</mt:if>" value="<mt:var name="$request" escape>" name="<mt:var name="name" escape>" id="<mt:var name="name" escape>">
+      <mt:elseif name="edit" like="date">
+        <mt:if name="confirm_ok"><mt:var name="$request" escape> <mt:var name="$request_time" escape></mt:if>
+        <input type="<mt:if name="confirm_ok">hidden<mt:else>date</mt:if>" class="form-control date watch-changed" value="<mt:var name="$request" escape>" name="<mt:var name="name" escape>" id="<mt:var name="name" escape>">
+        <input type="<mt:if name="confirm_ok">hidden<mt:else><mt:if name="edit" eq="date">hidden<mt:else>time</mt:if></mt:if>" class="form-control date watch-changed" value="<mt:var name="$request_time" escape>" name="<mt:var name="name" escape>_time" id="<mt:var name="name" escape>_time">
+      <mt:elseif name="edit" eq="languages">
+        <mt:if name="confirm_ok"><mt:var name="$request" translate escape>
+          <input type="hidden" value="<mt:var name="$request" escape>" name="<mt:var name="name" escape>" id="<mt:var name="name" escape>">
+        <mt:else>
+          <mt:loop name="languages">
+          <mt:if name="__first__">
+          <select class="form-control short custom-select" id="<mt:var name="name" escape>" name="<mt:var name="name" escape>">
+          </mt:if>
+            <option value="<mt:var name="__value__">" <mt:if name="$request" eq="$__value__">selected</mt:if>><mt:var name="__value__" translate="1"></option>
+          <mt:if name="__last__">
+          </select>
+          </mt:if>
+          </mt:loop>
+        </mt:if>
+      <mt:elseif name="edit" eq="checkbox">
+        <mt:if name="confirm_ok"><mt:if name="$request">
+          <i class="fa fa-check-square-o" aria-hidden="true"></i>
+          <span class="sr-only"><mt:var name="$request" escape></span>
+        </mt:if>
+        <input type="hidden" name="<mt:var name="name" escape>" value="<mt:var name="$request" escape>">
+        <mt:else>
+        <input type="hidden" name="<mt:var name="name" escape>" value="0">
+        <label class="custom-control custom-checkbox">
+        <input id="<mt:var name="name" escape>" class="custom-control-input watch-changed"
+          type="checkbox" name="<mt:var name="name" escape>" value="1" <mt:if name="$request">checked</mt:if>>
+            <span class="custom-control-indicator"></span>
+            <span class="custom-control-description"> 
+            <mt:var name="label" escape></span>
+        </label>
+        </mt:if>
+      <mt:elseif name="edit" like="relation">
+        <mt:var name="edit" split=":" setvar="edit_props">
+        <mt:var name="edit_props[1]" setvar="rel_model">
+        <mt:var name="edit_props[2]" setvar="rel_col">
+        <mt:var name="edit_props[3]" setvar="rel_type">
+        <mt:if name="rel_type" eq="dialog">
+          <mt:setvar name="rel_type" value="checkbox">
+        </mt:if>
+        <mt:setvar name="member_class" value="">
+        <mt:if name="rel_model" eq="tag">
+          <mt:setvar name="member_class" value="member">
+        </mt:if>
+        <mt:var name="$request" setvar="related_ids">
+        <mt:var name="name" escape setvar="__col_name__">
+        <mt:if name="rel_type" like="radio">
+          <mt:if name="confirm_ok">
+            <mt:objectloop model="$rel_model" sort_by="order" include_draft="1">
+              <mt:if name="$request" eq="$id">
+                <input type="hidden" name="<mt:var name="__col_name__">" value="<mt:var name="id">">
+                <mt:var name="$rel_col" translate escape>
+              </mt:if>
+            </mt:objectloop>
+          <mt:else>
+            <mt:objectloop model="$rel_model" sort_by="order" include_draft="1">
+            <mt:if name="__first__">
+              <mt:unless name="not_null">
+            <label class="custom-control custom-radio">
+              <input class="custom-control-input" type="radio"
+              <mt:unless name="$request">checked</mt:unless> name="<mt:var name="__col_name__">" value="">
+              <span class="custom-control-indicator"></span>
+              <span class="custom-control-description"><mt:trans phrase="Unspecified"></span>
+            </label>
+              </mt:unless>
+            </mt:if>
+            <label class="custom-control custom-radio">
+              <input class="custom-control-input watch-changed" type="radio"
+                <mt:if name="$request" eq="$id">checked</mt:if>
+                  name="<mt:var name="__col_name__">" value="<mt:var name="id">">
+              <span class="custom-control-indicator"></span>
+              <span class="custom-control-description"><mt:if name="$rel_col"><mt:var name="$rel_col" escape><mt:else>null(id:<mt:var name="id">)</mt:if></span>
+            </label>
+            </mt:objectloop>
+          </mt:if>
+        <mt:elseif name="rel_type" eq="checkbox">
+          <mt:objectloop model="$rel_model" sort_by="order" include_draft="1" class="$member_class">
+            <mt:if name="confirm_ok">
+              <mt:ifinarray array="related_ids" value="$id">
+              <input type="hidden" name="<mt:var name="__col_name__">[]" value="<mt:var name="id">">
+              <i class="fa fa-check-square-o" aria-hidden="true"></i>
+              <mt:if name="$rel_col"><mt:if name="translate"><mt:var name="$rel_col" translate escape><mt:else><mt:var name="$rel_col" escape></mt:if><mt:else>null(id:<mt:var name="id">)</mt:if>
+              &nbsp;
+              </mt:ifinarray>
+            <mt:else>
+            <label class="custom-control custom-checkbox">
+              <input type="checkbox" class="custom-control-input watch-changed" name="<mt:var name="__col_name__">[]" value="<mt:var name="id">" <mt:ifinarray array="related_ids" value="$id">checked</mt:ifinarray>>
+              <span class="custom-control-indicator"></span>
+              <span class="custom-control-description"><mt:if name="$rel_col"><mt:if name="translate"><mt:var name="$rel_col" translate escape><mt:else><mt:var name="$rel_col" escape></mt:if><mt:else>null(id:<mt:var name="id">)</mt:if></span>
+            </label>
+            </mt:if>
+          </mt:objectloop>
+        <mt:elseif name="rel_type" eq="select">
+          <mt:if name="confirm_ok">
+            <mt:objectloop model="$rel_model" sort_by="order" include_draft="1">
+              <mt:if name="$request" eq="$id">
+                <input type="hidden" name="<mt:var name="__col_name__">" value="<mt:var name="id">">
+                <mt:var name="$rel_col" translate escape>
+              </mt:if>
+            </mt:objectloop>
+          <mt:else>
+          <mt:objectloop model="$rel_model" sort_by="order" include_draft="1">
+            <mt:if name="__first__">
+              <select id="<mt:var name="__col_name__">" name="<mt:var name="__col_name__">" class="form-control custom-select short">
+            <mt:unless name="not_null">
+              <option value="" <mt:unless name="$request">selected</mt:unless>><mt:trans phrase="Unspecified"></option>
+            </mt:unless>
+            </mt:if>
+              <option value="<mt:var name="id">" <mt:if name="$request" eq="$id">selected</mt:if>><mt:if name="$rel_col"><mt:var name="$rel_col" escape><mt:else>null(id:<mt:var name="id">)</mt:if></option>
+            <mt:if name="__last__">
+              </select>
+            </mt:if>
+          </mt:objectloop>
+          </mt:if>
+        <mt:elseif name="rel_type" eq="hierarchy">
+          <mt:setvartemplate name="nestable_obj_list">
+          <mt:setvar name="__hierarchy_out" value="0">
+          <mt:nestableobjects model="$rel_model" parent_id="$_parent_id">
+            <mt:if name="__first__"><ul class="nestableobjects-list"></mt:if>
+              <li>
+                <mt:if name="confirm_ok">
+                  <mt:ifinarray array="related_ids" value="$id">
+                    <i class="fa fa-check-square-o" aria-hidden="true"></i>
+                    <span class="sr-only"><mt:trans phrase="Checked"></span>
+                    <mt:if name="$rel_col"><mt:var name="$rel_col" escape><mt:else>null(id:<mt:var name="id">)</mt:if>
+                    <input type="hidden"name="<mt:var name="__col_name__">[]" value="<mt:var name="id">">
+                  <mt:else>
+                    <i style="color:gray" class="fa fa-square-o" aria-hidden="true"></i>
+                    <span class="sr-only"><mt:trans phrase="Not Checked"></span>
+                    <span style="color:gray"><mt:if name="$rel_col"><mt:var name="$rel_col" escape><mt:else>null(id:<mt:var name="id">)</mt:if></span>
+                  </mt:ifinarray>
+                <mt:else>
+                  <label class="custom-control custom-checkbox">
+                    <input type="checkbox" class="custom-control-input watch-changed" name="<mt:var name="__col_name__">[]" value="<mt:var name="id">" <mt:ifinarray array="related_ids" value="$id">checked</mt:ifinarray>>
+                    <span class="custom-control-indicator"></span>
+                    <span class="custom-control-description"><mt:if name="$rel_col"><mt:var name="$rel_col" escape><mt:else>null(id:<mt:var name="id">)</mt:if>
+                    </span>
+                  </label>
+                </mt:if>
+                <mt:if name="has_children">
+                  <mt:var name="id" setvar="_parent_id">
+                  <mt:var name="nestable_obj_list">
+                </mt:if>
+              </li>
+            <mt:if name="__last__"></ul><mt:setvar name="__hierarchy_out" value="1"></mt:if>
+          </mt:nestableobjects>
+          <mt:unless name="__hierarchy_out">
+            <script>
+              $('#<mt:var name="__col_name__">-wrapper').hide();
+            </script>
+          </mt:unless>
+          </mt:setvartemplate>
+          <div class="relation_nestable_list">
+          <mt:var name="nestable_obj_list">
+          </div>
+        </mt:if>
+      <mt:elseif name="edit" like="selection">
+        <mt:if name="confirm_ok"><mt:var name="$request" escape>
+        <input type="hidden" name="<mt:var name="name" escape>" value="<mt:var name="$request" escape>">
+        <mt:else>
+        <mt:var name="options" split="," setvar="_options_loop">
+        <mt:if name="disp_edit" eq="radio">
+          <mt:loop name="_options_loop">
+            <mt:if name="__first__">
+            <mt:unless name="not_null">
+            <label class="custom-control custom-radio">
+              <input class="custom-control-input watch-changed" type="radio" name="<mt:var name="name" escape>" value=""
+                id="<mt:var name="name" escape>"
+                <mt:unless name="$request">checked</mt:unless>>
+              <span class="custom-control-indicator"></span>
+              <span class="custom-control-description"><mt:trans phrase="Unspecified"></span>
+            </label>
+            </mt:unless>
+            </mt:if>
+            <mt:if name="options">
+            <label class="custom-control custom-radio">
+              <input class="custom-control-input watch-changed" type="radio" name="<mt:var name="name" escape>" value="<mt:var name="__value__" escape>"
+                <mt:if name="$request" eq="$__value__">checked</mt:if>>
+              <span class="custom-control-indicator"></span>
+              <span class="custom-control-description"><mt:trans phrase="$__value__" escape></span>
+            </label>
+            </mt:if>
+          </mt:loop>
+        <mt:elseif name="disp_edit" eq="select">
+          <mt:loop name="_options_loop">
+            <mt:if name="__first__">
+              <select id="<mt:var name="name" escape>" name="<mt:var name="name" escape>" class="form-control custom-select">
+            <mt:unless name="not_null">
+              <option value="" <mt:unless name="$request">selected</mt:unless>><mt:trans phrase="Unspecified"></option>
+            </mt:unless>
+            </mt:if>
+            <mt:if name="options">
+              <option value="<mt:var name="__value__" escape>"
+                <mt:if name="$request" eq="$__value__">selected</mt:if>><mt:trans phrase="$__value__" escape></option>
+            </mt:if>
+            <mt:if name="__last__">
+              </select>
+            </mt:if>
+          </mt:loop>
+        <mt:elseif name="disp_edit" eq="checkbox">
+          <mt:var name="$request" split="," setvar="_options_arr">
+          <mt:loop name="_options_loop">
+            <label class="custom-control custom-checkbox">
+              <input type="checkbox" class="custom-control-input watch-changed" name="<mt:var name="name" escape>[]" value="<mt:var name="__value__" escape>" <mt:ifinarray value="$__value__" array="$_options_arr">checked</mt:ifinarray>>
+              <span class="custom-control-indicator"></span>
+              <span class="custom-control-description"> <mt:trans phrase="$__value__" escape></span>
+            </label>
+          </mt:loop>
+        </mt:if>
+      </mt:if>
+      <mt:elseif name="edit" eq="file">
+        <div id="<mt:var name="name" escape>-wrapper">
+          <mt:if name="$request">
+          <mt:if name="options" eq="image">
+            <img src="<mt:var name="$file_data">" class="attachment-image" alt="<mt:trans phrase="Preview">">
+          </mt:if>
+            <input id="<mt:var name="name" escape>" name="<mt:var name="name" escape>" type="hidden" value="<mt:var name="$request" escape>">
+            <input name="<mt:var name="name" escape>_base64" type="hidden" value="<mt:var name="$file_data">">
+          </mt:if>
+        </div>
+        <mt:unless name="confirm_ok">
+        <input id="<mt:var name="name" escape>" name="<mt:var name="name" escape>" type="file" class="d-none">
+          <div class="input-group">
+            <input type="text" name="filename_<mt:var name="name" escape>" id="filename_<mt:var name="name" escape>" class="form-control" placeholder="<mt:trans phrase="Select File..." language="$language">" value="<mt:var name="$request" escape>">
+            <div class="input-group-append">
+              <button style="" type="button" class="btn btn-primary" onclick="$('input[id=<mt:var name="name" escape>]').click();"><mt:trans phrase="Select..." language="$language"></button>
+            </div>
+          </div>
+          <script>
+            $('input[id=<mt:var name="name" escape>]').change(function() {
+              $('#filename_<mt:var name="name" escape>').val($(this).val().replace("C:\\fakepath\\", ""));
+              $('#<mt:var name="name" escape>-wrapper').hide();
+            });
+          </script>
+        </mt:unless>
+      </mt:if>
+      <mt:var name="_hint">
+    </div>
+  </div>
+  </mt:if>
+</mt:if>
+</mt:ifinarray>
+</mt:ifinarray>
+</mt:objectcols>
+<div class="row form-group mt-5">
+  <button type="submit" class="btn btn-primary full"><mt:if name="confirm_ok"><mt:trans phrase="Submit"><mt:else><mt:trans phrase="Confirm"></mt:if></button>
+</div>
+</form>
+</div>
+</mt:unless>
+
+<mt:include file="include/footer.tmpl">

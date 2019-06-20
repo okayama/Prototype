@@ -1,0 +1,13 @@
+<mt:for merge_linefeeds="1">
+<mt:trans phrase="This email is to notify you that a new user has successfully registered on '%s'." params="$app_name">
+
+<mt:trans phrase="New Member Information">:
+<mt:trans phrase="Username">: <mt:var name="member_name">
+<mt:trans phrase="Display Name">: <mt:var name="member_nickname">
+<mt:trans phrase="Email">: <mt:var name="member_email">
+
+<mt:trans phrase="To view or edit this member, please click on or cut and paste the following URL into a web browser">:
+<mt:var name="admin_url">?__mode=view&_type=edit&_model=member&id=<mt:var name="member_id">
+
+<mt:include file="email/mail_footer.tmpl">
+</mt:for>

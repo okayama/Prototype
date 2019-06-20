@@ -1,0 +1,14 @@
+<mt:ifmembersappurl workspace_id="any">
+<mt:else>
+  <div id="header-appurl-message" class="alert alert-warning" role="alert" tabindex="0">
+  <mt:var name="alert_close">
+  <mt:trans phrase="App URL has not been set.">
+<mt:ifusercan action="manage_plugins" workspace_id="0">
+<a href="<mt:var name="script_uri">?__mode=manage_plugins"><mt:trans phrase="Move to Manage Plugins"></a>
+</mt:ifusercan>
+  </div>
+  <script>
+  $('#header-appurl-message').focus();
+  </script>
+</mt:ifmembersappurl>
+

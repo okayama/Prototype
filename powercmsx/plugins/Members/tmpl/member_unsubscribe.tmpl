@@ -1,0 +1,28 @@
+<mt:setvar name="page_title" value="Unregister Member">
+<mt:var name="page_title" language="$language" setvar="page_title">
+<mt:include file="include/header.tmpl">
+  <div id="header-alert-message" class="alert alert-warning" tabindex="0">
+    <mt:trans phrase="You are about to unsubscribe. This operation can not be undone. Are you sure you want to cancel your membership registration?">
+  </div>
+  <script>
+    $('#header-alert-message').focus();
+  </script>
+<div class="col-md-12 form-group">
+<form action="<mt:var name="script_uri">" method="POST" enctype="multipart/form-data">
+  <input type="hidden" name="__mode" value="unsubscribe">
+  <input type="hidden" name="_type" value="unsubscribe">
+  <input type="hidden" name="workspace_id" value="<mt:var name="workspace_id">">
+  <input type="hidden" name="magic_token" value="<mt:var name="magic_token" escape>">
+<div class="row form-group mt-3">
+  <button id="unregister-btn" type="submit" class="btn btn-primary full"><mt:trans phrase="Unregister"></button>
+</div>
+</form>
+</div>
+<script>
+$('#unregister-btn').click(function(){
+    if ( !confirm('<mt:trans phrase="You are about to unsubscribe. This operation can not be undone. Are you sure you want to cancel your membership registration?">') ) {
+        return false;
+    }
+});
+</script>
+<mt:include file="include/footer.tmpl">

@@ -1,0 +1,9 @@
+<mt:for merge_linefeeds="1">
+<mt:trans phrase="This email is to notify you that a new signup on '%s'." params="$app_name">
+<mt:trans phrase="Please click to regist '%s'." params="$app_name">
+
+<mt:var name="script_uri">?__mode=do_signup&token=<mt:var name="token"><mt:if name="workspace_id">&workspace_id=<mt:var name="workspace_id"></mt:if>
+
+<mt:trans phrase="If you did not request this change, you can safely ignore this email.">
+<mt:include file="email/mail_footer.tmpl">
+</mt:for>

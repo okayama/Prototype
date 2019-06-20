@@ -1,0 +1,20 @@
+{
+    "Provides website login functionality."
+                    : "Webサイトへのログイン機能を提供します。",
+    "App URL" : "アプリのURL",
+    "Non-editable columns" : "編集不可カラム",
+    "Allow Login" : "ログインを許可",
+    "Allow Sign Up" : "サインアップを許可",
+    "Please enter comma-separated column names." : "対象のカラムをカンマ区切りで入力します。",
+    "Login Session Timeout" : "ログインセッション有効期限",
+    "Timeout for Sign Up" : "サインアップのタイムアウト",
+    "Timeout for Unsubscribe" : "退会処理のタイムアウト",
+    "Email address to Sign Up notification" : "サインアップ通知先メールアドレス",
+    "Email address to Unsubscribe notification" : "退会通知先メールアドレス",
+    "Session expires for Sign Up" : "サインアップのセッション有効期限",
+    "Member's status at Sign Upped" : "サインアップ時のメンバーのステータス",
+    "Normarize member's data" : "メンバーのデータを正規化する",
+    "Notification has been sent" : "通知送信済み",
+    "Notifications can be send when activated" : "通知は有効化した時に送信できます",
+    "Notify to member that they have been activated" : "有効化されたことをメンバーに通知する"
+}

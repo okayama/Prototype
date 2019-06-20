@@ -1,0 +1,99 @@
+<mt:setvarblock name="recover_link">
+<a href="<mt:var name="script_uri">?__mode=start_recover"><mt:trans phrase="Password Reset"></a>
+</mt:setvarblock>
+
+<mt:if name="request._lockout">
+<mt:if name="request._type" eq="ip">
+<mt:trans phrase="This IP address is locked out." setvar="lockout_error">
+<mt:elseif name="request._type" eq="user">
+<mt:trans phrase="This User is locked out." setvar="lockout_error">
+<mt:setvar name="lockout_error" value="$recover_link" append="1">
+</mt:if>
+</mt:if>
+
+<mt:if name="request._lockedout">
+<mt:if name="request._type" eq="ip">
+<mt:trans phrase="This IP address was locked out because you failed to log in continuously." setvar="lockout_error">
+<mt:elseif name="request._type" eq="user">
+<mt:trans phrase="This User was locked out because you failed to log in continuously." setvar="lockout_error">
+<mt:setvar name="lockout_error" value="$recover_link" append="1">
+</mt:if>
+</mt:if>
+
+<mt:if name="request.__mode" eq="logout">
+<mt:if name="request._type" eq="not_allowed_ip">
+<mt:trans phrase="Login from this IP address is not allowed." setvar="lockout_error">
+</mt:if>
+</mt:if>
+<mt:include file="include/header.tmpl">
+
+<mt:pluginsetting component="Members" name="members_allow_login" workspace_id="$workspace_id" setvar="allow_login">
+<mt:if name="workspace_id">
+  <mt:websiteid setvar="load_workspace">
+  <mt:unless name="load_workspace">
+    <mt:setvar name="allow_login" value="0">
+  </mt:unless>
+</mt:if>
+
+<mt:if name="allow_login">
+<mt:if name="lockout_error">
+  <div id="header-error-message" class="alert alert-danger" role="alert" tabindex="0">
+    <mt:var name="lockout_error">
+  </div>
+  <script>
+    $('#header-error-message').focus();
+  </script>
+</mt:if>
+<div class="col-md-12 form-group">
+<form action="<mt:var name="script_uri">" method="POST" >
+  <input type="hidden" name="__mode" value="login">
+  <input type="hidden" name="return_url" value="<mt:var name="return_url" escape>">
+  <input type="hidden" name="return_args" value="<mt:var name="query_string" escape>">
+<div class="form-group">
+  <label for="name"><mt:trans phrase="Username"> :</label>
+  <input id="name" type="text" class="form-control" name="name" value="<mt:var name="name">">
+</div>
+
+<div class="form-group">
+  <label for="password"><mt:trans phrase="Password"> :</label>
+  <input id="password" type="password" class="form-control" name="password" value="<mt:var name="password" escape>">
+</div>
+
+<div class="form-group">
+  <label class="custom-control custom-checkbox">
+  <input type="checkbox" class="custom-control-input" name="remember" value="1">
+    <span class="custom-control-indicator"></span>
+    <span class="custom-control-description"><mt:trans phrase="Remember me?"></span>
+  </label>
+</div>
+
+<div class="form-group">
+<a href="<mt:var name="script_uri">?__mode=start_recover">
+<mt:trans phrase="Forgot your password?">
+</a>
+</div>
+
+<div class="row form-group">
+  <button type="submit" class="btn btn-primary"><mt:trans phrase="Login"></button>
+</div>
+</form>
+
+<mt:pluginsetting component="Members" name="members_allow_sign_up" workspace_id="$workspace_id" setvar="allow_sign_up">
+<mt:if name="allow_sign_up">
+<hr>
+<div class="row form-group">
+<a href="<mt:var name="script_uri">?__mode=sign_up<mt:if name="workspace_id">&amp;workspace_id=<mt:var name="workspace_id"></mt:if>" class="btn btn-secondary"><mt:trans phrase="Create an account"></a>
+</div>
+</mt:if>
+</div>
+
+<mt:else>
+  <div id="header-error-message" class="alert alert-danger" role="alert" tabindex="0">
+    <mt:trans phrase="Login is not allowed.">
+  </div>
+  <script>
+    $('#header-error-message').focus();
+  </script>
+
+</mt:if>
+<mt:include file="include/footer.tmpl">

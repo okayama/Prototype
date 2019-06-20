@@ -1,0 +1,63 @@
+{
+    "label"       : "Members",
+    "id"          : "members",
+    "component"   : "Members",
+    "version"     : "1.0",
+    "author"      : "Alfasado Inc.",
+    "author_link" : "https://alfasado.net/",
+    "description" : "Provides website login functionality.",
+    "cfg_template": "cfg_template.tmpl",
+    "cfg_system"  : 1,
+    "cfg_space"   : 1,
+    "settings"    : {
+        "members_app_url" : "",
+        "members_email_from" : "",
+        "members_sign_up_notify_mailto" : "",
+        "members_unsubscribe_notify_mailto" : "",
+        "members_sess_timeout": 86400,
+        "members_sign_up_timeout" : 600,
+        "members_unsubscribe_timeout" : 600,
+        "members_sign_up_expires": 86400,
+        "members_sign_up_status": 2,
+        "members_non_editable_cols" : "",
+        "members_sign_up_normarize": 1,
+        "members_allow_login": 1,
+        "members_allow_sign_up": 1,
+        "members_two_factor_auth" : 0
+    },
+    "callbacks" : {
+        "members_pre_save_member": {
+            "member" : {
+                "pre_save" : {
+                    "component" : "Members",
+                    "priority"  : 1,
+                    "method" : "pre_save_member"
+                }
+            }
+        }
+    },
+    "tags": {
+        "conditional": {
+            "iflogin" : {
+                "component" : "Members",
+                "method" : "hdlr_if_login"
+            },
+            "ifmembersappurl" : {
+                "component" : "Members",
+                "method" : "hdlr_if_members_app_url"
+            }
+        },
+        "block": {
+            "membercontext" : {
+                "component" : "Members",
+                "method" : "hdlr_member_context"
+            }
+        },
+        "function": {
+            "membersappurl" : {
+                "component" : "Members",
+                "method" : "hdlr_members_app_url"
+            }
+        }
+    }
+}

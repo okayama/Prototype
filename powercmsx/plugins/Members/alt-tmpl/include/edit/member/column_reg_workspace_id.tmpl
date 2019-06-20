@@ -1,0 +1,72 @@
+<mt:var name="options" split="," setvar="_options_loop">
+<div class="row form-group">
+  <div class="col-lg-2">
+    <label for="reg_workspace_id_selector">
+      <mt:var name="label" escape="1">
+      <mt:if name="not_null"><mt:var name="field_required"></mt:if>
+    </label>
+  </div>
+  <div class="col-lg-10">
+    <label class="custom-control custom-radio">
+      <input class="custom-control-input" type="radio"
+        <mt:unless name="__col_value__">checked</mt:unless> value="system" name="reg_workspace_id_selector">
+      <span class="custom-control-indicator"></span>
+      <span class="custom-control-description"><mt:var name="appname" escape></span>
+    </label>
+    <label class="custom-control custom-radio">
+      <input class="custom-control-input" type="radio" id="reg_workspace_id_selector"
+        <mt:if name="__col_value__">checked</mt:if> value="workspace" name="reg_workspace_id_selector">
+      <span class="custom-control-indicator"></span>
+      <span class="custom-control-description"><mt:trans phrase="Select a WorkSpace"></span>
+    </label>
+  <div <mt:unless name="__col_value__"> class="hidden"<mt:else> style="display:inline"</mt:unless> id="reg_workspace_id_chooser">
+    <mt:var name="edit" split=":" setvar="edit_props">
+    <mt:var name="edit_props[1]" setvar="rel_model">
+    <mt:var name="edit_props[2]" setvar="rel_col">
+    <mt:var name="edit_props[3]" setvar="rel_type">
+    <mt:ifhasthumbnail model="$rel_model">
+      <mt:ifusercan model="$rel_model" action="list" workspace_id="$workspace_id">
+        <mt:setvar name="has_thumbnail" value="1">
+      </mt:ifusercan>
+    </mt:ifhasthumbnail>
+    <mt:setvar name="thumbnail" value="">
+    <mt:getobjectname id="$__col_value__" type="$edit" wants="id" escape setvar="__col_value__">
+    <mt:assetthumbnail id="$__col_value__" type="default" square="1" model="$rel_model" data_uri="1" setvar="thumbnail">
+    <ul class="relation-list">
+    <li class="<mt:var name="__col_name__">-child badge badge-default badge-relation">
+    <div <mt:unless name="thumbnail">style="display:none"</mt:unless> id="<mt:var name="__col_name__">-img" class="assets-child-thumb" data-model="<mt:var name="rel_model" escape>" data-id="<mt:var name="__col_value__" escape>" style="background-image:url('<mt:var name="thumbnail">')"></div>
+    <span id="<mt:var name="__col_name__">-label">
+    <mt:if name="__col_value__">
+      <mt:getobjectname id="$__col_value__" type="$edit" escape>
+    <mt:else>
+      <mt:trans phrase="(None selected)">&nbsp;
+    </mt:if>
+    </span>
+    <mt:unless name="readonly">
+    <button style="display:inline" id="<mt:var name="__col_name__">-close" type="button" class="btn btn-secondary btn-sm close-sm detach-relation <mt:unless name="__col_value__"> hidden</mt:unless>" aria-label="<mt:trans phrase="Detach">" data-name="<mt:var name="__col_name__">">
+      <span aria-hidden="true">&times;</span>
+    </button>
+    </mt:unless>
+    <input id="<mt:var name="__col_name__">" type="hidden" name="<mt:var name="__col_name__">" value="<mt:var name="__col_value__" escape>">
+    </li>
+    </ul>
+    <mt:unless name="readonly">
+    <button type="button" class="btn btn-primary btn-sm dialog-chooser" data-toggle="modal" data-target="#modal"
+      data-href="<mt:var name="script_uri">?__mode=view&amp;_type=list&amp;_model=<mt:var name="rel_model" escape><mt:if name="workspace_id">&amp;workspace_id=<mt:var name="workspace_id"></mt:if>&amp;dialog_view=1&amp;single_select=1&amp;target=<mt:var name="__col_name__">&amp;get_col=<mt:var name="rel_col" escape>&amp;selected_ids=<mt:ignore>todo<mt:var name="__col_value__" escape></mt:ignore>"><mt:trans phrase="Select..."></button>
+    </mt:unless>
+  </div>
+  </div>
+</div>
+
+
+<script>
+$('input[name=reg_workspace_id_selector]').change(function(){
+  var selected = $('input[name=reg_workspace_id_selector]:checked').val();
+  if ( selected == 'workspace' ) {
+      $('#reg_workspace_id_chooser').show();
+      $('#reg_workspace_id_chooser').css('display', 'inline');
+  } else {
+      $('#reg_workspace_id_chooser').hide();
+  }
+});
+</script>

@@ -1,0 +1,162 @@
+<div class="row form-group">
+  <div class="col-lg-2">
+    <label for="setting_members_app_url">
+      <mt:trans phrase="App URL" component="Members">
+    </label>
+  </div>
+  <div class="col-lg-10">
+    <input type="text" id="setting_members_app_url" name="setting_members_app_url" class="form-control" value="<mt:var name="setting_members_app_url" escape>">
+  </div>
+</div>
+<div class="row form-group mb-0 mt-4">
+  <div class="col-lg-12">
+    <input type="hidden" name="setting_members_allow_login" value="0">
+    <label class="custom-control custom-checkbox">
+    <input id="setting_members_allow_login" class="custom-control-input watch-changed"
+     type="checkbox" name="setting_members_allow_login" value="1" <mt:if name="setting_members_allow_login">checked</mt:if>>
+        <span class="custom-control-indicator"></span>
+        <span class="custom-control-description"> 
+        <mt:trans phrase="Allow Login" component="Members"></span>
+    </label>
+  </div>
+</div>
+<div class="row form-group mb-0">
+  <div class="col-lg-12">
+    <input type="hidden" name="setting_members_allow_sign_up" value="0">
+    <label class="custom-control custom-checkbox">
+    <input id="setting_members_allow_sign_up" class="custom-control-input watch-changed"
+     type="checkbox" name="setting_members_allow_sign_up" value="1" <mt:if name="setting_members_allow_sign_up">checked</mt:if>>
+        <span class="custom-control-indicator"></span>
+        <span class="custom-control-description"> 
+        <mt:trans phrase="Allow Sign Up" component="Members"></span>
+    </label>
+  </div>
+</div>
+<div class="row form-group">
+  <div class="col-lg-12">
+    <input type="hidden" name="setting_members_two_factor_auth" value="0">
+    <label class="custom-control custom-checkbox">
+    <input id="setting_members_two_factor_auth" class="custom-control-input watch-changed"
+     type="checkbox" name="setting_members_two_factor_auth" value="1" <mt:if name="setting_members_two_factor_auth">checked</mt:if>>
+        <span class="custom-control-indicator"></span>
+        <span class="custom-control-description"> 
+        <mt:trans phrase="Two-factor Authentication"></span>
+    </label>
+  </div>
+</div>
+<div class="row form-group">
+  <div class="col-lg-2">
+    <label for="setting_members_non_editable_cols">
+      <mt:trans phrase="Non-editable columns" component="Members">
+    </label>
+  </div>
+  <div class="col-lg-10">
+    <input type="text" id="setting_members_non_editable_cols" name="setting_members_non_editable_cols" class="form-control" value="<mt:var name="setting_members_non_editable_cols" escape>">
+    <div class="text-muted hint-block">
+      <i class="fa fa-question-circle-o" aria-hidden="true"></i>
+      <span class="sr-only"><mt:trans phrase="Hint"></span>
+      <mt:trans phrase="Please enter comma-separated column names." component="Members">
+    </div>
+  </div>
+</div>
+<div class="row form-group">
+  <div class="col-lg-2">
+    <label for="setting_members_email_from">
+      <mt:trans phrase="Mail From">
+    </label>
+  </div>
+  <div class="col-lg-10">
+    <input type="text" id="setting_members_email_from" name="setting_members_email_from" class="form-control" value="<mt:var name="setting_members_email_from" escape>">
+  </div>
+</div>
+<div class="row form-group">
+  <div class="col-lg-2">
+    <label for="setting_members_sign_up_notify_mailto">
+      <mt:trans phrase="Email address to Sign Up notification" component="Members">
+    </label>
+  </div>
+  <div class="col-lg-10">
+    <input type="text" id="setting_members_sign_up_notify_mailto" name="setting_members_sign_up_notify_mailto" class="form-control" value="<mt:var name="setting_members_sign_up_notify_mailto" escape>">
+  </div>
+</div>
+<div class="row form-group">
+  <div class="col-lg-2">
+    <label for="setting_members_unsubscribe_notify_mailto">
+      <mt:trans phrase="Email address to Unsubscribe notification" component="Members">
+    </label>
+  </div>
+  <div class="col-lg-10">
+    <input type="text" id="setting_members_unsubscribe_notify_mailto" name="setting_members_unsubscribe_notify_mailto" class="form-control" value="<mt:var name="setting_members_unsubscribe_notify_mailto" escape>">
+  </div>
+</div>
+<div class="row form-group">
+  <div class="col-lg-2">
+    <label for="setting_members_sess_timeout">
+      <mt:trans phrase="Login Session Timeout" component="Members">
+    </label>
+  </div>
+  <div class="col-lg-10">
+    <input type="number" id="setting_members_sess_timeout" name="setting_members_sess_timeout" class="form-control short" value="<mt:var name="setting_members_sess_timeout" escape>">
+  </div>
+</div>
+
+<div class="row form-group">
+  <div class="col-lg-2">
+    <label for="setting_members_sign_up_timeout">
+      <mt:trans phrase="Timeout for Sign Up" component="Members">
+    </label>
+  </div>
+  <div class="col-lg-10">
+    <input type="number" id="setting_members_sign_up_timeout" name="setting_members_sign_up_timeout" class="form-control short" value="<mt:var name="setting_members_sign_up_timeout" escape>">
+  </div>
+</div>
+<div class="row form-group">
+  <div class="col-lg-2">
+    <label for="setting_members_sign_up_expires">
+      <mt:trans phrase="Session expires for Sign Up" component="Members">
+    </label>
+  </div>
+  <div class="col-lg-10">
+    <input type="number" id="setting_members_sign_up_expires" name="setting_members_sign_up_expires" class="form-control short" value="<mt:var name="setting_members_sign_up_expires" escape>">
+  </div>
+</div>
+<div class="row form-group">
+  <div class="col-lg-2">
+    <label for="setting_members_unsubscribe_timeout">
+      <mt:trans phrase="Timeout for Unsubscribe" component="Members">
+    </label>
+  </div>
+  <div class="col-lg-10">
+    <input type="number" id="setting_members_unsubscribe_timeout" name="setting_members_unsubscribe_timeout" class="form-control short" value="<mt:var name="setting_members_unsubscribe_timeout" escape>">
+  </div>
+</div>
+<div class="row form-group">
+  <div class="col-lg-2">
+    <label for="setting_members_sign_up_status">
+      <mt:trans phrase="Member's status at Sign Upped" component="Members">
+    </label>
+  </div>
+  <div class="col-lg-10">
+    <select class="form-control custom-select short" name="setting_members_sign_up_status" id="setting_members_sign_up_status">
+      <option value="1" <mt:if name="setting_members_sign_up_status" eq="1">selected</mt:if>><mt:trans phrase="Disable"></option>
+      <option value="2" <mt:if name="setting_members_sign_up_status" eq="2">selected</mt:if>><mt:trans phrase="Enable"></option>
+    </select>
+  </div>
+</div>
+<div class="row form-group">
+  <div class="col-lg-2">
+    <label for="setting_members_sign_up_normarize">
+      <mt:trans phrase="Normarize member's data" component="Members">
+    </label>
+  </div>
+  <div class="col-lg-10">
+    <input type="hidden" name="setting_members_sign_up_normarize" value="0">
+    <label class="custom-control custom-checkbox">
+    <input id="setting_members_sign_up_normarize" class="custom-control-input watch-changed"
+     type="checkbox" name="setting_members_sign_up_normarize" value="1" <mt:if name="setting_members_sign_up_normarize">checked</mt:if>>
+        <span class="custom-control-indicator"></span>
+        <span class="custom-control-description"> 
+        <mt:trans phrase="Normarize"></span>
+    </label>
+  </div>
+</div>

@@ -3,7 +3,7 @@
 /**
  * PADO : PHP Alternative Database Object
  *
- * @version    1.4
+ * @version    1.5
  * @package    PADO
  * @author     Alfasado Inc. <webmaster@alfasado.jp>
  * @copyright  2019 Alfasado Inc. All Rights Reserved.
@@ -17,7 +17,7 @@ if (! defined( 'PADODIR' ) ) {
 
 class PADO {
 
-    private $version     = 1.4;
+    private $version     = 1.5;
 
     public  static $pado = null;
     public  $driver      = 'mysql';
@@ -936,9 +936,10 @@ class PADOBaseModel {
  * @param  string $cols    : Get columns from records. Comma-separated text or '*'.
  * @param  string $extra   : String to add to the WHERE statement.
  *                           Insufficient care is required for injection.
+ * @param  array  $ex_vars : Placeholders for $extra statement.(TODO)
  * @return array  $objects : An array of objects or single object(Specified Numeric ID).
  */
-    function load ( $terms = [], $args = [], $cols = '', $extra = '' ) {
+    function load ( $terms = [], $args = [], $cols = '', $extra = '', $ex_vars = [] ) {
         if (! $terms ) $terms = [];
         $pado = $this->pado();
         // if ( isset( $pado->methods['load'] ) )
@@ -986,8 +987,8 @@ class PADOBaseModel {
         }
         if (! $cols ) return is_numeric( $terms ) ? null : [];
         if ( $cols !== '*' ) {
-            $columns = explode( ',', $cols );
-            $columns = array_unique( $columns );
+            $columns = preg_split( '/\s*,\s*/', $cols );
+            // $columns = array_unique( $columns );
             array_walk( $columns, function( &$col, $num, $params ) {
                 list( $pfx, $scheme ) = $params;
                 $orig_col = $col;
@@ -1009,16 +1010,20 @@ class PADOBaseModel {
             }
             if (! $cols ) $cols = '*';
         }
+        $vals = [];
+        $stms = [];
         $distinct = '';
         $count = '';
         $count_group_by = '';
         $group_by = '';
         $in_join = false;
+        $join_stmt = '';
         $load_iter = false;
+        $add_where = false;
         $method = isset( $args['get_by_key'] ) ? 'get_by_key' :'load';
         if ( is_array( $args ) && !empty( $args ) ) {
             if ( isset( $args['distinct'] ) || isset( $args['unique'] ) )
-                $distinct = 'distinct ';
+                $distinct = 'DISTINCT ';
             if ( isset( $args['load_iter'] ) || isset( $args['load_iter'] ) ) {
                 $load_iter = true;
                 $method = 'load_iter';
@@ -1049,10 +1054,25 @@ class PADOBaseModel {
                 $count_group_by .= ',';
             }
             if ( isset( $args['join'] ) ) {
+                $join_terms = [];
+                $join_cols  = '';
                 list( $join, $col ) = $args['join'];
+                if ( isset( $args['join'][2] ) ) {
+                    $join_terms = $args['join'][2];
+                }
+                if ( isset( $args['join'][3] ) ) {
+                    $join_cols = $args['join'][3];
+                }
+                $join_pfx = $join;
                 $col2 = $col;
+                $join_type = 'JOIN';
                 if ( is_array( $col ) ) {
+                    if ( isset( $col[2] ) ) $join_type = strtoupper( $col[2] );
                     list( $col, $col2 ) = $col;
+                    $join_types = ['JOIN', 'INNER JOIN', 'RIGHT OUTER JOIN', 'LEFT OUTER JOIN'];
+                    if (! in_array( $join_type, $join_types ) ) {
+                        $join_type = 'JOIN';
+                    }
                 }
                 if (!isset( $pado->scheme[ $join ] ) && $pado->json_model ) {
                     $this->set_scheme_from_json( $join );
@@ -1098,28 +1118,99 @@ class PADOBaseModel {
                 if ( $pado->prefix && strpos( $join, $pado->prefix ) !== 0 )
                     $join = $pado->prefix . $join;
                 if ( $join && $cols ) {
-                    $cols .= ',' . $join . '.*';
+                    if ( $join_cols && $join_cols == '*' ) {
+                        $join_cols = "{$join}.*";
+                    } else if ( $join_cols ) {
+                        $join_cols = preg_split( '/\s*,\s*/', $join_cols );
+                        $joinModel = $pado->model( $join_pfx );
+                        $_join_cols = [];
+                        foreach ( $join_cols as $join_col ) {
+                            $join_col = preg_replace( "/^$join_pfx/", '', $join_col );
+                            if ( $joinModel->has_column( $join_col ) ) {
+                                $_join_cols[] = "{$join}.{$join_pfx}_$join_col";
+                            }
+                        }
+                        $join_cols = join( ',', $_join_cols );
+                        if (! $join_cols ) {
+                            $join_cols = "{$join}.*";
+                        }
+                    } else {
+                        $join_cols = "{$join}.*";
+                    }
+                    $cols .= ",{$join_cols}";
                 }
                 if ( $cols ) $cols .= ' ';
                 $sql = "SELECT {$count_group_by}{$count}{$distinct}{$cols}FROM {$table}"
-                     . " JOIN $join ON {$table}.{$col}={$join}.{$join_prefix}{$col2} ";
+                     . " {$join_type} $join ON {$table}.{$col}={$join}.{$join_prefix}{$col2} ";
+                if ( is_array( $join_terms ) && count( $join_terms ) ) {
+                    $default_ts = $pado->default_ts;
+                    foreach ( $join_terms as $join_key => $join_value ) {
+                        if (!isset( $join_scheme[ $join_key ] ) ) continue;
+                        $type = $join_scheme[ $join_key ]['type'];
+                        $size = isset( $join_scheme[ $join_key ]['size'] ) ? $join_scheme[ $join_key ]['size'] : null;
+                        switch ( true ) {
+                        case ( strpos( $type, 'int' ) !== false || strpos( $type, 'float' ) !== false ):
+                            $join_value = intval( $join_value );
+                            break;
+                        case ( strpos( $type, 'date' ) !== false ):
+                            if ( $join_value = $this->db2ts( $join_value ) ) {
+                                if ( $default_ts &&
+                                  ( ( $join_value < 10000101000000 ) || ( $join_value > 99991231235959 ) ) ) {
+                                    if ( $default_ts === 'CURRENT_TIMESTAMP') {
+                                        $join_value = date( 'YmdHis' );
+                                    } else {
+                                        $join_value = $default_ts;
+                                    }
+                                }
+                                $join_value = $this->ts2db( $join_value );
+                            } else {
+                                $join_value = null;
+                            }
+                            break;
+                        case ( $type === 'time' && $join_value ):
+                            $join_value = $this->time2db( $join_value );
+                            break;
+                        case ( $type === 'year' ):
+                            $join_value = (string) $join_value;
+                            $join_value = preg_replace( '/[^0-9]/', '', $join_value );
+                            if ( strlen( $join_value ) === 2 ) {
+                                $join_value = ( $join_value > 69 ) ? '19' . $join_value : '20' . $join_value;
+                            } else {
+                                $val = substr( $this->ts2db( $join_value ), 0, 4 );
+                            }
+                            $join_value = (int) $join_value;
+                            break;
+                        case ( $type === 'string' && $size ):
+                            $join_value = (string) $join_value;
+                            if ( mb_strlen( $join_value ) > $size )
+                                $join_value = mb_substr( $join_value, 0, $size, $pado->charset );
+                            break;
+                        default:
+                            $join_value = (string) $join_value;
+                        }
+                        if ( $join_stmt ) $join_stmt .= ' AND ';
+                        $join_stmt .= "${join_pfx}_{$join_key}=?";
+                        $vals[] = $join_value;
+                    }
+                    $sql .= "WHERE {$join_stmt} ";
+                    $add_where = true;
+                }
                 $in_join = true;
             }
         }
-        if (! isset( $sql ) ) {
+        if (! isset( $sql ) || ! $sql ) {
             if ( $count ) $cols = '';
             $sql = "SELECT {$count_group_by}{$count}{$distinct}{$cols}"
                  . " FROM {$table} ";
         }
-        $vals = [];
-        $stms = [];
         $extra_stms = [];
         $extra_vals = [];
         $has_stmt = true;
-        $add_where = false;
         if ( is_array( $terms ) && empty( $terms ) ) {
-            $sql .= "WHERE 1=?";
-            $vals[] = 1;
+            if (! $add_where ) {
+                $sql .= "WHERE 1=?";
+                $vals[] = 1;
+            }
             $add_where = true;
             if ( isset( $args['count_group_by'] ) && $extra ) {
                 $sql .= " $extra ";
@@ -1287,7 +1378,12 @@ class PADOBaseModel {
             }
             if ( count( $stms ) ) {
                 // if ( $in_join ) $sql .= ' AND ';
-                $sql .= 'WHERE (' . join( " {$and_or} ", $stms ) . ')';
+                if (! $add_where ) {
+                    $sql .= 'WHERE ';
+                } else {
+                    $sql .= "$and_or ";
+                }
+                $sql .= '(' . join( " {$and_or} ", $stms ) . ')';
                 $add_where = true;
             }
             if (! empty( $extra_stms ) ) {
@@ -1311,32 +1407,69 @@ class PADOBaseModel {
             $vals[] = $terms;
         } elseif ( is_string( $terms ) ) {
             $sql = $terms;
+            $vals = is_array( $args ) ? $args : $vals;
         }
         $sql .= $group_by;
         if ( $extra ) $sql .= " {$extra} ";
         if (!$count || ( isset( $args['count_group_by'] ) && $args['count_group_by'] ) ) {
             $opt = '';
             if ( is_array( $args ) && !empty( $args ) ) {
+                $direction = 'ASC';
                 foreach ( $args as $key => $arg ) {
+                    // $key = strtolower( $key );
                     if ( $key === 'sort' || $key === 'order_by' ) $opt = $arg;
                     elseif ( $key === 'limit' ) $limit = (int) $arg;
                     elseif ( $key === 'offset' ) $offset = (int) $arg;
-                    elseif ( $key === 'direction' ) $direction = strtoupper( $arg );
-                    if ( $key === 'sort' && !$this->has_column( $opt ) ) $opt = null;
+                    if ( $key === 'sort' ) {
+                        if ( is_string( $opt ) && !$this->has_column( $opt ) ) {
+                            $opt = null;
+                        }
+                    } else if ( $key === 'direction' ) {
+                        if ( is_string( $arg ) ) {
+                            $direction = strtoupper( $arg );
+                        } else if ( is_array( $arg ) ) {
+                            $direction = $arg;
+                        }
+                    }
                 }
                 if ( $opt ) {
-                    $opt = str_replace( $illegals, '', $opt );
-                    if ( $colprefix && strpos( $opt, $colprefix ) !== 0 )
-                        if ( ( $colprefix && !$in_join ) 
-                            || ( $in_join && strpos( $opt, '.' ) === false ) )
-                                $opt = $colprefix . $opt;
-                    $opt = " ORDER BY {$opt} ";
-                    if ( isset( $direction ) ) {
-                        $direction = stripos( $direction, 'ASC' ) === 0 ? 'ASC' : 'DESC';
-                    } else {
-                        $direction = 'ASC';
+                    if ( is_string( $opt ) ) {
+                        if ( $colprefix && strpos( $opt, $colprefix ) !== 0 )
+                            if ( ( $colprefix && !$in_join ) 
+                                || ( $in_join && strpos( $opt, '.' ) === false ) )
+                                    $opt = $colprefix . $opt;
+                        $opt = " ORDER BY {$opt} ";
+                        if ( $direction ) {
+                            $direction = stripos( $direction, 'ASC' ) === 0 ? 'ASC' : 'DESC';
+                        } else {
+                            $direction = 'ASC';
+                        }
+                        $opt .= $direction . ' ';
+                    } else if ( is_array( $opt ) ) {
+                        if ( array_values( $opt ) === $opt ) {
+                            $max_cond = count( $opt );
+                            $conditions = [];
+                            for ( $i = 0; $i < $max_cond; $i++ ) {
+                                if ( is_string( $direction ) ) {
+                                    $conditions[ $opt[$i] ] = $direction;
+                                } else if ( is_array( $conditions ) && isset( $direction[$i] ) ) {
+                                    $conditions[ $opt[$i] ] = $direction[$i];
+                                }
+                            }
+                            $opt = $conditions;
+                        }
+                        $conds = [];
+                        foreach ( $opt as $sort_key => $direction ) {
+                            if (! $this->has_column( $sort_key ) ) continue;
+                            if ( $colprefix && strpos( $sort_key, $colprefix ) !== 0 )
+                                if ( ( $colprefix && !$in_join ) 
+                                    || ( $in_join && strpos( $sort_key, '.' ) === false ) )
+                                        $sort_key = $colprefix . $sort_key;
+                            $direction = stripos( $direction, 'ASC' ) === 0 ? 'ASC' : 'DESC';
+                            $conds[] = "{$sort_key} {$direction}";
+                        }
+                        $opt = count( $conds ) ? ' ORDER BY ' . join( ',', $conds ) : '';
                     }
-                    $opt .= $direction . ' ';
                 }
                 if ( isset( $limit ) ) {
                     if (! isset( $offset ) ) $offset = 0;
@@ -1344,6 +1477,9 @@ class PADOBaseModel {
                 }
             }
             $sql .= $opt;
+        }
+        if ( is_array( $ex_vars ) && count( $ex_vars ) ) {
+            $vals = array_merge( $vals, $ex_vars );
         }
         if ( $pado->debug === 3 ) $pado->debugPrint( $sql );
         if ( $pado->debug === 3 ) var_dump( $vals );
@@ -1469,9 +1605,9 @@ class PADOBaseModel {
  * @param             : See load method.
  * @return int $count : Number of objects.
  */
-    function count ( $terms = [], $args = [], $cols = '', $extra = '' ) {
+    function count ( $terms = [], $args = [], $cols = '', $extra = '', $ex_vars = [] ) {
         $args['count'] = true;
-        return $this->load( $terms, $args, $cols, $extra );
+        return $this->load( $terms, $args, $cols, $extra, $ex_vars );
     }
 
 /**
