@@ -95,10 +95,30 @@ $('input[name=setting_bannedwords_inheritance]').change(function(){
     if ( $(this).val() == 1 ) {
         $('#setting_bannedwords_rules').hide();
         $('#bannedwords_hint').hide();
+        $('#setting_bannedwords_force').hide();
     } else {
         $('#setting_bannedwords_rules').show();
         $('#bannedwords_hint').show();
+        $('#setting_bannedwords_force').show();
     }
 });
 </script>
 </mt:if>
+<div class="row form-group">
+  <div class="col-lg-2">
+    <label for="setting_bannedwords_force">
+      <mt:trans phrase="Force" component="BannedWords">
+    </label>
+  </div>
+  <div class="col-lg-10">
+    <input type="hidden" name="setting_bannedwords_force" value="0">
+    <label class="custom-control custom-checkbox">
+    <input class="custom-control-input watch-changed bannedwords_target_model"
+      <mt:if name="setting_bannedwords_force">checked</mt:if>
+      type="checkbox" name="setting_bannedwords_force" id="setting_bannedwords_force" value="1">
+      <span class="custom-control-indicator"></span>
+      <span class="custom-control-description"> 
+      <mt:trans phrase="Do not allow saving of objects that contain prohibited words" component="BannedWords"></span>
+    </label>
+  </div>
+</div>

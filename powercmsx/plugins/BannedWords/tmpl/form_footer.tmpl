@@ -41,9 +41,11 @@ $('#save_ignore_banned_words').click(function(){
 $("input[name='banned_words_replace_columns[]']").change(function(){
     __banned_words_button();
 });
+<mt:unless name="banned_words_force">
 $("#banned_words_ignore_uncheck").change(function(){
     __banned_words_button();
 });
+</mt:unless>
 function __banned_words_button () {
     var selected = false;
     var all_selected = true;
@@ -54,11 +56,13 @@ function __banned_words_button () {
             all_selected = false;
         }
     });
+    <mt:unless name="banned_words_force">
     if (! selected ) {
         selected = $("#banned_words_ignore_uncheck").prop('checked');
     } else if ( all_selected ) {
         all_selected = $("#banned_words_ignore_uncheck").prop('checked');
     }
+    </mt:unless>
     if ( selected ) {
         $('.apply_banned_words').prop('disabled', false);
         $('.apply_banned_words').removeClass('disabled');

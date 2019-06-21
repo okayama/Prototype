@@ -37,6 +37,7 @@
   </tr>
   </mt:loop>
 <mt:if name="__last__">
+<mt:unless name="banned_words_force">
 <tr>
   <td style="padding-top:9px !important;padding-bottom:0px !important">
   <label class="custom-control custom-checkbox">
@@ -48,6 +49,7 @@
   </label>
   </td>
 </tr>
+</mt:unless>
 <tr>
   <td style="padding-top:9px !important;padding-bottom:0px !important;padding-left:0px !important;padding-right:7px !important">
   <button type="button" id="apply_banned_words" disabled class="apply_banned_words disabled btn btn-primary full"><mt:trans phrase="Apply"></button>
@@ -73,6 +75,7 @@ $('#banned_words_replace_all').change(function(){
 </mt:loop>
 <mt:unless name="banned_words_replace_map">
 <table class="table mb-4">
+<mt:unless name="banned_words_force">
 <tr>
   <td style="padding-top:9px !important;padding-bottom:0px !important">
   <label class="custom-control custom-checkbox">
@@ -84,6 +87,7 @@ $('#banned_words_replace_all').change(function(){
   </label>
   </td>
 </tr>
+</mt:unless>
 <tr>
   <td style="padding-top:9px !important;padding-bottom:0px !important;padding-left:0px !important;padding-right:7px !important">
   <button type="button" id="save_ignore_banned_words" class="disabled apply_banned_words btn btn-primary full"><mt:trans phrase="Save"></button>

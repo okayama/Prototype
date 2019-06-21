@@ -49,8 +49,10 @@ class BannedWords extends PTPlugin {
         $inheritance = $this->get_config_value( 'bannedwords_inheritance', $workspace_id );
         if ( $inheritance ) {
             $rules = trim( $this->get_config_value( 'bannedwords_rules', 0 ) );
+            $force = $this->get_config_value( 'bannedwords_force', 0 );
         } else {
             $rules = trim( $this->get_config_value( 'bannedwords_rules', $workspace_id ) );
+            $force = $this->get_config_value( 'bannedwords_force', $workspace_id );
         }
         $rules = preg_replace( "/\r\n|\r/","\n", $rules );
         $rules = explode( "\n", $rules );
@@ -248,7 +250,8 @@ class BannedWords extends PTPlugin {
                 }
             }
         }
-        $ignore_uncheck = $app->param( 'banned_words_ignore_uncheck' );
+        $app->ctx->vars['banned_words_force'] = $force;
+        $ignore_uncheck = $force ? 0 : $app->param( 'banned_words_ignore_uncheck' );
         if (! $ignore_uncheck && ! empty( $banned_words ) ) {
             $error_messages = [];
             foreach ( $banned_words as $column_name => $error ) {
@@ -271,9 +274,13 @@ class BannedWords extends PTPlugin {
             $app->ctx->vars['banned_words_hilight_ids'] = array_keys( $hilight_ids );
             $app->ctx->vars['banned_words_replace_map'] = $replace_map;
             $form_header = $app->ctx->build( file_get_contents( $tmpl ) );
+            $form_header = isset( $app->ctx->vars['form_header'] ) && $app->ctx->vars['form_header']
+                         ? $app->ctx->vars['form_header'] . $form_header : $form_header;
             $app->ctx->vars['form_header'] = $form_header;
             $tmpl = $this->path() . DS . 'tmpl' . DS . 'form_footer.tmpl';
             $form_footer = $app->ctx->build( file_get_contents( $tmpl ) );
+            $form_footer = isset( $app->ctx->vars['form_footer'] ) && $app->ctx->vars['form_footer']
+                         ? $app->ctx->vars['form_footer'] . $form_footer : $form_footer;
             $app->ctx->vars['form_footer'] = $form_footer;
             return false;
         }

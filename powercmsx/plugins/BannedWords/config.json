@@ -12,7 +12,8 @@
     "settings"    : {
         "bannedwords_models" : "entry,page,tag",
         "bannedwords_inheritance" : 0,
-        "bannedwords_rules" : ""
+        "bannedwords_rules" : "",
+        "bannedwords_force" : 0
     },
     "hooks": {
         "bannedwords_post_init": {

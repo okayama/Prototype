@@ -15,5 +15,7 @@
     "The target field is not selected." : "対象のフィールドが選択されていません。",
     "Ignore the unchecked ones and save the object" : "チェックのないものは無視してオブジェクトを保存する",
     "Ignore banned words and save the object" : "禁止用語を無視してオブジェクトを保存する",
-    "Are you sure you want to ignore banned words and save this object?" : "禁止用語を無視してオブジェクトを保存しますか?"
+    "Are you sure you want to ignore banned words and save this object?" : "禁止用語を無視してオブジェクトを保存しますか?",
+    "Force" : "強制",
+    "Do not allow saving of objects that contain prohibited words" : "禁止用語を含むオブジェクトの保存を許可しない"
 }
