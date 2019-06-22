@@ -26,21 +26,28 @@ class HTMLImporter extends PTPlugin {
             if ( $app->mode == 'data_migration' ) {
                 continue;
             }
+            if ( $table->name == 'entry' || $table->name == 'page' ) continue;
             $primary = $table->primary;
             $primary_col = $app->db->model( 'column' )->get_by_key( ['table_id' => $table->id, 'name' => $primary ] );
             $models_map = ['primary' => $app->translate( $app->escape( $primary_col->label ) ) ];
-            $body_col = $app->db->model( 'column' )->get_by_key( ['table_id' => $table->id, 'type' => 'text'],
-                                                          ['sort' => 'order', 'direction' => 'ascend'] );
-            if (! $body_col->id ) {
-                $column = $app->db->model( 'column' )->get_by_key( ['table_id' => $table->id, 'type' => 'string', 'name' => ['!=' => $table->primary ] ],
-                                                              ['sort' => 'order', 'direction' => 'ascend'] );
+            $extra = "AND column_name not like 'rev_%' AND column_name != 'basename' AND column_name != 'uuid'"
+                   . " AND column_name != 'extra_path' AND column_name != 'class'";
+            $body_col = $app->db->model( 'column' )->load( ['table_id' => $table->id, 'type' => 'text'],
+                                                           ['sort' => 'order', 'direction' => 'ascend'], '*', $extra );
+            $body_col = is_array( $body_col ) && count( $body_col ) ? $body_col[0] : null;
+            if (! $body_col ) {
+                $body_col = $app->db->model( 'column' )->load( ['table_id' => $table->id, 'type' => 'string',
+                                                                'name' => ['!=' => $table->primary ] ],
+                                                               ['sort' => 'order', 'direction' => 'ascend'], '*', $extra );
+                $body_col = is_array( $body_col ) && count( $body_col ) ? $body_col[0] : null;
             }
             $body = '';
-            if ( $body_col->id ) {
+            if ( $body_col ) {
                 $body = $app->translate( $app->escape( $body_col->label ) );
             }
             $models_map['body'] = $body;
-            $keywords = $app->db->model( 'column' )->get_by_key( ['table_id' => $table->id, 'name' => 'keywords', 'type' => ['IN' => ['string', 'text'] ] ] );
+            $keywords = $app->db->model( 'column' )->get_by_key( ['table_id' => $table->id, 'name' => 'keywords',
+                                                                  'type' => ['IN' => ['string', 'text'] ] ] );
             if ( $keywords->id ) {
                 $models_map['keywords'] = true;
             } else {
@@ -271,14 +278,19 @@ class HTMLImporter extends PTPlugin {
         $body_col = $model_type == 'entry' ? 'text' : '';
         if ( $model_type != 'entry' ) {
             $title_col = $table->primary;
-            $column = $app->db->model( 'column' )->get_by_key( ['table_id' => $table->id, 'type' => 'text'],
-                                                          ['sort' => 'order', 'direction' => 'ascend'] );
-            if (! $column->id ) {
-                $column = $app->db->model( 'column' )->get_by_key( ['table_id' => $table->id, 'type' => 'string', 'name' => ['!=' => $table->primary ] ],
-                                                              ['sort' => 'order', 'direction' => 'ascend'] );
+            $extra = "AND column_name not like 'rev_%' AND column_name != 'basename' AND column_name != 'uuid'"
+                   . " AND column_name != 'extra_path' AND column_name != 'class'";
+            $body_col = $app->db->model( 'column' )->load( ['table_id' => $table->id, 'type' => 'text'],
+                                                          ['sort' => 'order', 'direction' => 'ascend'], '*', $extra );
+            $body_col = is_array( $body_col ) && count( $body_col ) ? $body_col[0] : null;
+            if (! $body_col ) {
+                $body_col = $app->db->model( 'column' )->load( ['table_id' => $table->id, 'type' => 'string',
+                                                                'name' => ['!=' => $table->primary ] ],
+                                                               ['sort' => 'order', 'direction' => 'ascend'], '*', $extra );
+                $body_col = is_array( $body_col ) && count( $body_col ) ? $body_col[0] : null;
             }
-            if ( $column->id ) {
-                $body_col = $column->name;
+            if ( $body_col ) {
+                $body_col = $body_col->name;
             }
         }
         $asset_extra_path = $workspace ? $workspace->extra_path : $app->extra_path;
