@@ -1,7 +1,7 @@
 {
     "label"    : "Asset",
     "plural"   : "Assets",
-    "version"  : "1.6",
+    "version"  : "1.7",
     "primary"  : "label",
     "display_system": 1,
     "order"    : 80,
@@ -30,8 +30,7 @@
             "not_null": 1
         },
         "description": {
-            "type": "string",
-            "size": 255
+            "type": "text"
         },
         "file": {
             "type": "blob",
