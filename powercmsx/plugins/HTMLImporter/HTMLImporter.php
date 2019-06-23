@@ -161,8 +161,8 @@ class HTMLImporter extends PTPlugin {
 
     function import_html ( $app, $import_files, $session ) {
         $migrator = $app->component( 'DataMigrator' );
-        require_once( 'extlib' . DS . 'ExtractContent.php' );
-        require_once( 'extlib' . DS . 'outputfilter.trimwhitespace.php' );
+        require_once( LIB_DIR . 'ExtractContent' . DS . 'ExtractContent.php' );
+        require_once( LIB_DIR . 'Smarty' . DS . 'outputfilter.trimwhitespace.php' );
         // TODO:: Convert href to root relative path.
         // TODO:: Set datetime from server timestamp.
         // TODO:: Topic Path or breadcrumb.
