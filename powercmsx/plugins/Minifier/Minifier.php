@@ -38,8 +38,7 @@ class Minifier extends PTPlugin {
 
     function hdlr_htmlminifier ( $args, $content, $ctx, &$repeat ) {
         if ( isset( $content ) ) {
-            require_once( dirname( __FILE__ )
-                . DS . 'extlib' . DS . 'outputfilter.trimwhitespace.php' );
+            require_once( LIB_DIR . 'Smarty' . DS . 'outputfilter.trimwhitespace.php' );
             $content = smarty_outputfilter_trimwhitespace( $content );
         }
         return $content;
