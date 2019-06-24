@@ -301,6 +301,16 @@ class ExtractContent {
                     $this->html = $content;
                     $result = $this->analyse();
                     $content = $result[0];
+                    // clean up html
+                    $html_content = "<html><body>{$content}";
+                    $_dom = new DomDocument();
+                    if (! $_dom->loadHTML( mb_convert_encoding( $html_content, 'HTML-ENTITIES', 'utf-8' ) ) ) {
+                    } else {
+                        $body_element = $_dom->getElementsByTagName( 'body' );
+                        if ( $body_element->length ) {
+                            $content = $this->innerHTML( $body_element->item( 0 ) );
+                        }
+                    }
                 }
             }
         }
