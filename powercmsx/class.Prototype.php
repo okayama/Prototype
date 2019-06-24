@@ -8146,7 +8146,6 @@ class Prototype {
                         }
                     }
                 } else {
-                    $app->publish_callbacks = true;
                     if ( $app->publish_callbacks ) {
                         $app->init_callbacks( 'template', 'start_publish' );
                         $callback = ['name' => 'start_publish', 'model' => 'template',
