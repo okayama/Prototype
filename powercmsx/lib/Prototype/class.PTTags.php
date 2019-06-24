@@ -2248,10 +2248,12 @@ class PTTags {
     }
 
     function hdlr_property ( $args, $ctx ) {
-        $app = $ctx->app;
         $name = isset( $args['name'] ) ? $args['name'] : '';
-        if ( $name && isset( $app->$name ) && strpos( $name, 'password' ) === false ) {
-            return $app->$name;
+        $component = isset( $args['component'] ) ? $args['component'] : '';
+        $component = $component ? $ctx->app->component( $component ) : $ctx->app;
+        if ( $name && $component && property_exists( $component, $name )
+            && stripos( $name, 'password' ) === false ) {
+            return $component->$name;
         }
     }
 

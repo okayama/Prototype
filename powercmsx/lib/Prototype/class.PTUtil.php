@@ -636,6 +636,9 @@ class PTUtil {
         if ( strpos( $dir, realpath( $app->temp_dir ) ) === 0 ) {
             return true;
         }
+        if ( strpos( $dir, realpath( $app->support_dir ) ) === 0 ) {
+            return true;
+        }
         if (! $app->app_protect ) return true;
         $dir = rtrim( $dir, DS );
         $app_path = $app->pt_dir;

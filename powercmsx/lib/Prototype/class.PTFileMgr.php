@@ -85,7 +85,7 @@ class PTFileMgr {
         return mkdir( $path, $mode, true );
     }
 
-    public static function rmdir ( $dir, $children_only = false ) {
+    public function rmdir ( $dir, $children_only = false ) {
         require_once( 'class.PTUtil.php' );
         return PTUtil::remove_dir( $dir, $children_only );
     }
