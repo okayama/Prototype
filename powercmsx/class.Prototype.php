@@ -4996,6 +4996,12 @@ class Prototype {
         }
         if ( $app->param( '_apply_to_master' ) && $table->has_status ) {
             $obj->status( $original->status );
+            if ( $obj->_model == 'asset' ) {
+                $file_name = $original->file_name;
+                $file_ext = PTUtil::get_extension( $obj->file_name );
+                $file_basename = preg_replace( "/$file_ext$/", '', $file_name );
+                $obj->file_name( "{$file_basename}{$file_ext}" );
+            }
         }
         if (! $obj->save() ) return $app->rollback( $errstr );
         if (! empty( $file_metadata ) ) {
@@ -8002,13 +8008,14 @@ class Prototype {
                 $file_ext = strpos( $file_ext, '.' ) === false ?
                     '' : preg_replace( '/^.*\.([^\.]*$)/', '$1', $file_ext );
                 $basename = preg_replace( "/\.{$file_ext}$/", '', $file_path );
-                $i = 1;
+                $i = 0;
                 $unique = false;
                 while ( $unique === false ) {
-                    $rename = $basename . '-' . $i . '.' . $file_ext;
-                    $exists = $db->model( 'urlinfo' )->get_by_key(
-                        ['file_path' => $rename ] );
-                    if (!$exists->id ) {
+                    $rename = $i ? "{$basename}-{$i}.{$file_ext}" : "{$basename}.{$file_ext}";
+                    $exists = $db->model( 'urlinfo' )->load(
+                        ['file_path' => $rename ], ['limit' => 1], 'id' );
+                    if ( is_array( $exists ) && count( $exists ) ) {
+                    } else {
                         $unique = true;
                         $file_path = $rename;
                         break;
