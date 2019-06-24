@@ -83,6 +83,33 @@ class ExtractContent {
         $this->options[$name] = $value;
     }
 
+    public function getTextContent () {
+        $content = $this->get_main();
+        $content = $this->title . "\n\n" . $content;
+        $html_content = "<html><body>{$content}";
+        $dom = new DomDocument();
+        if (! $dom->loadHTML( mb_convert_encoding( $html_content, 'HTML-ENTITIES', 'utf-8' ) ) ) {
+            return $content;
+        }
+        $elements = $dom->getElementsByTagName( 'img' );
+        if ( $elements->length ) {
+             for ( $i = 0; $i < $elements->length; $i++ ) {
+                  $ele = $elements->item( $i );
+                  $alt = $ele->getAttribute( 'alt' );
+                  $text = $dom->createTextNode( $alt );
+                  $parent = $ele->parentNode;
+                  $parent->insertBefore( $text, $ele );
+                  $parent->removeChild( $ele );
+            }
+        }
+        $body_element = $dom->getElementsByTagName( 'body' );
+        if ( $body_element->length ) {
+            $content = $this->innerHTML( $body_element->item( 0 ) );
+        }
+        $content = strip_tags( $content );
+        return $content;
+    }
+
     public function get_main () {
         $data = $this->html;
         $dom = $this->dom;
@@ -460,17 +487,21 @@ class ExtractContent {
                 return $b;
             }
         });
-        $contentsRange = array_keys( $matchContents );
-        $max = max($contentsRange);
-        $min = min($contentsRange);
-        $max++;
-        $results = [];
-        for ( $i = $min; $i < $max; $i++ ) {
-            $results[] = $allContents[$i];
+        if (! empty ( $matchContents ) ) {
+            $contentsRange = array_keys( $matchContents );
+            $max = max($contentsRange);
+            $min = min($contentsRange);
+            $max++;
+            $results = [];
+            for ( $i = $min; $i < $max; $i++ ) {
+                $results[] = $allContents[$i];
+            }
+            $contentsRerult = implode( "\n", $results );
+            $contentsRerult = $this->removeTags($contentsRerult);
+            $body[0] = trim( $contentsRerult );
+        } else {
+            $body[0] = '';
         }
-        $contentsRerult = implode( "\n", $results );
-        $contentsRerult = $this->removeTags($contentsRerult);
-        $body[0] = trim( $contentsRerult );
         $this->title = $title;
         $this->content = $body[0];
         return [
