@@ -225,7 +225,7 @@ class PTViewer {
                     $form->$mode( $app, $url );
                 }
             }
-            require_once( $pt_path . 'lib' . DS . 'Prototype' . DS . 'class.PTPublisher.php' );
+            require_once( LIB_DIR . 'Prototype' . DS . 'class.PTPublisher.php' );
             $pub = new PTPublisher;
             if ( $mtime ) {
                 $mtime = ( $mtime > $url->filemtime ) ? $mtime : $url->filemtime;
