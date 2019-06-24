@@ -73,6 +73,7 @@ class Prototype {
     public    $init_tags;
     public    $protocol;
     public    $log_dir;
+    public    $support_dir;
     public    $screen_id;
     public    $plugin_order  = 0; // 0=asc, 1=desc
     public    $template_paths= [ ALT_TMPL, TMPL_DIR ];
@@ -373,8 +374,8 @@ class Prototype {
     }
 
     function init ( $dsn = null, $dbuser = null, $dbpasswd = null ) {
-        if (! $this->log_dir )
-            $this->log_dir = isset( $this->log_path ) ? $this->log_path : __DIR__ . DS . 'log';
+        if (! $this->log_dir ) $this->log_dir = __DIR__ . DS . 'log';
+        if (! $this->support_dir ) $this->support_dir = __DIR__ . DS . 'support';
         if ( $this->timezone ) date_default_timezone_set( $this->timezone );
         require_once( LIB_DIR . 'PADO' . DS . 'class.pado.php' );
         require_once( LIB_DIR . 'PAML' . DS .'class.paml.php' );
