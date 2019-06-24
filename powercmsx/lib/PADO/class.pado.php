@@ -1440,7 +1440,7 @@ class PADOBaseModel {
                 }
                 if ( $sql && $group_by && isset( $args['sort'] ) &&
                    ( strtolower( $args['sort'] ) == 'count' || strtolower( $args['sort'] ) == 'name' )
-                    && stripos( $extra, 'ORDER BY' ) !== false ) {
+                    && stripos( $extra, 'ORDER BY' ) === false ) {
                     $_order_by = rtrim( $count_group_by, ',' );
                     if ( strtolower( $args['sort'] ) == 'count' ) {
                         $sql .= " ORDER BY COUNT({$_order_by}) $direction";
