@@ -1051,6 +1051,7 @@ class PADOBaseModel {
                 }, $colprefix );
                 $count_group_by = join( ',', $columns );
                 $group_by = " GROUP BY {$count_group_by} ";
+                // $group_by .= " ORDER BY COUNT({$count_group_by}) DESC";
                 $count_group_by .= ',';
             }
             if ( isset( $args['join'] ) ) {
@@ -1432,18 +1433,27 @@ class PADOBaseModel {
                         }
                     }
                 }
-                if ( $opt ) {
+                if ( $direction ) {
+                    $direction = stripos( $direction, 'ASC' ) === 0 ? 'ASC' : 'DESC';
+                } else {
+                    $direction = 'ASC';
+                }
+                if ( $sql && $group_by && isset( $args['sort'] ) &&
+                   ( strtolower( $args['sort'] ) == 'count' || strtolower( $args['sort'] ) == 'name' )
+                    && stripos( $extra, 'ORDER BY' ) !== false ) {
+                    $_order_by = rtrim( $count_group_by, ',' );
+                    if ( strtolower( $args['sort'] ) == 'count' ) {
+                        $sql .= " ORDER BY COUNT({$_order_by}) $direction";
+                    } else {
+                        $sql .= " ORDER BY {$_order_by} $direction";
+                    }
+                } else if ( $opt ) {
                     if ( is_string( $opt ) ) {
                         if ( $colprefix && strpos( $opt, $colprefix ) !== 0 )
                             if ( ( $colprefix && !$in_join ) 
                                 || ( $in_join && strpos( $opt, '.' ) === false ) )
                                     $opt = $colprefix . $opt;
                         $opt = " ORDER BY {$opt} ";
-                        if ( $direction ) {
-                            $direction = stripos( $direction, 'ASC' ) === 0 ? 'ASC' : 'DESC';
-                        } else {
-                            $direction = 'ASC';
-                        }
                         $opt .= $direction . ' ';
                     } else if ( is_array( $opt ) ) {
                         if ( array_values( $opt ) === $opt ) {

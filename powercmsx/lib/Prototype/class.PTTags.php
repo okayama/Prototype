@@ -940,6 +940,7 @@ class PTTags {
                    : $group[ count( $group ) - 1 ];
             unset( $args['model'], $args['group'] );
             $obj = $app->db->model( $model )->new();
+            $model = $obj->_model;
             $terms = [];
             foreach ( $args as $key => $value ) {
                 if ( $obj->has_column( $key ) ) {
@@ -950,7 +951,7 @@ class PTTags {
             if ( isset( $args['sort_by'] ) ) {
                 $sort_by = $args['sort_by'];
             }
-            if ( isset( $sort_by ) && $obj->has_column( $sort_by ) ) {
+            if ( isset( $sort_by ) && ( $sort_by == 'name' || $sort_by == 'count' ) ) {
                 $params['sort'] = $sort_by;
             }
             if ( isset( $args['sort_order'] ) ) {

@@ -184,11 +184,11 @@
   </h2>
   <div class="card-block">
 <mt:if name="workspace_id">
-<mt:countgroupby model="workflow" count="model" group="model" sort_by="order" workspace_ids="$workspace_id">
+<mt:countgroupby model="workflow" count="model" group="model" workspace_ids="$workspace_id">
   <mt:var name="_count_group_by">
 </mt:countgroupby>
 <mt:else>
-<mt:countgroupby model="workflow" count="model" group="model" sort_by="order">
+<mt:countgroupby model="workflow" count="model" group="model">
   <mt:var name="_count_group_by">
 </mt:countgroupby>
 </mt:if>
