@@ -7952,7 +7952,10 @@ class Prototype {
             }
             $app->published_files[ $file_path ] = true;
             $ui->file_path( $file_path );
-            $ui->publish_file( $publish );
+            if ( $ui->publish_file != $publish ) {
+                $ui->publish_file( $publish );
+                $ui->save();
+            }
             $template = $urlmapping->template;
             if ( $template && $template->status != 2 ) {
                 $unlink = true;
@@ -8154,6 +8157,13 @@ class Prototype {
                         }
                     }
                 } else {
+                    if ( $app->publish_callbacks ) {
+                        $app->init_callbacks( 'template', 'start_publish' );
+                        $callback = ['name' => 'start_publish', 'model' => 'template',
+                                     'urlmapping' => $urlmapping, 'urlinfo' => $ui,
+                                     'object' => $obj, 'unlink' => $unlink ];
+                        $app->run_callbacks( $callback, 'template', $unlink );
+                    }
                     if ( $unlink ) {
                         if ( $fmgr->exists( $file_path ) ) {
                             $fmgr->unlink( $file_path );
