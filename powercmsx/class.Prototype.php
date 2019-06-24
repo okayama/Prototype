@@ -9039,7 +9039,7 @@ class Prototype {
                      'scheme' => $scheme, 'table' => $table,
                      'args' => $tag_args ];
         if ( $reration_type == 'int' && $int_col ) {
-            $terms[ $int_col ] = $obj->id;
+            $terms[ $int_col ] = $obj->$int_col;
             $app->run_callbacks( $callback, $related_obj, $terms, $args, $extra, $ex_vals );
             $objects = $_related_obj->load( $terms, $args, $cols, $extra, $ex_vals );
         } else {
