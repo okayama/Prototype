@@ -8,6 +8,6 @@ $member = $base_path . 'plugins' . DS . 'Members' . DS .
           'lib' . DS . 'Prototype' . DS . 'class.PTMembers.php';
 require_once( $member );
 $app = new PTMembers();
-$app->app_path = $base_path;
+$app->app_path = realpath( $base_path );
 $app->init();
 $app->run();
