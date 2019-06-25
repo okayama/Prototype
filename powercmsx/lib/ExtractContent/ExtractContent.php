@@ -85,7 +85,7 @@ class ExtractContent {
 
     public function getTextContent () {
         $content = $this->get_main();
-        $content = $this->title . "\n\n" . $content;
+        // $content = $this->title . "\n\n" . $content;
         $html_content = "<html><body>{$content}";
         $dom = new DomDocument();
         if (! $dom->loadHTML( mb_convert_encoding( $html_content, 'HTML-ENTITIES', 'utf-8' ) ) ) {
