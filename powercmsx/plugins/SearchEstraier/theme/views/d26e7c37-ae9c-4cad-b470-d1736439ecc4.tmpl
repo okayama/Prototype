@@ -11,11 +11,11 @@
 <div class="container-fluid">
 <div class="row">
   <div class="col-lg-12">
-    <form method="GET" action="">
+    <form method="GET" action="<mt:var name="current_archive_url">">
     <div class="form-inline">
       <label><span class="label sr-only"><mt:trans phrase="Keyword" component="SearchEstraier"> </span><input type="text" class="form-control" value="<mt:var name="query" escape>" name="query" placeholder="<mt:trans phrase="Keyword" component="SearchEstraier">"></label>
       <label class="custom-control custom-radio ml-3">
-        <input class="custom-control-input" type="radio" name="and_or" value="AND" <mt:unless name="request.and_or" eq="OR">checked</mt:unless>>
+        <input class="custom-control-input" type="radio" name="and_or" value="AND" <mt:if name="request.and_or" eq="AND">checked</mt:if>>
         <span class="custom-control-indicator"></span>
         <span class="custom-control-description">AND</span>
       </label>
@@ -24,10 +24,10 @@
         <span class="custom-control-indicator"></span>
         <span class="custom-control-description">OR</span>
       </label>
-      <input type="submit" class="form-control" value="<mt:trans phrase="Search" component="SearchEstraier">">
+      <button type="submit" class="form-control"><mt:trans phrase="Search" component="SearchEstraier"></button>
     </div>
     </form>
-    <mt:estraiersearch phrase="$query" prefix="estraier_" and_or="AND" default_limit="10" exclude_workspaces="1,2">
+    <mt:estraiersearch phrase="$query" prefix="estraier_" and_or="AND" default_limit="10">
     <mt:if name="__first__">
     <mt:setvar name="search_hit" value="$estraier_hit">
     <p class="mt-3"><mt:trans phrase="Search results for '%s'" params="$query" component="SearchEstraier" escape> (<mt:trans phrase="%s results" component="SearchEstraier" params="$search_hit">)</p>
@@ -35,7 +35,7 @@
     <div class="col-lg-12">
     <ul></mt:if>
       <li>
-      <a href="<mt:var name="estraier_uri" escape>" target="_parent"><strong><mt:var name="estraier_title" escape></strong></a>
+      <a href="<mt:var name="estraier_uri" escape>"><strong><mt:var name="estraier_title" escape></strong></a>
       <p><mt:var name="estraier_snippet"></p>
       </li>
     <mt:if name="__last__"></ul>
@@ -48,31 +48,31 @@
     <nav aria-label="<mt:trans phrase="Page Navigation" component="SearchEstraier">">
       <ul class="pagination justify-content-center">
         <li class="page-item">
-          <a title="<mt:trans phrase="First" component="SearchEstraier">" class="page-link" href="?query=<mt:var name="query" escape encode_url="1">" aria-label="<mt:trans phrase="First" component="SearchEstraier">">
-            <span aria-hidden="true">&laquo;</span>
+          <a title="<mt:trans phrase="First" component="SearchEstraier">" class="page-link" href="<mt:var name="current_archive_url">?query=<mt:var name="query" escape encode_url="1"><mt:if name="request.and_or">&amp;and_or=<mt:var name="request.and_or" escape></mt:if>" aria-label="<mt:trans phrase="First" component="SearchEstraier">">
+            <span>&laquo;</span>
             <span class="sr-only"><mt:trans phrase="First" component="SearchEstraier"></span>
           </a>
         </li>
         <mt:if name="request.offset">
-          <a title="<mt:trans phrase="Previous" component="SearchEstraier">" class="page-link" href="?query=<mt:var name="query" escape encode_url="1">&amp;offset=<mt:var name="estraier_prevoffset">" aria-label="<mt:trans phrase="Previous" component="SearchEstraier">">
-            <span aria-hidden="true">&lsaquo;</span>
+          <a title="<mt:trans phrase="Previous" component="SearchEstraier">" class="page-link" href="<mt:var name="current_archive_url">?query=<mt:var name="query" escape encode_url="1">&amp;offset=<mt:var name="estraier_prevoffset"><mt:if name="request.and_or">&amp;and_or=<mt:var name="request.and_or" escape></mt:if>" aria-label="<mt:trans phrase="Previous" component="SearchEstraier">">
+            <span>&lsaquo;</span>
             <span class="sr-only"><mt:trans phrase="Previous" component="SearchEstraier"></span>
           </a>
         </mt:if>
     </mt:if>
-    <li class="page-item<mt:if name="__value__" eq="$estraier_currentpage"> active</mt:if>">
-    <a class="page-link" href="?query=<mt:var name="query" escape encode_url="1">&amp;offset=<mt:math eq="x * y" x="$__index__" y="$estraier_limit">"><mt:var name="__value__"></a>
-    </li>
+        <li class="page-item<mt:if name="__value__" eq="$estraier_currentpage"> active</mt:if>">
+        <a class="page-link" href="<mt:var name="current_archive_url">?query=<mt:var name="query" escape encode_url="1">&amp;offset=<mt:math eq="x * y" x="$__index__" y="$estraier_limit"><mt:if name="request.and_or">&amp;and_or=<mt:var name="request.and_or" escape></mt:if>"><mt:var name="__value__"></a>
+        </li>
     <mt:if name="__last__">
         <mt:if name="estraier_nextoffset">
-          <a title="<mt:trans phrase="Next" component="SearchEstraier">" class="page-link" href="?query=<mt:var name="query" escape encode_url="1">&amp;offset=<mt:var name="estraier_nextoffset">" aria-label="<mt:trans phrase="Next" component="SearchEstraier">">
-            <span aria-hidden="true">&rsaquo;</span>
+          <a title="<mt:trans phrase="Next" component="SearchEstraier">" class="page-link" href="<mt:var name="current_archive_url">?query=<mt:var name="query" escape encode_url="1">&amp;offset=<mt:var name="estraier_nextoffset"><mt:if name="request.and_or">&amp;and_or=<mt:var name="request.and_or" escape></mt:if>" aria-label="<mt:trans phrase="Next" component="SearchEstraier">">
+            <span>&rsaquo;</span>
             <span class="sr-only"><mt:trans phrase="Next" component="SearchEstraier"></span>
           </a>
         </mt:if>
         <li class="page-item">
-          <a title="<mt:trans phrase="Last" component="SearchEstraier">" class="page-link" href="?query=<mt:var name="query" escape encode_url="1">&amp;offset=<mt:math eq="( x - 1 ) * y" x="$estraier_pagertotal" y="$estraier_limit">" aria-label="<mt:trans phrase="Last" component="SearchEstraier">">
-            <span aria-hidden="true">&raquo;</span>
+          <a title="<mt:trans phrase="Last" component="SearchEstraier">" class="page-link" href="<mt:var name="current_archive_url">?query=<mt:var name="query" escape encode_url="1">&amp;offset=<mt:math eq="( x - 1 ) * y" x="$estraier_pagertotal" y="$estraier_limit">" aria-label="<mt:trans phrase="Last" component="SearchEstraier">">
+            <span>&raquo;</span>
             <span class="sr-only"><mt:trans phrase="Last" component="SearchEstraier"></span>
           </a>
         </li>
