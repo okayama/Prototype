@@ -172,7 +172,7 @@ class Prototype {
                                 'import_objects', 'upload_objects', 'preview', 'debug',
                                 'can_edit_object', 'flush_session', 'update_dashboard',
                                 'get_temporary_file', 'clone_object', 'change_activity',
-                                'cleanup_tmp', 'manage_theme'];
+                                'cleanup_tmp', 'manage_theme', 'view_plugin_doc'];
 
     public    $callbacks     = ['pre_save'     => [], 'post_save'   => [],
                                 'pre_delete'   => [], 'post_delete' => [],
@@ -3100,6 +3100,11 @@ class Prototype {
     function manage_plugins ( $app ) {
         $plugin = new PTPlugin;
         return $plugin->manage_plugins( $app );
+    }
+
+    function view_plugin_doc ( $app ) {
+        $plugin = new PTPlugin;
+        return $plugin->view_plugin_doc( $app );
     }
 
     function manage_theme ( $app ) {

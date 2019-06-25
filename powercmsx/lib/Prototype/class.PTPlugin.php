@@ -1,4 +1,7 @@
 <?php
+
+use Michelf\Markdown;
+
 class PTPlugin {
 
     public $dictionary = [];
@@ -278,8 +281,8 @@ class PTPlugin {
                     $cfg['version'] = $old_version;
                 }
             }
+            $component = $app->component( $key );
             if ( $cfg['status'] && $app->user()->is_superuser ) {
-                $component = $app->component( $key );
                 if (! $component ) continue;
                 $models_dir = $component->path() . DS . 'models';
                 if ( is_dir( $models_dir ) ) {
@@ -301,6 +304,11 @@ class PTPlugin {
                     }
                 }
             }
+            $doc = $component->path() . DS . 'docs' . DS . 'README.' . $app->user->language . '.md';
+            unset( $cfg['document'] );
+            if ( file_exists ( $doc ) ) {
+                $cfg['document'] = 'README.' . $app->user->language . '.md';
+            }
             $plugins_loop[ $key ] = $cfg;
         }
         $ctx->local_vars['upgrade_count'] = $upgrade_count;
@@ -316,6 +324,28 @@ class PTPlugin {
         $ctx->local_vars['error'] = implode( "\n", $errors );
         $ctx->local_vars['plugins_loop'] = $plugins_loop;
         return $app->__mode( 'manage_plugins' );
+    }
+
+    function view_plugin_doc ( $app ) {
+        $workspace = $app->workspace()
+                   ? $app->workspace() : $app->db->model( 'workspace' )->new( ['id' => 0 ] );
+        if (! $app->can_do( 'manage_plugins', null, null, $workspace ) ) {
+            $app->error( 'Permission denied.' );
+        }
+        $plugin_id = $app->param( 'plugin_id' );
+        $component = $app->component( $plugin_id );
+        $doc = $component->path() . DS . 'docs' . DS . 'README.' . $app->user->language . '.md';
+        if ( file_exists ( $doc ) ) {
+            $html = file_get_contents( $doc );
+            require_once( LIB_DIR . 'php-markdown'
+                . DS . 'Michelf' . DS . 'Markdown.inc.php' );
+            $html = Markdown::defaultTransform( $html );
+            $app->ctx->local_vars['html'] = $html;
+            unset( $app->ctx->local_vars['user_id'] );
+            unset( $app->ctx->vars['user_id'] );
+            $app->ctx->local_vars['page_title'] = $component->name . ' / ' . basename( $doc );
+            return $app->__mode( 'view_plugin_doc' );
+        }
     }
 
     function get_config_value ( $name, $ws_id = 0, $inheritance = false ) {
