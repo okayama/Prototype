@@ -818,6 +818,9 @@ class PTImporter {
     }
 
     function upload_objects ( $app ) {
+        if ( empty( $_FILES ) ) {
+            $app->json_error( 'Please check the file size and data.' );
+        }
         $app->db->caching = false;
         $app->validate_magic( true );
         if (! $app->can_do( 'import_objects' ) ) {

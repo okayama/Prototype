@@ -159,6 +159,9 @@ class DataMigrator extends PTPlugin {
     }
 
     function upload_migration_file ( $app ) {
+        if ( empty( $_FILES ) ) {
+            $app->json_error( 'Please check the file size and data.' );
+        }
         $app->db->caching = false;
         $app->validate_magic( true );
         $magic = $app->magic();
