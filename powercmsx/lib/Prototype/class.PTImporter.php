@@ -174,10 +174,10 @@ class PTImporter {
                                 if ( $app->workspace() && $workspace_id != $app->workspace()->id ) {
                                     $workspace_id = (int) $app->workspace()->id;
                                 } else if (! $app->workspace() ) {
-                                    $obj_workspace = $app->db->model( 'workspace' )->load( $workspace_id );
-                                    if (! $obj_workspace ) {
-                                        $workspace_id = 0;
-                                    }
+                                    // $obj_workspace = $app->db->model( 'workspace' )->load( $workspace_id );
+                                    // if (! $obj_workspace ) {
+                                    $workspace_id = 0;
+                                    // }
                                 }
                                 $values[ $column ] = $workspace_id;
                             } else {
@@ -189,7 +189,9 @@ class PTImporter {
                             if ( isset( $values[ $primary_col ] ) ) {
                                 $obj_primary = $values[ $primary_col ];
                                 $existing_terms = [ $primary => $obj_primary ];
-                                $workspace_id = $app->workspace() ? $app->workspace()->id : 0;
+                                if ( !isset( $workspace_id ) ) {
+                                    $workspace_id = $app->workspace() ? $app->workspace()->id : 0;
+                                }
                                 if ( $app->db->model( $model )->has_column( 'workspace_id' ) ) {
                                     $existing_terms['workspace_id'] = (int)$workspace_id;
                                 }
