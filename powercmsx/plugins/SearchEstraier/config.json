@@ -1,0 +1,85 @@
+{
+    "label"       : "SearchEstraier",
+    "id"          : "searchestraier",
+    "component"   : "SearchEstraier",
+    "version"     : "1.0",
+    "author"      : "Alfasado Inc.",
+    "author_link" : "https://alfasado.net/",
+    "description" : "Provides in-site search function using HyperEstraier.",
+    "cfg_template": "cfg_template.tmpl",
+    "cfg_system"  : 1,
+    "cfg_space"   : 1,
+    "settings"    : {
+        "searchestraier_estcmd_path" : "/usr/local/bin/estcmd",
+        "searchestraier_data_dir" : "<mt:property name=\"support_dir\">/search/index",
+        "searchestraier_archive_types" : "entry,page",
+        "searchestraier_index_dinamic" : 1,
+        "searchestraier_enabled" : 0,
+        "searchestraier_doc_title" : "heading",
+        "searchestraier_mecab_path" : "/usr/local/bin/mecab"
+    },
+    "config_settings"    : {
+        "searchestraier_cookie_name" : "pt-visitor_interests",
+        "searchestraier_cookie_expires" : 365,
+        "searchestraier_cookie_path" : "/"
+    },
+    "hooks": {
+        "searchestraier_post_init": {
+            "post_init" : {
+                "component" : "SearchEstraier",
+                "priority"  : 1,
+                "method"    : "searchestraier_post_init"
+            }
+        },
+        "searchestraier_post_run": {
+            "post_run" : {
+                "component" : "SearchEstraier",
+                "priority"  : 1,
+                "method"    : "searchestraier_post_run"
+            }
+        }
+    },
+    "callbacks": {
+        "searchestraier_post_publish": {
+            "template" : {
+                "post_publish" : {
+                    "component" : "SearchEstraier",
+                    "priority"  : 1,
+                    "method" : "searchestraier_post_publish"
+                }
+            }
+        },
+        "searchestraier_start_publish": {
+            "template" : {
+                "start_publish" : {
+                    "component" : "SearchEstraier",
+                    "priority"  : 1,
+                    "method" : "searchestraier_start_publish"
+                }
+            }
+        }
+    },
+    "tags": {
+        "block": {
+            "estraiersearch" : {
+                "component" : "SearchEstraier",
+                "method" : "hdlr_estraier_search"
+            }
+        },
+        "function": {
+            "estraierjson" : {
+                "component" : "SearchEstraier",
+                "method" : "hdlr_estraier_json"
+            }
+        }
+    },
+    "tasks": {
+        "searchestraier_update_idx": {
+            "label"     : "Rebuild Index for HyperEstraier",
+            "component" : "SearchEstraier",
+            "priority"  : 100,
+            "method"    : "searchestraier_update_idx",
+            "frequency" : 1800
+        }
+    }
+}

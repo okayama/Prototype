@@ -1,0 +1,133 @@
+<mt:unless name="request.workspace_id">
+<div class="row form-group">
+  <div class="col-lg-2">
+    <label for="searchestraier_estcmd_path">
+      <mt:trans phrase="Path to estcmd" component="SearchEstraier">
+      <mt:var name="field_required">
+    </label>
+  </div>
+  <div class="col-lg-10 input-group">
+    <input type="text" id="searchestraier_estcmd_path" name="setting_searchestraier_estcmd_path" class="form-control" value="<mt:var name="setting_searchestraier_estcmd_path" escape>">
+  </div>
+</div>
+<div class="row form-group">
+  <div class="col-lg-2">
+    <label for="searchestraier_mecab_path">
+      <mt:trans phrase="Path to mecab" component="SearchEstraier">
+    </label>
+  </div>
+  <div class="col-lg-10 input-group">
+    <input type="text" id="searchestraier_mecab_path" name="setting_searchestraier_mecab_pathh" class="form-control" value="<mt:var name="setting_searchestraier_mecab_path" escape>">
+  </div>
+</div>
+</mt:unless>
+<div class="row form-group">
+  <div class="col-lg-12 input-group">
+    <input type="hidden" name="setting_searchestraier_enabled" value="0">
+    <label class="custom-control custom-checkbox">
+    <input id="searchestraier_enabled" class="custom-control-input watch-changed"
+     type="checkbox" name="setting_searchestraier_enabled" value="1" <mt:if name="setting_searchestraier_enabled">checked</mt:if>>
+        <span class="custom-control-indicator"></span>
+        <span class="custom-control-description"> 
+        <mt:trans phrase="Search enabled" component="SearchEstraier"></span>
+    </label>
+  </div>
+</div>
+<div class="row form-group">
+  <div class="col-lg-12 input-group">
+    <input type="hidden" name="setting_searchestraier_index_dinamic" value="0">
+    <label class="custom-control custom-checkbox">
+    <input id="searchestraier_index_dinamic" class="custom-control-input watch-changed"
+     type="checkbox" name="setting_searchestraier_index_dinamic" value="1" <mt:if name="setting_searchestraier_index_dinamic">checked</mt:if>>
+        <span class="custom-control-indicator"></span>
+        <span class="custom-control-description"> 
+        <mt:trans phrase="Search Dynamic Contents" component="SearchEstraier"></span>
+    </label>
+  </div>
+</div>
+<div class="row form-group">
+  <div class="col-lg-2">
+    <label for="searchestraier_data_dir">
+      <mt:trans phrase="Path to index" component="SearchEstraier">
+      <mt:var name="field_required">
+    </label>
+  </div>
+  <div class="col-lg-10">
+    <input type="text" id="searchestraier_data_dir" name="setting_searchestraier_data_dir" class="form-control" value="<mt:var name="setting_searchestraier_data_dir" escape>">
+  </div>
+</div>
+<div class="row form-group">
+  <div class="col-lg-2">
+    <label for="searchestraier_archive_types">
+      <mt:trans phrase="Archive Types" component="SearchEstraier">
+      <mt:var name="field_required">
+    </label>
+  </div>
+  <div class="col-lg-10">
+<mt:var name="setting_searchestraier_archive_types" split="," setvar="searchestraier_archive_types">
+<mt:unless name="workspace_id">
+<mt:setvar name="workspace_id" value="0">
+</mt:unless>
+<mt:countgroupby model="urlinfo" count="archive_type" group="archive_type" sort_by="count" sort_order="descend" workspace_ids="$workspace_id">
+  <mt:if name="count_group_by_archive_type">
+    <label class="custom-control custom-checkbox">
+    <input class="custom-control-input watch-changed group_by_archive_type"
+      <mt:ifinarray array="searchestraier_archive_types" value="$count_group_by_archive_type">checked</mt:ifinarray>
+      type="checkbox" name="bannedwords_target_model" value="<mt:var name="count_group_by_archive_type">">
+      <span class="custom-control-indicator"></span>
+      <span class="custom-control-description"> 
+      <mt:trans phrase="$count_group_by_archive_type" language="default" translate></span>
+    </label>
+  </mt:if>
+</mt:countgroupby>
+  </div>
+</div>
+<input type="hidden" id="setting_searchestraier_archive_types" name="setting_searchestraier_archive_types" class="form-control" value="<mt:var name="setting_searchestraier_archive_types" escape>">
+<script>
+$('.group_by_archive_type').change(function(){
+    var archive_types = $('#setting_searchestraier_archive_types').val();
+    var this_type = $(this).val();
+    archive_types = archive_types.split(',');
+    var result = $.inArray( this_type, archive_types );
+    if ( $(this).prop('checked') ) {
+        if ( result == -1 ) {
+            archive_types.push( this_type );
+            $('#setting_searchestraier_archive_types').val(archive_types.join(','));
+        }
+    } else {
+        if ( result != -1 ) {
+            archive_types.splice(result, 1); 
+            $('#setting_searchestraier_archive_types').val(archive_types.join(','));
+        }
+    }
+});
+</script>
+<div class="row form-group">
+  <div class="col-lg-2">
+    <label for="searchestraier_doc_title">
+      <mt:trans phrase="Document Title" component="SearchEstraier">
+    </label>
+  </div>
+  <div class="col-lg-10">
+    <label class="custom-control custom-radio">
+      <input class="custom-control-input" type="radio" id="searchestraier_doc_title"
+         name="setting_searchestraier_doc_title" value="heading" <mt:if name="setting_searchestraier_doc_title" eq="heading">checked</mt:if>>
+      <span class="custom-control-indicator"></span>
+      <span class="custom-control-description"><mt:trans phrase="First heading" component="SearchEstraier"></span>
+    </label>
+    <label class="custom-control custom-radio">
+      <input class="custom-control-input" type="radio"
+         name="setting_searchestraier_doc_title" value="title" <mt:if name="setting_searchestraier_doc_title" eq="title">checked</mt:if>>
+      <span class="custom-control-indicator"></span>
+      <span class="custom-control-description"><mt:trans phrase="Title element" component="SearchEstraier"></span>
+    </label>
+  <mt:ignore>
+    <label class="custom-control custom-radio">
+      <input class="custom-control-input" type="radio" id="searchestraier_doc_title"
+         name="setting_searchestraier_doc_title" value="archive" <mt:if name="setting_searchestraier_doc_title" eq="archive">checked</mt:if>>
+      <span class="custom-control-indicator"></span>
+      <span class="custom-control-description"><mt:trans phrase="Archive title" component="SearchEstraier"></span>
+    </label>
+  </mt:ignore>
+  </div>
+</div>

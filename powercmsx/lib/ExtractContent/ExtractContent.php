@@ -532,11 +532,9 @@ class ExtractContent {
      */
     private function extractTitle (string $html): string {
         $result = '';
-
         if (preg_match('/<title[^>]*>\s*(.*?)\s*<\/title\s*>/iu', $html, $matches)) {
             $result = html_entity_decode(strip_tags($matches[1]), ENT_QUOTES);
         }
-
         return $result;
     }
 
@@ -551,7 +549,6 @@ class ExtractContent {
             preg_match_all('/<!--\s*google_ad_section_start[^>]*-->(.*?)<!--\s*google_ad_section_end.*?-->/su', $html, $matches);
             $html = implode("\n", $matches[1]);
         }
-
         return $html;
     }
 
@@ -566,7 +563,6 @@ class ExtractContent {
             if (strlen($match[2]) >= 3 && strpos($title, $match[2]) !== false) {
                 return '<div>' . $match[2] . '</div>';
             }
-
             return $match[1];
         }, $html);
     }

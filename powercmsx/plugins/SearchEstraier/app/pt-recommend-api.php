@@ -1,0 +1,145 @@
+<?php
+    // pt-recommend-api.php?url=URL&workspace_ids=0,1[&workspace_id=0]&type=interest&limit=5
+    // pt-recommend-api.php?url=URL&workspace_ids=0,1[&workspace_id=0]&limit=5
+
+    setlocale(LC_CTYPE, "UTF8", "ja_JP.UTF-8");
+    if (! defined( 'DS' ) ) {
+        define( 'DS', DIRECTORY_SEPARATOR );
+    }
+    $base_path = '..' . DS . '..' . DS . '..' . DS;
+    require_once( "{$base_path}class.Prototype.php" );
+    $app = new Prototype( ['id' => 'Recommend'] );
+    $app->app_path = $base_path;
+    $app->init();
+    // Run app
+    $expire = $app->searchestraier_cookie_expires;
+    $expire = time() + 60 * 60 * 24 * $expire;
+    $path = $app->searchestraier_cookie_path;
+    $cookie_name = $app->searchestraier_cookie_name;
+    $url = $app->param( 'url' );
+    $type = $app->param( 'type' );
+    $msg = '';
+    if ( !$app->is_valid_url( $url, $msg ) ) {
+        $app->json_error( $msg, null, 500 );
+    }
+    $ui = $app->db->model( 'urlinfo' )->get_by_key( ['url' => $url ] );
+    if (! $ui->id ) {
+        $app->json_error( 'Page not found.', null, 404 );
+    }
+    $component = $app->component( 'SearchEstraier' );
+    $estcmd_path = $component->get_config_value( 'searchestraier_estcmd_path' );
+    if (! file_exists( $estcmd_path ) ) {
+        $app->json_error( 'estcmd was not found.', null, 500 );
+    }
+    $estcmd_path = escapeshellcmd( $estcmd_path );
+    $data_dir = $component->get_config_value( 'searchestraier_data_dir', $ui->workspace_id );
+    $data_dir = $app->build( $data_dir );
+    if (! $data_dir || !is_dir( $data_dir ) ) {
+        $app->json_error( 'Index was not found.', null, 500 );
+    }
+    $url = escapeshellarg( $ui->url );
+    $data_dir = escapeshellarg( $data_dir );
+    $command = "{$estcmd_path} get {$data_dir} {$url}";
+    $res = shell_exec( $command );
+    if ( $res === null ) {
+        $app->json_error( 'Page not found.', null, 404 );
+    }
+    $res = preg_replace( "/\r\n|\r|\n/", "\n", $res );
+    $lines = explode( "\n", $res );
+    $metadata = [];
+    foreach ( $lines as $line ) {
+        if ( stripos( $line, '@' ) === 0 ) {
+            $parts = explode( '=', $line );
+            $key = array_shift( $parts );
+            if ( $key == '@tags' || $key == '@metadata' ) {
+                $value = implode( '=', $parts );
+                $values = preg_split( '/\s*,\s*/', $value );
+                $metadata = array_merge( $metadata, $values );
+            }
+        }
+        if (! $line ) break;
+    }
+    $limit = $app->param( 'limit' ) ? $app->param( 'limit' ) : 10;
+    $limit = (int) $limit;
+    $max = $limit;
+    if ( $max ) $max++;
+    $interests = [];
+    if ( $type == 'interest' ) {
+        $cookie_val = $app->cookie_val( $cookie_name );
+        if ( $cookie_val ) {
+            $interests = json_decode( $cookie_val, true );
+        }
+    }
+    array_walk( $metadata, function( &$interest ){ $interest = escapeshellarg( $interest ); } );
+    foreach ( $metadata as $meta ) {
+        $count = isset( $interests[ $meta ] ) ? $interests[ $meta ] + 1 : 1;
+        $interests[ $meta ] = $count;
+    }
+    $condition = '';
+    $workspace_ids = $app->param( 'workspace_ids' );
+    $workspace_id = $app->param( 'workspace_id' );
+    if ( $workspace_ids !== '' ) {
+        $workspace_ids = preg_split( '/\s*,\s*/', $workspace_ids );
+        $target_ids = [];
+        foreach ( $workspace_ids as $id ) {
+            $target_ids[] = (int) $id;
+        }
+        $target_ids = array_unique( $target_ids );
+        if ( is_array( $target_ids ) && count( $target_ids ) ) {
+            $workspace_ids = implode( ' ', $workspace_ids );
+            $condition = " -attr " . escapeshellarg( "@workspace_id STROR ${workspace_ids}" );
+        }
+    } else if ( $workspace_id !== '' ) {
+        $workspace_id = (int) $workspace_id;
+        $condition = " -attr " . escapeshellarg( "@workspace_id STROR ${workspace_id}" );
+    }
+    $command = "{$estcmd_path} search -vx -max {$max} {$condition} {$data_dir} [SIMILAR]";
+    $weight = 100;
+    foreach ( $interests as $interest => $count ) {
+        $command .= ' WITH ' . $weight * $count;
+        $command .= " {$interest}";
+    }
+    $res = shell_exec( $command );
+    preg_match_all( "/<snippet>(.*?)<\/snippet>/s", $res, $snippets );
+    $snippets = $snippets[1];
+    $result = new SimpleXMLElement( $res );
+    $records = $result->document;
+    $results = [];
+    $i = 0;
+    foreach ( $records as $record ) {
+        $result = [];
+        $id = ( string )$record->attributes()->id;
+        $attrs = $record->attribute;
+        $doc_url = ( string )$record->attributes()->uri;
+        $snippet = $snippets[ $i ];
+        $snippet = str_replace( '<key', '<strong', $snippet );
+        $snippet = str_replace( '</key>', '</strong>', $snippet );
+        $snippet = str_replace( '<delimiter/>', '... ', $snippet );
+        $snippet = preg_replace( '/ normal=".*?"/', '', $snippet );
+        $i++;
+        if ( $url == $doc_url ) {
+            continue;
+        }
+        $result['snippet'] = $snippet;
+        $result['uri'] = $doc_url;
+        foreach( $attrs as $attr ) {
+            $name = $attr->attributes()->name;
+            $name = ( string ) $name;
+            if ( strpos( $name, '_' ) === 0 ) continue;
+            if ( strpos( $name, '@' ) === 0 ) {
+                $name = ltrim( $name, '@' );
+            }
+            $val = $attr->attributes()->value[ 0 ];
+            $val = ( string ) $val;
+            $result[ $name ] = $val;
+        }
+        $results[] = $result;
+        if ( count( $results ) >= $limit ) {
+            break;
+        }
+    }
+    if ( $type == 'interest' ) {
+        $interests = json_encode( $interests, JSON_UNESCAPED_UNICODE );
+        $app->bake_cookie( $cookie_name, $interests, $expire, $path );
+    }
+    $app->print( json_encode( $results, JSON_UNESCAPED_UNICODE ), 'application/json; charset=utf-8', null, false );
