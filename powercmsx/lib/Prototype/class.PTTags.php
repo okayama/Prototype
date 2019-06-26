@@ -3158,10 +3158,17 @@ class PTTags {
         $this_tag = $args['this_tag'];
         $current_context = $ctx->stash( 'current_context' );
         $function_tags = $ctx->stash( 'function_tags' );
+        $function_date = $ctx->stash( 'function_date' );
         if ( isset( $function_tags[ $this_tag ] ) ) {
             list( $model, $col ) = $function_tags[ $this_tag ];
             $obj = $ctx->stash( $model );
             if ( isset( $obj ) && $obj->has_column( $col ) ) {
+                if ( isset( $args['format'] ) ) {
+                    if ( in_array( $this_tag, $function_date ) ) {
+                        $args['ts'] = $obj->$col;
+                        return $ctx->function_date( $args, $ctx );
+                    }
+                }
                 return $obj->$col;
             }
         }
@@ -3179,7 +3186,6 @@ class PTTags {
             $current_context = 'workspace';
         }
         $function_relations = $ctx->stash( 'function_relations' );
-        $function_date = $ctx->stash( 'function_date' );
         $alias_functions = $ctx->stash( 'alias_functions' );
         if( isset( $alias_functions[ $this_tag ] ) ) {
             $this_tag = $alias_functions[ $this_tag ];
