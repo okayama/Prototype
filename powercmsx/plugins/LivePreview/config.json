@@ -5,6 +5,7 @@
     "version"     : "2.0",
     "author"      : "Alfasado Inc.",
     "author_link" : "https://alfasado.net/",
+    "doc_link"    : "https://powercmsx.jp/about/live_preview.html",
     "description" : "It provides site preview in future.",
     "cfg_template": "cfg_template.tmpl",
     "cfg_system"  : 1,

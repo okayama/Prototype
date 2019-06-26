@@ -5,6 +5,7 @@
     "version"     : "1.1",
     "author"      : "Alfasado Inc.",
     "author_link" : "https://alfasado.net/",
+    "doc_link"    : "https://powercmsx.jp/about/richtext.html",
     "description" : "Provides customization for WYSIWYG HTML Editor.",
     "cfg_template": "cfg_template.tmpl",
     "cfg_system"  : 1,

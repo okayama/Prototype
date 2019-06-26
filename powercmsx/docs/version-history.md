@@ -1,16 +1,18 @@
-## 2019\-06\-20
+## 2019\-06\-27
 
 version 1\.100
 
-- プラグイン「HTMLImporter」を追加しました。URL指定またはZIPファイルをアップロードしてHTMLからデータを移行します。
+- プラグイン「HTMLImporter」を追加しました。URL指定またはZIPファイルをアップロードしてHTMLからデータを移行する機能を提供します。
 - プラグイン「Members」を追加しました。Webサイトへのログイン機能を提供します。
-- プラグイン「BannedWords」を追加しました。禁止用語のチェック機能を提供します。
-- 「DisplayOptions」プラグインでメニュー位置をスコープ毎に一括設定するUIを追加しました。
+- プラグイン「BannedWords」を追加しました。禁止用語や表記揺れのチェック機能、文字列置換機能を提供します。
+- プラグイン「SearchEstraier」を追加しました。HyperEstraierを使ってサイト内検索機能や関連ページ、お勧めページをレコメンドするAPIを利用できるようになります。
+- 「DisplayOptions」プラグインでメニュー位置をスコープ毎に一括設定するUIを追加し、メニューの一括カスタマイズが可能になりました。
 - クラス PADOBaseModel の load / count メソッドの第5引数に、第4引数 $extra の placeholder に対する値の配列を指定できるようになりました。
 - クラス PADOBaseModel の load / count メソッドの第1引数に SQL文字列を渡した時、第2引数に placeholder に対する値の配列を指定できるようになりました。
 - クラス PADOBaseModel の load / count メソッドの第2引数 $args で JOIN, INNER JOIN, RIGHT OUTER JOIN, LEFT OUTER JOIN を指定できるようになりました。
 - クラス Prototype にメソッド load\_context\_objs、load\_related\_objs を追加しました。
 - プラグインの有効化 / 無効化 / アップグレードの処理内でエラーを返せるようになりました。
+- プラグイン一覧画面から Markdownで作成したドキュメントを表示するリンクを表示する仕組みを追加しました。
 
 ## 2019\-06\-19
 

@@ -137,20 +137,23 @@ $('#alert-scheme-upgrade').focus();
       <a target="_blank" href="<mt:var name="settings[author_link]" trans="$__key__">">
       <i class="fa fa-external-link" aria-hidden="true"></i>
     </mt:if>
-      <mt:var name="$settings[author]" trans="$__key__">
-    <mt:if name="$settings[author_link]">
+      <mt:var name="settings[author]" trans="$__key__">
+    <mt:if name="settings[author_link]">
       </a>
     </mt:if>
-    <mt:if name="$settings[doc_link]">
+    <mt:if name="settings[doc_link]">
+      &nbsp;
       <a target="_blank" href="<mt:var name="settings[doc_link]">" class="badge badge-default plugin-doc-link">
       <i class="fa fa-external-link" aria-hidden="true"></i>
-      <mt:trans phrase="Document"></a>
+      <mt:trans phrase="Document">
+      </a>
     </mt:if>
     <mt:if name="settings[document]">
-      &nbsp; 
-      <a target="_blank" href="<mt:var name="script_uri">?__mode=view_plugin_doc&amp;plugin_id=<mt:var name="plugin_id">">
+      &nbsp;
+      <a target="_blank" href="<mt:var name="script_uri">?__mode=view_plugin_doc&amp;plugin_id=<mt:var name="plugin_id">" class="badge badge-default plugin-doc-link">
       <i class="fa fa-external-link" aria-hidden="true"></i>
       <mt:var name="settings[document]" escape>
+      </a>
     </mt:if>
     </div>
     </td>
