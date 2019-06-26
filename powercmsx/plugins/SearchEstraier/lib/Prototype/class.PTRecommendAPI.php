@@ -41,6 +41,7 @@ class PTRecommendAPI extends Prototype {
         if (! $data_dir || !is_dir( $data_dir ) ) {
             $app->json_error( 'Index was not found.', null, 500 );
         }
+        $url_original = $url;
         $url = escapeshellarg( $ui->url );
         $data_dir = escapeshellarg( $data_dir );
         $command = "{$estcmd_path} get {$data_dir} {$url}";
@@ -113,9 +114,10 @@ class PTRecommendAPI extends Prototype {
             $command = "{$estcmd_path} search -vx -max {$max} -sim {$doc_id} {$condition} {$data_dir}";
         } else {
             $command = "{$estcmd_path} search -vx -max {$max} {$condition} {$data_dir} [SIMILAR]";
-            $weight = 100;
+            $weight = $app->searchestraier_similar_weight;
             foreach ( $interests as $interest => $count ) {
-                $command .= ' WITH ' . $weight * $count;
+                $count = $weight + $count;
+                $command .= ' WITH ' . $count;
                 $command .= " {$interest}";
             }
         }
@@ -137,7 +139,7 @@ class PTRecommendAPI extends Prototype {
             $snippet = str_replace( '<delimiter/>', '... ', $snippet );
             $snippet = preg_replace( '/ normal=".*?"/', '', $snippet );
             $i++;
-            if ( $url == $doc_url ) {
+            if ( $url_original == $doc_url ) {
                 continue;
             }
             $result['snippet'] = $snippet;

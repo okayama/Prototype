@@ -22,7 +22,8 @@
     "config_settings"    : {
         "searchestraier_cookie_name" : "pt-visitor_interests",
         "searchestraier_cookie_expires" : 365,
-        "searchestraier_cookie_path" : "/"
+        "searchestraier_cookie_path" : "/",
+        "searchestraier_similar_weight" : 500
     },
     "hooks": {
         "searchestraier_post_init": {
