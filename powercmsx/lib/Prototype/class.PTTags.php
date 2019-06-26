@@ -120,7 +120,7 @@ class PTTags {
                 if (! isset( $relations[ $key ] ) ) {
                     $tag_name = str_replace( '_', '', $key );
                     if ( $props['type'] === 'datetime' ) {
-                        $function_date[] = $table->name . $key;
+                        $function_date[] = $tbl_label . $key;
                     } else if ( $props['type'] === 'int' && 
                         isset( $edit_properties[ $key ] )
                         && strpos( $edit_properties[ $key ], 'relation' ) === 0 ) {
@@ -141,7 +141,7 @@ class PTTags {
                         }
                     }
                     if ( $key !== $tag_name ) {
-                        $alias[ $table->name . $tag_name ] = $tbl_label . $key;
+                        $alias[ $tbl_label . $tag_name ] = $tbl_label . $key;
                         $function_tags[ $tbl_label . $key ] = [ $tbl_name, $key ];
                     }
                     $this->register_tag( $ctx, $tbl_label . $tag_name, 'function',
@@ -3215,9 +3215,7 @@ class PTTags {
             }
         }
         if (! $obj ) return;
-        if ( strpos( $current_context, '_' ) !== false ) {
-            $current_context = str_replace( '_', '', $current_context );
-        }
+        $current_context = preg_replace( '/[^a-z0-9]/', '' , $current_context );
         $column = isset( $column ) ? 
             $column : preg_replace( "/^{$current_context}/", '', $this_tag );
         if (! $obj->has_column( $column ) ) {
