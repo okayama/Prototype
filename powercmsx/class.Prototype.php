@@ -4895,6 +4895,14 @@ class Prototype {
                 }
             }
         }
+        if ( count( $require_blobs ) ) {
+            foreach ( $require_blobs as $require_col ) {
+                if (! $obj->$require_col && ! $app->param( "{$require_col}-magic" ) ) {
+                    $errors[] =
+                        $app->translate( '%s is required.', $labels[ $require_col ] );
+                }
+            }
+        }
         if (!empty( $errors ) || !$save_filter ) {
             $error = join( "\n", $errors );
             if ( $app->param( '_preview' ) ) return $app->error( $error );
@@ -8826,7 +8834,9 @@ class Prototype {
             $ctx->vars[ $prefix . $key ] = $value;
             if ( preg_match( "/(^.*)_date$/", $key, $mts ) ) {
                 $name = $mts[1];
-                if ( $time = $app->param( $name . '_time' ) ) {
+                if ( isset( $_REQUEST[ $name . '_time' ] ) ) {
+                    $time = $app->param( $name . '_time' )
+                          ? $app->param( $name . '_time' ) : '000000';
                     $ctx->__stash[ $prefix . $name ] = $value . $time;
                 }
             }

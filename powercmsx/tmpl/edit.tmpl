@@ -330,6 +330,7 @@ $('#__view-permalink').click(function(){
 </mt:if>
 <mt:unless name="_asset_file_col">
   <mt:unless name="readonly">
+    <mt:unless name="not_null">
     <span class="form-inline-span-cb <mt:var name="__col_name__">-remove-wrapper hidden">
     <input type="hidden" name="<mt:var name="__col_name__">-remove" value="0">
     <label class="custom-control custom-checkbox">
@@ -340,6 +341,7 @@ $('#__view-permalink').click(function(){
         <mt:trans phrase="Delete"></span>
     </label>
     </span>
+    </mt:unless>
   </mt:unless>
 </mt:unless>
   <!-- The global progress bar -->

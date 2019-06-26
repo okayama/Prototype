@@ -1266,6 +1266,12 @@ class PTTags {
             $column_names = array_keys( $column_defs );
             foreach ( $column_names as $name ) {
                 $vars[ $name ] = $app->param( $name );
+                if ( $column_defs[ $name ]['type'] == 'datetime' ) {
+                    $date = $app->param( $name . '_date' );
+                    $time = $app->param( $name . '_time' )
+                          ? $app->param( $name . '_time' ) : '000000';
+                    $vars[ $name ] = $date . $time;
+                }
             }
         }
         $ctx->local_vars[ '_object_model' ] = $obj->_model;
