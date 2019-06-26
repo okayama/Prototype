@@ -3209,6 +3209,9 @@ class PTTags {
             }
         }
         if (! $obj ) return;
+        if ( strpos( $current_context, '_' ) !== false ) {
+            $current_context = str_replace( '_', '', $current_context );
+        }
         $column = isset( $column ) ? 
             $column : preg_replace( "/^{$current_context}/", '', $this_tag );
         if (! $obj->has_column( $column ) ) {
