@@ -549,7 +549,7 @@ h1 {
   padding-bottom: 9px;
   font-size: 150%;
   width:88% !important;
-  font-weight: 200 !important;
+  font-weight: 300 !important;
   line-height: 1.5em;
 }
 
@@ -576,13 +576,13 @@ h1 {
 
 h2 {
   font-size: 140%;
-  font-weight: 100 !important;
+  font-weight: 300 !important;
   margin-bottom: 20px;
 }
 
 h3 {
   font-size: 130%;
-  font-weight: 100 !important;
+  font-weight: 200 !important;
   margin-bottom: 20px;
 }
 
