@@ -14,6 +14,7 @@
         "searchestraier_data_dir" : "<mt:property name=\"support_dir\">/search/index",
         "searchestraier_archive_types" : "entry,page",
         "searchestraier_index_dinamic" : 1,
+        "searchestraier_cookie_by_scope" : 0,
         "searchestraier_enabled" : 0,
         "searchestraier_doc_title" : "heading",
         "searchestraier_mecab_path" : "/usr/local/bin/mecab"

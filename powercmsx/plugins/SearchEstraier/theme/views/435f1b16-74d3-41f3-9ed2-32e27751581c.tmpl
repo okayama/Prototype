@@ -1,0 +1,66 @@
+<div class="container-fluid">
+  <div class="row">
+    <div class="col-lg-12">
+      <div id="related-list-wrapper" style="display:none">
+        <h2 class="font-weight-normal"><small><mt:trans phrase="Related Pages" component="SearchEstraier"></small></h2>
+        <ul id="related-list">
+        </ul>
+      </div>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-lg-12">
+      <div id="recommended-list-wrapper" style="display:none">
+        <h2 class="font-weight-normal"><small><mt:trans phrase="Recommended for you" component="SearchEstraier"></small></h2>
+        <ul id="recommended-list">
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+<script>
+$(function(){
+    $.ajax({
+        url: '<mt:property name="path">plugins/SearchEstraier/app/pt-recommend-api.php?limit=5&url=<mt:var name="current_archive_url" escape="url">',
+        type: 'GET',
+        dataType: 'json',
+        timeout: 10000,
+        success: function(obj){
+            if ( obj.length > 0 ) {
+                for(let k in obj) {
+                    var uri = obj[k].uri;
+                    var title = obj[k].title;
+                    var tag = $('<a>', { text:title, href: uri });
+                    var ptag = $('<li>');
+                    ptag.append(tag);
+                    $('#related-list').append(ptag);
+                    $('#related-list-wrapper').show();
+                }
+            }
+        },
+        error: function(){
+        }
+    });
+    $.ajax({
+        url: '<mt:property name="path">plugins/SearchEstraier/app/pt-recommend-api.php?type=interest&limit=5&url=<mt:var name="current_archive_url" escape="url">',
+        type: 'GET',
+        dataType: 'json',
+        timeout: 10000,
+        success: function(obj){
+            if ( obj.length > 0 ) {
+                for(let k in obj) {
+                    var uri = obj[k].uri;
+                    var title = obj[k].title;
+                    var tag = $('<a>', { text:title, href: uri });
+                    var ptag = $('<li>');
+                    ptag.append(tag);
+                    $('#recommended-list').append(ptag);
+                    $('#recommended-list-wrapper').show();
+                }
+            }
+        },
+        error: function(){
+        }
+    });
+});
+</script>

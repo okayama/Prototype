@@ -9,15 +9,15 @@ HyperEstraierを利用したサイト内検索機能を提供します。
 
 - HyperEstraierをインストールします。
 - pluginsディレクトリに HyperEstraierディレクトリを設置します。
-- プラグインを有効化し、システムプラグイン設定で estcmdと mecab\(オプション\)を設定します。
+- プラグインを有効化し、システムプラグイン設定で estcmdと mecab\(オプション\)のパスを設定します。
 - 検索対象のスコープのプラグイン設定で、インデックスのパスを入力し、検索を有効化にチェックを入れます。
 - tools/worker\.phpを実行します。
 - ビューを作成します。サンプルは plugins/SearchEstraier/theme/views/以下に含まれています。
+- ビューに対する URLマッピングでアーカイブ種別を「インデックス」とし、ファイル出力を「ダイナミック」とします。
 
 ## 検索フォームと検索結果のビュー
 
-以下のようなビューを作成します。
-URLマッピングでアーカイブ種別を「インデックス」とし、ファイル出力を「ダイナミック」とします。 
+以下のようなビューを作成します。  
 
     <form method="GET" action="<mt:var name="current_archive_url">">
     <div class="form-inline">
@@ -94,22 +94,87 @@ URLマッピングでアーカイブ種別を「インデックス」とし、�
 
 ## レコメンドAPIアプリケーション
 
-URLをAPIに渡すことで、関連性の高い文書を表示させたり、ユーザーの興味・関心にマッチする文書をレコメンドできます。
-
-    http://example.com/powercmsx/plugins/SearchEstraier/app/pt-recommend-api.php
+    <アプリのURL>/plugins/SearchEstraier/app/pt-recommend-api.php
 
 必要に応じて別の場所に移動してください。
 
+- URLをAPIに渡すことで、関連性の高い文書を表示させたり、ユーザーの興味・関心にマッチする文書をレコメンドできます。  
+- 閲覧ユーザーの興味・関心の基準となるのは閲覧したページのモデルに関連づいた「タグ」「メタデータ」metaタグ\(keywords\)です。  
+- これらのメタデータを数多く指定することによってマッチングの精度を高くすることができます。
+- 興味・関心の保存にはクッキーを利用します。
+- システム、スペースなどのスコープ毎にクッキーを別名で保存したい時は、プラグイン設定で「クッキーをスコープ固有にする」にチェックを入れてください。
+
 ### パラメタ
+
+
+    pt-recommend-api.php?url=<mt:var name="current_archive_url" escape="url">&workspace_ids=0,1&type=interest&limit=5&model=page
 
 - type=interest \(このパラメタを付けるとユーザーの閲覧履歴からお勧めするページのリストを返します。パラメタのないときはページの関連性で検索します\)
 - workspace\_ids=0,1 \(検索対象とするworkspace\_id をカンマ区切りで指定します\)
 - workspace\_id=0 \(検索対象とするworkspace\_id が一つの時、数字を指定します\)
 - limit=5 \(検索する件数を指定します\)
+- model=model\_name \(特定のモデルを指定する時に追加します\)
 
-    pt-recommend-api.php?url=http%3A%2F%2Fexample.com%2Fpage.html&workspace_ids=0,1&type=interest&limit=5
-    
 
 ### サンプル・レスポンス\(JSON形式\)
 
-    [{"snippet":"PowerCMS X | フォームの作成 「フォーム」モデルは、フォームの作成、投稿(コンタクト)の受付、メールによる通知などを管理します。ヘッダメニューの「コミュニケーションアイコン コニュニケーション」から各オブジェクトにアクセスできます。 モデル 説明 フォーム 「設問」をグループ化したものがフォームに... ","uri":"http:\/\/mt4local.alfasado.net\/powercmsx\/site\/about_powercms_x\/form.html","digest":"e4cab12455f0b6b7c00ab11d1eff0e08","mdate":"2019-06-25T05:22:01Z","metadata":"About PowerCMS X,@documentation","mime_type":"text\/html","model":"page","object_id":"108","tags":"@documentation","title":"フォームの作成","viewport":"width=device-width, initial-scale=1","workspace_id":"0"}]
+    [{"snippet":"「フォーム」モデルは、フォームの作成、投稿(コンタクト)の受付、メールによる通知などを管理します。ヘッダメニューの「コミュニケーションアイコン コニュニケーション」から各オブジェクトにアクセスできます。 モデル 説明 フォーム 「設問」をグループ化したものがフォームに... ","uri":"http:\/\/mt4local.alfasado.net\/powercmsx\/site\/about_powercms_x\/form.html","digest":"e4cab12455f0b6b7c00ab11d1eff0e08","mdate":"2019-06-25T05:22:01Z","metadata":"About PowerCMS X,@documentation","mime_type":"text\/html","model":"page","object_id":"108","tags":"@documentation","title":"フォームの作成","viewport":"width=device-width, initial-scale=1","workspace_id":"0"}]
+
+### レスポンスからお勧めページを表示させるビューのサンプル
+
+    <div id="related-list-wrapper" style="display:none">
+      <h2>このページと関連性の高いページ</h2>
+      <ul id="related-list">
+      </ul>
+    </div>
+    <div id="recommended-list-wrapper" style="display:none">
+      <h2>あなたへお勧めのページ</h2>
+      <ul id="recommended-list">
+      </ul>
+    </div>
+    <script>
+    $(function(){
+        $.ajax({
+            url: '<mt:property name="path">plugins/SearchEstraier/app/pt-recommend-api.php?limit=5&url=<mt:var name="current_archive_url" escape="url">',
+            type: 'GET',
+            dataType: 'json',
+            timeout: 10000,
+            success: function(obj){
+                if ( obj.length > 0 ) {
+                    for(let k in obj) {
+                        var uri = obj[k].uri;
+                        var title = obj[k].title;
+                        var tag = $('<a>', { text:title, href: uri });
+                        var ptag = $('<li>');
+                        ptag.append(tag);
+                        $('#related-list').append(ptag);
+                        $('#related-list-wrapper').show();
+                    }
+                }
+            },
+            error: function(){
+            }
+        });
+        $.ajax({
+            url: '<mt:property name="path">plugins/SearchEstraier/app/pt-recommend-api.php?type=interest&limit=5&url=<mt:var name="current_archive_url" escape="url">',
+            type: 'GET',
+            dataType: 'json',
+            timeout: 10000,
+            success: function(obj){
+                if ( obj.length > 0 ) {
+                    for(let k in obj) {
+                        var uri = obj[k].uri;
+                        var title = obj[k].title;
+                        var tag = $('<a>', { text:title, href: uri });
+                        var ptag = $('<li>');
+                        ptag.append(tag);
+                        $('#recommended-list').append(ptag);
+                        $('#recommended-list-wrapper').show();
+                    }
+                }
+            },
+            error: function(){
+            }
+        });
+    });
+    </script>

@@ -25,6 +25,12 @@ class PTRecommendAPI extends Prototype {
             $app->json_error( 'Page not found.', null, 404 );
         }
         $component = $app->component( 'SearchEstraier' );
+        if ( $type == 'interest' ) {
+            $by_scope = $component->get_config_value( 'searchestraier_cookie_by_scope', $ui->workspace_id );
+            if ( $by_scope ) {
+                $cookie_name .= '-' . $ui->workspace_id;
+            }
+        }
         $estcmd_path = $component->get_config_value( 'searchestraier_estcmd_path' );
         if (! file_exists( $estcmd_path ) ) {
             $app->json_error( 'estcmd was not found.', null, 500 );
@@ -45,10 +51,14 @@ class PTRecommendAPI extends Prototype {
         $res = preg_replace( "/\r\n|\r|\n/", "\n", $res );
         $lines = explode( "\n", $res );
         $metadata = [];
+        $doc_id = 0;
         foreach ( $lines as $line ) {
             if ( stripos( $line, '@' ) === 0 ) {
                 $parts = explode( '=', $line );
                 $key = array_shift( $parts );
+                if ( $key == '@id' ) {
+                    $doc_id = (int) $parts[0];
+                }
                 if ( $key == '@tags' || $key == '@metadata' ) {
                     $value = implode( '=', $parts );
                     $values = preg_split( '/\s*,\s*/', $value );
@@ -70,10 +80,12 @@ class PTRecommendAPI extends Prototype {
                 $interests_original = $interests;
             }
         }
-        array_walk( $metadata, function( &$interest ){ $interest = escapeshellarg( $interest ); } );
-        foreach ( $metadata as $meta ) {
-            $count = isset( $interests[ $meta ] ) ? $interests[ $meta ] + 1 : 1;
-            $interests[ $meta ] = $count;
+        if ( $type == 'interest' ) {
+            array_walk( $metadata, function( &$interest ){ $interest = escapeshellarg( $interest ); } );
+            foreach ( $metadata as $meta ) {
+                $count = isset( $interests[ $meta ] ) ? $interests[ $meta ] + 1 : 1;
+                $interests[ $meta ] = $count;
+            }
         }
         $condition = '';
         $workspace_ids = $app->param( 'workspace_ids' );
@@ -93,11 +105,19 @@ class PTRecommendAPI extends Prototype {
             $workspace_id = (int) $workspace_id;
             $condition = " -attr " . escapeshellarg( "@workspace_id STROR ${workspace_id}" );
         }
-        $command = "{$estcmd_path} search -vx -max {$max} {$condition} {$data_dir} [SIMILAR]";
-        $weight = 100;
-        foreach ( $interests as $interest => $count ) {
-            $command .= ' WITH ' . $weight * $count;
-            $command .= " {$interest}";
+        $model = $app->param( 'model' );
+        if ( $model ) {
+            $condition = " -attr " . escapeshellarg( "@model STREQ ${model}" );
+        }
+        if ( $type != 'interest' ) {
+            $command = "{$estcmd_path} search -vx -max {$max} -sim {$doc_id} {$condition} {$data_dir}";
+        } else {
+            $command = "{$estcmd_path} search -vx -max {$max} {$condition} {$data_dir} [SIMILAR]";
+            $weight = 100;
+            foreach ( $interests as $interest => $count ) {
+                $command .= ' WITH ' . $weight * $count;
+                $command .= " {$interest}";
+            }
         }
         $res = shell_exec( $command );
         preg_match_all( "/<snippet>(.*?)<\/snippet>/s", $res, $snippets );

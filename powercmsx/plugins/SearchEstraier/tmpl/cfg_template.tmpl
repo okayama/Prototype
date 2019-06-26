@@ -21,7 +21,7 @@
   </div>
 </div>
 </mt:unless>
-<div class="row form-group">
+<div class="row form-group mb-1">
   <div class="col-lg-12 input-group">
     <input type="hidden" name="setting_searchestraier_enabled" value="0">
     <label class="custom-control custom-checkbox">
@@ -33,7 +33,7 @@
     </label>
   </div>
 </div>
-<div class="row form-group">
+<div class="row form-group mt-1 mb-1">
   <div class="col-lg-12 input-group">
     <input type="hidden" name="setting_searchestraier_index_dinamic" value="0">
     <label class="custom-control custom-checkbox">
@@ -42,6 +42,18 @@
         <span class="custom-control-indicator"></span>
         <span class="custom-control-description"> 
         <mt:trans phrase="Search Dynamic Contents" component="SearchEstraier"></span>
+    </label>
+  </div>
+</div>
+<div class="row form-group mt-1">
+  <div class="col-lg-12 input-group">
+    <input type="hidden" name="setting_searchestraier_cookie_by_scope" value="0">
+    <label class="custom-control custom-checkbox">
+    <input id="searchestraier_enabled" class="custom-control-input watch-changed"
+     type="checkbox" name="setting_searchestraier_cookie_by_scope" value="1" <mt:if name="setting_searchestraier_cookie_by_scope">checked</mt:if>>
+        <span class="custom-control-indicator"></span>
+        <span class="custom-control-description"> 
+        <mt:trans phrase="Bake cookie scope specific" component="SearchEstraier"></span>
     </label>
   </div>
 </div>
@@ -69,6 +81,7 @@
 <mt:setvar name="workspace_id" value="0">
 </mt:unless>
 <mt:countgroupby model="urlinfo" count="archive_type" group="archive_type" sort_by="count" sort_order="descend" workspace_ids="$workspace_id">
+  <mt:setvar name="models_output" value="1">
   <mt:if name="count_group_by_archive_type">
     <label class="custom-control custom-checkbox">
     <input class="custom-control-input watch-changed group_by_archive_type"
@@ -80,6 +93,26 @@
     </label>
   </mt:if>
 </mt:countgroupby>
+  <mt:unless name="models_output">
+    <mt:setvar name="count_group_by_archive_type" value="entry">
+    <label class="custom-control custom-checkbox">
+    <input class="custom-control-input watch-changed group_by_archive_type"
+      <mt:ifinarray array="searchestraier_archive_types" value="$count_group_by_archive_type">checked</mt:ifinarray>
+      type="checkbox" name="bannedwords_target_model" value="<mt:var name="count_group_by_archive_type">">
+      <span class="custom-control-indicator"></span>
+      <span class="custom-control-description"> 
+      <mt:trans phrase="$count_group_by_archive_type" language="default" translate></span>
+    </label>
+    <mt:setvar name="count_group_by_archive_type" value="page">
+    <label class="custom-control custom-checkbox">
+    <input class="custom-control-input watch-changed group_by_archive_type"
+      <mt:ifinarray array="searchestraier_archive_types" value="$count_group_by_archive_type">checked</mt:ifinarray>
+      type="checkbox" name="bannedwords_target_model" value="<mt:var name="count_group_by_archive_type">">
+      <span class="custom-control-indicator"></span>
+      <span class="custom-control-description"> 
+      <mt:trans phrase="$count_group_by_archive_type" language="default" translate></span>
+    </label>
+  </mt:unless>
   </div>
 </div>
 <input type="hidden" id="setting_searchestraier_archive_types" name="setting_searchestraier_archive_types" class="form-control" value="<mt:var name="setting_searchestraier_archive_types" escape>">

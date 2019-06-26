@@ -8,6 +8,7 @@
     "Archive Types" : "アーカイブ種別",
     "HTML Document"  : "HTML文書の処理",
     "Search Dynamic Contents" : "動的ページを検索対象にする",
+    "Bake cookie scope specific" : "クッキーをスコープ固有にする",
     "Whole document" : "文書全体",
     "Automatic extraction" : "自動抽出",
     "Keyword" : "キーワード",
@@ -25,5 +26,7 @@
     "First heading" : "最初の見出し",
     "Title element" : "タイトル要素",
     "Archive title" : "アーカイブのタイトル",
-    "Document Title" : "文書のタイトル"
+    "Document Title" : "文書のタイトル",
+    "Related Pages" : "関連性の高いページ",
+    "Recommended for you" : "あなたへのお勧め"
 }
