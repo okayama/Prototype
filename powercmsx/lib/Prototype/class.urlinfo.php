@@ -17,10 +17,12 @@ class urlinfo extends PADOBaseModel {
             }
         }
         if (! $force ) {
-            $this->delete_flag(1);
-            $this->is_published(0);
-            $this->publish_file(0);
-            return parent::save();
+            if ( $this->was_published ) {
+                $this->delete_flag(1);
+                $this->is_published(0);
+                $this->publish_file(0);
+                return parent::save();
+            }
         }
         return parent::remove();
     }

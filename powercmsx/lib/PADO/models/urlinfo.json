@@ -1,7 +1,7 @@
 {
     "label"    : "URL",
     "plural"   : "URLs",
-    "version"  : "1.9",
+    "version"  : "2.1",
     "display_system": 1,
     "order"    : 110,
     "primary"  : "relative_path",
@@ -91,6 +91,11 @@
             "size": "4",
             "default": 0
         },
+        "was_published": {
+            "type": "tinyint",
+            "size": "4",
+            "default": 0
+        },
         "publish_file": {
             "type": "int",
             "size": 11
@@ -122,6 +127,7 @@
         "dirname": "dirname",
         "filemtime": "filemtime",
         "is_published": "is_published",
+        "was_published": "was_published",
         "delete_flag": "delete_flag",
         "url": "url",
         "mime_type": "mime_type",
@@ -184,6 +190,7 @@
         "filemtime": "number",
         "md5": "text",
         "is_published": "checkbox",
+        "was_published": "checkbox",
         "delete_flag": "checkbox",
         "publish_file": "selection",
         "mime_type": "text_short",
@@ -201,6 +208,7 @@
         "urlmapping_id": "reference:urlmapping:name",
         "filemtime": "text_short",
         "is_published": "checkbox",
+        "was_published": "checkbox",
         "delete_flag": "checkbox",
         "publish_file": "text",
         "mime_type": "text_short",

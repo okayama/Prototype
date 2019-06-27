@@ -6941,6 +6941,7 @@ class Prototype {
             $required[] = 'id';
             if ( $model === 'urlinfo' ) {
                 $required[] = 'is_published';
+                $required[] = 'was_published';
                 $required[] = 'file_path';
                 $required[] = 'delete_flag';
             } else if ( $model === 'table' ) {
@@ -6999,8 +7000,9 @@ class Prototype {
                 return $app->error( 'Invalid request.' );
             }
             if ( $model === 'urlinfo' ) {
+                $vals = [];
                 $app->db->model( 'urlinfo' )->pre_load(
-                        $terms, $args, $cols, $extra, true );
+                        $terms, $args, $cols, $extra, $vals, true );
             }
             $objects = $obj->load( $terms, $args, $required, $extra );
             return $objects;
@@ -7014,8 +7016,9 @@ class Prototype {
                 $args = null;
                 $extra = '';
                 if ( $model === 'urlinfo' ) {
+                    $vals = [];
                     $app->db->model( 'urlinfo' )->pre_load(
-                        $terms, $args, $required, $extra, true );
+                            $terms, $args, $cols, $extra, $vals, true );
                 }
                 $objects = $obj->load( $terms, $args, $required, $extra );
                 return $objects;
@@ -7137,7 +7140,7 @@ class Prototype {
             $app->pre_listing_workflow( $cb, $app, $terms, $args, $extra, $ex_vals );
         } else if ( $model == 'urlinfo' ) {
             $cols = '*';
-            $app->db->model( 'urlinfo' )->pre_load( $terms, $args, $cols, $extra, true );
+            $app->db->model( 'urlinfo' )->pre_load( $terms, $args, $cols, $extra, $ex_vals, true );
         }
         $_filter = $app->param( '_filter' );
         if ( $_filter && $_filter == $model ) {
@@ -8145,6 +8148,7 @@ class Prototype {
                             if ( $ui->is_published != 1 || !$ui->md5 ) {
                                 $ui->md5( $hash );
                                 $ui->is_published( 1 );
+                                $ui->was_published( 1 );
                                 $ui->save();
                             }
                             return $file_path;
@@ -8152,6 +8156,7 @@ class Prototype {
                         if ( $fmgr->put( $file_path, $data ) !== false ) {
                             $ui->md5( $hash );
                             $ui->is_published( 1 );
+                            $ui->was_published( 1 );
                             $ui->publish_file( 1 );
                         } else {
                             $ui->is_published( 0 );
@@ -8327,6 +8332,7 @@ class Prototype {
                                 if ( $old === $hash ) {
                                     if (! $ui->is_published ) {
                                         $ui->is_published( 1 );
+                                        $ui->was_published( 1 );
                                         $ui->save();
                                     }
                                     return $file_path;
@@ -8335,6 +8341,7 @@ class Prototype {
                             if ( $fmgr->put( $file_path, $data )!== false ) {
                                 $ui->md5( $hash );
                                 $ui->is_published( 1 );
+                                $ui->was_published( 1 );
                                 if ( $app->publish_callbacks ) {
                                     $app->init_callbacks( 'template', 'post_publish' );
                                     $callback['name'] = 'post_publish';

@@ -190,6 +190,10 @@ class PTPublisher {
                         $url->is_published( 1 );
                         $update = true;
                     }
+                    if (! $url->was_published ) {
+                        $url->was_published( 1 );
+                        $update = true;
+                    }
                     if ( ( $md5 != $hash ) && $app->publish_callbacks ) {
                         $app->init_callbacks( 'template', 'post_publish' );
                         $callback['name'] = 'post_publish';
