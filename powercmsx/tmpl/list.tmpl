@@ -633,15 +633,15 @@ $('#popover-<mt:var name="_name">-<mt:var name="id">').popover({
 </mt:if>
 </mt:loop>
 <mt:var name="list_nav">
-
 <mt:unless name="request.workspace_select">
 <mt:if name="request.dialog_view">
+<div class="mb-5">
   <button id="dialog-cancel-btn" class="btn btn-secondary" type="submit"><mt:trans phrase="Cancel"></button>
   <button id="dialog-selector-btn<mt:if name="request.insert_editor">-editor_insert</mt:if>" class="btn btn-primary" type="submit"><mt:trans phrase="Select"></button>
+</div>
 </mt:if>
 </mt:unless>
 </form>
-
 <script>
 var $win = $(window);
 $('.toggle-infobox').click(function(){

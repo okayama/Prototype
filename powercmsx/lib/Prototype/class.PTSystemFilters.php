@@ -194,7 +194,8 @@ class PTSystemFilters {
     }
 
     function system_objects ( $app, &$terms, $model, $col = 'workspace_id' ) {
-        $terms[ $col ] = 0;
+        $col = $col ? $col : 'workspace_id';
+        if ( $col ) $terms[ $col ] = 0;
     }
 
     function show_only_errors ( $app, &$terms, $model ) {
