@@ -22,6 +22,9 @@
     <li class="<mt:var name="__col_name__">-child badge badge-default badge-relation">
     <div <mt:unless name="thumbnail">style="display:none"</mt:unless> id="<mt:var name="__col_name__">-img" class="assets-child-thumb" data-model="<mt:var name="rel_model" escape>" data-id="<mt:var name="__col_value__" escape>" style="background-image:url('<mt:var name="thumbnail">')"></div>
     <span id="<mt:var name="__col_name__">-label">
+    <mt:unless name="request.id">
+      <mt:var name="request.template_id" escape setvar="__col_value__">
+    </mt:unless>
     <mt:if name="__col_value__">
       <mt:getobjectname id="$__col_value__" type="$edit" escape>
     <mt:else>

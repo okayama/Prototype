@@ -15,6 +15,11 @@ $('#class').change(function(){
 <div class="row form-group">
 <div class="col-lg-2 input-group-lg">
 <mt:trans phrase="Used in">
+<mt:if name="id">
+<a target="_blank" href="<mt:var name="script_uri">?__mode=view&_type=edit&_model=urlmapping<mt:if name="workspace_id">&amp;workspace_id=<mt:var name="workspace_id"></mt:if>&amp;template_id=<mt:var name="id">">
+  <i class="fa fa-plus-circle" aria-hidden="true"> <mt:trans phrase="Add"></i>
+</a>
+</mt:if>
 </div>
 <div class="col-lg-10 input-group-lg">
 <table class="table table-sm table-bordered">
@@ -29,7 +34,7 @@ $('#class').change(function(){
 </mt:if>
 <tr>
 <td>
-<a target="_blank" href="<mt:var name="script_uri">?__mode=view&_type=edit&_model=urlmapping&id=<mt:var name="id">&workspace_id=<mt:if name="workspace_id"><mt:var name="workspace_id"></mt:if>">
+<a target="_blank" href="<mt:var name="script_uri">?__mode=view&amp;_type=edit&amp;_model=urlmapping&amp;id=<mt:var name="id"><mt:if name="workspace_id">&amp;workspace_id=<mt:var name="workspace_id"></mt:if>">
 <mt:var name="name" escape>
 </a>
 </td>
@@ -70,7 +75,7 @@ $('#class').change(function(){
 </mt:if>
 <tr>
 <td>
-<a target="_blank" href="<mt:var name="script_uri">?__mode=view&_type=edit&_model=template&id=<mt:var name="template_id">&workspace_id=<mt:if name="template_workspace_id"><mt:var name="template_workspace_id"></mt:if>">
+<a target="_blank" href="<mt:var name="script_uri">?__mode=view&amp;_type=edit&amp;_model=template&amp;id=<mt:var name="template_id"><mt:if name="template_workspace_id">&amp;workspace_id=<mt:var name="template_workspace_id"></mt:if>">
 <mt:var name="template_name" escape>
 </a>
 </td>
