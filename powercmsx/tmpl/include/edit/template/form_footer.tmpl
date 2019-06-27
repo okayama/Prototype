@@ -10,13 +10,15 @@ $('#class').change(function(){
 <mt:setvar name="__can_rebuild_this_template" value="0">
 <mt:var name="request.id" escape setvar="template_id">
 <mt:unless name="request._duplicate">
+<mt:setvar name="mapping_out" value="0">
 <mt:objectloop model="urlmapping" template_id="$template_id" sort_by="order" sort_order="ascend">
 <mt:if name="__first__">
+<mt:setvar name="mapping_out" value="1">
 <div class="row form-group">
 <div class="col-lg-2 input-group-lg">
 <mt:trans phrase="Used in">
-<mt:if name="id">
-<a target="_blank" href="<mt:var name="script_uri">?__mode=view&_type=edit&_model=urlmapping<mt:if name="workspace_id">&amp;workspace_id=<mt:var name="workspace_id"></mt:if>&amp;template_id=<mt:var name="id">">
+<mt:if name="request.id">
+<a target="_blank" href="<mt:var name="script_uri">?__mode=view&_type=edit&_model=urlmapping<mt:if name="workspace_id">&amp;workspace_id=<mt:var name="workspace_id"></mt:if>&amp;template_id=<mt:var name="request.id" escape>">
   <i class="fa fa-plus-circle" aria-hidden="true"> <mt:trans phrase="Add"></i>
 </a>
 </mt:if>
@@ -89,3 +91,22 @@ $('#class').change(function(){
 </div>
 </mt:if>
 </mt:loop>
+<mt:unless name="mapping_out">
+<mt:if name="request.id">
+<div class="row form-group hidden" id="add_urlmapping">
+<div class="col-lg-2 input-group-lg">
+<mt:trans phrase="Used in">
+<a target="_blank" href="<mt:var name="script_uri">?__mode=view&_type=edit&_model=urlmapping<mt:if name="workspace_id">&amp;workspace_id=<mt:var name="workspace_id"></mt:if>&amp;template_id=<mt:var name="request.id" escape>">
+  <i class="fa fa-plus-circle" aria-hidden="true"> <mt:trans phrase="Add"></i>
+</a>
+</div>
+<div class="col-lg-10 input-group-lg">
+</div>
+</div>
+<script>
+if ( $('#class').val() == 'Archive' ) {
+    $('#add_urlmapping').show();
+}
+</script>
+</mt:if>
+</mt:unless>
