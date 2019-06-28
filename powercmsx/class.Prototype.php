@@ -219,8 +219,8 @@ class Prototype {
     public    $error_document404 = null;
     public    $always_update_login = false;
     public    $add_port_to_url = true;
-    public    $system_info_url = 'https://www.powercms.jp/x/information/index.php';
-    public    $news_box_url    = 'https://www.powercms.jp/x/information/news.php';
+    public    $system_info_url = 'https://powercmsx.jp/information/dashboard.html';
+    public    $news_box_url    = 'https://powercmsx.jp/information/news.html';
     private   $powercmsx_auth  = 'powercmsx:xlpXLP';
 
     static function get_instance() {
@@ -1347,6 +1347,8 @@ class Prototype {
             $sess->start( time() );
             $sess->save();
         }
+        $app->ctx->vars['app_version'] = $app->app_version;
+        $app->ctx->vars['language'] = $lang;
         return $app->build( $content );
     }
 
