@@ -172,7 +172,8 @@ class PTPublisher {
                     $callback['name'] = 'post_rebuild';
                     $app->run_callbacks( $callback, 'template', $tmpl, $data );
                 }
-                if ( $mapping->publish_file == 3 && !$app->user() ) {
+                if ( ( $mapping->publish_file == 3 && !$app->user() )
+                    || $mapping->publish_file == 1 ) { // On demand or Worker
                     $fmgr = $app->fmgr;
                     $fmgr->put( $url->file_path, $data );
                     if (! $url->is_published ) {
