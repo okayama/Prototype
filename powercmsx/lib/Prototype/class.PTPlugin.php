@@ -340,6 +340,7 @@ class PTPlugin {
             require_once( LIB_DIR . 'php-markdown'
                 . DS . 'Michelf' . DS . 'Markdown.inc.php' );
             $html = Markdown::defaultTransform( $html );
+            $html = $app->build( $html );
             $app->ctx->local_vars['html'] = $html;
             unset( $app->ctx->local_vars['user_id'] );
             unset( $app->ctx->vars['user_id'] );
