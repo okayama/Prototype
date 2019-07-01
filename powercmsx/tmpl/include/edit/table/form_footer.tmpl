@@ -67,7 +67,7 @@
 </select>
 </td>
 <mt:ignore><td><input id="_size_<mt:var name="id">" name="_size_<mt:var name="id">" type="number" class="form-control num" value="<mt:var name="size" escape>"<mt:if name="_not_delete"> readonly</mt:if><mt:if name="is_primary"> disabled</mt:if>></td></mt:ignore>
-<td><input id="_order_<mt:var name="id">" name="_order_<mt:var name="id">" type="number" class="form-control single order_col" value="<mt:var name="order" escape>"></td>
+<td><input id="_order_<mt:var name="id">" name="_order_<mt:var name="id">" type="number" class="form-control order_col" value="<mt:var name="order" escape>"></td>
 <td>
 <input id="_size_<mt:var name="id">" name="_size_<mt:var name="id">" type="hidden" value="<mt:var name="size" escape>">
 <input id="_options_<mt:var name="id">" name="_options_<mt:var name="id">" type="hidden" value="<mt:var name="options" escape>">
@@ -1009,7 +1009,7 @@ function reorder() {
     $('.order_col').each( function(){
         i++;
         if ( $(this).is(':visible') ) {
-            $(this).prop('value', i );
+            $(this).prop('value', i * 10 );
         }
     });
 }
