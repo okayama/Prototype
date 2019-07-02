@@ -11,7 +11,7 @@ class PTWorker {
         }
     }
 
-    function work ( $app ) {
+    function work ( $app, $argv ) {
         if ( $max_execution_time = $app->max_exec_time ) {
             $max_execution_time = (int) $max_execution_time;
             ini_set( 'max_execution_time', $max_execution_time );
@@ -27,127 +27,136 @@ class PTWorker {
         $worker_labels = [];
         $worker_messages = [];
         // Remove old sessions
+        $continue = $this->continue_task( 'remove_old_sessions', $argv );
         $worker_label = $app->translate( 'Remove old sessions' );
         $res_counter = 0;
         $ts = time();
-        $objects = [];
-        $sessions = $db->model( 'session' )->load( ['expires' => ['<' => $ts ] ], [], 'id' );
-        $res_counter = count( $sessions );
-        try {
-            foreach ( $sessions as $obj ) {
-                $objects[] = $obj;
-                if ( count( $objects ) >= $bulk_remove_per ) {
-                    $db->model( 'session' )->remove_multi( $objects );
-                    $objects = [];
+        if ( $continue ) {
+            $objects = [];
+            $sessions = $db->model( 'session' )->load( ['expires' => ['<' => $ts ] ], [], 'id' );
+            $res_counter = count( $sessions );
+            try {
+                foreach ( $sessions as $obj ) {
+                    $objects[] = $obj;
+                    if ( count( $objects ) >= $bulk_remove_per ) {
+                        $db->model( 'session' )->remove_multi( $objects );
+                        $objects = [];
+                    }
                 }
+                if (! empty( $objects ) ) {
+                    $db->model( 'session' )->remove_multi( $objects );
+                }
+                if ( $res_counter ) {
+                    $worker_labels[] = $worker_label;
+                    $worker_messages[ $worker_label ] =
+                        $app->translate( 'Removed %s %s.',
+                            [ $res_counter, $app->translate('Sessions(s)') ] );
+                }
+            } catch ( Exception $e ) {
+                $error = $e->getMessage();
+                $error = $app->translate( "An error occurred in task '%s'. (%s)",
+                                          [ $worker_label, $error ] );
+                $this->log( $error, 'error', $app );
             }
-            if (! empty( $objects ) ) {
-                $db->model( 'session' )->remove_multi( $objects );
-            }
-            if ( $res_counter ) {
-                $worker_labels[] = $worker_label;
-                $worker_messages[ $worker_label ] =
-                    $app->translate( 'Removed %s %s.',
-                        [ $res_counter, $app->translate('Sessions(s)') ] );
-            }
-        } catch ( Exception $e ) {
-            $error = $e->getMessage();
-            $error = $app->translate( "An error occurred in task '%s'. (%s)",
-                                      [ $worker_label, $error ] );
-            $this->log( $error, 'error', $app );
         }
-        $uuid_models = $db->model( 'table' )->load( ['has_uuid' => 1] );
+        $continue = $this->continue_task( 'set_uuid', $argv );
         // Set uuid
-        foreach ( $uuid_models as $table ) {
-            $model = $table->name;
-            $revisable = $table->revisable;
-            $app->get_scheme_from_db( $model );
-            $terms = [];
-            $extra = " AND ({$model}_uuid IS NULL OR {$model}_uuid='') ";
-            $cols = 'id,uuid';
-            if ( $revisable ) {
-                $terms['rev_type'] = 0;
-                $cols .= ',rev_type,rev_object_id';
-            }
-            $objects = $db->model( $model )->load( $terms, [], $cols, $extra );
-            if ( count( $objects ) ) {
-                $worker_label = $app->translate(
-                    'Set UUID(%s)', $app->translate( $table->plural ) );
-                $res_counter = 0;
-                try {
-                    foreach ( $objects as $obj ) {
-                        if (! $obj->uuid ) {
-                            $uuid = $app->generate_uuid( $model );
-                            $obj->uuid( $uuid );
-                            $obj->save();
-                            $res_counter++;
-                            if ( $revisable ) {
-                                $rev_objs = $db->model( $model )->load( ['rev_object_id' => $obj->id ] );
-                                foreach ( $rev_objs as $rev ) {
-                                    $rev->uuid( $uuid );
-                                    $rev->save();
+        if ( $continue ) {
+            $uuid_models = $db->model( 'table' )->load( ['has_uuid' => 1] );
+            foreach ( $uuid_models as $table ) {
+                $model = $table->name;
+                $revisable = $table->revisable;
+                $app->get_scheme_from_db( $model );
+                $terms = [];
+                $extra = " AND ({$model}_uuid IS NULL OR {$model}_uuid='') ";
+                $cols = 'id,uuid';
+                if ( $revisable ) {
+                    $terms['rev_type'] = 0;
+                    $cols .= ',rev_type,rev_object_id';
+                }
+                $objects = $db->model( $model )->load( $terms, [], $cols, $extra );
+                if ( count( $objects ) ) {
+                    $worker_label = $app->translate(
+                        'Set UUID(%s)', $app->translate( $table->plural ) );
+                    $res_counter = 0;
+                    try {
+                        foreach ( $objects as $obj ) {
+                            if (! $obj->uuid ) {
+                                $uuid = $app->generate_uuid( $model );
+                                $obj->uuid( $uuid );
+                                $obj->save();
+                                $res_counter++;
+                                if ( $revisable ) {
+                                    $rev_objs = $db->model( $model )->load( ['rev_object_id' => $obj->id ] );
+                                    foreach ( $rev_objs as $rev ) {
+                                        $rev->uuid( $uuid );
+                                        $rev->save();
+                                    }
                                 }
                             }
                         }
+                        if ( $res_counter ) {
+                            $worker_labels[] = $worker_label;
+                            $obj_label = $res_counter == 1 ? $table->label : $table->plural;
+                            $worker_messages[ $worker_label ] = $app->translate( 'Set UUID of %s %s.',
+                                [ $res_counter, $obj_label ] );
+                        }
+                    } catch ( Exception $e ) {
+                        $error = $e->getMessage();
+                        $error = $app->translate( "An error occurred in task '%s'. (%s)",
+                                                  [ $worker_label, $error ] );
+                        $this->log( $error, 'error', $app );
                     }
-                    if ( $res_counter ) {
-                        $worker_labels[] = $worker_label;
-                        $obj_label = $res_counter == 1 ? $table->label : $table->plural;
-                        $worker_messages[ $worker_label ] = $app->translate( 'Set UUID of %s %s.',
-                            [ $res_counter, $obj_label ] );
-                    }
-                } catch ( Exception $e ) {
-                    $error = $e->getMessage();
-                    $error = $app->translate( "An error occurred in task '%s'. (%s)",
-                                              [ $worker_label, $error ] );
-                    $this->log( $error, 'error', $app );
                 }
             }
         }
         $revisable_models = $db->model( 'table' )->load( ['revisable' => 1] );
+        $continue = $this->continue_task( 'remove_old_revisions', $argv );
         // Remove old revisions
         $worker_label = '';
         $res_counter = 0;
-        foreach ( $revisable_models as $table ) {
-            $max_revisions = $table->max_revisions
-                           ? $table->max_revisions : $app->max_revisions;
-            $max_revisions = (int) $max_revisions;
-            if ( $max_revisions > 0 ) {
-                $worker_label = $app->translate(
-                    'Remove old revisions(%s)', $app->translate( $table->plural ) );
-                $res_counter = 0;
-                $model = $table->name;
-                try {
-                    $sql = "SELECT {$model}_rev_object_id,COUNT({$model}_rev_object_id) ";
-                    $sql.= "FROM mt_{$model} WHERE ( {$model}_rev_type = 1 ) ";
-                    $sql.= "GROUP BY {$model}_rev_object_id  HAVING COUNT({$model}_rev_object_id) > ";
-                    $sql.= $max_revisions;
-                    $groups = $db->model( $model )->load( $sql );
-                    $count_key = "COUNT({$model}_rev_object_id)";
-                    $id_key = "{$model}_rev_object_id"; 
-                    foreach ( $groups as $group ) {
-                        $rev_object_id = (int) $group->$id_key;
-                        $obj_cnt = (int) $group->$count_key;
-                        $rev_limit = $obj_cnt - $max_revisions;
-                        $revisions = $db->model( $model )->load(
-                            ['rev_object_id' => $rev_object_id ],
-                            ['sort' => 'modified_on', 'direction' => 'ascend', 'limit' => $rev_limit ]
-                        );
-                        foreach ( $revisions as $revision ) {
-                            $res_counter++;
-                            $app->remove_object( $revision, $table );
+        if ( $continue ) {
+            foreach ( $revisable_models as $table ) {
+                $max_revisions = $table->max_revisions
+                               ? $table->max_revisions : $app->max_revisions;
+                $max_revisions = (int) $max_revisions;
+                if ( $max_revisions > 0 ) {
+                    $worker_label = $app->translate(
+                        'Remove old revisions(%s)', $app->translate( $table->plural ) );
+                    $res_counter = 0;
+                    $model = $table->name;
+                    try {
+                        $sql = "SELECT {$model}_rev_object_id,COUNT({$model}_rev_object_id) ";
+                        $sql.= "FROM mt_{$model} WHERE ( {$model}_rev_type = 1 ) ";
+                        $sql.= "GROUP BY {$model}_rev_object_id  HAVING COUNT({$model}_rev_object_id) > ";
+                        $sql.= $max_revisions;
+                        $groups = $db->model( $model )->load( $sql );
+                        $count_key = "COUNT({$model}_rev_object_id)";
+                        $id_key = "{$model}_rev_object_id"; 
+                        foreach ( $groups as $group ) {
+                            $rev_object_id = (int) $group->$id_key;
+                            $obj_cnt = (int) $group->$count_key;
+                            $rev_limit = $obj_cnt - $max_revisions;
+                            $revisions = $db->model( $model )->load(
+                                ['rev_object_id' => $rev_object_id ],
+                                ['sort' => 'modified_on', 'direction' => 'ascend', 'limit' => $rev_limit ]
+                            );
+                            foreach ( $revisions as $revision ) {
+                                $res_counter++;
+                                $app->remove_object( $revision, $table );
+                            }
                         }
+                        if ( $res_counter ) {
+                            $worker_labels[] = $worker_label;
+                            $worker_messages[ $worker_label ] = $app->translate( 'Removed %s %s.',
+                                [ $res_counter, $app->translate('Revision(s)') ] );
+                        }
+                    } catch ( Exception $e ) {
+                        $error = $e->getMessage();
+                        $error = $app->translate( "An error occurred in task '%s'. (%s)",
+                                                  [ $worker_label, $error ] );
+                        $this->log( $error, 'error', $app );
                     }
-                    if ( $res_counter ) {
-                        $worker_labels[] = $worker_label;
-                        $worker_messages[ $worker_label ] = $app->translate( 'Removed %s %s.',
-                            [ $res_counter, $app->translate('Revision(s)') ] );
-                    }
-                } catch ( Exception $e ) {
-                    $error = $e->getMessage();
-                    $error = $app->translate( "An error occurred in task '%s'. (%s)",
-                                              [ $worker_label, $error ] );
-                    $this->log( $error, 'error', $app );
                 }
             }
         }
@@ -160,194 +169,58 @@ class PTWorker {
         $model_mappings = [];
         foreach ( $status_models as $table ) {
             // Scheduled publish
-            $worker_label = $app->translate( 'Scheduled publish(%s)',
-                                        $app->translate( $table->plural ) );
-            $res_counter = 0;
-            $model = $table->name;
-            $terms = ['status' => 3,
-                'published_on' => ['<=' => date( 'YmdHis' ) ] ];
-            if ( $table->revisable ) {
-                $terms['rev_type'] = 0;
-            }
-            $scheme = $app->get_scheme_from_db( $model );
-            $objects = $db->model( $model )->load( $terms );
-            // if (! count( $objects ) ) continue;
-            $app->init_callbacks( $model, 'scheduled_published' );
-            $callback = ['name' => 'scheduled_published', 'model' => $model,
-                         'scheme' => $scheme, 'table' => $table ];
-            $mappings = $db->model( 'urlmapping' )->load( ['container' => $model] );
-            $triggers = $db->model( 'relation' )->load(
-                ['name' => 'triggers', 'from_obj' => 'urlmapping',
-                 'to_obj' => 'table', 'to_id' => $table->id ]
-            );
-            foreach ( $triggers as $trigger ) {
-                $map = $db->model( 'urlmapping' )->load( (int) $trigger->from_id );
-                if ( $map ) {
-                    $map->__is_trigger = 1;
-                    $mappings[] = $map;
-                }
-            }
-            $model_mappings[ $model ] = $mappings;
-            try {
-                foreach ( $objects as $obj ) {
-                    $res_counter++;
-                    $obj->status( 4 );
-                    $original = clone $obj;
-                    $app->set_default( $obj );
-                    $obj->save();
-                    $app->publish_obj( $obj, null, true );
-                    $app->run_callbacks( $callback, $model, $obj, $original );
-                    $workspace_id = $obj->has_column( 'workspace_id' ) ? $obj->workspace_id : 0;
-                    $workspace_id = (int) $workspace_id;
-                    if ( isset( $workflows["{$model}_{$workspace_id}"] ) ) {
-                        $workflow = $workflows["{$model}_{$workspace_id}"];
-                    } else {
-                        $workflow = $db->model( 'workflow' )->get_by_key(
-                            ['model' => $obj->_model,
-                             'workspace_id' => $workspace_id ] );
-                        $workflows["{$model}_{$workspace_id}"] = $workflow;
-                    }
-                    if ( $workflow->id ) {
-                        $wf_class->publish_object( $app, $obj );
-                    }
-                    foreach ( $mappings as $map ) {
-                        if ( isset( $trigger_mappings[ $map->id ] ) ) continue;
-                        if ( isset( $map->__is_trigger ) && $map->__is_trigger ) {
-                            if ( $map->trigger_scope ) {
-                                if ( $obj->workspace_id == $map->workspace_id ) {
-                                    $trigger_mappings[ $map->id ] = $map;
-                                }
-                            } else {
-                                $trigger_mappings[ $map->id ] = $map;
-                            }
-                        } else {
-                            if ( $map->container_scope ) {
-                                if ( $obj->workspace_id == $map->workspace_id ) {
-                                    $trigger_mappings[ $map->id ] = $map;
-                                }
-                            } else {
-                                $trigger_mappings[ $map->id ] = $map;
-                            }
-                        }
-                    }
-                }
-                if ( $res_counter ) {
-                    $worker_labels[] = $worker_label;
-                    $object_label = $res_counter == 1
-                                  ? $app->translate( $table->label )
-                                  : $app->translate( $table->plural );
-                    $worker_messages[ $worker_label ] = $app->translate( 'Published %s %s.',
-                        [ $res_counter, $object_label ] );
-                }
-            } catch ( Exception $e ) {
-                $error = $e->getMessage();
-                $error = $app->translate( "An error occurred in task '%s'. (%s)",
-                                          [ $worker_label, $error ] );
-                $this->log( $error, 'error', $app );
-            }
-            $worker_label = '';
-            $res_counter = 0;
-            if ( $table->revisable ) {
-                // Scheduled replacement from revision
-                $worker_label = $app->translate( 'Scheduled replacement from revision(%s)',
+            $continue = $this->continue_task( 'scheduled_publish', $argv );
+            if ( $continue ) {
+                $worker_label = $app->translate( 'Scheduled publish(%s)',
                                             $app->translate( $table->plural ) );
                 $res_counter = 0;
-                $rel_attach_cols = PTUtil::attachment_cols( $table->name, $scheme, 'relation' );
-                $terms['rev_type'] = 2;
+                $model = $table->name;
+                $terms = ['status' => 3,
+                    'published_on' => ['<=' => date( 'YmdHis' ) ] ];
+                if ( $table->revisable ) {
+                    $terms['rev_type'] = 0;
+                }
+                $scheme = $app->get_scheme_from_db( $model );
+                $objects = $db->model( $model )->load( $terms );
+                // if (! count( $objects ) ) continue;
+                $app->init_callbacks( $model, 'scheduled_published' );
+                $callback = ['name' => 'scheduled_published', 'model' => $model,
+                             'scheme' => $scheme, 'table' => $table ];
+                $mappings = $db->model( 'urlmapping' )->load( ['container' => $model] );
+                $triggers = $db->model( 'relation' )->load(
+                    ['name' => 'triggers', 'from_obj' => 'urlmapping',
+                     'to_obj' => 'table', 'to_id' => $table->id ]
+                );
+                foreach ( $triggers as $trigger ) {
+                    $map = $db->model( 'urlmapping' )->load( (int) $trigger->from_id );
+                    if ( $map ) {
+                        $map->__is_trigger = 1;
+                        $mappings[] = $map;
+                    }
+                }
+                $model_mappings[ $model ] = $mappings;
                 try {
-                    $objects = $db->model( $model )->load( $terms );
-                    $app->init_callbacks( $model, 'scheduled_replacement' );
-                    $callback = ['name' => 'scheduled_replacement', 'model' => $model,
-                                 'scheme' => $scheme, 'table' => $table ];
                     foreach ( $objects as $obj ) {
-                        $rem_id = $obj->id;
-                        $obj_relations = $app->get_relations( $obj );
-                        $obj_metadata  = $app->get_meta( $obj );
-                        $original = null;
-                        $original_id = null;
-                        $basename = '';
-                        $clone = null;
-                        $replaced_attaches = [];
-                        $orig_attaches = [];
-                        if ( $original_id = $obj->rev_object_id ) {
-                            $original = $db->model( $model )->load( (int) $original_id );
-                            if ( $original ) {
-                                $changed_cols = [];
-                                if (! empty( $rel_attach_cols ) ) {
-                                    foreach ( $rel_attach_cols as $attach_col ) {
-                                        $orig_attaches =
-                                            $app->get_relations( $original,
-                                                'attachmentfile', $attach_col );
-                                        $obj_attaches =
-                                            $app->get_relations( $obj,
-                                                'attachmentfile', $attach_col );
-                                        if ( count( $orig_attaches ) || count( $obj_attaches ) ) {
-                                            $changed_cols[ $attach_col ] = true;
-                                            if ( count( $orig_attaches ) ) {
-                                                foreach ( $orig_attaches as $orig_attach ) {
-                                                    $attachment_id = (int) $orig_attach->to_id;
-                                                    $old_file =
-                                                        $db->model( 'attachmentfile' )
-                                                            ->load( $attachment_id );
-                                                    if ( $old_file ) {
-                                                        $replaced_attaches
-                                                            [ $attachment_id ] = $old_file;
-                                                    }
-                                                }
-                                            }
-                                        }
-                                    }
-                                }
-                                $obj->id( (int) $original_id );
-                                $clone = clone $original;
-                                $clone->id( null );
-                                $obj->status( $original->status );
-                                if ( $obj->has_column( 'basename' ) ) {
-                                    $basename =$original->basename;
-                                }
-                                $orig_relations = $app->get_relations( $original );
-                                $orig_metadata  = $app->get_meta( $original );
-                                $clone->_relations = $orig_relations;
-                                $clone->_meta = $orig_metadata;
-                                $obj->save();
-                                PTUtil::pack_revision( $obj, $clone, $changed_cols, false );
-                                $res_counter++;
-                            } else {
-                                continue;
-                            }
-                        } else {
-                            continue;
-                        }
-                        if ( $clone->id && ! empty( $replaced_attaches ) ) {
-                            $remove_rels = [];
-                            foreach ( $orig_attaches as $attach ) {
-                                $old_id = (int) $attach->to_id;
-                                if ( isset( $replaced_attaches[ $old_id ] ) ) {
-                                    $old_file = $replaced_attaches[ $old_id ];
-                                    if ( $old_file ) $app->remove_object( $old_file );
-                                    $remove_rels[] = $attach;
-                                }
-                            }
-                            if (! empty( $remove_rels ) ) {
-                                $db->model( 'relation' )->remove_multi( $remove_rels );
-                            }
-                        }
+                        $res_counter++;
+                        $obj->status( 4 );
+                        $original = clone $obj;
                         $app->set_default( $obj );
-                        if ( $basename ) {
-                            $obj->basename( $basename );
-                        }
-                        $obj->rev_type( 0 );
-                        $obj->rev_object_id( 0 );
                         $obj->save();
-                        foreach ( $obj_relations as $relation ) {
-                            $relation->from_id( (int) $obj->id );
-                            $relation->save();
+                        $app->publish_obj( $obj, null, true );
+                        $app->run_callbacks( $callback, $model, $obj, $original );
+                        $workspace_id = $obj->has_column( 'workspace_id' ) ? $obj->workspace_id : 0;
+                        $workspace_id = (int) $workspace_id;
+                        if ( isset( $workflows["{$model}_{$workspace_id}"] ) ) {
+                            $workflow = $workflows["{$model}_{$workspace_id}"];
+                        } else {
+                            $workflow = $db->model( 'workflow' )->get_by_key(
+                                ['model' => $obj->_model,
+                                 'workspace_id' => $workspace_id ] );
+                            $workflows["{$model}_{$workspace_id}"] = $workflow;
                         }
-                        foreach ( $obj_metadata as $meta ) {
-                            $meta->object_id( (int) $obj->id );
-                            $meta->save();
+                        if ( $workflow->id ) {
+                            $wf_class->publish_object( $app, $obj );
                         }
-                        $app->publish_obj( $obj, $clone, true );
                         foreach ( $mappings as $map ) {
                             if ( isset( $trigger_mappings[ $map->id ] ) ) continue;
                             if ( isset( $map->__is_trigger ) && $map->__is_trigger ) {
@@ -368,20 +241,13 @@ class PTWorker {
                                 }
                             }
                         }
-                        $app->run_callbacks( $callback, $model, $obj, $clone );
-                        $rem_obj = $db->model( $model )->load( ['id' => $rem_id ] );
-                        if ( !empty( $rem_obj ) ) {
-                            $rem_obj = $rem_obj[0];
-                            $error = '';
-                            $app->remove_object( $rem_obj, $table, $error, false );
-                        }
                     }
                     if ( $res_counter ) {
                         $worker_labels[] = $worker_label;
                         $object_label = $res_counter == 1
                                       ? $app->translate( $table->label )
                                       : $app->translate( $table->plural );
-                        $worker_messages[ $worker_label ] = $app->translate( 'Replaced %s %s from revision.',
+                        $worker_messages[ $worker_label ] = $app->translate( 'Published %s %s.',
                             [ $res_counter, $object_label ] );
                     }
                 } catch ( Exception $e ) {
@@ -391,53 +257,231 @@ class PTWorker {
                     $this->log( $error, 'error', $app );
                 }
             }
-            // Scheduled unpublish
-            $worker_label = $app->translate( 'Scheduled unpublish(%s)',
-                                        $app->translate( $table->plural ) );
+            $worker_label = '';
             $res_counter = 0;
-            $terms = ['status' => 4,
-                'has_deadline' => 1,
-                'unpublished_on' => ['<=' => date( 'YmdHis' ) ] ];
             if ( $table->revisable ) {
-                $terms['rev_type'] = 0;
-            }
-            try {
-                $objects = $db->model( $model )->load( $terms );
-                if (! count( $objects ) ) continue;
-                foreach ( $objects as $obj ) {
-                    $original = clone $obj;
-                    $obj->status( 5 );
-                    $obj->has_deadline( 0 );
-                    $obj->save();
-                    $app->publish_obj( $obj, $original, true );
-                    foreach ( $mappings as $map ) {
-                        if ( isset( $trigger_mappings[ $map->id ] ) ) continue;
-                        if ( isset( $map->__is_trigger ) && $map->__is_trigger ) {
-                            if ( $map->trigger_scope ) {
-                                if ( $obj->workspace_id == $map->workspace_id ) {
-                                    $trigger_mappings[ $map->id ] = $map;
+                // Scheduled replacement from revision
+                $continue = $this->continue_task( 'scheduled_replacement', $argv );
+                if ( $continue ) {
+                    $worker_label = $app->translate( 'Scheduled replacement from revision(%s)',
+                                                $app->translate( $table->plural ) );
+                    $res_counter = 0;
+                    $rel_attach_cols = PTUtil::attachment_cols( $table->name, $scheme, 'relation' );
+                    $terms['rev_type'] = 2;
+                    try {
+                        $objects = $db->model( $model )->load( $terms );
+                        $app->init_callbacks( $model, 'scheduled_replacement' );
+                        $callback = ['name' => 'scheduled_replacement', 'model' => $model,
+                                     'scheme' => $scheme, 'table' => $table ];
+                        foreach ( $objects as $obj ) {
+                            $rem_id = $obj->id;
+                            $obj_relations = $app->get_relations( $obj );
+                            $obj_metadata  = $app->get_meta( $obj );
+                            $original = null;
+                            $original_id = null;
+                            $basename = '';
+                            $clone = null;
+                            $replaced_attaches = [];
+                            $orig_attaches = [];
+                            if ( $original_id = $obj->rev_object_id ) {
+                                $original = $db->model( $model )->load( (int) $original_id );
+                                if ( $original ) {
+                                    $changed_cols = [];
+                                    if (! empty( $rel_attach_cols ) ) {
+                                        foreach ( $rel_attach_cols as $attach_col ) {
+                                            $orig_attaches =
+                                                $app->get_relations( $original,
+                                                    'attachmentfile', $attach_col );
+                                            $obj_attaches =
+                                                $app->get_relations( $obj,
+                                                    'attachmentfile', $attach_col );
+                                            if ( count( $orig_attaches ) || count( $obj_attaches ) ) {
+                                                $changed_cols[ $attach_col ] = true;
+                                                if ( count( $orig_attaches ) ) {
+                                                    foreach ( $orig_attaches as $orig_attach ) {
+                                                        $attachment_id = (int) $orig_attach->to_id;
+                                                        $old_file =
+                                                            $db->model( 'attachmentfile' )
+                                                                ->load( $attachment_id );
+                                                        if ( $old_file ) {
+                                                            $replaced_attaches
+                                                                [ $attachment_id ] = $old_file;
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                    $obj->id( (int) $original_id );
+                                    $clone = clone $original;
+                                    $clone->id( null );
+                                    $obj->status( $original->status );
+                                    if ( $obj->has_column( 'basename' ) ) {
+                                        $basename =$original->basename;
+                                    }
+                                    $orig_relations = $app->get_relations( $original );
+                                    $orig_metadata  = $app->get_meta( $original );
+                                    $clone->_relations = $orig_relations;
+                                    $clone->_meta = $orig_metadata;
+                                    $obj->save();
+                                    PTUtil::pack_revision( $obj, $clone, $changed_cols, false );
+                                    $res_counter++;
+                                } else {
+                                    continue;
                                 }
                             } else {
-                                $trigger_mappings[ $map->id ] = $map;
+                                continue;
                             }
-                        } else {
-                            if ( $map->container_scope ) {
-                                if ( $obj->workspace_id == $map->workspace_id ) {
-                                    $trigger_mappings[ $map->id ] = $map;
+                            if ( $clone->id && ! empty( $replaced_attaches ) ) {
+                                $remove_rels = [];
+                                foreach ( $orig_attaches as $attach ) {
+                                    $old_id = (int) $attach->to_id;
+                                    if ( isset( $replaced_attaches[ $old_id ] ) ) {
+                                        $old_file = $replaced_attaches[ $old_id ];
+                                        if ( $old_file ) $app->remove_object( $old_file );
+                                        $remove_rels[] = $attach;
+                                    }
                                 }
-                            } else {
-                                $trigger_mappings[ $map->id ] = $map;
+                                if (! empty( $remove_rels ) ) {
+                                    $db->model( 'relation' )->remove_multi( $remove_rels );
+                                }
+                            }
+                            $app->set_default( $obj );
+                            if ( $basename ) {
+                                $obj->basename( $basename );
+                            }
+                            $obj->rev_type( 0 );
+                            $obj->rev_object_id( 0 );
+                            $obj->save();
+                            foreach ( $obj_relations as $relation ) {
+                                $relation->from_id( (int) $obj->id );
+                                $relation->save();
+                            }
+                            foreach ( $obj_metadata as $meta ) {
+                                $meta->object_id( (int) $obj->id );
+                                $meta->save();
+                            }
+                            $app->publish_obj( $obj, $clone, true );
+                            foreach ( $mappings as $map ) {
+                                if ( isset( $trigger_mappings[ $map->id ] ) ) continue;
+                                if ( isset( $map->__is_trigger ) && $map->__is_trigger ) {
+                                    if ( $map->trigger_scope ) {
+                                        if ( $obj->workspace_id == $map->workspace_id ) {
+                                            $trigger_mappings[ $map->id ] = $map;
+                                        }
+                                    } else {
+                                        $trigger_mappings[ $map->id ] = $map;
+                                    }
+                                } else {
+                                    if ( $map->container_scope ) {
+                                        if ( $obj->workspace_id == $map->workspace_id ) {
+                                            $trigger_mappings[ $map->id ] = $map;
+                                        }
+                                    } else {
+                                        $trigger_mappings[ $map->id ] = $map;
+                                    }
+                                }
+                            }
+                            $app->run_callbacks( $callback, $model, $obj, $clone );
+                            $rem_obj = $db->model( $model )->load( ['id' => $rem_id ] );
+                            if ( !empty( $rem_obj ) ) {
+                                $rem_obj = $rem_obj[0];
+                                $error = '';
+                                $app->remove_object( $rem_obj, $table, $error, false );
                             }
                         }
+                        if ( $res_counter ) {
+                            $worker_labels[] = $worker_label;
+                            $object_label = $res_counter == 1
+                                          ? $app->translate( $table->label )
+                                          : $app->translate( $table->plural );
+                            $worker_messages[ $worker_label ] = $app->translate( 'Replaced %s %s from revision.',
+                                [ $res_counter, $object_label ] );
+                        }
+                    } catch ( Exception $e ) {
+                        $error = $e->getMessage();
+                        $error = $app->translate( "An error occurred in task '%s'. (%s)",
+                                                  [ $worker_label, $error ] );
+                        $this->log( $error, 'error', $app );
                     }
-                    $res_counter++;
                 }
+            }
+            // Scheduled unpublish
+            $continue = $this->continue_task( 'scheduled_unpublish', $argv );
+            if ( $continue ) {
+                $worker_label = $app->translate( 'Scheduled unpublish(%s)',
+                                            $app->translate( $table->plural ) );
+                $res_counter = 0;
+                $terms = ['status' => 4,
+                    'has_deadline' => 1,
+                    'unpublished_on' => ['<=' => date( 'YmdHis' ) ] ];
+                if ( $table->revisable ) {
+                    $terms['rev_type'] = 0;
+                }
+                try {
+                    $objects = $db->model( $model )->load( $terms );
+                    if (! count( $objects ) ) continue;
+                    foreach ( $objects as $obj ) {
+                        $original = clone $obj;
+                        $obj->status( 5 );
+                        $obj->has_deadline( 0 );
+                        $obj->save();
+                        $app->publish_obj( $obj, $original, true );
+                        foreach ( $mappings as $map ) {
+                            if ( isset( $trigger_mappings[ $map->id ] ) ) continue;
+                            if ( isset( $map->__is_trigger ) && $map->__is_trigger ) {
+                                if ( $map->trigger_scope ) {
+                                    if ( $obj->workspace_id == $map->workspace_id ) {
+                                        $trigger_mappings[ $map->id ] = $map;
+                                    }
+                                } else {
+                                    $trigger_mappings[ $map->id ] = $map;
+                                }
+                            } else {
+                                if ( $map->container_scope ) {
+                                    if ( $obj->workspace_id == $map->workspace_id ) {
+                                        $trigger_mappings[ $map->id ] = $map;
+                                    }
+                                } else {
+                                    $trigger_mappings[ $map->id ] = $map;
+                                }
+                            }
+                        }
+                        $res_counter++;
+                    }
+                    if ( $res_counter ) {
+                        $worker_labels[] = $worker_label;
+                        $object_label = $res_counter == 1
+                                      ? $app->translate( $table->label )
+                                      : $app->translate( $table->plural );
+                        $worker_messages[ $worker_label ] = $app->translate( 'Unpublished %s %s.',
+                            [ $res_counter, $object_label ] );
+                    }
+                } catch ( Exception $e ) {
+                    $error = $e->getMessage();
+                    $error = $app->translate( "An error occurred in task '%s'. (%s)",
+                                              [ $worker_label, $error ] );
+                    $this->log( $error, 'error', $app );
+                }
+            }
+        }
+        // Publish queue
+        // $task_id = 'publish_queue';
+        require_once( 'lib' . DS . 'Prototype' . DS . 'class.PTPublisher.php' );
+        $pub = new PTPublisher;
+        $continue = $this->continue_task( 'publish_queue', $argv );
+        if ( $continue ) {
+            $worker_label = $app->translate( 'Publish queue' );
+            $res_counter = 0;
+            try {
+                $res_counter = $pub->publish_queue();
                 if ( $res_counter ) {
                     $worker_labels[] = $worker_label;
                     $object_label = $res_counter == 1
-                                  ? $app->translate( $table->label )
-                                  : $app->translate( $table->plural );
-                    $worker_messages[ $worker_label ] = $app->translate( 'Unpublished %s %s.',
+                                  ? $app->translate( 'File' )
+                                  : $app->translate( 'Files' );
+                    $worker_messages[ $worker_label ] =
+                        $app->translate( 'Published %s %s by publish queue.',
                         [ $res_counter, $object_label ] );
                 }
             } catch ( Exception $e ) {
@@ -446,28 +490,6 @@ class PTWorker {
                                           [ $worker_label, $error ] );
                 $this->log( $error, 'error', $app );
             }
-        }
-        // Publish queue
-        require_once( 'lib' . DS . 'Prototype' . DS . 'class.PTPublisher.php' );
-        $pub = new PTPublisher;
-        $worker_label = $app->translate( 'Publish queue' );
-        $res_counter = 0;
-        try {
-            $res_counter = $pub->publish_queue();
-            if ( $res_counter ) {
-                $worker_labels[] = $worker_label;
-                $object_label = $res_counter == 1
-                              ? $app->translate( 'File' )
-                              : $app->translate( 'Files' );
-                $worker_messages[ $worker_label ] =
-                    $app->translate( 'Published %s %s by publish queue.',
-                    [ $res_counter, $object_label ] );
-            }
-        } catch ( Exception $e ) {
-            $error = $e->getMessage();
-            $error = $app->translate( "An error occurred in task '%s'. (%s)",
-                                      [ $worker_label, $error ] );
-            $this->log( $error, 'error', $app );
         }
         /*
         // Compress the database
@@ -495,35 +517,39 @@ class PTWorker {
         }
         */
         // Clean up urlinfo
+        // $task_id = 'clean_up_urlinfo';
         $res_counter = 0;
-        $worker_label = $app->translate( 'Clean up urlinfo' );
-        try {
-            $urls = $db->model( 'urlinfo' )->load( ['delete_flag' => 1] );
-            foreach ( $urls as $url ) {
-                $removeUrls = [];
-                if ( file_exists( $url->file_path ) ) {
-                    $res_counter++;
-                    $another = $db->model( 'urlinfo' )->count( ['file_path' => $url->file_path, 'id' => ['not' => $url->id ] ] );
-                    if ( $another ) {
-                        $removeUrls[] = $url;
-                    } else {
-                        $url->delete_flag( 0 );
-                        $url->save();
+        $continue = $this->continue_task( 'clean_up_urlinfo', $argv );
+        if ( $continue ) {
+            $worker_label = $app->translate( 'Clean up urlinfo' );
+            try {
+                $urls = $db->model( 'urlinfo' )->load( ['delete_flag' => 1] );
+                foreach ( $urls as $url ) {
+                    $removeUrls = [];
+                    if ( file_exists( $url->file_path ) ) {
+                        $res_counter++;
+                        $another = $db->model( 'urlinfo' )->count( ['file_path' => $url->file_path, 'id' => ['not' => $url->id ] ] );
+                        if ( $another ) {
+                            $removeUrls[] = $url;
+                        } else {
+                            $url->delete_flag( 0 );
+                            $url->save();
+                        }
+                    }
+                    if (! empty( $removeUrls ) ) {
+                        $db->model( 'urlinfo' )->remove_multi( $removeUrls );
                     }
                 }
-                if (! empty( $removeUrls ) ) {
-                    $db->model( 'urlinfo' )->remove_multi( $removeUrls );
+                if ( $res_counter ) {
+                    $worker_messages[ $worker_label ] =
+                        $app->translate( 'Clean up %s URLInfo.', $res_counter );
                 }
+            } catch ( Exception $e ) {
+                $error = $e->getMessage();
+                $error = $app->translate( "An error occurred in task '%s'. (%s)",
+                                          [ $worker_label, $error ] );
+                $this->log( $error, 'error', $app );
             }
-            if ( $res_counter ) {
-                $worker_messages[ $worker_label ] =
-                    $app->translate( 'Clean up %s URLInfo.', $res_counter );
-            }
-        } catch ( Exception $e ) {
-            $error = $e->getMessage();
-            $error = $app->translate( "An error occurred in task '%s'. (%s)",
-                                      [ $worker_label, $error ] );
-            $this->log( $error, 'error', $app );
         }
         $res_counter = 0;
         // Plugin's tasks
@@ -542,6 +568,11 @@ class PTWorker {
             ksort( $event_tasks );
             foreach ( $event_tasks as $tasks ) {
                 foreach ( $tasks as $task ) {
+                    if ( count( $argv ) ) {
+                        if (! in_array( $task['id'], $argv ) ) {
+                            continue;
+                        }
+                    }
                     $component = $app->component( $task['component'] );
                     $meth = $task['method'];
                     if ( method_exists( $component, $meth ) ) {
@@ -597,6 +628,11 @@ class PTWorker {
                 }
             }
         }
+    }
+
+    function continue_task ( $name, $argv = [] ) {
+        if (! count( $argv ) ) return true;
+        return in_array( $name, $argv );
     }
 
     function translate ( $phrase ) {

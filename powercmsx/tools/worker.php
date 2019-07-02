@@ -20,11 +20,15 @@ if ( $app->debug ) {
     unlink( $pid );
 }
 touch( $pid );
+array_shift( $argv );
 require_once( LIB_DIR . 'Prototype' . DS . 'class.PTWorker.php' );
 $worker = new PTWorker;
 $worker->pid = $pid;
-$worker->work( $app );
+if ( count( $argv ) == 1 ) {
+    $argv = preg_split( "/,/", $argv[0] );
+}
+$argv = array_unique( $argv );
+$worker->work( $app, $argv );
 if ( file_exists( $pid ) ) {
     unlink( $pid );
 }
-
