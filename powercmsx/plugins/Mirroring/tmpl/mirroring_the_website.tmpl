@@ -1,0 +1,181 @@
+<mt:setvarblock name="html_head">
+  <style>pre{ padding: 20px; background-color: #f4f4ff; color: #009 }
+  .reserve_date_block input{display:inline; height:36px;}</style>
+</mt:setvarblock>
+<mt:trans phrase="Mirroring the Website" component="Mirroring" setvar="page_title">
+<mt:include file="include/header.tmpl">
+<mt:unless name="mirroring_has_setting">
+<div id="alert-has_setting" class="alert alert-warning" tabindex="0">
+  <mt:trans phrase="There is no settings for Mirroring." component="Mirroring">
+</div>
+<script>
+$('#alert-has_setting').focus();
+</script>
+<mt:else>
+<mt:if name="request.does_act">
+<div id="alert-does-act" class="alert alert-success" tabindex="0">
+<mt:if name="request.does_act" eq="mirroring">
+  <mt:trans phrase="Mirroring has been performed." component="Mirroring">
+<mt:elseif name="request.does_act" eq="debug">
+  <mt:trans phrase="Debugging has been performed." component="Mirroring">
+<mt:elseif name="request.does_act" eq="reserve">
+  <mt:trans phrase="Reservation has been performed." component="Mirroring">
+<mt:elseif name="request.does_act" eq="cancel_reservation">
+  <mt:trans phrase="Reservation has been canceled." component="Mirroring">
+</mt:if>
+</div>
+<script>
+$('#alert-does-act').focus();
+</script>
+</mt:if>
+<mt:if name="mirroring_done">
+<h2>
+  <small>
+    <mt:trans phrase="Results" component="Mirroring">
+  </small>
+</h2>
+<pre><code><mt:loop name="mirroring_results"><mt:var name="__value__" escape>
+</mt:loop></code></pre>
+</mt:if>
+<mt:if name="mirroring_reserved">
+<mt:var name="mirroring_reserved" format_ts="Y-m-d H:i:s" setvar="mirroring_reserved_on">
+<div id="alert-reserved" class="alert alert-success" tabindex="0">
+  <mt:trans phrase="Mirroring is reserved on %s." params="$mirroring_reserved_on" component="Mirroring">
+</div>
+<script>
+$('#alert-reserved').focus();
+</script>
+</mt:if>
+<textarea class="hidden" id="mirroring_commands" name="mirroring_commands"><mt:loop name="mirroring_commands"><mt:var name="__value__" escape>
+</mt:loop></textarea>
+<form action="<mt:var name="script_uri">" method="POST" id="mirroring_the_website-form">
+<input type="hidden" name="__mode" value="mirroring_the_website">
+<input type="hidden" name="magic_token" value="<mt:var name="magic_token" escape>">
+<input type="hidden" name="workspace_id" value="<mt:var name="workspace_id">">
+<input type="hidden" name="type" value="" id="mirroring_type">
+<div class="row form-group">
+  <div class="col-lg-1">
+    <label for="mirroring_command-show"><mt:trans phrase="Settings" component="Mirroring"></label>
+  </div>
+  <div class="col-lg-11">
+<button type="button" class="btn btn-secondary" id="mirroring_command-show">
+  <mt:trans phrase="View current settings" component="Mirroring">
+</button>
+  </div>
+</div>
+<div class="row form-group">
+  <div class="col-lg-1">
+    <label for="reserve_date"><mt:trans phrase="Reservation" component="Mirroring"></label>
+  </div>
+  <div class="col-lg-11">
+    <div class="reserve_date_block ml-1">
+    <input id="reserve_date" type="date" class="form-control date watch-changed" name="reserve_date" value="<mt:var name="mirroring_reserved_date">">
+    <input id="reserve_time" type="time" step="1" class="form-control time watch-changed" name="reserve_time" value="<mt:var name="mirroring_reserved_time">">
+    </div>
+    <div class="mt-3 ml-0">
+    <button type="submit" class="btn btn-secondary" id="mirroring_reserve-execute">
+      <mt:if name="mirroring_reserved">
+        <mt:trans phrase="Change your reservation" component="Mirroring">
+      <mt:else>
+        <mt:trans phrase="Reserve" component="Mirroring">
+      </mt:if>
+    </button>
+    <mt:if name="mirroring_reserved">
+    &nbsp;
+    <button type="submit" class="btn btn-secondary" id="mirroring_cancel-execute">
+      <mt:trans phrase="Cancel" component="Mirroring">
+    </button>
+    </mt:if>
+    </div>
+    <div class="text-muted hint-block ml-2">
+      <i class="fa fa-question-circle-o" aria-hidden="true"></i>
+      <span class="sr-only"><mt:trans phrase="Hint"></span>
+      <mt:trans phrase="Only one time can be reserved." component="Mirroring">
+      <mt:if name="mirroring_reserved">
+      <mt:trans phrase="Setting will be overwritten when you execute reservation with specifying the date and time." component="Mirroring">
+      </mt:if>
+    </div>
+  </div>
+</div>
+<hr>
+<div class="mt-3 mb-3">
+<button type="submit" class="btn btn-primary" id="mirroring_the_website-execute">
+  <mt:if name="mirroring_done">
+    <mt:if name="request.does_act" eq="mirroring">
+      <mt:trans phrase="Execute again" component="Mirroring">
+    <mt:else>
+      <mt:trans phrase="Execute" component="Mirroring">
+    </mt:if>
+  <mt:else>
+    <mt:trans phrase="Execute" component="Mirroring">
+  </mt:if>
+</button>
+<button type="submit" class="btn btn-secondary" id="mirroring_debug-execute">
+  <mt:if name="request.does_act" eq="debug">
+    <mt:trans phrase="Debug again" component="Mirroring">
+  <mt:else>
+    <mt:trans phrase="Debug" component="Mirroring">
+  </mt:if>
+</button>
+</div>
+</form>
+<script>
+$('#mirroring_command-show').click(function(){
+    alert( $('#mirroring_commands').val() );
+});
+$('#mirroring_reserve-execute').click(function(){
+    var reserve_date = $('#reserve_date').val();
+    if (! reserve_date ) {
+        alert('<mt:trans phrase="Reservation date not specified." component="Mirroring">');
+        return false;
+    }
+    var now = new Date();
+    var y = now.getFullYear();
+    var m = now.getMonth() + 1;
+    var d = now.getDate();
+    var h = now.getHours();
+    var mi = now.getMinutes();
+    var s = now.getSeconds();
+    m = zeroPadding( m, 2 ); 
+    d = zeroPadding( d, 2 );
+    h = zeroPadding( h, 2 );
+    mi = zeroPadding( mi, 2 );
+    s = zeroPadding( s, 2 );
+    var now = String(y)+String(m)+String(d)+String(h)+String(mi)+String(s);
+    var reserve_ts = $('#reserve_date').val() + $('#reserve_time').val();
+    reserve_ts = reserve_ts.replace( /\-/g, '' );
+    reserve_ts = reserve_ts.replace( /:/g, '' );
+    if ( reserve_ts < now ) {
+        alert( '<mt:trans phrase="The past date can not be specified." component="Mirroring">' );
+        return false;
+    }
+    if(! confirm('<mt:trans phrase="Are you sure you want to reserve mirroring?" component="Mirroring">') ) {
+        return false;
+    }
+    $('#mirroring_type').val('reserve');
+});
+function zeroPadding(num,length){
+    return ('000' + num).slice(-length);
+}
+$('#mirroring_cancel-execute').click(function(){
+    if(! confirm('<mt:trans phrase="Are you sure you want to cancel your reservation?" component="Mirroring">') ) {
+        return false;
+    }
+    $('#mirroring_type').val('cancel_reservation');
+});
+
+$('#mirroring_the_website-execute').click(function(){
+    if(! confirm('<mt:trans phrase="Are you sure you want to mirroring the website?" component="Mirroring">') ) {
+        return false;
+    }
+    $('#mirroring_type').val('mirroring');
+});
+$('#mirroring_debug-execute').click(function(){
+    if(! confirm('<mt:trans phrase="Are you sure you want to debug mirroring?" component="Mirroring">') ) {
+        return false;
+    }
+    $('#mirroring_type').val('debug');
+});
+</script>
+</mt:unless>
+<mt:include file="include/footer.tmpl">

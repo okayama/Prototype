@@ -1,0 +1,58 @@
+{
+    "Mirroring the website using lftp." : "LFTPを利用してウェブサイトをミラーリングします。",
+    "Mirroring the Website" : "ミラーリング",
+    "Synchronization destination %s" : "同期先の設定(%s)",
+    "Protocol" : "プロトコル",
+    "Port" : "ポート",
+    "Account ID" : "ログイン名",
+    "Password" : "パスワード",
+    "Server" : "同期先サーバー",
+    "Remote path" : "リモート・パス",
+    "Settings" : "設定",
+    "Reservation" : "予約",
+    "Execute" : "実行する",
+    "Debug" : "デバッグする",
+    "Reserve" : "予約する",
+    "Cancel" : "キャンセルする",
+    "Delete" : "削除の同期",
+    "Mirroring has been performed." : "ミラーリングが実行されました。",
+    "Mirroring to %s has been performed." : "%s へのミラーリングが実行されました。",
+    "LFTP Test" : "LFTPのテスト",
+    "Execute command '%s' from PHP has successfull." : "コマンド'%s'をPHPから実行可能です。",
+    "Debugging has been performed." : "デバッグが実行されました。",
+    "Reservation has been performed." : "ミラーリングを予約しました。",
+    "Reservation has been canceled." : "予約がキャンセルされました。",
+    "There is no settings for Mirroring." : "ミラーリングの設定がありません。",
+    "Delete files from remote server" : "削除されたファイルを同期先から削除",
+    "Hidden files" : "隠しファイル",
+    "Exclude hidden files(the name begin with '.')" : "隠しファイル('.'から始まるファイル名)を除外する",
+    "Execute again" : "もう一度実行する",
+    "Debug again" : "もう一度デバッグする",
+    "View current settings" : "現在の設定を確認する",
+    "Results" : "実行結果",
+    "Excludes" : "除外条件",
+    "Exclude patterns separated by comma(ex:^powercmsx/,^assets/)"
+        : "除外パターンをカンマ区切りで入力(例:^powercmsx/,^assets/)",
+    "Invalid command(%s)." : "不正なコマンドです。",
+    "The past date can not be specified." : "過去の日付は指定できません。",
+    "Please specify the correct date." : "正しい日付・時刻を指定してください。",
+    "%s was not found on this server." : "%s が見つかりません。",
+    "To option are required." : "同期先の指定が必要です。",
+    "Can't execute command '%s' from PHP." : "コマンド'%s'をPHPから実行できません。",
+    "Are you sure you want to mirroring the website?"
+        : "ミラーリングを実行してもよろしいですか?",
+    "Are you sure you want to debug mirroring?"
+        : "ミラーリングをデバッグしますか?",
+    "Are you sure you want to reserve mirroring?"
+        : "ミラーリングを予約してもよろしいですか?",
+    "Are you sure you want to cancel your reservation?"
+        : "予約をキャンセルしてもよろしいですか?",
+    "An error occurred while mirroring to %s."
+        : "%s へのミラーリングの実行中にエラーが発生しました。",
+    "Reservation date not specified." : "予約日が指定されていません。",
+    "Mirroring is reserved on %s." : "ミラーリングは %s に予約されています。",
+    "Change your reservation" : "予約を変更する",
+    "Only one time can be reserved." : "予約設定は1設定のみ保存可能です。",
+    "Setting will be overwritten when you execute reservation with specifying the date and time."
+        : "日付と時刻を指定して再予約すると設定した日時は上書きされます。"
+}

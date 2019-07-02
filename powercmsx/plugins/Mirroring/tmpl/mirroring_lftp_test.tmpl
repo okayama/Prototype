@@ -1,0 +1,9 @@
+<mt:trans phrase="LFTP Test" component="Mirroring" setvar="page_title">
+<mt:include file="include/header.tmpl">
+<div id="alert-successt" class="alert alert-success" tabindex="0">
+  <mt:trans phrase="Execute command '%s' from PHP has successfull." params="$lftp_cmd" component="Mirroring" escape>
+</div>
+<script>
+$('#alert-successt').focus();
+</script>
+<mt:include file="include/footer.tmpl">

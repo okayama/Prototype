@@ -1,0 +1,75 @@
+{
+    "label"       : "Mirroring",
+    "id"          : "mirroring",
+    "component"   : "Mirroring",
+    "version"     : "1.0",
+    "author"      : "Alfasado Inc.",
+    "author_link" : "https://alfasado.net/",
+    "description" : "Mirroring the website using lftp.",
+    "cfg_template": "cfg_template.tmpl",
+    "cfg_system"  : 1,
+    "cfg_space"   : 1,
+    "config_settings"    : {
+        "mirroring_lftp_path" : "/usr/local/bin/lftp"
+    },
+    "settings" : {
+        "mirroring_protocol1" : "sftp",
+        "mirroring_protocol2" : "sftp",
+        "mirroring_protocol3" : "sftp",
+        "mirroring_port1"     : "22",
+        "mirroring_port2"     : "22",
+        "mirroring_port3"     : "22",
+        "mirroring_login_id1" : "",
+        "mirroring_login_pw1" : "",
+        "mirroring_login_id2" : "",
+        "mirroring_login_pw2" : "",
+        "mirroring_login_id3" : "",
+        "mirroring_login_pw3" : "",
+        "mirroring_mirroring1": "",
+        "mirroring_mirroring2": "",
+        "mirroring_mirroring3": "",
+        "mirroring_delete1"   : 1,
+        "mirroring_delete2"   : 1,
+        "mirroring_delete3"   : 1,
+        "mirroring_hidden1"   : 1,
+        "mirroring_hidden2"   : 1,
+        "mirroring_hidden3"   : 1,
+        "mirroring_excludes1" : "",
+        "mirroring_excludes2" : "",
+        "mirroring_excludes3" : "",
+        "mirroring_reserved"  : ""
+    },
+    "menus": {
+        "mirroring": {
+            "display_system" : 1,
+            "display_space" : 1,
+            "component"  : "Mirroring",
+            "mode"       : "mirroring_the_website",
+            "label"      : "Mirroring the Website",
+            "permission" : "can_mirroring",
+            "condition"  : "has_settings",
+            "order"      : 1500
+        }
+    },
+    "methods": {
+        "mirroring_the_website": {
+            "component"  : "Mirroring",
+            "method"     : "mirroring_the_website",
+            "permission" : "can_mirroring"
+        },
+        "mirroring_lftp_test": {
+            "component"  : "Mirroring",
+            "method"     : "mirroring_lftp_test",
+            "permission" : "can_mirroring"
+        }
+    },
+    "tasks": {
+        "mirroring_scheduled_tasks": {
+            "label"     : "Mirroring the Website",
+            "component" : "Mirroring",
+            "priority"  : 100,
+            "method"    : "mirroring_scheduled_tasks",
+            "frequency" : 1
+        }
+    }
+}
