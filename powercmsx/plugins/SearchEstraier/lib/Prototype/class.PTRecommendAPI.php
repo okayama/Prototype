@@ -31,7 +31,7 @@ class PTRecommendAPI extends Prototype {
                 $cookie_name .= '-' . $ui->workspace_id;
             }
         }
-        $estcmd_path = $component->get_config_value( 'searchestraier_estcmd_path' );
+        $estcmd_path = $app->searchestraier_estcmd_path;
         if (! file_exists( $estcmd_path ) ) {
             $app->json_error( 'estcmd was not found.', null, 500 );
         }

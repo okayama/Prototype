@@ -10,7 +10,6 @@
     "cfg_system"  : 1,
     "cfg_space"   : 1,
     "settings"    : {
-        "searchestraier_estcmd_path" : "/usr/local/bin/estcmd",
         "searchestraier_data_dir" : "<mt:property name=\"support_dir\">/search/index",
         "searchestraier_archive_types" : "entry,page",
         "searchestraier_index_dinamic" : 1,
@@ -19,7 +18,9 @@
         "searchestraier_doc_title" : "heading",
         "searchestraier_mecab_path" : "/usr/local/bin/mecab"
     },
-    "config_settings"    : {
+    "config_settings" : {
+        "searchestraier_estcmd_path" : "/usr/local/bin/estcmd",
+        "searchestraier_mecab_path" : "/usr/local/bin/mecab",
         "searchestraier_cookie_name" : "pt-visitor_interests",
         "searchestraier_cookie_expires" : 365,
         "searchestraier_cookie_path" : "/",

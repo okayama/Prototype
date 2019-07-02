@@ -7,17 +7,18 @@ HyperEstraierを利用したサイト内検索機能を提供します。
 
 ## 設置とインストール
 
-- HyperEstraierをインストールします。
-- pluginsディレクトリに HyperEstraierディレクトリを設置します。
-- プラグインを有効化し、システムプラグイン設定で estcmdと mecab\(オプション\)のパスを設定します。
+- HyperEstraier と MeCab\(オプション\)をインストールします。
+- estcmd のパスが /usr/local/bin/estcmd でない時、環境変数「searchestraier\_estcmd\_path」に estcmd のパスを追加します。
+- mecab のパスが /usr/local/bin/mecab でない時、環境変数「searchestraier\_mecab\_path」に mecab のパスを追加します。
+- プラグインを有効化します。
 - 検索対象のスコープのプラグイン設定で、インデックスのパスを入力し、検索を有効化にチェックを入れます。
 - tools/worker\.phpを実行します。
-- ビューを作成します。サンプルは plugins/SearchEstraier/theme/views/以下に含まれています。
+- ビューを作成します。サンプルは plugins/SearchEstraier/theme/views/ 以下に含まれています。
 - ビューに対する URLマッピングでアーカイブ種別を「インデックス」とし、ファイル出力を「ダイナミック」とします。
 
 ## 検索フォームと検索結果のビュー
 
-以下のようなビューを作成します。  
+以下のようなビューを作成します。 
 
     <form method="GET" action="<mt:var name="current_archive_url">">
     <div class="form-inline">

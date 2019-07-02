@@ -16,8 +16,8 @@ class SearchEstraier extends PTPlugin {
     function searchestraier_post_run ( $app ) {
         $update_indexes = $this->update_indexes;
         if (! empty( $update_indexes ) ) {
-            $estcmd_path = $this->get_config_value( 'searchestraier_estcmd_path' );
-            $mecab_path = $this->get_config_value( 'searchestraier_mecab_path' );
+            $estcmd_path = escapeshellcmd( $app->searchestraier_estcmd_path );
+            $mecab_path = escapeshellcmd( $app->searchestraier_mecab_path );
             if (! file_exists( $mecab_path ) ) {
                 $mecab_path = null;
             }
@@ -35,7 +35,7 @@ class SearchEstraier extends PTPlugin {
         if ( $ui->publish_file == 1 && ! $unlink ) {
             return;
         }
-        $estcmd_path = $this->get_config_value( 'searchestraier_estcmd_path' );
+        $estcmd_path = $app->searchestraier_estcmd_path;
         if (! file_exists( $estcmd_path ) ) {
             return;
         }
@@ -105,7 +105,7 @@ class SearchEstraier extends PTPlugin {
             return $this->searchestraier_start_publish( $cb, $app, true );
         }
         $ui = $cb['urlinfo'];
-        $estcmd_path = $this->get_config_value( 'searchestraier_estcmd_path' );
+        $estcmd_path = $app->searchestraier_estcmd_path;
         if (! file_exists( $estcmd_path ) ) {
             return;
         }
@@ -150,12 +150,12 @@ class SearchEstraier extends PTPlugin {
 
     function searchestraier_update_idx ( $app ) {
         $counter = 0;
-        $estcmd_path = $this->get_config_value( 'searchestraier_estcmd_path' );
+        $estcmd_path = $app->searchestraier_estcmd_path;
         if (! file_exists( $estcmd_path ) ) {
             return;
         }
         $estcmd_path = escapeshellcmd( $estcmd_path );
-        $mecab_path = $this->get_config_value( 'searchestraier_mecab_path' );
+        $mecab_path = $app->searchestraier_mecab_path;
         if (! file_exists( $mecab_path ) ) {
             $mecab_path = null;
         }
@@ -457,6 +457,9 @@ class SearchEstraier extends PTPlugin {
             $raw_exp = '';
             if ( $phrase ) {
                 if (! is_array( $phrase ) ) {
+                    $phrase = mb_convert_encoding( $phrase, 'utf-8', ['UTF-7','ISO-2022-JP',
+                                        'UTF-8', 'SJIS', 'JIS', 'eucjp-win', 'sjis-win',
+                                        'EUC-JP', 'ASCII'] );
                     $phrase = mb_convert_kana( $phrase, 's' );
                     $raw_exp = $phrase;
                 }
@@ -506,7 +509,7 @@ class SearchEstraier extends PTPlugin {
                 $add_cond = " -attr " . escapeshellarg( "@workspace_id STROR ${workspace_ids}" );
                 $condition .= $add_cond;
             }
-            $cmd = escapeshellcmd( $this->get_config_value( 'searchestraier_estcmd_path' ) );
+            $cmd = escapeshellcmd( $app->searchestraier_estcmd_path );
             if (! file_exists( $cmd ) ) {
                 $repeat = false;
                 return;
@@ -548,7 +551,12 @@ class SearchEstraier extends PTPlugin {
                 $and_or = strtoupper( $and_or );
                 $and_or = " ${and_or} ";
                 if ( is_array( $phrase ) ) {
-                    $phrase = escapeshellarg( implode( $and_or, $phrase ) );
+                    $phrase = implode( $and_or, $phrase );
+                    $phrase = mb_convert_encoding( $phrase, 'utf-8', ['UTF-7','ISO-2022-JP',
+                                        'UTF-8', 'SJIS', 'JIS', 'eucjp-win', 'sjis-win',
+                                        'EUC-JP', 'ASCII'] );
+                    $phrase = mb_convert_kana( $phrase, 's' );
+                    $phrase = escapeshellarg( $phrase );
                 } else {
                     $phrase = escapeshellarg( $phrase );
                     if ( isset( $args['raw_query'] ) ) $raw_query = $args['raw_query'];
@@ -561,6 +569,7 @@ class SearchEstraier extends PTPlugin {
                             $phrase = join( $and_or, $phrase );
                         }
                     }
+                    $phrase = str_replace( ["\r", "\n"], '', $phrase);
                 }
                 $cmd .= " ${phrase}";
             } else {
@@ -568,6 +577,10 @@ class SearchEstraier extends PTPlugin {
                 return;
             }
             $ctx->__stash['vars']['estcmd_cmd'] = $cmd;
+            if ( strpos( $cmd, "\r" ) !== false || strpos( $cmd, "\n" ) !== false ) {
+                $repeat = false;
+                return;
+            }
             $xml = shell_exec( $cmd );
             preg_match_all( "/<snippet>(.*?)<\/snippet>/s", $xml, $snippets );
             $snippets = $snippets[1];
