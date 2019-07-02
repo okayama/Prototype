@@ -916,12 +916,26 @@ class Prototype {
                         }
                         if ( isset( $menu['display_system'] ) ) {
                             if ( $app->can_do( $permission, null, null, $_system ) ) {
-                                $system_menus[] = $item;
+                                $cond = true;
+                                if ( isset( $menu['condition'] ) ) {
+                                    $meth = $menu['condition'];
+                                    if ( $component && method_exists( $component, $meth ) ) {
+                                        $cond = $component->$meth( $app, null, $menu );
+                                    }
+                                }
+                                if ( $cond ) $system_menus[] = $item;
                             }
                         }
                         if ( isset( $menu['display_space'] ) ) {
                             if ( $app->can_do( $permission, null, null, $workspace ) ) {
-                                $workspace_menus[] = $item;
+                                $cond = true;
+                                if ( $workspace && isset( $menu['condition'] ) ) {
+                                    $meth = $menu['condition'];
+                                    if ( $component && method_exists( $component, $meth ) ) {
+                                        $cond = $component->$meth( $app, $workspace, $menu );
+                                    }
+                                }
+                                if ( $cond ) $workspace_menus[] = $item;
                             }
                         }
                     }
