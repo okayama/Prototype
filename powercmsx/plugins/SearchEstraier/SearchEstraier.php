@@ -159,7 +159,6 @@ class SearchEstraier extends PTPlugin {
         if (! file_exists( $mecab_path ) ) {
             $mecab_path = null;
         }
-        require_once( LIB_DIR . 'ExtractContent' . DS . 'ExtractContent.php' );
         require_once( LIB_DIR . 'Prototype' . DS . 'class.PTPublisher.php' );
         $pub = new PTPublisher;
         $db = $app->db;
@@ -289,6 +288,7 @@ class SearchEstraier extends PTPlugin {
                    ? $ctx->stash( 'current_archive_title' )
                    : $ctx->vars['current_archive_title'];
         }
+        $data = htmlspecialchars_decode( $data );
         $title = $title ? $title : $extractor->title;
         $title = str_replace( ["\r", "\n"], '', $title );
         $ctx->local_vars['title'] = $title;
