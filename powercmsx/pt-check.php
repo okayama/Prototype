@@ -311,10 +311,60 @@
         $normalizer = false;
         $warning_messages[] = $app->translate( '%s is not enabled.', 'normalizer' );
     }
+    $options = ['http' => ['timeout' => 2] ];
+    $basic = ['Authorization: Basic ' . base64_encode( 'powercmsx:xlpXLP' )];
+    $options['http']['header'] = $basic;
+    $context = stream_context_create( $options );
+    $content = file_get_contents( 'https://powercmsx.jp/information/dashboard.html', false, $context );
+    if ( $content === false ) {
+        $warning_messages[] = $app->translate( 'Could not get external server data with file_get_contents function.' );
+    }
+    $plugin_messages = [];
+    $cmd = '/usr/local/bin/lftp';
+    if ( property_exists( $app, 'mirroring_lftp_path' ) ) {
+        $cmd = $app->mirroring_lftp_path;
+    }
+    if ( file_exists( $cmd ) ) {
+        $cmd = escapeshellcmd( $cmd );
+        $output = [];
+        $return_var = '';
+        $test = "{$cmd} -h";
+        exec( $test, $output, $return_var );
+        if ( $return_var === 0 ) {
+            $msg = $app->translate( "Can't execute command '%s' from PHP.", $app->escape( $cmd ) );
+            $msg .= $app->translate( "This is not required, but requires the plugin '%s'.", 'Mirroring' );
+            $plugin_messages[] = $msg;
+        }
+    } else {
+        $msg = $app->translate( '%s not found.', $app->escape( $cmd ) );
+        $msg .= $app->translate( "This is not required, but requires the plugin '%s'.", 'Mirroring' );
+        $plugin_messages[] = $msg;
+    }
+    $cmd = '/usr/local/bin/estcmd';
+    if ( property_exists( $app, 'searchestraier_estcmd_path' ) ) {
+        $cmd = $app->searchestraier_estcmd_path;
+    }
+    if ( file_exists( $cmd ) ) {
+        $cmd = escapeshellcmd( $cmd );
+        $output = [];
+        $return_var = '';
+        $test = "{$cmd} version";
+        exec( $test, $output, $return_var );
+        if ( $return_var === 0 ) {
+            $msg = $app->translate( "Can't execute command '%s' from PHP.", $app->escape( 'SearchEstraier' ) );
+            $msg .= $app->translate( "This is not required, but requires the plugin '%s'.", 'SearchEstraier' );
+            $plugin_messages[] = $msg;
+        }
+    } else {
+        $msg = $app->translate( '%s not found.', $app->escape( $cmd ) );
+        $msg .= $app->translate( "This is not required, but requires the plugin '%s'.", 'SearchEstraier' );
+        $plugin_messages[] = $msg;
+    }
     $error_messages = array_unique( $error_messages );
     $warning_messages = array_unique( $warning_messages );
     $ctx->vars['error_messages'] = $error_messages;
     $ctx->vars['warning_messages'] = $warning_messages;
+    $ctx->vars['plugin_messages'] = $plugin_messages;
     $ctx->vars['php_version'] = $php_version;
     $ctx->vars['version_ok'] = $available;
     $ctx->vars['libxml_version'] = $libxml_version;

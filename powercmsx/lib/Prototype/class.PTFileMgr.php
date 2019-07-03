@@ -42,14 +42,34 @@ class PTFileMgr {
         return filesize( $path );
     }
 
-    public function copy ( $from, $to ) {
+    public function copy ( $from, $to, $cmd = '', $opt = '' ) {
+        if (! file_exists( $from ) ) return false;
         if (! is_dir( dirname( $to ) ) ) {
             $this->mkpath( dirname( $to ) );
         }
         if ( is_dir( $from ) ) {
             return $this->copy_recursive( $from, $to );
         }
-        return copy( $from, $to );
+        if ( $cmd ) {
+            $cmd = escapeshellcmd( $cmd );
+            if (! file_exists( $cmd ) || basename( $cmd ) !== 'cp' ) {
+                $cmd = '';
+            }
+            if ( $cmd ) {
+                $from = escapeshellarg( $from );
+                $to = escapeshellarg( $to );
+                $cmd = "{$cmd} {$opt} {$from} {$to}";
+                $output = [];
+                $return_var = '';
+                exec( $cmd, $output, $return_var );
+                if ( $return_var === 0 ) {
+                    return true;
+                }
+            }
+        }
+        $res = copy( $from, $to );
+        touch( $to, filemtime( $from ) );
+        return $res;
     }
 
     public function copy_recursive ( $from, $to ) {
@@ -95,7 +115,7 @@ class PTFileMgr {
         return PTUtil::remove_empty_dirs( $dirs );
     }
 
-    public function file_find ( $dir, &$files = [], &$dirs = [] ) {
+    public function file_find ( $dir, &$files = [], &$dirs = [], $hidden = false ) {
         $iterator = new RecursiveDirectoryIterator( $dir );
         $iterator = new RecursiveIteratorIterator( $iterator );
         $list = [];
@@ -103,11 +123,12 @@ class PTFileMgr {
             $path = $fileinfo->getPathname();
             $list[] = $path;
             $name = $fileinfo->getBasename();
-            if ( strpos( $name, '.' ) === 0 ) continue;
+            if ( strpos( $name, '..' ) === 0 ) continue;
+            if (! $hidden && strpos( $name, '.' ) === 0 ) continue;
             if ( $fileinfo->isFile() ) {
                 $files[] = $path;
             } else if ( $fileinfo->isDir() ) {
-                $dirs[] = $path;
+                $dirs[] = rtrim( $path, '.' );
             }
         }
         return $list;

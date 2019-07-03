@@ -861,6 +861,10 @@
         : "%s番目の%sタグが閉じられていません(%s行目)。",
     "The tag %s is not found ( at line %s )."
         : "タグ%sは利用できません(%s行目)。",
+    "Can't execute command '%s' from PHP."
+        : "コマンド'%s'をPHPから実行できません。",
+    "This is not required, but requires the plugin '%s'."
+        : "必須ではありませんが、プラグイン'%s'がこれを必要とします。",
     "Import %s successfully( Insert : %s, Update : %s )."
         : "%sをインポートしました (新規 %s件, 更新 %s件)。",
     "Could not import %s. Please check upload file format."
@@ -1187,6 +1191,8 @@
         : "パスワードには英文字大文字と小文字を含める必要があります。",
     "A valid model or column name starts with a letter, followed by any number of letters, numbers, or underscores."
         : "モデル(カラム)名は文字から始まり、任意の数の文字、 数字、アンダースコアが続きます。",
+    "Could not get external server data with file_get_contents function."
+        : "file_get_contents関数で外部サーバーのデータを取得できませんでした。",
     "Please specify the height of the editor."
         : "エディタの高さを指定してください。",
     "Model and Column are required for the reference."

@@ -3,11 +3,7 @@
   <div id="header-ok-message" class="alert alert-success" tabindex="0">
     <mt:trans phrase="PowerCMS X already Installed.">
   </div>
-  <script>
-    $('#header-ok-message').focus();
-  </script>
 </mt:if>
-
 <mt:unless name="do_not_show_result">
 <mt:unless name="already_installed">
 <mt:setvar name="install" value="">
@@ -21,23 +17,14 @@
   <mt:trans phrase="You can install PowerCMS X.">
   </mt:if>
   </div>
-  <script>
-  $('#header-ok-message').focus();
-  </script>
 </mt:if>
 </mt:unless>
-
 <mt:if name="db_connect">
   <div id="header-sql-message" class="alert alert-<mt:if name="db_connect">success<mt:else>danger</mt:if>" tabindex="0">
   <mt:if name="db_connect">
     <mt:trans phrase="The connection to MySQL was successful.">
   </mt:if>
   </div>
-  <mt:unless name="install">
-  <script>
-  $('#header-sql-message').focus();
-  </script>
-  </mt:unless>
 </mt:if>
 <mt:if name="error_messages">
   <mt:loop name="error_messages">
@@ -45,16 +32,10 @@
   <div id="header-error-message" class="alert alert-danger" tabindex="0">
   <ul style="margin-bottom:0px"></mt:if>
     <li><mt:var name="__value__"></li>
-    <mt:unless name="__last__"><mt:else>
+    <mt:if name="__last__">
   </ul>
   </div>
-  <mt:unless name="install">
-  <script>
-  $('#header-error-message').focus();
-  </script>
-  <mt:setvar name="install" value="1">
-  </mt:unless>
-  </mt:unless>
+  </mt:if>
   </mt:loop>
 </mt:if>
 <mt:if name="warning_messages">
@@ -62,15 +43,21 @@
   <mt:if name="__first__"><div id="header-warnings-message" class="alert alert-warning" tabindex="0">
   <ul style="margin-bottom:0px"></mt:if>
     <li><mt:var name="__value__"></li>
-    <mt:unless name="__last__"><mt:else>
+    <mt:if name="__last__">
   </ul>
   </div>
-  <mt:unless name="install">
-  <script>
-  $('#header-warnings-message').focus();
-  </script>
-  </mt:unless>
-  </mt:unless>
+  </mt:if>
+  </mt:loop>
+</mt:if>
+<mt:if name="plugin_messages">
+  <mt:loop name="plugin_messages">
+  <mt:if name="__first__">
+  <div id="header-plugin-message" class="alert alert-warning" tabindex="0">
+  <ul style="margin-bottom:0px"></mt:if>
+    <li><mt:var name="__value__"></li>
+    <mt:if name="__last__">
+  </ul>
+  </div>
   </mt:loop>
 </mt:if>
 <table class="table table-bordered">
