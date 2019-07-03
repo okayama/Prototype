@@ -10,33 +10,53 @@
     "cfg_system"  : 1,
     "cfg_space"   : 1,
     "config_settings"    : {
-        "mirroring_lftp_path" : "/usr/local/bin/lftp"
+        "mirroring_lftp_path" : "/usr/local/bin/lftp",
+        "mirroring_rsync_path" : "/usr/bin/rsync",
+        "mirroring_staging_root_path" : "",
+        "mirroring_servers" : 1
     },
     "settings" : {
         "mirroring_protocol1" : "sftp",
         "mirroring_protocol2" : "sftp",
         "mirroring_protocol3" : "sftp",
+        "mirroring_protocol4" : "sftp",
+        "mirroring_protocol5" : "sftp",
         "mirroring_port1"     : "22",
         "mirroring_port2"     : "22",
         "mirroring_port3"     : "22",
+        "mirroring_port4"     : "22",
+        "mirroring_port5"     : "22",
         "mirroring_login_id1" : "",
-        "mirroring_login_pw1" : "",
         "mirroring_login_id2" : "",
-        "mirroring_login_pw2" : "",
         "mirroring_login_id3" : "",
+        "mirroring_login_id4" : "",
+        "mirroring_login_id5" : "",
+        "mirroring_login_pw1" : "",
+        "mirroring_login_pw2" : "",
         "mirroring_login_pw3" : "",
+        "mirroring_login_pw4" : "",
+        "mirroring_login_pw5" : "",
+        "mirroring_staging1"  : "",
         "mirroring_mirroring1": "",
         "mirroring_mirroring2": "",
         "mirroring_mirroring3": "",
+        "mirroring_mirroring4": "",
+        "mirroring_mirroring5": "",
         "mirroring_delete1"   : 1,
         "mirroring_delete2"   : 1,
         "mirroring_delete3"   : 1,
+        "mirroring_delete4"   : 1,
+        "mirroring_delete5"   : 1,
         "mirroring_hidden1"   : 1,
         "mirroring_hidden2"   : 1,
         "mirroring_hidden3"   : 1,
+        "mirroring_hidden4"   : 1,
+        "mirroring_hidden5"   : 1,
         "mirroring_excludes1" : "",
         "mirroring_excludes2" : "",
         "mirroring_excludes3" : "",
+        "mirroring_excludes4" : "",
+        "mirroring_excludes5" : "",
         "mirroring_reserved"  : ""
     },
     "menus": {
@@ -49,6 +69,17 @@
             "permission" : "can_mirroring",
             "condition"  : "has_settings",
             "order"      : 1500
+        }
+    },
+    "callbacks": {
+        "mirroring_pre_save_plugin_config": {
+            "plugin" : {
+                "pre_save_plugin_config" : {
+                    "component" : "Mirroring",
+                    "priority"  : 1,
+                    "method" : "pre_save_plugin_config"
+                }
+            }
         }
     },
     "methods": {

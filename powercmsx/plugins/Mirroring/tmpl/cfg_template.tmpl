@@ -1,5 +1,36 @@
+<mt:property name="mirroring_servers" setvar="mirroring_servers">
+<mt:property name="mirroring_staging_root_path" setvar="staging_root_path">
+<mt:if name="staging_root_path">
+<div class="row form-group">
+  <div class="col-lg-2">
+    <label for="setting_mirroring_staging1">
+      <mt:trans phrase="Stating Directory's path" component="Mirroring">
+    </label>
+  </div>
+  <div class="col-lg-10">
+    <input type="text" id="setting_mirroring_staging1" name="setting_mirroring_staging1" class="form-control" value="<mt:var name="setting_mirroring_staging1" escape>">
+    <div class="text-muted hint-block mt-3 mb-1">
+      <i class="fa fa-question-circle-o" aria-hidden="true"></i>
+      <span class="sr-only"><mt:trans phrase="Hint"></span>
+      <mt:trans phrase="Specify when mirroring to a remote server after synchronization to a temporary directory (local servar)." component="Mirroring">
+    </div>
+    <mt:unless name="mirroring_servers" eq="1">
+    <div class="text-muted hint-block mt-1">
+      <i class="fa fa-question-circle-o" aria-hidden="true"></i>
+      <span class="sr-only"><mt:trans phrase="Hint"></span>
+      <mt:trans phrase="The settings for 'Excludes', 'Hidden files' and 'Delete' use the settings of the Synchronization destination 1." component="Mirroring">
+    </div>
+    </mt:unless>
+  </div>
+</div>
+</mt:if>
 <fieldset style="border:1px solid gray;" class="p-4">
-<legend><small><mt:trans phrase="Synchronization destination %s" component="Mirroring" params="1"></small></legend>
+<legend><small><mt:unless name="mirroring_servers" eq="1">
+<mt:trans phrase="Synchronization destination %s" component="Mirroring" params="1">
+<mt:else>
+<mt:trans phrase="Synchronization destination" component="Mirroring">
+</mt:unless>
+</small></legend>
 <div class="row form-group">
   <div class="col-lg-2">
     <label for="setting_mirroring_protocol1">
@@ -51,7 +82,7 @@
 <div class="row form-group">
   <div class="col-lg-2">
     <label for="setting_mirroring_path1">
-      <mt:trans phrase="Remote path" component="Mirroring">
+      <mt:trans phrase="Remote Path" component="Mirroring">
       <mt:var name="field_required">
     </label>
   </div>
@@ -62,7 +93,7 @@
 <hr>
 <div class="row form-group">
   <div class="col-lg-2">
-    <label for="setting_mirroring_d1">
+    <label for="setting_mirroring_delete1">
       <mt:trans phrase="Delete" component="Mirroring">
     </label>
   </div>
@@ -109,6 +140,7 @@
 </div>
 </fieldset>
 
+<mt:if name="mirroring_servers" ge="2">
 <fieldset style="border:1px solid gray;" class="p-4 mt-3">
 <legend><small><mt:trans phrase="Synchronization destination %s" component="Mirroring" params="2"></small></legend>
 <div class="row form-group">
@@ -162,7 +194,7 @@
 <div class="row form-group">
   <div class="col-lg-2">
     <label for="setting_mirroring_path2">
-      <mt:trans phrase="Remote path" component="Mirroring">
+      <mt:trans phrase="Remote Path" component="Mirroring">
       <mt:var name="field_required">
     </label>
   </div>
@@ -173,13 +205,13 @@
 <hr>
 <div class="row form-group">
   <div class="col-lg-2">
-    <label for="setting_mirroring_d2">
+    <label for="setting_mirroring_delete2">
       <mt:trans phrase="Delete" component="Mirroring">
     </label>
   </div>
   <div class="col-lg-10">
     <label class="custom-control custom-checkbox">
-    <input id="setting_mirroring_delete2" class="custom-control-input" type="checkbox" name="setting_mirroring_delete2" value="2"
+    <input id="setting_mirroring_delete2" class="custom-control-input" type="checkbox" name="setting_mirroring_delete2" value="1"
       <mt:if name="setting_mirroring_delete2">checked</mt:if>>
         <span class="custom-control-indicator"></span>
         <span class="custom-control-description"> 
@@ -195,7 +227,7 @@
   </div>
   <div class="col-lg-10">
     <label class="custom-control custom-checkbox">
-    <input id="setting_mirroring_hidden2" class="custom-control-input" type="checkbox" name="setting_mirroring_hidden2" value="2"
+    <input id="setting_mirroring_hidden2" class="custom-control-input" type="checkbox" name="setting_mirroring_hidden2" value="1"
         <mt:if name="setting_mirroring_hidden2">checked</mt:if>>
         <span class="custom-control-indicator"></span>
         <span class="custom-control-description"> 
@@ -219,7 +251,9 @@
   </div>
 </div>
 </fieldset>
+</mt:if>
 
+<mt:if name="mirroring_servers" ge="3">
 <fieldset style="border:1px solid gray;" class="p-4 mt-3">
 <legend><small><mt:trans phrase="Synchronization destination %s" component="Mirroring" params="3"></small></legend>
 <div class="row form-group">
@@ -273,7 +307,7 @@
 <div class="row form-group">
   <div class="col-lg-3">
     <label for="setting_mirroring_path3">
-      <mt:trans phrase="Remote path" component="Mirroring">
+      <mt:trans phrase="Remote Path" component="Mirroring">
       <mt:var name="field_required">
     </label>
   </div>
@@ -284,13 +318,13 @@
 <hr>
 <div class="row form-group">
   <div class="col-lg-3">
-    <label for="setting_mirroring_d3">
+    <label for="setting_mirroring_delete3">
       <mt:trans phrase="Delete" component="Mirroring">
     </label>
   </div>
   <div class="col-lg-10">
     <label class="custom-control custom-checkbox">
-    <input id="setting_mirroring_delete3" class="custom-control-input" type="checkbox" name="setting_mirroring_delete3" value="3"
+    <input id="setting_mirroring_delete3" class="custom-control-input" type="checkbox" name="setting_mirroring_delete3" value="1"
       <mt:if name="setting_mirroring_delete3">checked</mt:if>>
         <span class="custom-control-indicator"></span>
         <span class="custom-control-description"> 
@@ -306,7 +340,7 @@
   </div>
   <div class="col-lg-10">
     <label class="custom-control custom-checkbox">
-    <input id="setting_mirroring_hidden3" class="custom-control-input" type="checkbox" name="setting_mirroring_hidden3" value="3"
+    <input id="setting_mirroring_hidden3" class="custom-control-input" type="checkbox" name="setting_mirroring_hidden3" value="1"
         <mt:if name="setting_mirroring_hidden3">checked</mt:if>>
         <span class="custom-control-indicator"></span>
         <span class="custom-control-description"> 
@@ -322,6 +356,232 @@
   </div>
   <div class="col-lg-10">
     <input type="text" id="setting_mirroring_excludes3" name="setting_mirroring_excludes3" class="form-control" value="<mt:var name="setting_mirroring_excludes3" escape>">
+    <p class="text-muted hint-block">
+      <i class="fa fa-question-circle-o" aria-hidden="true"></i>
+      <span class="sr-only"><mt:trans phrase="Hint"></span>
+      <mt:trans phrase="Exclude patterns separated by comma(ex:^powercmsx/,^assets/)" component="Mirroring">
+    </p>
+  </div>
+</div>
+</fieldset>
+</mt:if>
+
+<mt:if name="mirroring_servers" ge="4">
+<fieldset style="border:1px solid gray;" class="p-4 mt-3">
+<legend><small><mt:trans phrase="Synchronization destination %s" component="Mirroring" params="4"></small></legend>
+<div class="row form-group">
+  <div class="col-lg-3">
+    <label for="setting_mirroring_protocol4">
+      <mt:trans phrase="Protocol" component="Mirroring">
+    </label>
+  </div>
+  <div class="col-lg-10 form-inline">
+    <select class="form-control short custom-select" id="setting_mirroring_protocol4" name="setting_mirroring_protocol4">
+      <option value="sftp" <mt:if name="setting_mirroring_protocol4" eq="sftp">selected</mt:if>>sftp</option>
+      <option value="ftp" <mt:if name="setting_mirroring_protocol4" eq="ftp">selected</mt:if>>ftp</option>
+      <option value="ftps" <mt:if name="setting_mirroring_protocol4" eq="ftps">selected</mt:if>>ftps</option>
+    </select>
+    <label for="setting_mirroring_port4"><mt:trans phrase="Port" component="Mirroring"> : </label> &nbsp; 
+    <input type="text" id="setting_mirroring_port4" name="setting_mirroring_port4" class="form-control very-short" value="<mt:var name="setting_mirroring_port4" escape>">
+  </div>
+</div>
+<div class="row form-group">
+  <div class="col-lg-3">
+    <label for="setting_mirroring_login_id4">
+      <mt:trans phrase="Account ID" component="Mirroring">
+      <mt:var name="field_required">
+    </label>
+  </div>
+  <div class="col-lg-10">
+    <input type="text" id="setting_mirroring_login_id4" name="setting_mirroring_login_id4" class="form-control" value="<mt:var name="setting_mirroring_login_id4" escape>">
+  </div>
+</div>
+<div class="row form-group">
+  <div class="col-lg-3">
+    <label for="setting_mirroring_login_pw4">
+      <mt:trans phrase="Password" component="Mirroring">
+    </label>
+  </div>
+  <div class="col-lg-10">
+    <input type="password" id="setting_mirroring_login_pw4" name="setting_mirroring_login_pw4" class="form-control" value="<mt:var name="setting_mirroring_login_pw4" escape>">
+  </div>
+</div>
+<div class="row form-group">
+  <div class="col-lg-3">
+    <label for="setting_mirroring_mirroring4">
+      <mt:trans phrase="Server" component="Mirroring">
+      <mt:var name="field_required">
+    </label>
+  </div>
+  <div class="col-lg-10">
+    <input type="text" id="setting_mirroring_mirroring4" name="setting_mirroring_mirroring4" class="form-control" value="<mt:var name="setting_mirroring_mirroring4" escape>">
+  </div>
+</div>
+<div class="row form-group">
+  <div class="col-lg-3">
+    <label for="setting_mirroring_path4">
+      <mt:trans phrase="Remote Path" component="Mirroring">
+      <mt:var name="field_required">
+    </label>
+  </div>
+  <div class="col-lg-10">
+    <input type="text" id="setting_mirroring_path4" name="setting_mirroring_path4" class="form-control" value="<mt:var name="setting_mirroring_path4" escape>">
+  </div>
+</div>
+<hr>
+<div class="row form-group">
+  <div class="col-lg-3">
+    <label for="setting_mirroring_delete4">
+      <mt:trans phrase="Delete" component="Mirroring">
+    </label>
+  </div>
+  <div class="col-lg-10">
+    <label class="custom-control custom-checkbox">
+    <input id="setting_mirroring_delete4" class="custom-control-input" type="checkbox" name="setting_mirroring_delete4" value="1"
+      <mt:if name="setting_mirroring_delete4">checked</mt:if>>
+        <span class="custom-control-indicator"></span>
+        <span class="custom-control-description"> 
+        <mt:trans phrase="Delete files from remote server" component="Mirroring"></span>
+    </label>
+  </div>
+</div>
+<div class="row form-group">
+  <div class="col-lg-3">
+    <label for="setting_mirroring_hidden4">
+      <mt:trans phrase="Hidden files" component="Mirroring">
+    </label>
+  </div>
+  <div class="col-lg-10">
+    <label class="custom-control custom-checkbox">
+    <input id="setting_mirroring_hidden4" class="custom-control-input" type="checkbox" name="setting_mirroring_hidden4" value="1"
+        <mt:if name="setting_mirroring_hidden4">checked</mt:if>>
+        <span class="custom-control-indicator"></span>
+        <span class="custom-control-description"> 
+        <mt:trans phrase="Exclude hidden files(the name begin with '.')" component="Mirroring"></span>
+    </label>
+  </div>
+</div>
+<div class="row form-group">
+  <div class="col-lg-3">
+    <label for="setting_mirroring_excludes4">
+      <mt:trans phrase="Excludes" component="Mirroring">
+    </label>
+  </div>
+  <div class="col-lg-10">
+    <input type="text" id="setting_mirroring_excludes4" name="setting_mirroring_excludes4" class="form-control" value="<mt:var name="setting_mirroring_excludes4" escape>">
+    <p class="text-muted hint-block">
+      <i class="fa fa-question-circle-o" aria-hidden="true"></i>
+      <span class="sr-only"><mt:trans phrase="Hint"></span>
+      <mt:trans phrase="Exclude patterns separated by comma(ex:^powercmsx/,^assets/)" component="Mirroring">
+    </p>
+  </div>
+</div>
+</fieldset>
+</mt:if>
+
+<mt:if name="mirroring_servers" ge="5">
+<fieldset style="border:1px solid gray;" class="p-4 mt-3">
+<legend><small><mt:trans phrase="Synchronization destination %s" component="Mirroring" params="5"></small></legend>
+<div class="row form-group">
+  <div class="col-lg-3">
+    <label for="setting_mirroring_protocol5">
+      <mt:trans phrase="Protocol" component="Mirroring">
+    </label>
+  </div>
+  <div class="col-lg-10 form-inline">
+    <select class="form-control short custom-select" id="setting_mirroring_protocol5" name="setting_mirroring_protocol5">
+      <option value="sftp" <mt:if name="setting_mirroring_protocol5" eq="sftp">selected</mt:if>>sftp</option>
+      <option value="ftp" <mt:if name="setting_mirroring_protocol5" eq="ftp">selected</mt:if>>ftp</option>
+      <option value="ftps" <mt:if name="setting_mirroring_protocol5" eq="ftps">selected</mt:if>>ftps</option>
+    </select>
+    <label for="setting_mirroring_port5"><mt:trans phrase="Port" component="Mirroring"> : </label> &nbsp; 
+    <input type="text" id="setting_mirroring_port5" name="setting_mirroring_port5" class="form-control very-short" value="<mt:var name="setting_mirroring_port5" escape>">
+  </div>
+</div>
+<div class="row form-group">
+  <div class="col-lg-3">
+    <label for="setting_mirroring_login_id5">
+      <mt:trans phrase="Account ID" component="Mirroring">
+      <mt:var name="field_required">
+    </label>
+  </div>
+  <div class="col-lg-10">
+    <input type="text" id="setting_mirroring_login_id5" name="setting_mirroring_login_id5" class="form-control" value="<mt:var name="setting_mirroring_login_id5" escape>">
+  </div>
+</div>
+<div class="row form-group">
+  <div class="col-lg-3">
+    <label for="setting_mirroring_login_pw5">
+      <mt:trans phrase="Password" component="Mirroring">
+    </label>
+  </div>
+  <div class="col-lg-10">
+    <input type="password" id="setting_mirroring_login_pw5" name="setting_mirroring_login_pw5" class="form-control" value="<mt:var name="setting_mirroring_login_pw5" escape>">
+  </div>
+</div>
+<div class="row form-group">
+  <div class="col-lg-3">
+    <label for="setting_mirroring_mirroring5">
+      <mt:trans phrase="Server" component="Mirroring">
+      <mt:var name="field_required">
+    </label>
+  </div>
+  <div class="col-lg-10">
+    <input type="text" id="setting_mirroring_mirroring5" name="setting_mirroring_mirroring5" class="form-control" value="<mt:var name="setting_mirroring_mirroring5" escape>">
+  </div>
+</div>
+<div class="row form-group">
+  <div class="col-lg-3">
+    <label for="setting_mirroring_path5">
+      <mt:trans phrase="Remote Path" component="Mirroring">
+      <mt:var name="field_required">
+    </label>
+  </div>
+  <div class="col-lg-10">
+    <input type="text" id="setting_mirroring_path5" name="setting_mirroring_path5" class="form-control" value="<mt:var name="setting_mirroring_path5" escape>">
+  </div>
+</div>
+<hr>
+<div class="row form-group">
+  <div class="col-lg-3">
+    <label for="setting_mirroring_delete5">
+      <mt:trans phrase="Delete" component="Mirroring">
+    </label>
+  </div>
+  <div class="col-lg-10">
+    <label class="custom-control custom-checkbox">
+    <input id="setting_mirroring_delete5" class="custom-control-input" type="checkbox" name="setting_mirroring_delete5" value="1"
+      <mt:if name="setting_mirroring_delete5">checked</mt:if>>
+        <span class="custom-control-indicator"></span>
+        <span class="custom-control-description"> 
+        <mt:trans phrase="Delete files from remote server" component="Mirroring"></span>
+    </label>
+  </div>
+</div>
+<div class="row form-group">
+  <div class="col-lg-3">
+    <label for="setting_mirroring_hidden5">
+      <mt:trans phrase="Hidden files" component="Mirroring">
+    </label>
+  </div>
+  <div class="col-lg-10">
+    <label class="custom-control custom-checkbox">
+    <input id="setting_mirroring_hidden5" class="custom-control-input" type="checkbox" name="setting_mirroring_hidden5" value="1"
+        <mt:if name="setting_mirroring_hidden5">checked</mt:if>>
+        <span class="custom-control-indicator"></span>
+        <span class="custom-control-description"> 
+        <mt:trans phrase="Exclude hidden files(the name begin with '.')" component="Mirroring"></span>
+    </label>
+  </div>
+</div>
+<div class="row form-group">
+  <div class="col-lg-3">
+    <label for="setting_mirroring_excludes5">
+      <mt:trans phrase="Excludes" component="Mirroring">
+    </label>
+  </div>
+  <div class="col-lg-10">
+    <input type="text" id="setting_mirroring_excludes5" name="setting_mirroring_excludes5" class="form-control" value="<mt:var name="setting_mirroring_excludes5" escape>">
     <p class="text-muted hint-block">
       <i class="fa fa-question-circle-o" aria-hidden="true"></i>
       <span class="sr-only"><mt:trans phrase="Hint"></span>

@@ -32,13 +32,15 @@ class Mirroring extends PTPlugin {
             return;
         }
         $commands = [];
+        $rsync_commands = [];
         $commands_debug = [];
         $commands_dummy = [];
         $commands_dummy_debug = [];
         $servers = [];
+        $dirs = [];
         $has_setting = false;
-        $this->get_commands( $cmd, $workspace_id, $commands,
-                             $commands_debug, $commands_dummy, $commands_dummy_debug, $servers, $has_setting );
+        $this->get_commands( $cmd, $workspace_id, $commands, $rsync_commands, $commands_debug,
+        $commands_dummy, $commands_dummy_debug, $servers, $dirs, $has_setting );
         return $has_setting;
     }
 
@@ -79,8 +81,7 @@ class Mirroring extends PTPlugin {
         $cmd = $app->mirroring_lftp_path;
         $cmd = escapeshellcmd( $cmd );
         if (! file_exists( $cmd ) ) {
-            $cmd = $app->escape( $cmd );
-            return $app->error( $this->translate( '%s was not found on this server.', $cmd ) );
+            return $app->error( $this->translate( '%s was not found on this server.', $app->escape( $cmd ) ) );
         }
         if ( basename( $cmd ) !== 'lftp.exe' && basename( $cmd ) !== 'lftp' ) {
             return $app->error( $this->translate( 'Invalid command(%s).', $app->escape( $cmd ) ) );
@@ -96,13 +97,15 @@ class Mirroring extends PTPlugin {
         $workspace_id = (int) $app->param( 'workspace_id' );
         $mirroring_reserved = (int) trim( $this->get_config_value( 'mirroring_reserved', $workspace_id ) );
         $commands = [];
+        $rsync_commands = [];
         $commands_debug = [];
         $commands_dummy = [];
         $commands_dummy_debug = [];
         $servers = [];
+        $dirs = [];
         $has_setting = false;
-        $this->get_commands( $cmd, $workspace_id, $commands,
-                             $commands_debug, $commands_dummy, $commands_dummy_debug, $servers, $has_setting );
+        $this->get_commands( $cmd, $workspace_id, $commands, $rsync_commands, $commands_debug,
+                             $commands_dummy, $commands_dummy_debug, $servers, $dirs, $has_setting );
         $does_act = '';
         if ( $app->request_method == 'POST' ) {
             $app->validate_magic();
@@ -125,6 +128,49 @@ class Mirroring extends PTPlugin {
                     $i++;
                 }
                 $does_act = 'debug';
+            } else if ( $type == 'staging' ) {
+                $cmd = $app->mirroring_rsync_path;
+                $cmd = escapeshellcmd( $cmd );
+                if (! file_exists( $cmd ) ) {
+                    $cmd = '';
+                }
+                if ( basename( $cmd ) !== 'rsync.exe' && basename( $cmd ) !== 'rsync' ) {
+                    $cmd = '';
+                }
+                $output = [];
+                $return_var = '';
+                $test = "{$cmd} -h";
+                exec( $test, $output, $return_var );
+                if ( $return_var !== 0 ) {
+                    $cmd = '';
+                }
+                if ( $cmd ) {
+                    $i = 0;
+                    foreach ( $rsync_commands as $cmd ) {
+                        $output = [];
+                        $return_var = '';
+                        exec( $cmd, $output, $return_var );
+                        $server = $dirs[ $i ];
+                        $ctx->vars['mirroring_done'] = 1;
+                        $results[] = $cmd;
+                        $results[] = '-------------------------------------------------';
+                        $results = array_merge( $results, $output );
+                        array_unshift( $output, $cmd );
+                        $app->log( ['message'   => $this->translate( 'Mirroring to staging directory %s has been performed.', $server ),
+                                    'category'  => 'mirroring',
+                                    'metadata'  => json_encode( $output ),
+                                    'level'     => 'info'] );
+                        $i++;
+                    }
+                } else {
+                    $server = $this->get_config_value( 'mirroring_staging1', $workspace_id );
+                    $results = $this->sync_directories( $workspace_id );
+                    $app->log( ['message'   => $this->translate( 'Mirroring to staging directory %s has been performed.', $server ),
+                                'category'  => 'mirroring',
+                                'metadata'  => json_encode( $results ),
+                                'level'     => 'info'] );
+                }
+                $does_act = 'staging';
             } else if ( $type == 'mirroring' ) {
                 $i = 0;
                 foreach ( $commands as $cmd ) {
@@ -210,6 +256,21 @@ class Mirroring extends PTPlugin {
                 $sess->remove();
             }
         }
+        $staging = $this->get_config_value( 'mirroring_staging1', $workspace_id );
+        $staging = rtrim( $staging, DS );
+        $match_root = false;
+        if (! $staging || ! is_dir( $staging ) ) {
+        } else {
+            $staging_root_path = $app->mirroring_staging_root_path;
+            $staging_root_paths = preg_split( "/\s*,\s*/", $staging_root_path );
+            foreach ( $staging_root_paths as $root_path ) {
+                if ( stripos( $staging, $root_path ) === 0 ) {
+                    $match_root = true;
+                    break;
+                }
+            }
+        }
+        $ctx->vars['has_staging'] = $match_root;
         $mirroring_reserved = $mirroring_reserved ? $mirroring_reserved : null;
         $ctx->vars['mirroring_reserved'] = $mirroring_reserved;
         $mirroring_reserved_time = $mirroring_reserved
@@ -226,11 +287,134 @@ class Mirroring extends PTPlugin {
         return $app->__mode( 'mirroring_the_website' );
     }
 
-    function get_commands ( $cmd, $workspace_id,
-        &$commands, &$commands_debug, &$commands_dummy, &$commands_dummy_debug, &$servers, &$has_setting ) {
+    function sync_directories ( $workspace_id ) {
+        $start = microtime( true );
+        $messages = [];
+        $app = Prototype::get_instance();
+        $staging = $this->get_config_value( 'mirroring_staging1', $workspace_id );
+        $hidden = $this->get_config_value( 'mirroring_hidden1', $workspace_id );
+        $delete = $this->get_config_value( 'mirroring_delete1', $workspace_id );
+        $excludes = $this->get_config_value( 'mirroring_excludes1', $workspace_id );
+        $excludes = preg_split( "/\s*,\s*/", $excludes );
+        $hidden = $hidden ? false : true;
+        $staging = rtrim( $staging, DS );
+        if (! $staging || ! is_dir( $staging ) ) {
+            return [];
+        }
+        $staging_root_path = $app->mirroring_staging_root_path;
+        $staging_root_paths = preg_split( "/\s*,\s*/", $staging_root_path );
+        $match_root = false;
+        foreach ( $staging_root_paths as $root_path ) {
+            if ( stripos( $staging, $root_path ) === 0 ) {
+                $match_root = true;
+                break;
+            }
+        }
+        if (! $match_root ) {
+            return [];
+        }
+        $dirs = [];
+        $staging_files = [];
+        PTUtil::file_find( $staging, $staging_files, $dirs, $hidden );
+        $site_path = $workspace_id ? $app->workspace()->site_path : $app->site_path;
+        $site_path = rtrim( $site_path, DS );
+        if (! $site_path || ! is_dir( $site_path ) ) {
+            return [];
+        }
+        $counter = 0;
+        $site_files = [];
+        $dirs = [];
+        PTUtil::file_find( $site_path, $site_files, $dirs, $hidden );
+        $search_path = preg_quote( $site_path, '/' );
+        $mirroring = [];
+        $delete_files = [];
+        foreach ( $site_files as $site_file ) {
+            $relative = preg_replace( "/^$search_path/", '', $site_file );
+            foreach ( $excludes as $exclude ) {
+                if ( preg_match( "!{$exclude}!", ltrim( $relative, DS ) ) ) {
+                    continue 2;
+                }
+            }
+            if (! file_exists( $staging . $relative ) ) {
+                $mirroring[ $site_file ] = $staging . $relative;
+            } else {
+                $stage_ts = filemtime( $staging . $relative );
+                $site_ts = filemtime( $site_file );
+                if ( $stage_ts < $site_ts ) {
+                    $mirroring[ $site_file ] = $staging . $relative;
+                }
+            }
+        }
+        $messages[] = 'building file list ... done';
+        $messages[] = '';
+        $search_staging = preg_quote( $staging, '/' );
+        if ( $delete ) {
+            foreach ( $staging_files as $stage_file ) {
+                $relative = preg_replace( "/^$search_staging/", '', $stage_file );
+                foreach ( $excludes as $exclude ) {
+                    if ( preg_match( "!{$exclude}!", ltrim( $relative, DS ) ) ) {
+                        continue 2;
+                    }
+                }
+                if (! file_exists( $site_path . $relative ) ) {
+                    $delete_files[ $stage_file ] = true;
+                }
+            }
+        }
+        $output = [];
+        $cmd = '';
+        if ( substr( PHP_OS, 0, 3 ) != 'WIN' ) {
+            $return_var = '';
+            $test = "which cp";
+            exec( $test, $output, $return_var );
+            if ( $return_var === 0 ) {
+                $cmd = $output[0];
+            }
+        }
+        $fmgr = $app->fmgr;
+        foreach ( $mirroring as $from => $to ) {
+            $relative = preg_replace( "/^$search_path/", '', $from );
+            $messages[] = "copying {$relative}";
+            $counter++;
+            if ( $cmd ) {
+                $fmgr->copy( $from, $to, $cmd, '-p' );
+            } else {
+                $fmgr->copy( $from, $to );
+            }
+        }
+        foreach ( $delete_files as $file => $bool ) {
+            $relative = preg_replace( "/^$search_staging/", '', $file );
+            $counter++;
+            $messages[] = "deleting {$relative}";
+            $fmgr->delete( $file );
+        }
+        $past = microtime( true ) - $start;
+        $past = round( $past * 100000 ) / 100000;
+        if (! $counter ) {
+            $messages[] = 'No files have been changed.';
+        } else {
+            $messages[] = '';
+        }
+        $messages[] = "It took {$past} seconds to process";
+        return $messages;
+    }
+
+    function get_commands ( $cmd, $workspace_id, &$commands, &$rsync_commands, &$commands_debug,
+        &$commands_dummy, &$commands_dummy_debug, &$servers, &$dirs, &$has_setting ) {
         $app = Prototype::get_instance();
         $upload_dir = $app->upload_dir();
-        for ( $i = 1; $i < 4; $i++ ) {
+        $rsync = $app->mirroring_rsync_path;
+        $rsync = escapeshellcmd( $rsync );
+        if (! file_exists( $rsync ) ) {
+            return;
+        }
+        if ( basename( $rsync ) !== 'rsync.exe' && basename( $rsync ) !== 'rsync' ) {
+            $rsync = '';
+        }
+        $staging_root_path = $app->mirroring_staging_root_path;
+        $staging_root_paths = preg_split( "/\s*,\s*/", $staging_root_path );
+        $mirroring_servers = $app->mirroring_servers;
+        for ( $i = 1; $i <= $mirroring_servers; $i++ ) {
             $protocol = $this->get_config_value( 'mirroring_protocol' . $i, $workspace_id );
             if ( $protocol == 'sftp' || $protocol == 'ftp' || $protocol == 'ftps' ) {
                 $port = (int) $this->get_config_value( 'mirroring_port' . $i, $workspace_id );
@@ -244,6 +428,24 @@ class Mirroring extends PTPlugin {
                     }
                 }
                 $server = trim( $this->get_config_value( 'mirroring_mirroring' . $i, $workspace_id ) );
+                $dir = trim( $this->get_config_value( 'mirroring_staging' . $i, $workspace_id ) );
+                if (! is_dir( $dir ) || $dir == '/' || !$staging_root_path ) {
+                    $dir = '';
+                } else {
+                    $dir = rtrim( $dir, DS );
+                    $dir = escapeshellarg( $dir );
+                    $dir = preg_replace( "/^'/", '', $dir );
+                    $dir = preg_replace( "/'$/", '', $dir );
+                    $match_root = false;
+                    foreach ( $staging_root_paths as $root_path ) {
+                        if ( stripos( $dir, $root_path ) === 0 ) {
+                            $match_root = true;
+                            break;
+                        }
+                    }
+                    if (! $match_root ) $dir = '';
+                }
+                $dirs[] = $dir;
                 $login_id = $this->get_config_value( 'mirroring_login_id' . $i, $workspace_id );
                 $login_pw = $this->get_config_value( 'mirroring_login_pw' . $i, $workspace_id );
                 if (! $server ||! $login_id ) continue;
@@ -255,16 +457,26 @@ class Mirroring extends PTPlugin {
                 $delete = $this->get_config_value( 'mirroring_delete' . $i, $workspace_id );
                 $delete = $delete ? ' --delete' : '';
                 $hidden = $this->get_config_value( 'mirroring_hidden' . $i, $workspace_id );
-                $hidden = $hidden ? ' --exclude=^\.' : '';
+                $rsync_options = '';
+                if ( $hidden ) {
+                    $rsync_options = " --exclude='.*'";
+                    $hidden = ' --exclude=^\.';
+                }
                 $excludes = trim( $this->get_config_value( 'mirroring_excludes' . $i, $workspace_id ) );
                 $add_options = '';
                 if ( $excludes ) {
                     $excludessplits = preg_split( '/\s*,\s*/', $excludes );
                     foreach ( $excludessplits as $excludessplit ) {
+                        $r_exclude = $excludessplit;
                         $excludessplit = escapeshellarg( $excludessplit );
                         $excludessplit = preg_replace( "/^'/", '', $excludessplit );
                         $excludessplit = preg_replace( "/'$/", '', $excludessplit );
                         $add_options .= " --exclude={$excludessplit}";
+                        if ( strpos( $r_exclude, '^' ) === 0 ) {
+                            $r_exclude = preg_replace( '/^\^/', '/', $r_exclude );
+                            $r_exclude = escapeshellarg( $r_exclude );
+                            $rsync_options .= " --exclude={$r_exclude}";
+                        }
                     }
                 }
                 $site_path = $workspace_id ? $app->workspace()->site_path : $app->site_path;
@@ -276,6 +488,15 @@ class Mirroring extends PTPlugin {
                 $path = escapeshellarg( $path );
                 $path = preg_replace( "/^'/", '', $path );
                 $path = preg_replace( "/'$/", '', $path );
+                if ( $rsync && $dir ) {
+                    $rcmd = "{$rsync} -rvtu{$delete}{$rsync_options} " . $site_path . DS . " {$dir}";
+                    if ( strpos( $rcmd, "\r" ) !== false || strpos( $excec_cmd, "\n" ) !== false ) {
+                        $rcmd = $app->escape( $rcmd );
+                        return $app->error( $this->translate( 'Invalid command(%s).', $rcmd ) );
+                    }
+                    $rsync_commands[] = $rcmd;
+                }
+                if ( $dir ) $site_path = $dir;
                 $opt = "mirror --verbose=3 --only-newer -R{$delete}{$hidden}{$add_options} {$site_path} {$path};quit";
                 $excec_cmd = "{$cmd} -u {$login_id} -p {$port} -e '{$opt}' {$protocol}://{$server}";
                 if ( strpos( $excec_cmd, "\r" ) !== false || strpos( $excec_cmd, "\n" ) !== false ) {
@@ -293,6 +514,30 @@ class Mirroring extends PTPlugin {
                 $servers[] = "{$protocol}://{$server}{$path}";
             }
         }
+    }
+
+    function pre_save_plugin_config ( $cb, $app, $component, &$errors ) {
+        if ( $component->id != 'mirroring' ) {
+            return true;
+        }
+        if ( $app->param( 'reset_config' ) ) return true;
+        $staging_root_path = $app->mirroring_staging_root_path;
+        $staging_root_paths = preg_split( "/\s*,\s*/", $staging_root_path );
+        $dir = $app->param( 'setting_mirroring_staging1' );
+        if (! $dir ) return true;
+        $match_root = false;
+        foreach ( $staging_root_paths as $root_path ) {
+            if ( stripos( $dir, $root_path ) === 0 ) {
+                $match_root = true;
+                break;
+            }
+        }
+        if (! $match_root ) {
+            $errors[] = $this->translate( "The staging directory's path does not forward match the environment variable 'mirroring_staging_root_path'." );
+            $errors[] = $app->translate( "Failed to save plugin settings." );
+            return false;
+        }
+        return true;
     }
 
     function mirroring_scheduled_tasks ( $app ) {

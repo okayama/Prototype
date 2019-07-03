@@ -16,6 +16,8 @@ $('#alert-has_setting').focus();
 <div id="alert-does-act" class="alert alert-success" tabindex="0">
 <mt:if name="request.does_act" eq="mirroring">
   <mt:trans phrase="Mirroring has been performed." component="Mirroring">
+<mt:elseif name="request.does_act" eq="staging">
+  <mt:trans phrase="Mirroring to staging directory has been performed." component="Mirroring">
 <mt:elseif name="request.does_act" eq="debug">
   <mt:trans phrase="Debugging has been performed." component="Mirroring">
 <mt:elseif name="request.does_act" eq="reserve">
@@ -29,7 +31,7 @@ $('#alert-does-act').focus();
 </script>
 </mt:if>
 <mt:if name="mirroring_done">
-<h2>
+<h2 class="mb-1">
   <small>
     <mt:trans phrase="Results" component="Mirroring">
   </small>
@@ -117,6 +119,17 @@ $('#alert-reserved').focus();
     <mt:trans phrase="Debug" component="Mirroring">
   </mt:if>
 </button>
+
+<mt:if name="has_staging">
+  <button type="submit" class="btn btn-secondary" id="mirroring_staging-execute">
+    <mt:if name="request.does_act" eq="staging">
+      <mt:trans phrase="Mirror to Staging again" component="Mirroring">
+    <mt:else>
+      <mt:trans phrase="Mirror to Staging" component="Mirroring">
+    </mt:if>
+  </button>
+</mt:if>
+
 </div>
 </form>
 <script>
@@ -157,6 +170,12 @@ $('#mirroring_reserve-execute').click(function(){
 function zeroPadding(num,length){
     return ('000' + num).slice(-length);
 }
+$('#mirroring_staging-execute').click(function(){
+    if(! confirm('<mt:trans phrase="Are you sure you want to mirroring to staging directory?" component="Mirroring">') ) {
+        return false;
+    }
+    $('#mirroring_type').val('staging');
+});
 $('#mirroring_cancel-execute').click(function(){
     if(! confirm('<mt:trans phrase="Are you sure you want to cancel your reservation?" component="Mirroring">') ) {
         return false;
