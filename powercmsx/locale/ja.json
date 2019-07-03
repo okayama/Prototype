@@ -1176,6 +1176,7 @@
         : "パスワードリセットの有効期限が切れています。",
     "Upload Path contains an illegal character."
         : "アップロード・パスに利用できない文字が含まれています。",
+    "Failed to save plugin settings." : "プラグイン設定を保存できませんでした。",
     "Password should be longer than %s characters."
         : "パスワードは %s 文字以上である必要があります。",
     "Password should contain symbols."
