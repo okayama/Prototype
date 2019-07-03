@@ -727,7 +727,7 @@ class Prototype {
                         $setting = $plugin_objs[ $component ];
                         $this->cfg_settings[ $component ] = $r;
                         if (!$setting->number ) continue;
-                        $this->configure_from_json( $_plugin, $r );
+                        $this->configure_from_json( $_plugin, $r, false );
                         $register = true;
                     } else if ( $extension === 'php' ) {
                         $php_classes[] = $_plugin;
@@ -792,7 +792,7 @@ class Prototype {
         }
     }
 
-    function configure_from_json ( $file, $r = null ) {
+    function configure_from_json ( $file, $r = null, $cfg_ow = true ) {
         $r = $r !== null ? $r : json_decode( file_get_contents( $file ), true );
         if ( isset( $r['component'] ) && isset( $r['version'] ) ) {
             $this->versions[ strtolower( $r['component'] ) ] = $r['version'];
@@ -801,6 +801,9 @@ class Prototype {
             if ( $key === 'settings' ) continue;
             if ( $key === 'config_settings' ) {
                 foreach ( $methods as $cfg => $setting ) {
+                    if (! $cfg_ow && property_exists( $this, $cfg ) ) {
+                        continue;
+                    }
                     $this->$cfg = $setting;
                 }
             } else if ( $key === 'version' ) {
