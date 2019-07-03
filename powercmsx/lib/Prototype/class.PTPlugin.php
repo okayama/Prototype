@@ -222,6 +222,17 @@ class PTPlugin {
             $settings = $cfg_setting['settings'];
             if ( $app->param( 'save_config' ) ) {
                 $app->validate_magic();
+                $app->init_callbacks( 'plugin', 'pre_save_plugin_config' );
+                $callback = ['name' => 'pre_save_plugin_config', 'plugin_id' => $plugin_id ];
+                $errors = [];
+                $app->run_callbacks( $callback, 'plugin', $component, $errors );
+                if ( count( $errors ) ) {
+                    unset( $_REQUEST['save_config'] );
+                    unset( $_POST['save_config'] );
+                    $app->param( 'save_config', '' );
+                    $ctx->vars['error'] = implode( "\n", $errors );
+                    return $this->manage_plugins( $app );
+                }
                 $keys = array_keys( $settings );
                 $app->db->caching = false;
                 $action = $app->param( 'reset_config' ) ? 'reset' : 'saved';
