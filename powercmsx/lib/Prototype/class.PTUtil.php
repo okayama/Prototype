@@ -2292,7 +2292,7 @@ class PTUtil {
         return $default ? $default : 'text/plain';
     }
 
-    public static function file_find ( $dir, &$files = [], &$dirs = [] ) {
+    public static function file_find ( $dir, &$files = [], &$dirs = [], $hidden = false ) {
         $iterator = new RecursiveDirectoryIterator( $dir );
         $iterator = new RecursiveIteratorIterator( $iterator );
         $list = [];
@@ -2300,7 +2300,7 @@ class PTUtil {
             $path = $fileinfo->getPathname();
             $list[] = $path;
             $name = $fileinfo->getBasename();
-            if ( strpos( $name, '..' ) === 0 ) continue;
+            if (! $hidden && strpos( $name, '..' ) === 0 ) continue;
             if ( $fileinfo->isFile() ) {
                 $files[] = $path;
             } else if ( $fileinfo->isDir() ) {
