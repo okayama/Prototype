@@ -88,16 +88,17 @@
         <span aria-hidden="true">&times;</span>
       </button>
     </mt:setvarblock>
-
     <div class="alert alert-success hidden" id="header-alert" role="alert" tabindex="0">
       <button onclick="$('#header-alert').hide();" type="button" id="header-alert-close" class="close" aria-label="<mt:trans phrase="Close">">
         <span aria-hidden="true">&times;</span>
       </button>
       <span id="header-alert-message"></span>
     </div>
-
     <mt:if name="error">
-      <div class="alert alert-warning" role="alert">
+      <div class="alert alert-warning" id="header-error-message" tabindex="0" role="alert">
         <mt:var name="error" escape="1" nl2br="1">
       </div>
+      <script>
+      $('#header-error-message').focus();
+      </script>
     </mt:if>
