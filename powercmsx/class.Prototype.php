@@ -381,19 +381,19 @@ class Prototype {
         require_once( LIB_DIR . 'PAML' . DS .'class.paml.php' );
         $core_menus = ['manage_plugins' => [
                        'display_system' => 1, 'display_space' => 1, 'component' => 'Core',
-                       'permission' => 'manage_plugins', 'mode' => 'manage_plugins',
-                       'label' => 'Manage Plugins', 'order' => 20],
+                         'permission' => 'manage_plugins', 'mode' => 'manage_plugins',
+                         'label' => 'Manage Plugins', 'order' => 20],
                        'manage_scheme' => [
-                       'display_system' => 1, 'component' => 'Core', 'permission' => 'manage_plugins',
-                       'mode' => 'manage_scheme', 'label' => 'Manage Scheme', 'order' => 30],
+                         'display_system' => 1, 'component' => 'Core', 'permission' => 'manage_plugins',
+                         'mode' => 'manage_scheme', 'label' => 'Manage Scheme', 'order' => 30],
                        'manage_theme' => [
-                       'display_system' => 1, 'display_space' => 1, 'component' => 'Core',
-                       'permission' => 'import_objects', 'mode' => 'manage_theme',
-                       'label' => 'Manage Theme', 'order' => 40],
+                         'display_system' => 1, 'display_space' => 1, 'component' => 'Core',
+                         'permission' => 'import_objects', 'mode' => 'manage_theme',
+                       '  label' => 'Manage Theme', 'order' => 40],
                        'import_objects' => [
-                       'display_system' => 1, 'display_space' => 1, 'component' => 'Core',
-                       'permission' => 'import_objects', 'mode' => 'import_objects',
-                       'label' => 'Import Objects', 'order' => 50]];
+                         'display_system' => 1, 'display_space' => 1, 'component' => 'Core',
+                         'permission' => 'import_objects', 'mode' => 'import_objects',
+                         'condition' => 'can_im_export', 'label' => 'Import Objects', 'order' => 50]];
         $this->registry['menus'] = $core_menus;
         if ( $this->mode == 'dashboard' )
             $this->registry['widgets'] = $this->core_widgets();
@@ -929,7 +929,7 @@ class Prototype {
                                 if ( $cond ) $system_menus[] = $item;
                             }
                         }
-                        if ( isset( $menu['display_space'] ) ) {
+                        if ( $workspace && isset( $menu['display_space'] ) ) {
                             if ( $app->can_do( $permission, null, null, $workspace ) ) {
                                 $cond = true;
                                 if ( $workspace && isset( $menu['condition'] ) ) {
@@ -8941,6 +8941,16 @@ class Prototype {
             return $data[ $property ];
         }
         return null;
+    }
+
+    function can_im_export ( $app, $workspace, $menu ) {
+        $terms = ['im_export' => 1 ];
+        if ( $workspace ) {
+            $terms['display_system'] = 1;
+        } else {
+            $terms['display_space'] = 1;
+        }
+        return $app->db->model( 'table' )->count( $terms );
     }
 
     function status_published ( $model ) {
