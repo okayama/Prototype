@@ -389,7 +389,7 @@ class Prototype {
                        'manage_theme' => [
                          'display_system' => 1, 'display_space' => 1, 'component' => 'Core',
                          'permission' => 'import_objects', 'mode' => 'manage_theme',
-                       '  label' => 'Manage Theme', 'order' => 40],
+                         'label' => 'Manage Theme', 'order' => 40],
                        'import_objects' => [
                          'display_system' => 1, 'display_space' => 1, 'component' => 'Core',
                          'permission' => 'import_objects', 'mode' => 'import_objects',
